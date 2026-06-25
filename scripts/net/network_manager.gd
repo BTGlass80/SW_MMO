@@ -102,6 +102,7 @@ var _peer_zones := {}                 # peer_id -> current_zone_id (server)
 var _default_zone: String = CURRENT_ZONE  # server: zone new peers start in
 var _peer_orgs := {}                  # peer_id -> org_id (server; for snapshot treasury)
 var _peer_axes := {}                  # peer_id -> faction_axis (server; E24 influence)
+var _peer_ranks := {}                 # peer_id -> faction_rank (server; F34 territory-authority HUD)
 var _territory_influence := {}        # org_id -> {zone_id -> int} (server; territory infl)
 var _pending_zone_influence := []     # E8/E24: [{zone_id, axis, delta}] accrued from play
 var _record_cache := {}               # E26: character_id -> record (kills per-call JSON I/O)
@@ -206,6 +207,7 @@ func _on_peer_disconnected(id: int) -> void:
 	_peer_zones.erase(id)
 	_peer_orgs.erase(id)
 	_peer_axes.erase(id)
+	_peer_ranks.erase(id)  # F34: territory-authority rank
 	_peer_rpc_budget.erase(id)
 	_heal_treated.erase(id)  # DIV-0013: drop this peer's First-Aid retry gate (keyed by target peer)
 	# Evict the record cache on disconnect: _save_peer just flushed final state to disk, the
@@ -348,9 +350,11 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	if record.has("org") and typeof(record["org"]) == TYPE_DICTIONARY:
 		_peer_orgs[sender] = String((record["org"] as Dictionary).get("faction_id", ""))
 		_peer_axes[sender] = String((record["org"] as Dictionary).get("faction_axis", ""))
+		_peer_ranks[sender] = int((record["org"] as Dictionary).get("faction_rank", 0))  # F34
 	else:
 		_peer_orgs.erase(sender)  # clear stale org/axis on re-register to a no-org character
 		_peer_axes.erase(sender)
+		_peer_ranks.erase(sender)
 	var pos := PersistenceStore.record_pos(record, WorldState.SPAWN_POINT)
 	var yaw := PersistenceStore.record_yaw(record, 0.0)
 	state.restore_player(sender, pos, yaw, chosen_name)
@@ -1066,7 +1070,14 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 	if zones != null:
 		snap["zone"] = zones.zone_summary(zone_id)
 	if territory != null and peer_id != 0:
-		snap["territory"] = _territory_summary(String(_peer_orgs.get(peer_id, "")), zone_id)
+		var tsum := _territory_summary(String(_peer_orgs.get(peer_id, "")), zone_id)
+		# F34: surface the viewer's own faction RANK (territory authority — gates claim at
+		# RANK_CLAIM, found-a-city at RANK_CITY) so the org HUD can show it. Pure display of
+		# stored state; the thresholds ride along so the client needs no hardcoded numbers.
+		tsum["your_rank"] = int(_peer_ranks.get(peer_id, 0))
+		tsum["rank_claim"] = OrgModel.RANK_CLAIM
+		tsum["rank_city"] = OrgModel.RANK_CITY
+		snap["territory"] = tsum
 	snap["npcs"] = _ambient.get(zone_id, [])  # E27: ambient NPCs in the player's zone
 	snap["zone_list"] = _zone_list()  # DIV-0014: loaded zones for the client's travel picker (cached)
 	# Per-peer "you" block: the player's OWN live wound condition (so the client can show a

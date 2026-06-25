@@ -717,19 +717,32 @@ func _update_org(territory: Dictionary) -> void:
 	var line := ""
 	var mine := 0
 	var total := 0
+	var rank := int(territory.get("your_rank", 0))
 	if org_id != "":
 		var treasury := int(territory.get("treasury", 0))
 		for c in territory.get("claims_in_zone", []):
 			total += 1
 			if String((c as Dictionary).get("org_id", "")) == org_id:
 				mine += 1
-		line = "Org: %s · %d cr · %d/%d claim(s) here" % [_org_pretty(org_id), treasury, mine, total]
+		# F34: show the viewer's faction RANK + what it authorizes (claim at rank_claim,
+		# found-a-city at rank_city) so territory authority isn't opaque until a rejected claim.
+		line = "Org: %s · %s · %d cr · %d/%d claim(s) here" % [_org_pretty(org_id), _rank_pretty(rank, territory), treasury, mine, total]
 	if _org_label != null:
 		_org_label.text = line
 	if line != _last_org_line:
 		_last_org_line = line
 		if line != "":
-			print("[org] %s treasury=%d claims_here=%d/%d" % [org_id, int(territory.get("treasury", 0)), mine, total])
+			print("[org] %s rank=%d treasury=%d claims_here=%d/%d" % [org_id, rank, int(territory.get("treasury", 0)), mine, total])
+
+# F34: render a faction rank as its territory authority, using thresholds the server sends.
+func _rank_pretty(rank: int, territory: Dictionary) -> String:
+	var rank_claim := int(territory.get("rank_claim", 3))
+	var rank_city := int(territory.get("rank_city", 5))
+	if rank >= rank_city:
+		return "rank %d (org leader)" % rank
+	if rank >= rank_claim:
+		return "rank %d (can claim)" % rank
+	return "rank %d (need %d to claim)" % [rank, rank_claim]
 
 func _org_pretty(org_id: String) -> String:
 	var s := org_id.trim_prefix("org_").replace("_", " ")

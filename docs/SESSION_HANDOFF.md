@@ -260,7 +260,9 @@ Decided & usable (NOT parked): **DIV-0006** death-penalty shape, **DIV-0007** du
   `heal_result`, `zone_result`, `apply_sheet` (F24 character-sheet panel, re-pushed on
   register/skill-raise/equip/CP-award). The per-peer snapshot also carries `you` (own
   wound + CP/FP boost, F9/F23), each player entry's `wound` (F17 nameplates), `npcs` (F16),
-  `zone_list` (F11), and `territory` (F12, with `claims_in_zone` tagged by `org_id`, F29).
+  `zone_list` (F11), and `territory` (F12, with `claims_in_zone` tagged by `org_id` (F29)
+  + the viewer's `your_rank`/`rank_claim`/`rank_city` territory authority, F34). The server
+  caches `_peer_ranks` alongside `_peer_orgs`/`_peer_axes` (F34).
   `submit_input` zeroes movement for an incapacitated player (F32). Headless client
   affordances now include `--autowalk`'s `[pos]` readout (F32 net-movement test).
 - **Tick model:** 20 Hz movement (per-player speed from species, DIV-0015) + snapshot; ~5s
