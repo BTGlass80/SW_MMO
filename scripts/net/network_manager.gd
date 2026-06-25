@@ -13,6 +13,7 @@ extends Node
 
 const WorldState := preload("res://scripts/net/world_state.gd")
 const CombatArena := preload("res://scripts/net/combat_arena.gd")
+const PersistenceStore := preload("res://scripts/net/persistence_store.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 
 const DEFAULT_PORT := 24555
@@ -20,6 +21,7 @@ const MAX_CLIENTS := 32
 const SERVER_TICK_HZ := 20
 const CLIENT_SEND_HZ := 20
 const COMBAT_WINDOW_SECONDS := 5.0
+const AUTOSAVE_SECONDS := 30.0
 
 enum Mode { NONE, SERVER, CLIENT }
 
@@ -34,6 +36,7 @@ signal combat_envelope(envelope: Dictionary)
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
 var arena: CombatArena = null         # server only
+var store: PersistenceStore = null    # server only
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var last_snapshot: Dictionary = {}    # client view of the world
 var connected: bool = false           # client: handshake complete
@@ -41,6 +44,8 @@ var connected: bool = false           # client: handshake complete
 var _server_accum := 0.0
 var _client_accum := 0.0
 var _combat_accum := 0.0
+var _autosave_accum := 0.0
+var _peer_characters := {}            # peer_id -> character_id (server)
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
@@ -62,6 +67,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	mode = Mode.SERVER
 	state = WorldState.new()
 	arena = CombatArena.new(D6Rules, _load_combat_data())
+	store = PersistenceStore.new("user://persistence")
 	_server_rng.randomize()
 	print("[net] server listening on port %d (combat window %.1fs)" % [port, combat_window_seconds])
 	server_started.emit(port)
@@ -116,9 +122,11 @@ func _on_peer_connected(id: int) -> void:
 func _on_peer_disconnected(id: int) -> void:
 	if mode != Mode.SERVER:
 		return
+	_save_peer(id)
 	state.remove_player(id)
 	if arena != null:
 		arena.remove_player(id)
+	_peer_characters.erase(id)
 	print("[net] peer %d left (players=%d)" % [id, state.player_count()])
 	player_left.emit(id)
 
@@ -171,6 +179,31 @@ func send_fire_intent(intent: Dictionary) -> void:
 	if mode == Mode.CLIENT and connected:
 		submit_fire_intent.rpc_id(1, intent)
 
+# client -> server: identify which character to load/persist for this peer
+@rpc("any_peer", "call_remote", "reliable")
+func register_account(account_id: String) -> void:
+	if mode != Mode.SERVER or store == null or state == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not state.has_player(sender):
+		return
+	var character_id := account_id.strip_edges()
+	if character_id == "":
+		character_id = "peer_%d" % sender
+	_peer_characters[sender] = character_id
+	var existing := state.get_player(sender)
+	var record := store.load_or_create(character_id, character_id, String(existing.get("name", "")), WorldState.SPAWN_POINT)
+	var pos := PersistenceStore.record_pos(record, WorldState.SPAWN_POINT)
+	var yaw := PersistenceStore.record_yaw(record, 0.0)
+	state.restore_player(sender, pos, yaw)
+	if arena != null:
+		arena.set_player_combat(sender, PersistenceStore.combat_from_record(record))
+	print("[persist] peer %d -> %s loaded at (%.1f, %.1f, %.1f)" % [sender, character_id, pos.x, pos.y, pos.z])
+
+func send_register(account_id: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		register_account.rpc_id(1, account_id)
+
 func _physics_process(delta: float) -> void:
 	match mode:
 		Mode.SERVER:
@@ -184,6 +217,11 @@ func _physics_process(delta: float) -> void:
 			if _combat_accum >= combat_window_seconds:
 				_combat_accum = 0.0
 				_resolve_combat_window()
+			_autosave_accum += delta
+			if _autosave_accum >= AUTOSAVE_SECONDS:
+				_autosave_accum = 0.0
+				for pid in _peer_characters.keys():
+					_save_peer(pid)
 		Mode.CLIENT:
 			if not connected:
 				return
@@ -219,3 +257,19 @@ func _resolve_combat_window() -> void:
 	if bool(result.get("target_disabled", false)):
 		arena.reset_target()
 		print("[combat] target disabled — respawned")
+
+func _save_peer(peer_id: int) -> void:
+	if store == null or state == null:
+		return
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return
+	var player := state.get_player(peer_id)
+	if player.is_empty():
+		return
+	var record := store.load_or_create(character_id, character_id, String(player.get("name", "")), WorldState.SPAWN_POINT)
+	record = PersistenceStore.apply_position(record, player.get("pos", WorldState.SPAWN_POINT), float(player.get("yaw", 0.0)))
+	if arena != null:
+		record = PersistenceStore.apply_combat(record, arena.player_state(peer_id))
+	record["name"] = String(player.get("name", ""))
+	store.save_record(character_id, record)

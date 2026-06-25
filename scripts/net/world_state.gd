@@ -37,6 +37,16 @@ func has_player(peer_id: int) -> bool:
 func get_player(peer_id: int) -> Dictionary:
 	return players.get(peer_id, {})
 
+## Snap a player to an authoritative restored position (from persistence on login).
+func restore_player(peer_id: int, pos: Vector3, yaw: float, display_name: String = "") -> void:
+	var player: Dictionary = players.get(peer_id, {})
+	if player.is_empty():
+		return
+	player["pos"] = pos
+	player["yaw"] = yaw
+	if display_name != "":
+		player["name"] = display_name
+
 ## Record a client's most recent input intent. The server applies it on the next
 ## tick; clients never move themselves authoritatively.
 func set_input(peer_id: int, move: Vector2, yaw: float, jump: bool = false) -> void:

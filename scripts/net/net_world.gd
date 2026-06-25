@@ -27,7 +27,9 @@ var _snapshots_logged := 0
 var _avatars: Dictionary = {}   # peer_id -> {"root": Node3D, "seen": bool}
 var _aim := 0
 var _autofire := false
+var _autowalk := false
 var _autofire_accum := 0.0
+var _account := "guest"
 var _combat_log: Label
 var _combat_lines: Array[String] = []
 
@@ -61,6 +63,10 @@ func _parse_args() -> void:
 	var args := OS.get_cmdline_user_args()
 	_is_server = args.has("--server")
 	_autofire = args.has("--autofire")
+	_autowalk = args.has("--autowalk")
+	var account := _arg_value("--account")
+	if account != "":
+		_account = account
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -91,6 +97,8 @@ func _send_local_input() -> void:
 	move.y += 1.0 if Input.is_key_pressed(KEY_S) else 0.0
 	move.x -= 1.0 if Input.is_key_pressed(KEY_A) else 0.0
 	move.x += 1.0 if Input.is_key_pressed(KEY_D) else 0.0
+	if _autowalk:
+		move = Vector2(0.0, -1.0)  # forward, for headless persistence testing
 	if move.length() > 1.0:
 		move = move.normalized()
 	Net.set_local_input(move, _yaw, Input.is_key_pressed(KEY_SPACE))
@@ -126,7 +134,8 @@ func _update_camera() -> void:
 # --- net signal handlers ---
 func _on_client_connected() -> void:
 	_local_id = Net.local_peer_id()
-	_set_status("Connected as peer %d." % _local_id)
+	Net.send_register(_account)
+	_set_status("Connected as peer %d (account %s)." % [_local_id, _account])
 
 func _on_client_failed() -> void:
 	_connect_attempts += 1

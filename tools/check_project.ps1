@@ -99,4 +99,6 @@ Invoke-GodotStep "Content smoke:" @("--headless", "--path", $projectRoot, "--scr
 
 Invoke-GodotStep "Combat arena smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/combat_arena_smoke.gd")
 
+Invoke-GodotStep "Persistence smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/persistence_smoke.gd")
+
 Write-Host "`nAll checks passed."

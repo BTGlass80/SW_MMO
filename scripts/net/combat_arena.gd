@@ -81,6 +81,17 @@ func has_player(peer_id: int) -> bool:
 func player_state(peer_id: int) -> Dictionary:
 	return (_players.get(peer_id, {}) as Dictionary).get("state", {})
 
+## Apply a restored combat state (from persistence) onto a registered player.
+func set_player_combat(peer_id: int, combat_state: Dictionary) -> void:
+	if not _players.has(peer_id):
+		return
+	var record: Dictionary = _players[peer_id]
+	var st: Dictionary = record.get("state", {})
+	for key in ["player_character_points", "player_force_points", "player_wound_severity", "player_armor_quality_pips"]:
+		if combat_state.has(key):
+			st[key] = int(combat_state[key])
+	record["state"] = st
+
 func target_state() -> Dictionary:
 	return _target_state.duplicate(true)
 

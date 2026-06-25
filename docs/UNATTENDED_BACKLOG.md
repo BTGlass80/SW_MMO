@@ -76,7 +76,7 @@ footprint (measure model AABB after instancing, scale-to-fit, keep the box colli
 Tune the increment-1 ship/crate/barrel scales from owner visual feedback.
 - Acceptance: `world_builder_smoke` + runtime launch + full gate green.
 
-### 2. M1.4 — Persistence backbone (JSON first)  [STATUS: TODO]
+### 2. M1.4 — Persistence backbone (JSON first)  [STATUS: DONE]
 Server-side persistence per `data/schemas/player_persistence.schema.json`.
 - A pure `scripts/net/persistence_store.gd` (save/load a player record: position,
   combat state, name) to a JSON file under a server data dir (NOT under `C:\SW_MUSH`).
@@ -119,6 +119,7 @@ One-way extract era-appropriate vehicles/starships + droid models from read-only
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-24 M1.4 DONE — pure `scripts/net/persistence_store.gd` (JSON per character, schema-shaped per player_persistence.schema.json) + `persistence_smoke`. NetworkManager: `register_account` RPC loads/restores a character on login (position + CP/FP/wound), saves on disconnect + 30s autosave; client passes `--account`. Verified end-to-end: a client autowalked from spawn to z=-58, disconnected, and a reconnect with the same account was restored to (-20,1.2,-58). Full gate green.
 - 2026-06-24 A1 DONE (increment 1) — `instance_model`/`place_model` helpers in world_builder; parked Kenney craft on Bays 86/87 + speeder shop, crate-stack visuals → factory-kit crate models (collision kept), survival-kit barrels added. Solo + net worlds both updated (shared builder). Gate green. Scales are first-pass → owner visual check worthwhile. Buildings deferred to A1b.
 - 2026-06-24 A0 DONE — root-caused the broken `--import`: Kenney "GLB format" GLBs reference an external Textures/colormap.png that `curate` dropped (only kept .glb). Fixed `_curated_members` in fetch_assets.py to also extract GLB-format textures (drop FBX/OBJ dupes), re-curated all 11 packs (--force), reimported clean (0 errors). gitignored MMO_Assets/ (925M raw zips) + __pycache__; tracked curated assets/3d/ (41M). Full `check_project.ps1` GREEN again.
 - 2026-06-24 M1.3b DONE — combat netcode wired (CombatArena on server, submit_fire_intent RPC, 5s window timer, apply_combat_envelope broadcast, client fire/aim + HUD combat log). Verified end-to-end: two-process autofire run shows client intent → server WEG resolution (own seed) → envelope → client playback. Smokes/launch/python all green. NOTE: full `check_project.ps1 --import` currently fails on Codex's half-curated Kenney asset (not our code).
