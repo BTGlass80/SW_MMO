@@ -26,26 +26,40 @@ Log over this file.
   test guards; then the [HOT] netcode — multiple zones with per-player snapshot routing,
   equipment-swap, org claim/release commands with treasury income, the player→influence
   causal loop, chat/emote, account-auth + rate-limit + record cache, and a Director-paced
-  ambient NPC sim. Plus a review-driven **hardening** pass (2 `register_account` fixes) and
-  follow-ups **F1** (territory influence earned from combat) / **F2** (zone-scoped say) /
-  **F3** (claim-flow gate guard). Every net slice was two-process headless verified.
-- **Green bar (current truth):** the **full** `tools/check_project.ps1` passes — **56
-  GDScript smokes** + 7 python + import + launch (green at every commit). DIV-0001..0011.
-- **STATUS: Wave E is DONE and the backlog is DRY of unblocked, non-owner-gated work.**
-  The prototype is feature-complete for the planned scope, hardened, with all core loops
-  playable + gate-guarded. **The next step needs an OWNER STEER** — pick a new wave, or
-  one of the parked owner-gated/visual forks (§5). The cleanly-non-owner-gated follow-ups
-  are exhausted (the remaining ones — vendor/economy + starting credits, presence/mission
-  influence timescale, reputation action→value mapping — are themselves owner balance
-  calls). Until an owner steer arrives, a fresh session should **confirm green and HOLD**,
-  not invent scope. (Full history: `docs/NIGHTLY_HANDOFF.md` + the `UNATTENDED_BACKLOG.md` Log.)
+  ambient NPC sim. Plus a review-driven **hardening** pass (2 `register_account` fixes) and a
+  long **follow-up series F1–F22** (each gate-green + two-process verified) that grew the slice
+  into a genuinely playable MMO. Highlights:
+  - **Wound/medical loop (F7–F10, F17, F19):** natural self-recovery (DIV-0012) + First Aid by a
+    medic (DIV-0013, reaches incapacitated/mortally) + a colour-coded own-condition HUD + other
+    players' condition on their nameplates + "First-Aid the nearest WOUNDED ally" targeting.
+  - **Multi-zone world (F11–F14):** in-session zone TRAVEL (DIV-0014, persisted) + zone-scoped
+    player VISIBILITY (you only see same-zone players) + the org/territory HUD; all zone-scoped.
+  - **Per-species movement speed (F15, DIV-0015):** wired the orphaned derived-stats model.
+  - **Combat correctness (F18):** equipped-weapon SKILL drives the attack pool + melee `STR+ND`
+    damage (wires derived-stats melee) — latent fix, melee is acquirable only once an economy exists.
+  - **Social (F2, F20, F22):** zone say/emote + global ooc + ORG chat (cross-zone) + a **GUI chat
+    LineEdit** with a `/say //ooc //org //emote` slash parser.
+  - **Visibility (F9, F12, F16, F17):** condition/org HUDs + RENDERED ambient NPCs + wound nameplates.
+  - **Robustness/guards (F4–F6, F10, F14, F21):** record-cache eviction on disconnect; FIVE [HOT]
+    composition guards (claims/auth/First Aid/zone/chat) locked into the gate.
+- **Green bar (current truth):** the **full** `tools/check_project.ps1` passes — **59
+  GDScript smokes** + 7 python + import + launch (green at every commit). DIV-0001..0015.
+- **STATUS: Wave E + the F1–F22 follow-ups are DONE; the prototype is a playable, populated,
+  traversable multi-zone MMO** (chargen/progression → species-paced movement → combat (CP/FP) →
+  full visible medical loop → equip → travel/presence → org claims+treasury → say/ooc/org chat w/
+  GUI input → news → rendered NPCs), all gate-guarded. **The unblocked, non-owner-gated backlog is
+  DRY** — the substantive remainders cluster behind the **economy/vendor** (unlocks melee +
+  the orphaned creature_spawn/vendor/reputation models) and the parked owner forks (§5: siege,
+  Force access, PvP-consent, death-penalty numbers, CP rates, LLM-Director, visual A1b/P1). A fresh
+  session should **confirm green and HOLD for an owner steer**, not invent owner-gated scope. (Full
+  history: `docs/NIGHTLY_HANDOFF.md` + the `UNATTENDED_BACKLOG.md` Log — F1–F22.)
 
 ---
 
 ## 1. First actions (do these now, in order)
 
 1. **Orient:** read `CLAUDE.md`, this file, and `docs/UNATTENDED_BACKLOG.md` (the Wave E
-   queue + Guardrails + Log). Skim `docs/DIVERGENCE_LEDGER.md` (DIV-0001..0011).
+   queue + Guardrails + the F1–F22 Log). Skim `docs/DIVERGENCE_LEDGER.md` (DIV-0001..0015).
 2. **Confirm the baseline is green** before changing anything:
    ```powershell
    .\tools\check_project.ps1 -GodotConsole "C:\Godot 4\Godot_v4.6.3-stable_win64_console.exe"
@@ -212,7 +226,12 @@ Decided & usable (NOT parked): **DIV-0006** death-penalty shape, **DIV-0007** du
 - **Pure rules** `scripts/rules/*`: `d6_rules` (pools/Wild Die/scale/soak/wound chart),
   `chargen_model`, `progression_model` (dual-track CP), `action_window_model`,
   `ground_combat_model`, `armor_condition_model`, `character_sheet_model`,
-  `combat_event_envelope_model` / `combat_event_log_model`, plus the large `space_*` models.
+  `combat_event_envelope_model` / `combat_event_log_model`, the large `space_*` models, and the
+  Wave-E + F-series rules models: `wound_ladder_model` (DIV-0008, wired in combat), `recovery_model`
+  (DIV-0009; wired by F7 natural recovery + F8 First Aid), `derived_stats_model` (wired by F15
+  species move + F18 melee damage), `equipment_model` (equip), `force_skills_model` (off-by-default
+  hook, DIV-0011), and `reputation_model` / `creature_spawn_model` / `vendor_model` (modeled +
+  smoked but **orphaned** — wiring needs the owner-gated economy).
 - **Net layer** `scripts/net/*`: `world_state` (pure 20 Hz movement truth),
   `combat_arena` (pure ~5s WEG action-window resolution, server seed),
   `persistence_store` (JSON per character), `zone_state` (Director: influence/alert/
@@ -220,16 +239,22 @@ Decided & usable (NOT parked): **DIV-0006** death-penalty shape, **DIV-0007** du
   `submit_release_claim` command layer wired into `network_manager`), plus the Wave E pure
   models `security_gate`, `pending_influence_model`, `org_model`, `chat_model`,
   `account_auth_model`, `ambient_sim_model`; `network_manager` + `net_world` (the two **HOT** files).
-- **RPC surface (16, all in `network_manager.gd`):** client→server (`any_peer`)
+- **RPC surface (20, all in `network_manager.gd`):** client→server (`any_peer`)
   `submit_input`, `submit_fire_intent`, `register_account`, `submit_skill_raise`,
-  `submit_equip`, `submit_claim_node`, `submit_release_claim`, `submit_chat`; server→client
+  `submit_equip`, `submit_claim_node`, `submit_release_claim`, `submit_chat`,
+  `submit_heal` (F8 First Aid), `submit_change_zone` (F11 travel); server→client
   (`authority`) `apply_snapshot`, `apply_combat_envelope`, `apply_wallet`,
-  `skill_raise_result`, `equip_result`, `claim_result`, `apply_chat`, `auth_result`.
-- **Tick model:** 20 Hz movement + snapshot; ~5s combat window (`--combat-window`);
-  ~30s Director tick (`--director-tick`); 30s autosave; 60s territory resource tick
-  (`--resource-tick`); Director-paced ambient NPC sim. Per-peer maps in `network_manager`:
-  `_peer_characters`/`_peer_zones`/`_peer_orgs`/`_peer_axes`/`_peer_rpc_budget`, a
-  `_record_cache`, and the `_territory_influence`/`_pending_zone_influence`/`_ambient` state.
+  `skill_raise_result`, `equip_result`, `claim_result`, `apply_chat`, `auth_result`,
+  `heal_result`, `zone_result`. The per-peer snapshot also carries `you` (own wound), each
+  player entry's `wound` (F17 nameplates), `npcs` (F16), `zone_list` (F11), and `territory` (F12).
+- **Tick model:** 20 Hz movement (per-player speed from species, DIV-0015) + snapshot; ~5s
+  combat window (`--combat-window`); ~30s Director tick (`--director-tick`) — folds influence,
+  advances ambient NPCs, AND runs natural wound recovery (DIV-0012); 30s autosave; 60s territory
+  resource tick (`--resource-tick`). Per-peer maps in `network_manager`:
+  `_peer_characters`/`_peer_zones`/`_peer_orgs`/`_peer_axes`/`_peer_rpc_budget`/`_heal_treated`
+  (F8 retry gate), a `_record_cache` (evicted on disconnect, F6), and the
+  `_territory_influence`/`_pending_zone_influence`/`_ambient` state. ALL per-peer maps are
+  cleaned on disconnect.
 - **World geometry:** `scripts/world/world_builder.gd` (shared, deterministic seed 1138;
   solo `main.tscn` + `net_world.tscn` build the same Mos Eisley).
 - **Data** `data/*.json`: species(9)/skills(76)/weapons(32)/armor(23) are consumed at
