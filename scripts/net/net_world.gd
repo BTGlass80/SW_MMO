@@ -91,6 +91,7 @@ var _chat_log: Label
 var _chat_lines: Array[String] = []
 var _last_news := ""
 var _last_control := ""       # F35: log zone faction-control CHANGES only
+var _last_alert := ""         # F37: flag zone ALERT-level escalations (Director consequence)
 
 func _ready() -> void:
 	_parse_args()
@@ -407,9 +408,17 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 			_control_summary(ranked),
 		]
 	var zone_name := String(zone.get("display_name", ""))
+	var alert := String(zone.get("alert_level", ""))
 	if zone_name != "" and zone_name != _last_zone_name:
 		_last_zone_name = zone_name
+		_last_alert = alert  # F37: baseline the new zone's alert (travel/join isn't an escalation)
 		print("[zone] now in %s (%s)" % [zone_name, String(zone.get("effective_security", ""))])
+	elif alert != "" and alert != _last_alert:
+		# F37: the alert level shifted WITHIN the current zone — a Director response to faction
+		# dynamics (e.g. one side's influence crossing a threshold). Surface it as an event.
+		print("[alert] %s: %s -> %s" % [String(zone.get("zone_id", zone_name)), _last_alert, alert])
+		_set_status("Security in %s is now: %s" % [zone_name, alert])
+		_last_alert = alert
 	# F35: surface the Director's per-zone faction influence (who controls/contests this place —
 	# the persistent-world state the player's actions feed via E24). Already in the snapshot; just
 	# render + log it on change. Pure presentation.
