@@ -838,9 +838,10 @@ func _on_sheet_updated(summary: Dictionary) -> void:
 	lines.append("(press V to hide)")
 	if _sheet_panel != null:
 		_sheet_panel.text = "\n".join(lines)
-	print("[sheet] species=%s dex=%s weapon=%s skills=%d" % [
+	print("[sheet] species=%s dex=%s weapon=%s skills=%d cp=%d" % [
 		String(summary.get("species", "?")), String(attrs.get("dexterity", "?")),
-		String(summary.get("weapon", "-")), skills.size()])
+		String(summary.get("weapon", "-")), skills.size(),
+		int((summary.get("cp_wallet", {}) as Dictionary).get("gameplay_cp", 0))])
 
 func _on_zone_replied(result: Dictionary) -> void:
 	if bool(result.get("ok", false)):

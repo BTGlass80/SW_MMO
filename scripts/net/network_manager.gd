@@ -865,6 +865,7 @@ func _award_cp(peer_id: int, track: String, amount: int) -> void:
 	_cached_save(character_id, record)
 	print("[cp] peer %d +%d %s (wallet g=%d r=%d)" % [peer_id, amount, track, int(wallet.get("gameplay_cp", 0)), int(wallet.get("rp_cp", 0))])
 	apply_wallet.rpc_id(peer_id, wallet)
+	_push_sheet(peer_id, record)  # F30: keep the character sheet panel's CP wallet current after a CP award
 
 # E24: accrue Director zone-influence from a player action onto the player's faction
 # axis in their current zone. Buffered in _pending_zone_influence (the E8 model) and
