@@ -149,7 +149,8 @@ Notes:
   influence causal loop (F1 territory accrual from combat), zone-scoped chat/emote (F2) +
   global OOC, account-auth + per-peer rate-limit + record cache, and a Director-paced
   ambient NPC sim. RPC surface grew 8→16. Two MEDIUM `register_account` bugs found by
-  adversarial review and fixed. Gate at **55 GDScript smokes**, green at every commit.
+  adversarial review and fixed (and locked into the gate by the F4 regression guard).
+  Gate at **56 GDScript smokes**, green at every commit.
   Note: `creature_spawn_model`/`vendor_model`/`reputation_model` are modeled + smoke-tested
   but **not yet wired into `net_world`** (live spawns/shops/rep-on-action need owner
   economy/spawn-rate/value calls).

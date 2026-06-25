@@ -29,7 +29,7 @@ Log over this file.
   ambient NPC sim. Plus a review-driven **hardening** pass (2 `register_account` fixes) and
   follow-ups **F1** (territory influence earned from combat) / **F2** (zone-scoped say) /
   **F3** (claim-flow gate guard). Every net slice was two-process headless verified.
-- **Green bar (current truth):** the **full** `tools/check_project.ps1` passes — **55
+- **Green bar (current truth):** the **full** `tools/check_project.ps1` passes — **56
   GDScript smokes** + 7 python + import + launch (green at every commit). DIV-0001..0011.
 - **STATUS: Wave E is DONE and the backlog is DRY of unblocked, non-owner-gated work.**
   The prototype is feature-complete for the planned scope, hardened, with all core loops

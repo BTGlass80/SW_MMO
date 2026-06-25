@@ -151,4 +151,6 @@ Invoke-GodotStep "Ambient sim model smoke:" @("--headless", "--path", $projectRo
 
 Invoke-GodotStep "Claim flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/claim_flow_smoke.gd")
 
+Invoke-GodotStep "Auth flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/auth_flow_smoke.gd")
+
 Write-Host "`nAll checks passed."
