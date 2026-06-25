@@ -197,8 +197,8 @@ func _process(delta: float) -> void:
 				Net.send_chat(String(parts[0]), String(parts[1]))
 	if _heal_other and not _heal_sent and Net.connected:
 		_heal_accum += delta
-		if _heal_accum >= 4.0:  # after both peers have registered, First-Aid the other once
-			var other := _first_other_peer()
+		if _heal_accum >= 4.0:  # after both peers have registered, First-Aid the nearest wounded ally
+			var other := _best_heal_target()
 			if other != 0:
 				_heal_sent = true
 				Net.send_heal(other)
@@ -233,12 +233,12 @@ func _input(event: InputEvent) -> void:
 		elif event.keycode == KEY_K:
 			Net.send_skill_raise("blaster")  # spend CP to raise Blaster a pip
 		elif event.keycode == KEY_H:
-			var other := _first_other_peer()  # First Aid the first other player in range
+			var other := _best_heal_target()  # First Aid the nearest WOUNDED ally
 			if other != 0:
 				Net.send_heal(other)
 				_set_status("First Aid -> peer %d…" % other)
 			else:
-				_set_status("First Aid: no one else here.")
+				_set_status("First Aid: no wounded ally nearby.")
 		elif event.keycode == KEY_T:
 			if not _zone_list.is_empty():  # cycle travel to the next loaded zone
 				_travel_idx = (_travel_idx + 1) % _zone_list.size()
@@ -708,12 +708,33 @@ func _on_auth_replied(result: Dictionary) -> void:
 
 # First other player's peer id in the latest snapshot (0 if alone). Used by the H key /
 # --heal-other affordance to pick a First-Aid target without a full targeting UI.
-func _first_other_peer() -> int:
+# Nearest same-zone WOUNDED player, for First Aid targeting (0 if none). Uses the per-entry
+# `wound` (F17) + `pos` (F13) now carried on each snapshot player, so a medic heals whoever is
+# hurt nearby instead of a random/healthy bystander. Only same-zone players are in the snapshot
+# (F13), so this is implicitly proximity- and zone-scoped.
+func _best_heal_target() -> int:
+	var my_pos := _my_position()
+	var best := 0
+	var best_dist := INF
 	for entry in Net.last_snapshot.get("players", []):
-		var id := int((entry as Dictionary).get("id", 0))
-		if id != 0 and id != _local_id:
-			return id
-	return 0
+		var e: Dictionary = entry
+		var id := int(e.get("id", 0))
+		if id == 0 or id == _local_id:
+			continue
+		if String(e.get("wound", "healthy")) == "healthy":
+			continue
+		var p: Vector3 = e.get("pos", Vector3.ZERO)
+		var d := my_pos.distance_to(p)
+		if d < best_dist:
+			best_dist = d
+			best = id
+	return best
+
+func _my_position() -> Vector3:
+	for entry in Net.last_snapshot.get("players", []):
+		if int((entry as Dictionary).get("id", 0)) == _local_id:
+			return (entry as Dictionary).get("pos", Vector3.ZERO)
+	return Vector3.ZERO
 
 func _on_heal_replied(result: Dictionary) -> void:
 	if bool(result.get("ok", false)):
