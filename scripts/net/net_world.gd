@@ -65,6 +65,7 @@ var _travel_accum := 0.0
 var _zone_list: Array = []   # DIV-0014: loaded zones from the snapshot (for the T travel key)
 var _travel_idx := 0
 var _last_zone_name := ""    # log zone CHANGES only
+var _last_player_count := -1 # log zone-presence (players-here) CHANGES only
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
@@ -346,7 +347,11 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 		if not seen.has(id):
 			(_avatars[id]["root"] as Node3D).queue_free()
 			_avatars.erase(id)
-	_set_status("Peer %d | players online: %d" % [_local_id, (snapshot.get("players", []) as Array).size()])
+	var here_count := (snapshot.get("players", []) as Array).size()
+	_set_status("Peer %d | players in zone: %d" % [_local_id, here_count])
+	if here_count != _last_player_count:
+		_last_player_count = here_count
+		print("[presence] players_here=%d" % here_count)
 	var zone: Dictionary = snapshot.get("zone", {})
 	if _zone_label != null and not zone.is_empty():
 		_zone_label.text = "%s — alert: %s | security: %s" % [

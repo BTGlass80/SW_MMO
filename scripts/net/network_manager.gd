@@ -982,6 +982,17 @@ func _physics_process(delta: float) -> void:
 
 func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictionary:
 	var snap := state.snapshot()
+	# Zone-scoped presence: a peer only sees players in its OWN zone (consistent with
+	# zone-scoped chat, F2 — the zones are distinct places). state.snapshot() returns a fresh
+	# dict + fresh entries each call, so per-peer filtering is safe. The peer's own entry is in
+	# its own zone, so it is retained (needed for the first-person camera). Standard MMO zone
+	# visibility, not a WEG/MUSH mechanic divergence (see DIV-0001).
+	if peer_id != 0:
+		var here: Array = []
+		for p in snap.get("players", []):
+			if String(_peer_zones.get(int((p as Dictionary).get("id", 0)), _default_zone)) == zone_id:
+				here.append(p)
+		snap["players"] = here
 	if zones != null:
 		snap["zone"] = zones.zone_summary(zone_id)
 	if territory != null and peer_id != 0:
