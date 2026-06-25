@@ -14,6 +14,7 @@ extends Node
 const WorldState := preload("res://scripts/net/world_state.gd")
 const CombatArena := preload("res://scripts/net/combat_arena.gd")
 const PersistenceStore := preload("res://scripts/net/persistence_store.gd")
+const ZoneState := preload("res://scripts/net/zone_state.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 
 const DEFAULT_PORT := 24555
@@ -22,6 +23,8 @@ const SERVER_TICK_HZ := 20
 const CLIENT_SEND_HZ := 20
 const COMBAT_WINDOW_SECONDS := 5.0
 const AUTOSAVE_SECONDS := 30.0
+const DIRECTOR_TICK_SECONDS := 30.0
+const CURRENT_ZONE := "tatooine.mos_eisley.spaceport"
 
 enum Mode { NONE, SERVER, CLIENT }
 
@@ -37,6 +40,7 @@ var mode: int = Mode.NONE
 var state: WorldState = null          # server only
 var arena: CombatArena = null         # server only
 var store: PersistenceStore = null    # server only
+var zones: ZoneState = null           # server only (world-sim director)
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var last_snapshot: Dictionary = {}    # client view of the world
 var connected: bool = false           # client: handshake complete
@@ -45,6 +49,7 @@ var _server_accum := 0.0
 var _client_accum := 0.0
 var _combat_accum := 0.0
 var _autosave_accum := 0.0
+var _director_accum := 0.0
 var _peer_characters := {}            # peer_id -> character_id (server)
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
@@ -68,6 +73,11 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	state = WorldState.new()
 	arena = CombatArena.new(D6Rules, _load_combat_data())
 	store = PersistenceStore.new("user://persistence")
+	zones = ZoneState.new()
+	zones.add_zone(CURRENT_ZONE, "secured",
+		{"republic": 55, "cis": 5, "hutt": 42, "independent": 25},
+		{"republic": 50, "cis": 5, "hutt": 40, "independent": 25},
+		"Mos Eisley Spaceport District")
 	_server_rng.randomize()
 	print("[net] server listening on port %d (combat window %.1fs)" % [port, combat_window_seconds])
 	server_started.emit(port)
@@ -221,7 +231,7 @@ func _physics_process(delta: float) -> void:
 			while _server_accum >= step:
 				state.tick(step)
 				_server_accum -= step
-			apply_snapshot.rpc(state.snapshot())
+			apply_snapshot.rpc(_build_snapshot())
 			_combat_accum += delta
 			if _combat_accum >= combat_window_seconds:
 				_combat_accum = 0.0
@@ -231,6 +241,11 @@ func _physics_process(delta: float) -> void:
 				_autosave_accum = 0.0
 				for pid in _peer_characters.keys():
 					_save_peer(pid)
+			_director_accum += delta
+			if _director_accum >= DIRECTOR_TICK_SECONDS:
+				_director_accum = 0.0
+				if zones != null:
+					zones.director_tick()
 		Mode.CLIENT:
 			if not connected:
 				return
@@ -239,6 +254,12 @@ func _physics_process(delta: float) -> void:
 			if _client_accum >= step:
 				_client_accum = 0.0
 				submit_input.rpc_id(1, _local_move, _local_yaw, _local_jump)
+
+func _build_snapshot() -> Dictionary:
+	var snap := state.snapshot()
+	if zones != null:
+		snap["zone"] = zones.zone_summary(CURRENT_ZONE)
+	return snap
 
 func _load_combat_data() -> Dictionary:
 	if not FileAccess.file_exists(COMBATANT_DATA_PATH):

@@ -33,6 +33,7 @@ var _account := "guest"
 var _name := ""
 var _combat_log: Label
 var _combat_lines: Array[String] = []
+var _zone_label: Label
 
 func _ready() -> void:
 	_parse_args()
@@ -159,9 +160,12 @@ func _on_player_left(peer_id: int) -> void:
 func _on_snapshot(snapshot: Dictionary) -> void:
 	if _snapshots_logged < 2:
 		_snapshots_logged += 1
-		print("[net] client received snapshot tick=%d players=%d" % [
+		var z: Dictionary = snapshot.get("zone", {})
+		print("[net] client received snapshot tick=%d players=%d zone=%s/%s" % [
 			int(snapshot.get("tick", -1)),
 			(snapshot.get("players", []) as Array).size(),
+			String(z.get("alert_level", "-")),
+			String(z.get("effective_security", "-")),
 		])
 	if _is_server:
 		return
@@ -186,6 +190,13 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 			(_avatars[id]["root"] as Node3D).queue_free()
 			_avatars.erase(id)
 	_set_status("Peer %d | players online: %d" % [_local_id, (snapshot.get("players", []) as Array).size()])
+	var zone: Dictionary = snapshot.get("zone", {})
+	if _zone_label != null and not zone.is_empty():
+		_zone_label.text = "%s — alert: %s | security: %s" % [
+			String(zone.get("display_name", "Zone")),
+			String(zone.get("alert_level", "")),
+			String(zone.get("effective_security", "")),
+		]
 
 func _find_player(peer_id: int) -> Dictionary:
 	for entry in Net.last_snapshot.get("players", []):
@@ -259,6 +270,13 @@ func _build_hud() -> void:
 	_combat_log.add_theme_font_size_override("font_size", 14)
 	_combat_log.modulate = Color(0.12, 0.10, 0.07)
 	layer.add_child(_combat_log)
+
+	_zone_label = Label.new()
+	_zone_label.position = Vector2(760, 16)
+	_zone_label.text = "Zone: ..."
+	_zone_label.add_theme_font_size_override("font_size", 15)
+	_zone_label.modulate = Color(0.10, 0.09, 0.07)
+	layer.add_child(_zone_label)
 
 func _set_status(text: String) -> void:
 	if _status != null:

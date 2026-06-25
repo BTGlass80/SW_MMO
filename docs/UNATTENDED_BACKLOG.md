@@ -92,7 +92,7 @@ Client sends a chosen display name on join (`--name <name>`); server uses it in
 snapshots and combat envelopes instead of `Spacer-N`.
 - Acceptance: `net_smoke` covers the name flow; full gate green.
 
-### 4. M2.0 — Zone & security-state scaffold  [STATUS: TODO]
+### 4. M2.0 — Zone & security-state scaffold  [STATUS: DONE]
 Pure `scripts/net/zone_state.gd` backed by `data/schemas/security_zone.schema.json` +
 `faction_zone_state.schema.json`: track a zone's security tier (secured/contested/
 lawless) and per-faction influence; a SLOW Director tick (default ~30s, deterministic,
@@ -119,6 +119,7 @@ One-way extract era-appropriate vehicles/starships + droid models from read-only
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-24 M2.0 DONE — pure `scripts/net/zone_state.gd` world-sim director: per-zone faction influence (republic/cis/hutt/independent) with DERIVED alert level (lockdown/high_alert/standard/lax/underworld/unrest) + DERIVED effective security tier (hutt>=80 downgrades; crackdown upgrades contested), advanced by a slow deterministic 30s Director tick (decay->baseline, no LLM — owner decision left off). Server seeds a Mos Eisley zone and folds its posture into the snapshot; client shows an alert/security badge. `zone_state_smoke` + two-process check (`zone=high_alert/secured`). Full gate green (34 smokes).
 - 2026-06-24 M1.5 DONE — client `--name <name>` flows via `register_account(account_id, display_name)`; server applies it to the WorldState player name (snapshot nameplates), the CombatArena player name (`set_player_name` → combat envelopes), and persists it. Coverage in net_smoke (restore_player rename) + combat_arena_smoke (named shooter). Verified over the wire: a `--name "Mara Jade"` client shows `Mara Jade hit B1 ...` in the combat log. Full gate green.
 - 2026-06-24 M1.4 DONE — pure `scripts/net/persistence_store.gd` (JSON per character, schema-shaped per player_persistence.schema.json) + `persistence_smoke`. NetworkManager: `register_account` RPC loads/restores a character on login (position + CP/FP/wound), saves on disconnect + 30s autosave; client passes `--account`. Verified end-to-end: a client autowalked from spawn to z=-58, disconnected, and a reconnect with the same account was restored to (-20,1.2,-58). Full gate green.
 - 2026-06-24 A1 DONE (increment 1) — `instance_model`/`place_model` helpers in world_builder; parked Kenney craft on Bays 86/87 + speeder shop, crate-stack visuals → factory-kit crate models (collision kept), survival-kit barrels added. Solo + net worlds both updated (shared builder). Gate green. Scales are first-pass → owner visual check worthwhile. Buildings deferred to A1b.
