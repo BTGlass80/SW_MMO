@@ -17,6 +17,7 @@ func _init() -> void:
 	# 1. A single fire intent resolves to one well-formed envelope.
 	var a1 := CombatArena.new(_rules, data)
 	a1.register_player(2, "Mara")
+	a1.set_player_name(2, "Mara Jade")  # M1.5: chosen display name flows into envelopes
 	a1.submit_fire_intent(2, {"aim": 3})
 	var r1: Dictionary = a1.resolve_window(4242)
 	var env1: Array = r1.get("envelopes", [])
@@ -25,6 +26,7 @@ func _init() -> void:
 		var e: Dictionary = env1[0]
 		_assert_equal(String(e.get("message_type", "")), "combat.exchange.resolved", "envelope message type")
 		_assert_equal(int(e.get("shooter_id", -1)), 2, "envelope carries shooter id")
+		_assert_equal(String(e.get("shooter_name", "")), "Mara Jade", "envelope carries the chosen display name")
 		_assert_true(int(e.get("event_count", 0)) > 0, "envelope carries combat events")
 		_assert_true(e.has("action_window"), "envelope carries the action window summary")
 

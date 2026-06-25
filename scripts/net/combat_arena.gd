@@ -81,6 +81,11 @@ func has_player(peer_id: int) -> bool:
 func player_state(peer_id: int) -> Dictionary:
 	return (_players.get(peer_id, {}) as Dictionary).get("state", {})
 
+## Update a player's display name (used as shooter_name in combat envelopes).
+func set_player_name(peer_id: int, display_name: String) -> void:
+	if _players.has(peer_id) and display_name.strip_edges() != "":
+		(_players[peer_id] as Dictionary)["name"] = display_name
+
 ## Apply a restored combat state (from persistence) onto a registered player.
 func set_player_combat(peer_id: int, combat_state: Dictionary) -> void:
 	if not _players.has(peer_id):

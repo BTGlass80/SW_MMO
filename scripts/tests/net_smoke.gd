@@ -59,6 +59,14 @@ func _init() -> void:
 	for key in ["id", "name", "pos", "yaw"]:
 		_assert_true(first.has(key), "snapshot entry has '%s'" % key)
 
+	# Identity: a login can authoritatively rename + reposition a player (M1.5).
+	state.restore_player(3, Vector3(1.0, WorldState.GROUND_Y, 2.0), 0.5, "Mara Jade")
+	_assert_equal(state.get_player(3).get("name", ""), "Mara Jade", "restore_player updates the display name")
+	_assert_true((state.get_player(3).get("pos") as Vector3).is_equal_approx(Vector3(1.0, WorldState.GROUND_Y, 2.0)), "restore_player snaps position")
+	# Empty name leaves the existing name untouched.
+	state.restore_player(3, Vector3(1.0, WorldState.GROUND_Y, 2.0), 0.5, "")
+	_assert_equal(state.get_player(3).get("name", ""), "Mara Jade", "restore_player with empty name keeps the current name")
+
 	# Leave.
 	state.remove_player(2)
 	state.remove_player(3)

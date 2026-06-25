@@ -179,9 +179,10 @@ func send_fire_intent(intent: Dictionary) -> void:
 	if mode == Mode.CLIENT and connected:
 		submit_fire_intent.rpc_id(1, intent)
 
-# client -> server: identify which character to load/persist for this peer
+# client -> server: identify which character to load/persist for this peer, and the
+# chosen display name (empty keeps the saved/default name)
 @rpc("any_peer", "call_remote", "reliable")
-func register_account(account_id: String) -> void:
+func register_account(account_id: String, display_name: String = "") -> void:
 	if mode != Mode.SERVER or store == null or state == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
@@ -192,17 +193,25 @@ func register_account(account_id: String) -> void:
 		character_id = "peer_%d" % sender
 	_peer_characters[sender] = character_id
 	var existing := state.get_player(sender)
-	var record := store.load_or_create(character_id, character_id, String(existing.get("name", "")), WorldState.SPAWN_POINT)
+	var record := store.load_record(character_id)
+	var chosen_name := display_name.strip_edges()
+	if chosen_name == "":
+		chosen_name = String(record.get("name", existing.get("name", "")))
+	if record.is_empty():
+		record = store.default_record(character_id, character_id, chosen_name, WorldState.SPAWN_POINT)
+	else:
+		record["name"] = chosen_name
 	var pos := PersistenceStore.record_pos(record, WorldState.SPAWN_POINT)
 	var yaw := PersistenceStore.record_yaw(record, 0.0)
-	state.restore_player(sender, pos, yaw)
+	state.restore_player(sender, pos, yaw, chosen_name)
 	if arena != null:
 		arena.set_player_combat(sender, PersistenceStore.combat_from_record(record))
-	print("[persist] peer %d -> %s loaded at (%.1f, %.1f, %.1f)" % [sender, character_id, pos.x, pos.y, pos.z])
+		arena.set_player_name(sender, chosen_name)
+	print("[persist] peer %d -> %s (%s) loaded at (%.1f, %.1f, %.1f)" % [sender, character_id, chosen_name, pos.x, pos.y, pos.z])
 
-func send_register(account_id: String) -> void:
+func send_register(account_id: String, display_name: String = "") -> void:
 	if mode == Mode.CLIENT and connected:
-		register_account.rpc_id(1, account_id)
+		register_account.rpc_id(1, account_id, display_name)
 
 func _physics_process(delta: float) -> void:
 	match mode:

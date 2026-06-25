@@ -30,6 +30,7 @@ var _autofire := false
 var _autowalk := false
 var _autofire_accum := 0.0
 var _account := "guest"
+var _name := ""
 var _combat_log: Label
 var _combat_lines: Array[String] = []
 
@@ -67,6 +68,7 @@ func _parse_args() -> void:
 	var account := _arg_value("--account")
 	if account != "":
 		_account = account
+	_name = _arg_value("--name")
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -134,8 +136,9 @@ func _update_camera() -> void:
 # --- net signal handlers ---
 func _on_client_connected() -> void:
 	_local_id = Net.local_peer_id()
-	Net.send_register(_account)
-	_set_status("Connected as peer %d (account %s)." % [_local_id, _account])
+	Net.send_register(_account, _name)
+	var who := _name if _name != "" else "account %s" % _account
+	_set_status("Connected as peer %d (%s)." % [_local_id, who])
 
 func _on_client_failed() -> void:
 	_connect_attempts += 1
