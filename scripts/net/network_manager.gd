@@ -31,6 +31,7 @@ const WEAPONS_DATA_PATH := "res://data/weapons_clone_wars.json"
 const ARMOR_DATA_PATH := "res://data/armor_clone_wars.json"
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 const DISABLE_INFLUENCE := 5  # Director zone-influence a disable feeds to the shooter's faction axis (owner-tunable)
+const KILL_TERRITORY_INFLUENCE := 2  # org territory-influence a kill-in-zone earns (FACTION_TERRITORY_DESIGN §2)
 
 const DEFAULT_PORT := 24555
 const MAX_CLIENTS := 32
@@ -599,6 +600,17 @@ func _territory_influence_for(org_id: String, zone_id: String) -> int:
 	var by_zone: Dictionary = _territory_influence.get(org_id, {})
 	return int(by_zone.get(zone_id, 0))
 
+# A member's kill-in-zone earns their ORG territory influence (FACTION_TERRITORY_DESIGN
+# §2), so claims become earnable through play rather than test-seeded. No-op without an org.
+func _accrue_territory_influence(peer_id: int, amount: int) -> void:
+	var org_id := String(_peer_orgs.get(peer_id, ""))
+	if org_id == "":
+		return
+	var zone_id := String(_peer_zones.get(peer_id, _default_zone))
+	var earned := _territory_influence_for(org_id, zone_id) + amount
+	_set_territory_influence(org_id, zone_id, earned)
+	print("[territory] %s +%d territory influence in %s (now %d)" % [org_id, amount, zone_id, earned])
+
 func _set_territory_influence(org_id: String, zone_id: String, value: int) -> void:
 	if not _territory_influence.has(org_id):
 		_territory_influence[org_id] = {}
@@ -855,6 +867,7 @@ func _resolve_combat_window() -> void:
 			var shooter := int(envelope.get("shooter_id", 0))
 			_award_cp(shooter, "gameplay", COMBAT_CP_REWARD)
 			_accrue_zone_influence(shooter, DISABLE_INFLUENCE)  # E24: play feeds faction influence
+			_accrue_territory_influence(shooter, KILL_TERRITORY_INFLUENCE)  # earn org territory influence
 		arena.reset_target()
 		print("[combat] target disabled — respawned")
 
