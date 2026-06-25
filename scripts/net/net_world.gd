@@ -27,6 +27,8 @@ var _status: Label
 var _snapshots_logged := 0
 var _npcs_seen := false
 var _avatars: Dictionary = {}   # peer_id -> {"root": Node3D, "seen": bool}
+var _npc_nodes: Dictionary = {} # npc_id -> {"root": Node3D, "seen": bool} (E27 ambient NPCs)
+var _last_npc_shown := -1       # log ambient-NPC render-count CHANGES only
 var _aim := 0
 var _spend_cp := 0          # Character Points staged for the NEXT shot (WEG: +1D each); reset on fire
 var _use_fp := false        # Force Point staged for the NEXT shot (WEG: doubles dice); reset on fire
@@ -347,6 +349,7 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 		if not seen.has(id):
 			(_avatars[id]["root"] as Node3D).queue_free()
 			_avatars.erase(id)
+	_reconcile_npcs(snapshot.get("npcs", []))  # E27: render the zone's ambient NPCs
 	var here_count := (snapshot.get("players", []) as Array).size()
 	_set_status("Peer %d | players in zone: %d" % [_local_id, here_count])
 	if here_count != _last_player_count:
@@ -410,6 +413,62 @@ func _spawn_avatar(peer_id: int, display_name: String) -> Node3D:
 func _color_for_peer(peer_id: int) -> Color:
 	var hue := fposmod(float(peer_id) * 0.6180339887, 1.0)
 	return Color.from_hsv(hue, 0.55, 0.72)
+
+# E27: render the zone's ambient NPCs as muted markers (distinct from player avatars),
+# reconciled each snapshot — spawn new, lerp existing, free despawned/zone-left. The roster
+# is per-zone, so this naturally swaps when the player travels (F11/DIV-0014).
+func _reconcile_npcs(npcs: Array) -> void:
+	var seen := {}
+	for entry in npcs:
+		var npc: Dictionary = entry
+		var id := String(npc.get("id", ""))
+		if id == "":
+			continue
+		seen[id] = true
+		var p: Dictionary = npc.get("pos", {})
+		var pos := Vector3(float(p.get("x", 0.0)), float(p.get("y", 1.2)), float(p.get("z", 0.0)))
+		if not _npc_nodes.has(id):
+			_npc_nodes[id] = {"root": _spawn_npc(id, String(npc.get("kind", "civilian")), pos), "seen": false}
+		var rec: Dictionary = _npc_nodes[id]
+		var root := rec["root"] as Node3D
+		if rec["seen"]:
+			root.global_position = root.global_position.lerp(pos, 0.25)
+		else:
+			root.global_position = pos
+			rec["seen"] = true
+	for id in _npc_nodes.keys():
+		if not seen.has(id):
+			(_npc_nodes[id]["root"] as Node3D).queue_free()
+			_npc_nodes.erase(id)
+	if _npc_nodes.size() != _last_npc_shown:
+		_last_npc_shown = _npc_nodes.size()
+		print("[npc] showing %d ambient NPC(s)" % _npc_nodes.size())
+
+func _spawn_npc(npc_id: String, kind: String, pos: Vector3) -> Node3D:
+	var root := Node3D.new()
+	root.name = "NPC_%s" % npc_id
+	var mesh := MeshInstance3D.new()
+	var capsule := CapsuleMesh.new()
+	capsule.radius = 0.32
+	capsule.height = 1.6
+	mesh.mesh = capsule
+	mesh.position.y = 0.8
+	var material := StandardMaterial3D.new()
+	var hue := fposmod(float(absi(hash(kind))) * 0.6180339887, 1.0)
+	material.albedo_color = Color.from_hsv(hue, 0.22, 0.62)  # muted/desaturated vs. saturated players
+	material.roughness = 0.95
+	mesh.material_override = material
+	root.add_child(mesh)
+	var label := Label3D.new()
+	label.text = kind.replace("_", " ")
+	label.position.y = 1.95
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.font_size = 22
+	label.modulate = Color(0.20, 0.18, 0.14)
+	root.add_child(label)
+	root.global_position = pos
+	add_child(root)
+	return root
 
 func _build_camera() -> void:
 	_camera = Camera3D.new()
