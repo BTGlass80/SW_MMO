@@ -73,6 +73,8 @@ func _build_pools(combat_data: Dictionary, target_id: String) -> void:
 		"damage_pool": _rules.parse_pool(String(trainee_weapon.get("damage", "4D"))),
 		"player_dodge_pool": _rules.parse_pool(String(trainee.get("dodge", "3D"))),
 		"player_soak_pool": _rules.parse_pool(String(trainee.get("soak", "3D"))),
+		# WEG: Perception drives combat initiative. No-sheet fallback keeps the old fixed 3D.
+		"perception_pool": _rules.parse_pool(String(trainee.get("perception", "3D"))),
 		"player_armor": armors.get(String(trainee.get("armor", "")), {}),
 		"attacker_scale": String(trainee.get("scale", "character")),
 	}
@@ -130,6 +132,9 @@ func _pools_from_sheet(sheet: Dictionary) -> Dictionary:
 		"damage_pool": damage_pool,
 		"player_dodge_pool": _rules.add_pools(_rules.parse_pool(dex), _rules.parse_pool(dodge_bonus)),
 		"player_soak_pool": _rules.parse_pool(String(attrs.get("strength", "2D"))),
+		# WEG: combat initiative = a Perception roll, so the character's own Perception drives who
+		# acts first (previously a hardcoded 3D for everyone — the attribute was ignored).
+		"perception_pool": _rules.parse_pool(String(attrs.get("perception", "2D"))),
 		"player_armor": armor,
 		"attacker_scale": "character",
 	}
@@ -143,6 +148,11 @@ func attacker_pool_text(peer_id: int) -> String:
 func damage_pool_text(peer_id: int) -> String:
 	var pools: Dictionary = (_players.get(peer_id, {}) as Dictionary).get("pools", {})
 	return String(_rules.pool_to_string(pools.get("damage_pool", {"dice": 0, "pips": 0})))
+
+## The player's Perception (initiative) dice pool as a string (for tests / inspection).
+func perception_pool_text(peer_id: int) -> String:
+	var pools: Dictionary = (_players.get(peer_id, {}) as Dictionary).get("pools", {})
+	return String(_rules.pool_to_string(pools.get("perception_pool", {"dice": 0, "pips": 0})))
 
 func remove_player(peer_id: int) -> void:
 	_players.erase(peer_id)
@@ -271,7 +281,8 @@ func _initiative_order(shooters: Array, seed_base: int) -> Array:
 			"id": str(peer_id),
 			"name": String((_players[peer_id] as Dictionary).get("name", "")),
 			"side": "player",
-			"perception_pool": {"dice": 3, "pips": 0},
+			# WEG: initiative = the character's own Perception roll (not a fixed 3D for all).
+			"perception_pool": ((_players[peer_id] as Dictionary).get("pools", {}) as Dictionary).get("perception_pool", {"dice": 3, "pips": 0}),
 			"active": true,
 		})
 	var init_result: Dictionary = _windows.resolve_initiative(_rules, _windows.initial_state(), participants, seed_base)

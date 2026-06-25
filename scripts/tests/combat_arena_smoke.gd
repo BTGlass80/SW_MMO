@@ -94,6 +94,20 @@ func _init() -> void:
 	arena.set_player_sheet(8, {"attributes": {"dexterity": "2D"}, "skills": {}})
 	_assert_equal(arena.attacker_pool_text(8), "2D", "set_player_sheet rebuilds the attack pool (DEX 2D, untrained)")
 
+	# WEG initiative: the character's own Perception drives the initiative pool (was a fixed 3D).
+	arena.register_player(13, "Scout", {"attributes": {"dexterity": "3D", "perception": "4D"}})
+	_assert_equal(arena.perception_pool_text(13), "4D", "initiative pool = the sheet's Perception")
+	arena.register_player(14, "Rookie")  # no sheet -> trainee fallback keeps the old fixed 3D
+	_assert_equal(arena.perception_pool_text(14), "3D", "no-sheet player keeps the 3D initiative fallback")
+	# Higher Perception acts first: a 6D-Perception shooter beats a 1D one in initiative order (seeded).
+	var iarena := CombatArena.new(_rules, data)
+	iarena.register_player(20, "Quick", {"attributes": {"dexterity": "3D", "perception": "6D"}})
+	iarena.register_player(21, "Slow", {"attributes": {"dexterity": "3D", "perception": "1D"}})
+	iarena.submit_fire_intent(20, {"aim": 0})
+	iarena.submit_fire_intent(21, {"aim": 0})
+	var ienv: Array = iarena.resolve_window(31337).get("envelopes", [])
+	_assert_true(ienv.size() == 2 and int((ienv[0] as Dictionary).get("shooter_id", 0)) == 20, "higher-Perception shooter resolves first in initiative order")
+
 	# D2: the equipped weapon drives the damage pool (armor catalog also supplied).
 	var weapons := {"blaster_pistol": {"damage": "4D"}, "heavy_blaster": {"damage": "5D"}}
 	var armors := {"blast_vest": {"protection_energy": "+1D", "coverage": ["torso"]}}
