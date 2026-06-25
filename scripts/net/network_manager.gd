@@ -562,7 +562,15 @@ func submit_chat(channel: String, text: String) -> void:
 		return
 	var message: Dictionary = result["message"]
 	print("[chat] %s" % ChatModel.format_line(message))
-	apply_chat.rpc(message)  # broadcast to all peers (including the sender)
+	# ooc is galaxy-wide; say/emote are LOCAL to the speaker's current zone (standard MMO
+	# proximity chat). Local delivery iterates same-zone peers (incl. the sender).
+	if channel == "ooc":
+		apply_chat.rpc(message)  # global broadcast
+	else:
+		var speaker_zone := String(_peer_zones.get(sender, _default_zone))
+		for pid in multiplayer.get_peers():
+			if String(_peer_zones.get(pid, _default_zone)) == speaker_zone:
+				apply_chat.rpc_id(pid, message)  # same-zone peers only
 
 func send_chat(channel: String, text: String) -> void:
 	if mode == Mode.CLIENT and connected:
