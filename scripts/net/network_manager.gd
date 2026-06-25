@@ -15,6 +15,7 @@ const WorldState := preload("res://scripts/net/world_state.gd")
 const CombatArena := preload("res://scripts/net/combat_arena.gd")
 const PersistenceStore := preload("res://scripts/net/persistence_store.gd")
 const ZoneState := preload("res://scripts/net/zone_state.gd")
+const Territory := preload("res://scripts/net/territory_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 
 const DEFAULT_PORT := 24555
@@ -24,6 +25,7 @@ const CLIENT_SEND_HZ := 20
 const COMBAT_WINDOW_SECONDS := 5.0
 const AUTOSAVE_SECONDS := 30.0
 const DIRECTOR_TICK_SECONDS := 30.0
+const RESOURCE_TICK_SECONDS := 60.0
 const CURRENT_ZONE := "tatooine.mos_eisley.spaceport"
 
 enum Mode { NONE, SERVER, CLIENT }
@@ -41,6 +43,7 @@ var state: WorldState = null          # server only
 var arena: CombatArena = null         # server only
 var store: PersistenceStore = null    # server only
 var zones: ZoneState = null           # server only (world-sim director)
+var territory: Territory = null       # server only (org claims + passive income)
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var last_snapshot: Dictionary = {}    # client view of the world
 var connected: bool = false           # client: handshake complete
@@ -50,6 +53,7 @@ var _client_accum := 0.0
 var _combat_accum := 0.0
 var _autosave_accum := 0.0
 var _director_accum := 0.0
+var _resource_accum := 0.0
 var _peer_characters := {}            # peer_id -> character_id (server)
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
@@ -78,6 +82,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 		{"republic": 55, "cis": 5, "hutt": 42, "independent": 25},
 		{"republic": 50, "cis": 5, "hutt": 40, "independent": 25},
 		"Mos Eisley Spaceport District")
+	territory = Territory.new()
 	_server_rng.randomize()
 	print("[net] server listening on port %d (combat window %.1fs)" % [port, combat_window_seconds])
 	server_started.emit(port)
@@ -246,6 +251,12 @@ func _physics_process(delta: float) -> void:
 				_director_accum = 0.0
 				if zones != null:
 					zones.director_tick()
+			_resource_accum += delta
+			if _resource_accum >= RESOURCE_TICK_SECONDS:
+				_resource_accum = 0.0
+				if territory != null and territory.claim_count() > 0:
+					var gained := territory.accrue_income()
+					print("[territory] resource tick: %d claims, org gains %s" % [territory.claim_count(), str(gained)])
 		Mode.CLIENT:
 			if not connected:
 				return

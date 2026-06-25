@@ -103,4 +103,6 @@ Invoke-GodotStep "Persistence smoke:" @("--headless", "--path", $projectRoot, "-
 
 Invoke-GodotStep "Zone state smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/zone_state_smoke.gd")
 
+Invoke-GodotStep "Territory smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/territory_smoke.gd")
+
 Write-Host "`nAll checks passed."

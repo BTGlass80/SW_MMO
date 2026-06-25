@@ -69,7 +69,7 @@ Additive/visual-only, so all existing collision + layout is intact. Both solo an
 worlds get it (shared builder). **Scales/orientations are first-pass — owner visual
 check worthwhile.** Building-model swaps are the follow-up A1b.
 
-### A1b — Building models + visual scale tuning  [STATUS: TODO] (visual polish, after M2)
+### A1b — Building models + visual scale tuning  [STATUS: DEFERRED — awaits owner visual check]
 Swap hab-block/tower/landing-pad procedural boxes for city-kit-industrial /
 space-station-kit / modular-buildings models, scaled to fit each existing collision
 footprint (measure model AABB after instancing, scale-to-fit, keep the box collision).
@@ -100,14 +100,14 @@ no LLM) that nudges influence and re-derives the tier. Expose the current tier i
 snapshot. Ground it in `docs/WORLD_SIM_DESIGN.md`.
 - Acceptance: `zone_state_smoke` (tier derivation + deterministic tick) green; full gate green.
 
-### 5. M2.1 — Territory claim scaffold  [STATUS: TODO]
+### 5. M2.1 — Territory claim scaffold  [STATUS: DONE]
 Pure `scripts/net/territory_model.gd` backed by `territory_claim.schema.json`: claim a
 node (precondition: influence threshold), accrue passive income on the Director tick.
 Ground it in `docs/FACTION_TERRITORY_DESIGN.md`. (The full Drop-6D siege loop is later
 and partly owner-gated — do NOT build siege durations/thresholds here.)
 - Acceptance: `territory_smoke` (claim precondition + income accrual) green; full gate green.
 
-### 6. P1 — Client polish  [STATUS: TODO]
+### 6. P1 — Client polish  [STATUS: DEFERRED — awaits owner visual check]
 In `net_world`: smoother remote-avatar interpolation, a clean combat-log panel, and a
 target-state readout. Presentation only.
 - Acceptance: import + runtime-launch checks clean; full gate green.
@@ -119,6 +119,7 @@ One-way extract era-appropriate vehicles/starships + droid models from read-only
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-24 M2.1 DONE — pure `scripts/net/territory_model.gd`: an org claims a node in a contested/lawless zone (precondition: influence >= foothold floor; secured not claimable; one claim per node), deriving influence tier (foothold/dominant/control) + member effective-security (lawless->contested upgrade); passive income accrues to org treasuries on a 60s resource tick, scaled by tier x risk (lawless > contested). `territory_smoke`. NetworkManager holds the registry + resource tick (no-op until the future org/claim command layer). Siege/Drop-6D deliberately NOT built (owner-gated). Full gate green (35 smokes).
 - 2026-06-24 M2.0 DONE — pure `scripts/net/zone_state.gd` world-sim director: per-zone faction influence (republic/cis/hutt/independent) with DERIVED alert level (lockdown/high_alert/standard/lax/underworld/unrest) + DERIVED effective security tier (hutt>=80 downgrades; crackdown upgrades contested), advanced by a slow deterministic 30s Director tick (decay->baseline, no LLM — owner decision left off). Server seeds a Mos Eisley zone and folds its posture into the snapshot; client shows an alert/security badge. `zone_state_smoke` + two-process check (`zone=high_alert/secured`). Full gate green (34 smokes).
 - 2026-06-24 M1.5 DONE — client `--name <name>` flows via `register_account(account_id, display_name)`; server applies it to the WorldState player name (snapshot nameplates), the CombatArena player name (`set_player_name` → combat envelopes), and persists it. Coverage in net_smoke (restore_player rename) + combat_arena_smoke (named shooter). Verified over the wire: a `--name "Mara Jade"` client shows `Mara Jade hit B1 ...` in the combat log. Full gate green.
 - 2026-06-24 M1.4 DONE — pure `scripts/net/persistence_store.gd` (JSON per character, schema-shaped per player_persistence.schema.json) + `persistence_smoke`. NetworkManager: `register_account` RPC loads/restores a character on login (position + CP/FP/wound), saves on disconnect + 30s autosave; client passes `--account`. Verified end-to-end: a client autowalked from spawn to z=-58, disconnected, and a reconnect with the same account was restored to (-20,1.2,-58). Full gate green.
