@@ -62,7 +62,13 @@ func _init() -> void:
 	_assert_equal(_cmd("/release n1"), ["release", "n1"], "/release <node> -> release command")
 	_assert_equal(_cmd("/who"), ["who", ""], "/who -> who command (no arg)")
 	_assert_equal(_cmd("/help"), ["help", ""], "/help -> help command (no arg)")
-	_assert_true(ChatModel.command_help().contains("/raise") and ChatModel.command_help().contains("/claim"), "command_help lists the game commands")
+	# command_help() must advertise EVERY game command AND every chat channel, so /help can't
+	# drift from the actual command/channel set as it grows (e.g. /who was added late, F27).
+	var help_text := ChatModel.command_help()
+	for gc in ChatModel.GAME_COMMANDS:
+		_assert_true(help_text.contains("/" + String(gc)), "command_help lists /%s" % gc)
+	for ch in ChatModel.CHANNELS:
+		_assert_true(help_text.contains("/" + String(ch)), "command_help lists the /%s channel" % ch)
 	_assert_equal(_cmd("/say hello"), ["", ""], "a chat channel is NOT a game command (falls through to chat)")
 	_assert_equal(_cmd("plain text"), ["", ""], "plain text is not a command")
 	_assert_equal(_cmd("/bogus x"), ["", ""], "an unknown slash word is not a game command")
