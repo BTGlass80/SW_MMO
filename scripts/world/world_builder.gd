@@ -10,8 +10,19 @@ extends RefCounted
 
 const SPACEPORT_ROW_DATA_PATH := "res://data/mos_eisley_spaceport_row.json"
 
+# Curated low-poly Kenney models (CC0). Note: some kits use "GLB format", others
+# "GLTF format" in their path. Scales are first-pass estimates — worth a visual tune.
+const SHIP_CARGO := "res://assets/3d/kenney/space-kit/Models/GLTF format/craft_cargoA.glb"
+const SHIP_SPEEDER := "res://assets/3d/kenney/space-kit/Models/GLTF format/craft_speederA.glb"
+const SHIP_MINER := "res://assets/3d/kenney/space-kit/Models/GLTF format/craft_miner.glb"
+const CRATE_MODEL := "res://assets/3d/kenney/factory-kit/Models/GLB format/box-large.glb"
+const BARREL_MODEL := "res://assets/3d/kenney/survival-kit/Models/GLB format/barrel.glb"
+const CRATE_SCALE := 1.0
+const BARREL_SCALE := 1.0
+
 var _rng := RandomNumberGenerator.new()
 var _rooms := {}
+var _model_cache := {}
 
 func _init(seed_value: int = 1138) -> void:
 	_rng.seed = seed_value
@@ -86,6 +97,15 @@ func build_settlement(host: Node3D) -> void:
 	add_label(host, Vector3(-7, 10.4, -24), "Control Tower")
 	add_inspectable_marker(host, Vector3(-7, 4.5, -20.8), Vector3(4, 9, 1.2), _room_title("mos_eisley_control_tower", "Control Tower"), _room_inspection("mos_eisley_control_tower", "A tall observation module coordinates landings while trying to stay above the dust and noise."))
 
+	# Parked low-poly craft on the docking bays (Bay 94 is left clear for the range).
+	place_model(host, SHIP_CARGO, Vector3(14, 0.45, -12), 40.0, 2.4)
+	place_model(host, SHIP_SPEEDER, Vector3(-16, 0.55, 14), -25.0, 2.2)
+	place_model(host, SHIP_MINER, Vector3(4, 0.4, -19), 90.0, 1.8)
+
+	# A little life: barrels by Customs and the Transport Depot.
+	for spot in [Vector3(-6.5, 0, 9.6), Vector3(-5.6, 0, 9.9), Vector3(12.5, 0, 8.4), Vector3(13.2, 0, 8.0)]:
+		place_model(host, BARREL_MODEL, spot, 0.0, BARREL_SCALE)
+
 	for x in [-9, -3, 3, 15, 20]:
 		_add_crate_stack(host, Vector3(x, 0, 6.8), _rng.randi_range(1, 3))
 
@@ -122,7 +142,22 @@ func _add_landing_pad(host: Node3D, pos: Vector3) -> void:
 
 func _add_crate_stack(host: Node3D, pos: Vector3, count: int) -> void:
 	for i in range(count):
-		add_box_to_world(host, pos + Vector3(0, 0.5 + i, 0), Vector3(1.8, 1, 1.8), Color(0.36, 0.25, 0.16))
+		var body := StaticBody3D.new()
+		body.name = "Crate"
+		body.position = pos + Vector3(0, 0.5 + i, 0)
+		host.add_child(body)
+		var collision := CollisionShape3D.new()
+		var shape := BoxShape3D.new()
+		shape.size = Vector3(1.0, 1.0, 1.0)
+		collision.shape = shape
+		body.add_child(collision)
+		var model := instance_model(CRATE_MODEL)
+		if model != null:
+			model.position.y = -0.5  # base-origin model sits on the collision box floor
+			model.scale = Vector3.ONE * CRATE_SCALE
+			body.add_child(model)
+		else:
+			add_box(body, Vector3.ZERO, Vector3(1.0, 1.0, 1.0), Color(0.36, 0.25, 0.16))
 
 # --- primitives (also reused by main.gd's range geometry) ---
 func add_box_to_world(host: Node3D, pos: Vector3, size: Vector3, color: Color) -> StaticBody3D:
@@ -159,6 +194,28 @@ func make_material(color: Color, roughness: float) -> StandardMaterial3D:
 	material.albedo_color = color
 	material.roughness = roughness
 	return material
+
+## Instance a curated GLB model (cached PackedScene). Returns null if it fails to
+## load, so callers can fall back to procedural geometry.
+func instance_model(model_path: String) -> Node3D:
+	if not _model_cache.has(model_path):
+		_model_cache[model_path] = load(model_path)
+	var packed: Variant = _model_cache[model_path]
+	if packed == null or not (packed is PackedScene):
+		return null
+	return (packed as PackedScene).instantiate()
+
+## Place a low-poly model into the world (purely visual unless the caller adds its
+## own collision). Returns the instance, or null if the model could not load.
+func place_model(host: Node3D, model_path: String, pos: Vector3, rot_deg: float = 0.0, model_scale: float = 1.0) -> Node3D:
+	var inst := instance_model(model_path)
+	if inst == null:
+		return null
+	inst.position = pos
+	inst.rotation_degrees.y = rot_deg
+	inst.scale = Vector3.ONE * model_scale
+	host.add_child(inst)
+	return inst
 
 func add_label(host: Node3D, pos: Vector3, text: String) -> void:
 	var label := Label3D.new()

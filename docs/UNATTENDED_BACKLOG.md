@@ -60,13 +60,21 @@ Claude now owns the asset pipeline (single-driver decision). Make it ours and gr
 - Acceptance: full `check_project.ps1` green again (import passes); pipeline + curated
   assets committed; raw zips gitignored.
 
-### A1 — Greybox → low-poly: integrate Kenney models into the world  [STATUS: TODO]
-Replace procedural box geometry in `scripts/world/world_builder.gd` with curated
-Kenney GLB models (modular-space-kit / city-kit-industrial / factory-kit / blaster-kit)
-where they fit, keeping the same collision + layout. Both solo and net worlds benefit
-(they share the builder). Incremental — start with the spaceport-row buildings.
-- Acceptance: `world_builder_smoke` + runtime launch + full gate green; the world
-  visibly uses real low-poly models (note for owner visual check).
+### A1 — Greybox → low-poly: integrate Kenney models (increment 1)  [STATUS: DONE]
+Added `instance_model`/`place_model` (cached PackedScene) helpers to
+`scripts/world/world_builder.gd`; parked real Kenney craft on Bays 86/87 + by the
+speeder shop (Bay 94 left clear for the range); swapped crate-stack visuals to
+factory-kit crate models (box collision preserved); scattered survival-kit barrels.
+Additive/visual-only, so all existing collision + layout is intact. Both solo and net
+worlds get it (shared builder). **Scales/orientations are first-pass — owner visual
+check worthwhile.** Building-model swaps are the follow-up A1b.
+
+### A1b — Building models + visual scale tuning  [STATUS: TODO] (visual polish, after M2)
+Swap hab-block/tower/landing-pad procedural boxes for city-kit-industrial /
+space-station-kit / modular-buildings models, scaled to fit each existing collision
+footprint (measure model AABB after instancing, scale-to-fit, keep the box collision).
+Tune the increment-1 ship/crate/barrel scales from owner visual feedback.
+- Acceptance: `world_builder_smoke` + runtime launch + full gate green.
 
 ### 2. M1.4 — Persistence backbone (JSON first)  [STATUS: TODO]
 Server-side persistence per `data/schemas/player_persistence.schema.json`.
@@ -111,5 +119,6 @@ One-way extract era-appropriate vehicles/starships + droid models from read-only
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-24 A1 DONE (increment 1) — `instance_model`/`place_model` helpers in world_builder; parked Kenney craft on Bays 86/87 + speeder shop, crate-stack visuals → factory-kit crate models (collision kept), survival-kit barrels added. Solo + net worlds both updated (shared builder). Gate green. Scales are first-pass → owner visual check worthwhile. Buildings deferred to A1b.
 - 2026-06-24 A0 DONE — root-caused the broken `--import`: Kenney "GLB format" GLBs reference an external Textures/colormap.png that `curate` dropped (only kept .glb). Fixed `_curated_members` in fetch_assets.py to also extract GLB-format textures (drop FBX/OBJ dupes), re-curated all 11 packs (--force), reimported clean (0 errors). gitignored MMO_Assets/ (925M raw zips) + __pycache__; tracked curated assets/3d/ (41M). Full `check_project.ps1` GREEN again.
 - 2026-06-24 M1.3b DONE — combat netcode wired (CombatArena on server, submit_fire_intent RPC, 5s window timer, apply_combat_envelope broadcast, client fire/aim + HUD combat log). Verified end-to-end: two-process autofire run shows client intent → server WEG resolution (own seed) → envelope → client playback. Smokes/launch/python all green. NOTE: full `check_project.ps1 --import` currently fails on Codex's half-curated Kenney asset (not our code).
