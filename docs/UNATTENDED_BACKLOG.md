@@ -155,8 +155,33 @@ spend CP to raise a skill; persist via the store. Client shows CP wallet + a rai
 - Acceptance: full gate green; two-process check: defeating the target awards CP and a
   spend raises a skill and persists.
 
+## Wave D — Combat uses the character sheet  (owner-chosen 2026-06-25; loop RESUMED)
+
+The owner's next pick: make chargen + progression actually change how you fight.
+Today `combat_arena.gd` uses one shared trainee pool (`_player_pools` from
+`data/prototype_combatants.json`) for every player. Drive each player's combat pools
+from their own persisted `sheet` instead.
+
+### D1 — Per-character combat pools  [STATUS: TODO] (next)
+- In `scripts/net/combat_arena.gd`, split pools into the shared TARGET side (stays
+  from combat_data) and a PER-PLAYER side built from the character sheet:
+  attacker_pool = DEX + blaster-skill bonus; player_dodge_pool = DEX + dodge bonus;
+  player_soak_pool = STR; damage_pool = a default starter blaster (no inventory yet —
+  note it); attacker_scale = character. Add `set_player_sheet(peer_id, sheet)` that
+  (re)builds that player's pools. Keep `register_player` WITHOUT a sheet using the
+  current trainee pools (backward-compatible; existing tests stay green).
+- In `scripts/net/network_manager.gd`, on `register_account` pass the loaded
+  character's `sheet` to the arena (`set_player_sheet`) so combat reflects real stats.
+- Extend `combat_arena_smoke`: a stronger sheet (higher DEX / blaster) yields a bigger
+  attacker pool than a weaker one; default (no sheet) still works.
+- Acceptance: full gate green; two-process check that a character who raised Blaster
+  fires with a larger shot pool (visible in the combat envelope's `shot_pool`).
+  KNOWN follow-up: damage still uses a default weapon until an inventory/equipment
+  system exists (a later slice / owner-scoped).
+
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-25 LOOP RESUMED — owner chose Wave D (combat uses the character sheet). Next: D1.
 - 2026-06-24 LOOP RESUMED — owner chose Wave C (Character Creation & Progression). Next: C1.
 - 2026-06-24 C4 DONE — wired CP earn/spend: disabling the shared target awards gameplay CP (`_award_cp` -> the character's persisted `sheet.cp_wallet`, COMBAT_CP_REWARD=3, tunable); `submit_skill_raise(skill)` RPC validates via progression_model against the char's wallet + governing attribute (from the skill catalog) + current bonus, applies the new bonus to the sheet, persists, and replies; server pushes the wallet via `apply_wallet`. Client shows a CP HUD + `K` raises Blaster (+`--raise-skill` headless). Verified over the wire: a new quickstart char earned CP from kills and raised `blaster 0D -> 0D+1 (cost 3)`, persisted. Full gate green (37 smokes). **WAVE C COMPLETE.**
 - 2026-06-24 LOOP STOP (Wave C complete) — backlog dry of unblocked, non-owner-decision, non-visual items. Remaining needs the owner: visual check (A1b/P1) + design calls (siege/Drop-6D tuning, Force/Jedi access, PvP-consent, LLM-Director-at-launch). Handed back.
