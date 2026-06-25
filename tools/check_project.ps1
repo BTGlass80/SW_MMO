@@ -109,4 +109,12 @@ Invoke-GodotStep "Chargen smoke:" @("--headless", "--path", $projectRoot, "--scr
 
 Invoke-GodotStep "Progression smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/progression_smoke.gd")
 
+Invoke-GodotStep "Derived stats model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/derived_stats_model_smoke.gd")
+
+Invoke-GodotStep "Reputation model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/reputation_model_smoke.gd")
+
+Invoke-GodotStep "Creature spawn model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_spawn_model_smoke.gd")
+
+Invoke-GodotStep "Vendor model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/vendor_model_smoke.gd")
+
 Write-Host "`nAll checks passed."

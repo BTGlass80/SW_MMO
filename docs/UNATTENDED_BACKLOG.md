@@ -243,7 +243,7 @@ All seed-driven via a passed rng; no nodes/sockets. **No** owner-gated death-PEN
 (loot/insurance) logic — recovery mechanics only.
 - Acceptance: `recovery_model_smoke` green & wired (seeded heal drops exactly one level; deterministic death roll; timers); full gate green.
 
-### E4 — Derived-stats model  [STATUS: OPEN] [PAR] [rules] [S]
+### E4 — Derived-stats model  [STATUS: DONE] [PAR] [rules] [S]
 New pure `scripts/rules/derived_stats_model.gd`: Move (from the unused `move` field in
 `species_clone_wars.json`), base soak (= Strength), Strength melee bonus, stun-knockout
 threshold (= Strength dice). Optionally surfaced via `character_sheet_model` `derived()`.
@@ -286,20 +286,20 @@ org rank + territory influence + zone security into allow/deny. Pure substrate f
 [HOT] E23 RPC layer. Siege transitions excluded (owner-gated).
 - Acceptance: `org_model_smoke` green & wired (faction/guild caps, rank-3 gate, secured-zone & influence-floor rejection); full gate green.
 
-### E10 — Creature spawn-table model  [STATUS: OPEN] [PAR] [world-sim] [M]
+### E10 — Creature spawn-table model  [STATUS: DONE] [PAR] [world-sim] [M]
 New pure `scripts/rules/creature_spawn_model.gd` consuming the orphaned
 `creatures_clone_wars.json`: given zone alert/security + a seed, deterministically pick a
 creature + pack size (pack_count range, hostile flag). Model only (no spawn/AI/nodes).
 - Acceptance: `creature_spawn_smoke` green & wired (deterministic selection, pack sizes in range, char_sheet/natural_attack present); full gate green.
 
-### E11 — NPC vendor / price model  [STATUS: OPEN] [PAR] [world-sim] [M]
+### E11 — NPC vendor / price model  [STATUS: DONE] [PAR] [world-sim] [M]
 New pure `scripts/rules/vendor_model.gd` consuming `weapons`/`armor` (filtered
 `vendor_stocked`) + the orphaned `droids_clone_wars.json` bargain tiers: deterministic
 price model with a Director `trade_boom`/`merchant_arrival` multiplier and droid bargain
 discount; list/quote functions; exclude contraband/faction-issued. Model only (no economy persistence).
 - Acceptance: `vendor_smoke` green & wired; full gate green.
 
-### E12 — Faction-reputation model  [STATUS: OPEN] [PAR] [world-sim] [S]
+### E12 — Faction-reputation model  [STATUS: DONE] [PAR] [world-sim] [S]
 New pure `scripts/rules/reputation_model.gd`: per-character rep on the four faction axes +
 Bounty Hunters' Guild, clamped apply/delta, derived standing tiers
 (hostile/neutral/friendly/allied), serializable to the `org` rep shape. Model only.
@@ -403,6 +403,7 @@ The spawn/sim foundation beyond headline-only events.
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-25 E4+E10+E11+E12 DONE (Wave E [PAR] batch 1) — authored concurrently via a Workflow (author→adversarial-review per slice, 8 agents), each writing its own NEW files on the main tree; integrated serially + ONE full gate. **E4** `scripts/rules/derived_stats_model.gd` (+smoke): WEG derived stats — move_for_species (species.move, default 10), base_soak/strength_melee_bonus (STR pool), melee_damage_pool (STR + weapon STR-bonus, pip-vs-dice aware), stun_knockout_threshold (STR dice count). **E12** `scripts/rules/reputation_model.gd` (+smoke): per-character rep on 5 signed axes (republic/cis/hutt/independent/bounty_hunters_guild) in [-100,100], non-mutating apply_delta (unknown axis no-op), standing_tier (hostile/neutral/friendly/allied), serialize. **E10** `scripts/rules/creature_spawn_model.gd` (+smoke): consumes the orphaned creatures JSON — seed-driven deterministic roll_spawn + candidate_keys biased by zone alert/security (dangerous→hostile, calm→non-hostile). **E11** `scripts/rules/vendor_model.gd` (+smoke): consumes weapons/armor (vendor_stocked filter) + droid bargain tiers — list_stock, bargain_discount (3%/die, clamp 0.5), quote (Director multiplier × bargain), director_multiplier_for_event. 4 new smokes wired into check_project.ps1; full gate GREEN (38 GDScript smokes + 7 python + import + launch). NOTE: the gate caught two `:=`-on-untyped-`rules`/`model` parse errors the static reviewers missed (E4 model line, E12 test) — fixed to explicit `: Dictionary`. No ledger rows (none of these are divergences). NOTE for future wiring: E12 rep is multi-axis SIGNED while player_persistence.schema.json org.faction_rep is a single unsigned scalar — a mapping decision deferred to the [HOT] wiring slice.
 - 2026-06-25 E1 DONE — docs-only reconcile (zero code touched). `MULTIPLAYER_FOUNDATION.md`: status header + Roadmap advanced (M1.3 DONE not "core/wiring next"; added M1.3b/M1.4/M1.5/M2.0–2.2/Wave C/Wave D, Wave E in-progress; Verified count → 34 smokes + 7 python). `NIGHTLY_HANDOFF.md`: deleted the self-contradicted "loop has STOPPED at Wave C" sentence (the same paragraph already records D1/D2/Wave E). `NEXT_DECISIONS.md`: ARCHIVED banner (its 3 questions long-resolved → Bay 94 / training-then-live targets / scripted one-way import). Stale "`--import` can fail on half-curated assets" caveat corrected in `UNATTENDED_LOOP.md` + this file's Guardrails (A0 colormap fix is live; full gate is the bar). Gate unaffected (markdown only) — baseline was green at HEAD 5ba15f0.
 - 2026-06-25 AUDIT + WAVE E STOCKED — a 5-reader Workflow audit (rules/netcode/world-sim+data/tests/docs, ~560k tokens) mapped the whole prototype and produced the **Wave E** queue above (E1–E27): parallel-safe pure-model + test + docs slices `[PAR]` and serialized hot-file feature slices `[HOT]`. Also wrote `docs/SESSION_HANDOFF.md` as the clean-session entry point (parallelization playbook + re-arm-the-loop contract, since the CronCreate driver is session-only and dies on session switch). Owner-gated forks re-confirmed parked (siege tuning, Force/Jedi access policy, PvP-consent, LLM-Director-at-launch, death-PENALTY numbers, CP award-rate tuning, visual A1b/P1). Loop now: push all day, batch `[PAR]` via Workflow, serialize `[HOT]`, scoped commits, full gate + two-process bar.
 - 2026-06-25 ASSET-PIPELINE NOTE (session 43c92aa7, the origin session A0 adopted) — Re-verified the full `check_project.ps1` GREEN on the current tree (import + 33 GDScript smokes + 7 python); A0's colormap-texture fix is live (796 texture PNGs under `assets/3d/`, incl. `GLB format/Textures/colormap.png`). Corrected `docs/ASSET_PIPELINE.md`: IP framing now matches [[mmo-direction]] #4 (private/fan project uses the SW setting/rules/names freely; only the *downloadable* art layer stays generic CC0) and the doc is session-agnostic per #5 (was framed as a "Codex handoff"). Added a new Claude memory `windows-tls-interception` documenting why `fetch_assets.py` relaxes `VERIFY_X509_STRICT` (HTTPS-scanning CA on this machine) — relevant to ANY future Python HTTPS here, not just assets. FYI: an earlier note of mine guessed the `--import` break was a half-curated `nature-kit`; that was WRONG — A0's root cause (external `colormap.png` dropped by GLB-only curate) is correct. (self-extended world-sim): `zone_state.gd` fires one deterministic event at a time per zone from a fixed 12-event menu (no LLM), `hash(tick:zone) % EVENT_CHANCE`, type chosen by dominant influence (republic/hutt/cis/neutral), exposed in `zone_summary` as `event`/`event_type`; client shows a NEWS HUD line + logs `[news] <headline>`. Added a `--director-tick` server override for fast headless verification. zone_state_smoke extended (fires <40 ticks, valid type, deterministic). Verified over the wire: a client received neutral Tatooine headlines (sandstorm/distress/krayt/trade-boom). Full gate green (37 smokes). Next self-extended: D3 inventory/equipment swap, or org/claim command layer + guard NPCs.
