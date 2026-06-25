@@ -9,6 +9,7 @@ extends RefCounted
 ## across the server's clients.
 
 const SPACEPORT_ROW_DATA_PATH := "res://data/mos_eisley_spaceport_row.json"
+const PROPS_DATA_PATH := "res://data/mos_eisley_props.json"
 
 # Curated low-poly Kenney models (CC0). Note: some kits use "GLB format", others
 # "GLTF format" in their path. Scales are first-pass estimates — worth a visual tune.
@@ -19,6 +20,17 @@ const CRATE_MODEL := "res://assets/3d/kenney/factory-kit/Models/GLB format/box-l
 const BARREL_MODEL := "res://assets/3d/kenney/survival-kit/Models/GLB format/barrel.glb"
 const CRATE_SCALE := 1.0
 const BARREL_SCALE := 1.0
+
+## Maps short model keys (used in mos_eisley_props.json) to the curated GLB path consts.
+## Declared after the path consts it references to avoid any forward-reference issues.
+## Add new keys here when new GLB consts are added above — keep in sync.
+const MODEL_KEY_MAP := {
+	"ship_cargo":    SHIP_CARGO,
+	"ship_speeder":  SHIP_SPEEDER,
+	"ship_miner":    SHIP_MINER,
+	"crate":         CRATE_MODEL,
+	"barrel":        BARREL_MODEL,
+}
 
 var _rng := RandomNumberGenerator.new()
 var _rooms := {}
@@ -109,6 +121,10 @@ func build_settlement(host: Node3D) -> void:
 	for x in [-9, -3, 3, 15, 20]:
 		_add_crate_stack(host, Vector3(x, 0, 6.8), _rng.randi_range(1, 3))
 
+	# Additive data-driven set-dressing — loaded from mos_eisley_props.json.
+	# No-op when the file is absent or malformed; never touches the hardcoded layout.
+	_place_data_props(host)
+
 func _add_bay_94_details(host: Node3D, center: Vector3) -> void:
 	add_box_to_world(host, center + Vector3(0, -0.18, 0), Vector3(10, 0.18, 10), Color(0.24, 0.25, 0.25))
 	add_box_to_world(host, center + Vector3(0, 0.42, 5.0), Vector3(4.5, 0.8, 0.45), Color(0.31, 0.28, 0.22))
@@ -116,6 +132,38 @@ func _add_bay_94_details(host: Node3D, center: Vector3) -> void:
 	add_box_to_world(host, center + Vector3(4.2, 0.6, -2.9), Vector3(1.1, 1.2, 1.1), Color(0.20, 0.21, 0.22))
 	add_box_to_world(host, center + Vector3(-2.8, 0.6, -4.2), Vector3(1.5, 1.2, 1.0), Color(0.35, 0.25, 0.16))
 	add_box_to_world(host, center + Vector3(2.7, 0.6, -4.0), Vector3(1.5, 1.2, 1.0), Color(0.35, 0.25, 0.16))
+
+## Load extra set-dressing props from PROPS_DATA_PATH and place them via place_model.
+## Deterministic: iterates array in order, no RNG. Graceful no-op on missing/malformed file.
+func _place_data_props(host: Node3D) -> void:
+	if not FileAccess.file_exists(PROPS_DATA_PATH):
+		return
+	var file := FileAccess.open(PROPS_DATA_PATH, FileAccess.READ)
+	if file == null:
+		return
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return
+	var props_array: Variant = parsed.get("props", null)
+	if typeof(props_array) != TYPE_ARRAY:
+		return
+	var props: Array = props_array
+	for entry in props:
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+		var model_key: String = String(entry.get("model", ""))
+		if not MODEL_KEY_MAP.has(model_key):
+			continue  # unknown key — skip gracefully
+		var model_path: String = MODEL_KEY_MAP[model_key]
+		var pos_dict: Variant = entry.get("pos", null)
+		if typeof(pos_dict) != TYPE_DICTIONARY:
+			continue
+		var px: float = float(pos_dict.get("x", 0.0))
+		var py: float = float(pos_dict.get("y", 0.0))
+		var pz: float = float(pos_dict.get("z", 0.0))
+		var rot: float = float(entry.get("rot_deg", 0.0))
+		var scale_val: float = float(entry.get("scale", 1.0))
+		place_model(host, model_path, Vector3(px, py, pz), rot, scale_val)
 
 func _add_hab_block(host: Node3D, pos: Vector3, size: Vector3, color: Color) -> void:
 	var body := StaticBody3D.new()

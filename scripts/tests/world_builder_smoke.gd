@@ -23,14 +23,41 @@ func _init() -> void:
 	var total := host.get_child_count()
 	_assert_true(total > 40, "settlement builds many nodes (got %d)" % total)
 
+	# --- E14: data-driven props assertions ---
+	# Verify mos_eisley_props.json is present, parses cleanly, and contains valid entries.
+	var props_json_ok: bool = false
+	var valid_prop_count: int = 0
+	var known_keys: Array = ["barrel", "crate", "ship_cargo", "ship_speeder", "ship_miner"]
+	if FileAccess.file_exists("res://data/mos_eisley_props.json"):
+		var pfile := FileAccess.open("res://data/mos_eisley_props.json", FileAccess.READ)
+		if pfile != null:
+			var pparsed: Variant = JSON.parse_string(pfile.get_as_text())
+			if typeof(pparsed) == TYPE_DICTIONARY:
+				var parr: Variant = pparsed.get("props", null)
+				if typeof(parr) == TYPE_ARRAY:
+					var parray: Array = parr
+					props_json_ok = parray.size() > 0
+					for entry in parray:
+						if typeof(entry) == TYPE_DICTIONARY:
+							var mkey: String = String(entry.get("model", ""))
+							if mkey in known_keys:
+								valid_prop_count += 1
+	_assert_true(props_json_ok, "mos_eisley_props.json parses with non-empty props array")
+	_assert_true(valid_prop_count >= 1, "props JSON has at least one entry with a known model key (got %d)" % valid_prop_count)
+	# Note: we do not assert that child_count grew by valid_prop_count here because
+	# place_model returns null gracefully when a GLB fails to load in headless mode
+	# (no renderer). Determinism across identical builds (below) is the binding guarantee.
+
 	# Determinism: a fresh builder with the same default seed produces the same count.
+	# This includes the additive _place_data_props call, so both worlds get the same
+	# prop layout from the JSON.
 	var host2 := Node3D.new()
 	get_root().add_child(host2)
 	var builder2 := WorldBuilder.new()
 	builder2.build_lighting(host2)
 	builder2.build_ground(host2)
 	builder2.build_settlement(host2)
-	_assert_equal(host2.get_child_count(), total, "settlement geometry is deterministic")
+	_assert_equal(host2.get_child_count(), total, "settlement geometry is deterministic (including data props)")
 
 	# Primitive helper returns a usable collidable body.
 	var probe := Node3D.new()

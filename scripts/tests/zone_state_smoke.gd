@@ -83,6 +83,48 @@ func _init() -> void:
 			dir2.director_tick()
 	_assert_equal(ea.zone_summary("z").get("event_type"), eb.zone_summary("z").get("event_type"), "event firing is deterministic")
 
+	# --- E13: event mechanical effects (bounded, surfaced in zone_summary) ---
+	for ev_type in ZoneState.EVENT_HEADLINES.keys():
+		var fx: Dictionary = ZoneState.effects_for_event(String(ev_type))
+		for k in ["smuggling", "vendor", "spawn", "perception"]:
+			_assert_true(fx.has(k), "event '%s' effect has '%s'" % [ev_type, k])
+			_assert_true(absi(int(fx[k])) <= 2, "event '%s' effect '%s' is bounded [-2,2]" % [ev_type, k])
+	_assert_equal(int(ZoneState.effects_for_event("republic_crackdown")["perception"]), 2, "crackdown raises perception")
+	_assert_equal(int(ZoneState.effects_for_event("republic_crackdown")["smuggling"]), -2, "crackdown suppresses smuggling")
+	_assert_equal(int(ZoneState.effects_for_event("trade_boom")["vendor"]), 2, "trade boom boosts vendor")
+	var neutral_fx: Dictionary = ZoneState.effects_for_event("nonexistent_event")
+	for k in ["smuggling", "vendor", "spawn", "perception"]:
+		_assert_equal(int(neutral_fx[k]), 0, "unknown-event effect '%s' is neutral" % k)
+	_assert_true(dir.zone_summary(ZONE).has("effects"), "zone summary carries effects")
+
+	# --- E13: active-event influence nudge, bounded by the foothold cap ---
+	# Foothold band (hutt 55): hutt events fire (hutt>=50) and nudge hutt up; baseline
+	# == start so DECAY never moves it (only the nudge does), isolating the nudge.
+	var nudge_dir: ZoneState = ZoneState.new()
+	nudge_dir.add_zone("nudge.zone", "lawless", {"republic": 10, "cis": 10, "hutt": 55, "independent": 10}, {"republic": 10, "cis": 10, "hutt": 55, "independent": 10})
+	for i in range(20):
+		nudge_dir.director_tick()
+	var nudged_hutt := int(nudge_dir.get_zone("nudge.zone").get("influence", {}).get("hutt", 0))
+	_assert_true(nudged_hutt > 55, "active hutt events nudge hutt above baseline (got %d)" % nudged_hutt)
+	_assert_true(nudged_hutt <= ZoneState.EVENT_INFLUENCE_CAP, "nudge is capped at the foothold cap (got %d)" % nudged_hutt)
+
+	# Above the cap (hutt 75): the nudge is suppressed -> a surge decays normally, no
+	# runaway (baseline == 75 so it simply stays put).
+	var capped_dir: ZoneState = ZoneState.new()
+	capped_dir.add_zone("capped.zone", "lawless", {"republic": 10, "cis": 10, "hutt": 75, "independent": 10}, {"republic": 10, "cis": 10, "hutt": 75, "independent": 10})
+	for i in range(15):
+		capped_dir.director_tick()
+	_assert_equal(int(capped_dir.get_zone("capped.zone").get("influence", {}).get("hutt", 0)), 75, "hutt above the cap is not nudged")
+
+	# The nudge is deterministic (same setup + ticks -> identical influence).
+	var na: ZoneState = ZoneState.new()
+	var nb: ZoneState = ZoneState.new()
+	for nd in [na, nb]:
+		nd.add_zone("z", "lawless", {"republic": 10, "cis": 10, "hutt": 55, "independent": 10}, {"republic": 10, "cis": 10, "hutt": 55, "independent": 10})
+		for i in range(12):
+			nd.director_tick()
+	_assert_equal(na.get_zone("z").get("influence"), nb.get_zone("z").get("influence"), "event nudge is deterministic")
+
 	_finish()
 
 func _finish() -> void:

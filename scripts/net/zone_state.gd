@@ -44,6 +44,41 @@ const EVENT_HEADLINES := {
 	"trade_boom": "Credits flow freely — a trade boom lifts every vendor on the row.",
 }
 
+# Mechanical effects of an active event (E13). Bounded (-2..+2), owner-tunable signed
+# modifiers OTHER systems read: smuggling success, vendor pricing/stock, creature
+# spawns, NPC perception/patrol density. 0 = neutral. Surfaced in zone_summary
+# ["effects"]; events were headline-only before this.
+const NEUTRAL_EFFECTS := {"smuggling": 0, "vendor": 0, "spawn": 0, "perception": 0}
+const EVENT_EFFECTS := {
+	"republic_crackdown": {"smuggling": -2, "vendor": -1, "spawn": 1, "perception": 2},
+	"republic_checkpoint": {"smuggling": -1, "vendor": 0, "spawn": 0, "perception": 1},
+	"bounty_surge": {"smuggling": 0, "vendor": 0, "spawn": 2, "perception": 1},
+	"merchant_arrival": {"smuggling": 1, "vendor": 2, "spawn": 1, "perception": 0},
+	"sandstorm": {"smuggling": 1, "vendor": -1, "spawn": -2, "perception": -2},
+	"cantina_brawl": {"smuggling": 0, "vendor": 0, "spawn": 1, "perception": -1},
+	"distress_signal": {"smuggling": 0, "vendor": 0, "spawn": 1, "perception": 0},
+	"pirate_surge": {"smuggling": 2, "vendor": -1, "spawn": 2, "perception": -1},
+	"hutt_auction": {"smuggling": 2, "vendor": 1, "spawn": 1, "perception": -1},
+	"krayt_sighting": {"smuggling": 0, "vendor": 0, "spawn": 1, "perception": 0},
+	"cis_propaganda": {"smuggling": 1, "vendor": 0, "spawn": 0, "perception": -1},
+	"trade_boom": {"smuggling": 1, "vendor": 2, "spawn": 1, "perception": 0},
+}
+
+# The documented event->influence causal loop (E13): an active event nudges its
+# faction's influence +1 per slow tick, but ONLY up to a FOOTHOLD cap one step below
+# the lockdown/underworld threshold (70). Events build presence; a true lockdown /
+# underworld / Hutt-surge stays player- and territory-driven (and transient) — so a
+# surge already above the cap is left to decay normally. Clamped, deterministic.
+const EVENT_INFLUENCE_NUDGE := {
+	"republic_crackdown": "republic",
+	"republic_checkpoint": "republic",
+	"cis_propaganda": "cis",
+	"pirate_surge": "hutt",
+	"bounty_surge": "hutt",
+	"hutt_auction": "hutt",
+}
+const EVENT_INFLUENCE_CAP := LOCKDOWN_REPUBLIC - 1   # 69 (one below lockdown/underworld)
+
 var zones: Dictionary = {}   # zone_id -> zone dict
 var tick_index: int = 0
 
@@ -107,6 +142,12 @@ func director_tick() -> void:
 			if roll < EVENT_CHANCE:
 				still_active.append(_make_event(zone, zone_id, roll))
 		zone["active_events"] = still_active
+		# Active events nudge their faction's influence toward a foothold (E13 causal
+		# loop), capped at EVENT_INFLUENCE_CAP so a surge above it just decays.
+		for ev in still_active:
+			var nudge_axis := String(EVENT_INFLUENCE_NUDGE.get(String((ev as Dictionary).get("type", "")), ""))
+			if nudge_axis != "" and int(inf.get(nudge_axis, 0)) < EVENT_INFLUENCE_CAP:
+				inf[nudge_axis] = clampi(int(inf.get(nudge_axis, 0)) + 1, 0, EVENT_INFLUENCE_CAP)
 		zone["tick"] = tick_index
 		_recompute(zone)
 
@@ -131,8 +172,14 @@ func zone_summary(zone_id: String) -> Dictionary:
 		"influence": (zone.get("influence", {}) as Dictionary).duplicate(),
 		"event": String(_latest_event(zone_id).get("headline", "")),
 		"event_type": String(_latest_event(zone_id).get("type", "")),
+		"effects": effects_for_event(String(_latest_event(zone_id).get("type", ""))),
 		"tick": int(zone.get("tick", 0)),
 	}
+
+## Bounded mechanical modifiers for an event type (E13). Returns a COPY of the
+## NEUTRAL_EFFECTS shape (all 0) for an unknown/absent type. Owner-tunable.
+static func effects_for_event(event_type: String) -> Dictionary:
+	return (EVENT_EFFECTS.get(event_type, NEUTRAL_EFFECTS) as Dictionary).duplicate()
 
 func _latest_event(zone_id: String) -> Dictionary:
 	var events: Array = (zones.get(zone_id, {}) as Dictionary).get("active_events", [])
