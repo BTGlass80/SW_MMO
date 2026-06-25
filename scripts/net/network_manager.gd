@@ -1029,8 +1029,12 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 	# condition readout that reflects combat damage, natural recovery, and First Aid). Pure
 	# presentation data surfaced from the live combat state — no new mechanic.
 	if arena != null and peer_id != 0 and arena.has_player(peer_id):
-		var severity := int((arena.player_state(peer_id) as Dictionary).get("player_wound_severity", 0))
-		snap["you"] = {"wound": PersistenceStore.wound_state_for_severity(severity)}
+		var ps: Dictionary = arena.player_state(peer_id)
+		snap["you"] = {
+			"wound": PersistenceStore.wound_state_for_severity(int(ps.get("player_wound_severity", 0))),
+			"cp": int(ps.get("player_character_points", 0)),  # in-combat Character Points (C key, F5)
+			"fp": int(ps.get("player_force_points", 0)),       # Force Points (F key, F5)
+		}
 	return snap
 
 # Seed the server's zone roster from data/zones_clone_wars.json (the Director ticks

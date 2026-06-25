@@ -79,6 +79,8 @@ var _condition_label: Label
 var _last_condition := "healthy"   # so we log condition CHANGES only
 var _org_label: Label
 var _last_org_line := ""           # so we log org/territory CHANGES only
+var _boost_label: Label
+var _last_boost := ""              # so we log combat CP/FP CHANGES only
 var _combat_log: Label
 var _combat_lines: Array[String] = []
 var _zone_label: Label
@@ -398,7 +400,9 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 	if headline != "" and headline != _last_news:
 		_last_news = headline
 		print("[news] %s" % headline)
-	_update_condition(String((snapshot.get("you", {}) as Dictionary).get("wound", "healthy")))
+	var you: Dictionary = snapshot.get("you", {})
+	_update_condition(String(you.get("wound", "healthy")))
+	_update_boost(int(you.get("cp", 0)), int(you.get("fp", 0)))
 	_update_org(snapshot.get("territory", {}))
 
 func _find_player(peer_id: int) -> Dictionary:
@@ -568,6 +572,13 @@ func _build_hud() -> void:
 	_condition_label.modulate = _condition_color("healthy")
 	layer.add_child(_condition_label)
 
+	_boost_label = Label.new()
+	_boost_label.position = Vector2(760, 100)
+	_boost_label.text = "Boost (C/F): - CP · - FP"
+	_boost_label.add_theme_font_size_override("font_size", 14)
+	_boost_label.modulate = Color(0.10, 0.10, 0.13)
+	layer.add_child(_boost_label)
+
 	_org_label = Label.new()
 	_org_label.position = Vector2(760, 80)
 	_org_label.text = ""
@@ -663,6 +674,17 @@ func _update_condition(wound: String) -> void:
 	if wound != _last_condition:
 		_last_condition = wound
 		print("[condition] you=%s" % wound)
+
+# Update the in-combat Character-Point / Force-Point pool readout (the resource the C/F keys
+# spend, F5) from the snapshot's "you" block, so a player can see how much they can spend
+# before firing. Distinct from the progression CP wallet shown by the K-key wallet label.
+func _update_boost(cp: int, fp: int) -> void:
+	if _boost_label != null:
+		_boost_label.text = "Boost (C/F): %d CP · %d FP" % [cp, fp]
+	var line := "%d/%d" % [cp, fp]
+	if line != _last_boost:
+		_last_boost = line
+		print("[boost] cp=%d fp=%d" % [cp, fp])
 
 # Update the org / territory readout from the snapshot's per-peer "territory" block (E23).
 # Shows the player's org, its treasury, and how many nodes it holds in the CURRENT zone
