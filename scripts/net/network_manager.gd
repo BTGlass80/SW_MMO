@@ -20,12 +20,14 @@ const Chargen := preload("res://scripts/rules/chargen_model.gd")
 const Progression := preload("res://scripts/rules/progression_model.gd")
 const Equipment := preload("res://scripts/rules/equipment_model.gd")
 const OrgModel := preload("res://scripts/net/org_model.gd")
+const PendingInfluence := preload("res://scripts/net/pending_influence_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
 const WEAPONS_DATA_PATH := "res://data/weapons_clone_wars.json"
 const ARMOR_DATA_PATH := "res://data/armor_clone_wars.json"
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
+const DISABLE_INFLUENCE := 5  # Director zone-influence a disable feeds to the shooter's faction axis (owner-tunable)
 
 const DEFAULT_PORT := 24555
 const MAX_CLIENTS := 32
@@ -59,6 +61,7 @@ var store: PersistenceStore = null    # server only
 var zones: ZoneState = null           # server only (world-sim director)
 var territory: Territory = null       # server only (org claims + passive income)
 var _org_model = null                 # server only (OrgModel instance: claim validation)
+var _pending_model = null             # server only (PendingInfluence instance: E24 loop)
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var director_tick_seconds: float = DIRECTOR_TICK_SECONDS
 var resource_tick_seconds: float = RESOURCE_TICK_SECONDS
@@ -81,7 +84,9 @@ var _peer_characters := {}            # peer_id -> character_id (server)
 var _peer_zones := {}                 # peer_id -> current_zone_id (server)
 var _default_zone: String = CURRENT_ZONE  # server: zone new peers start in
 var _peer_orgs := {}                  # peer_id -> org_id (server; for snapshot treasury)
+var _peer_axes := {}                  # peer_id -> faction_axis (server; E24 influence)
 var _territory_influence := {}        # org_id -> {zone_id -> int} (server; territory infl)
+var _pending_zone_influence := []     # E8/E24: [{zone_id, axis, delta}] accrued from play
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
@@ -111,6 +116,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	_load_zones()  # seed the multi-zone roster (the Director ticks them all)
 	territory = Territory.new()
 	_org_model = OrgModel.new()
+	_pending_model = PendingInfluence.new()
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
@@ -175,6 +181,7 @@ func _on_peer_disconnected(id: int) -> void:
 	_peer_characters.erase(id)
 	_peer_zones.erase(id)
 	_peer_orgs.erase(id)
+	_peer_axes.erase(id)
 	print("[net] peer %d left (players=%d)" % [id, state.player_count()])
 	player_left.emit(id)
 
@@ -274,6 +281,7 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 			_set_territory_influence(String(build_org["faction_id"]), String(_peer_zones.get(sender, _default_zone)), seed_infl)
 	if record.has("org") and typeof(record["org"]) == TYPE_DICTIONARY:
 		_peer_orgs[sender] = String((record["org"] as Dictionary).get("faction_id", ""))
+		_peer_axes[sender] = String((record["org"] as Dictionary).get("faction_axis", ""))
 	var pos := PersistenceStore.record_pos(record, WorldState.SPAWN_POINT)
 	var yaw := PersistenceStore.record_yaw(record, 0.0)
 	state.restore_player(sender, pos, yaw, chosen_name)
@@ -562,6 +570,40 @@ func _award_cp(peer_id: int, track: String, amount: int) -> void:
 	print("[cp] peer %d +%d %s (wallet g=%d r=%d)" % [peer_id, amount, track, int(wallet.get("gameplay_cp", 0)), int(wallet.get("rp_cp", 0))])
 	apply_wallet.rpc_id(peer_id, wallet)
 
+# E24: accrue Director zone-influence from a player action onto the player's faction
+# axis in their current zone. Buffered in _pending_zone_influence (the E8 model) and
+# folded into the live zone at the next Director tick. No-op when the player has no axis.
+func _accrue_zone_influence(peer_id: int, delta: int) -> void:
+	if zones == null:
+		return
+	var axis := String(_peer_axes.get(peer_id, ""))
+	if axis == "":
+		return
+	var zone_id := String(_peer_zones.get(peer_id, _default_zone))
+	_pending_zone_influence = _pending_model.add_pending(_pending_zone_influence, zone_id, axis, delta)
+
+# E24: fold the accrued per-zone influence into the live zones (clamped 0-100) and clear
+# it. Called just before the Director tick so player activity shifts faction influence,
+# which then decays / re-derives normally. Logs the resulting posture.
+func _fold_pending_influence() -> void:
+	if zones == null or _pending_zone_influence.is_empty():
+		return
+	var zone_ids := {}
+	for entry in _pending_zone_influence:
+		zone_ids[String((entry as Dictionary).get("zone_id", ""))] = true
+	for zid in zone_ids.keys():
+		var folded: Dictionary = _pending_model.fold_and_clear(_pending_zone_influence, String(zid))
+		_pending_zone_influence = folded["remaining"]
+		var deltas: Dictionary = folded["deltas"]
+		if deltas.is_empty() or not zones.has_zone(String(zid)):
+			continue
+		for axis in deltas:
+			zones.apply_influence_delta(String(zid), String(axis), int(deltas[axis]))
+		var z: Dictionary = zones.get_zone(String(zid))
+		print("[influence] zone %s +%s -> influence %s, alert %s, security %s" % [
+			String(zid), str(deltas), str(z.get("influence", {})),
+			String(z.get("alert_level", "")), zones.effective_security(String(zid))])
+
 func _attribute_for_skill(skill: String) -> String:
 	return String(_skill_attr.get(skill, "dexterity"))
 
@@ -606,6 +648,7 @@ func _physics_process(delta: float) -> void:
 			if _director_accum >= director_tick_seconds:
 				_director_accum = 0.0
 				if zones != null:
+					_fold_pending_influence()  # E24: fold player activity into influence first
 					zones.director_tick()
 			_resource_accum += delta
 			if _resource_accum >= resource_tick_seconds:
@@ -691,7 +734,9 @@ func _resolve_combat_window() -> void:
 	])
 	if bool(result.get("target_disabled", false)):
 		for envelope in envelopes:
-			_award_cp(int(envelope.get("shooter_id", 0)), "gameplay", COMBAT_CP_REWARD)
+			var shooter := int(envelope.get("shooter_id", 0))
+			_award_cp(shooter, "gameplay", COMBAT_CP_REWARD)
+			_accrue_zone_influence(shooter, DISABLE_INFLUENCE)  # E24: play feeds faction influence
 		arena.reset_target()
 		print("[combat] target disabled — respawned")
 
