@@ -17,6 +17,10 @@ const ActionWindowModel := preload("res://scripts/rules/action_window_model.gd")
 const CombatEventEnvelopeModel := preload("res://scripts/rules/combat_event_envelope_model.gd")
 const DerivedStats := preload("res://scripts/rules/derived_stats_model.gd")
 const DISABLED_SEVERITY := 3
+# DIV-0016: non-lethal sparring ceiling. The shared training target's return fire can stun(1) or
+# wound(2) a player but NEVER incapacitate(3+) — keeping them out of the owner-gated death/respawn
+# band (DIV-0006) and inside the healable, self-recoverable tiers (DIV-0012/0013).
+const SPARRING_MAX_SEVERITY := 2
 
 var _rules: Object
 var _ground := GroundCombatModel.new()
@@ -59,6 +63,9 @@ func _build_pools(combat_data: Dictionary, target_id: String) -> void:
 		"target_damage_pool": _rules.parse_pool(String(target_weapon.get("damage", "3D"))),
 		"target_armor": {},
 		"target_scale": String(target.get("scale", "character")),
+		# DIV-0016: a sparring target (stun_return_fire:false) returns fire as a REAL wound (capped
+		# at SPARRING_MAX_SEVERITY in resolve_window); every other target defaults to pure WEG stun.
+		"target_stun_mode": bool(target.get("stun_return_fire", true)),
 	}
 	# Fallback player side (the trainee) used when a player has no character sheet.
 	_default_player_pools = {
@@ -222,7 +229,13 @@ func resolve_window(seed_base: int) -> Dictionary:
 			window_for_shooter,
 			exchange_seed
 		)
-		record["state"] = result.get("state", record["state"])
+		# DIV-0016: clamp the player's resulting wound to the non-lethal sparring ceiling at the SINGLE
+		# server-side chokepoint. record["state"] (player_state(peer)) is the sole accessor every
+		# downstream surface reads — snapshot you.wound (F9) + per-player nameplate wound (F17) +
+		# persistence. mini() can only LOWER a return-fire result to the ceiling, never heal a wound.
+		var next_pstate: Dictionary = result.get("state", record["state"])
+		next_pstate["player_wound_severity"] = mini(int(next_pstate.get("player_wound_severity", 0)), SPARRING_MAX_SEVERITY)
+		record["state"] = next_pstate
 		_target_state = result.get("target_state", _target_state)
 		var envelope: Dictionary = CombatEventEnvelopeModel.envelope_for_result(result, "ground_range", "local")
 		envelope["shooter_id"] = peer_id

@@ -123,6 +123,52 @@ func _init() -> void:
 	inc.submit_fire_intent(12, {"aim": 3})
 	_assert_equal(inc.pending_intent_count(), 1, "a wounded (can-act) shooter's intent IS queued")
 
+	# DIV-0016: NON-LETHAL SPARRING DAMAGE. A sparring target (stun_return_fire:false) returns fire as
+	# a REAL wound, but combat_arena clamps the player at SPARRING_MAX_SEVERITY=2 (Wounded) -- never
+	# incapacitated(3+). Lights up the wound/recovery/First-Aid loop with no death/respawn. Low-soak
+	# trainee (STR 1D) + weak attack so return fire reliably wounds; reset the target each window so
+	# the sparring remote stays alive and keeps returning fire. All seeds fixed (no randomize).
+	var spar := CombatArena.new(_rules, _sparring_data())
+	spar.register_player(2, "Trainee", {"attributes": {"dexterity": "2D", "strength": "1D"}, "skills": {}})
+	var spar_max := 0
+	var spar_exceeded := false
+	for w in range(60):
+		spar.reset_target()
+		spar.submit_fire_intent(2, {"aim": 0})
+		spar.resolve_window(5000 + w)
+		var psev := int(spar.player_state(2).get("player_wound_severity", 0))
+		spar_max = maxi(spar_max, psev)
+		if psev > CombatArena.SPARRING_MAX_SEVERITY:
+			spar_exceeded = true
+	_assert_true(not spar_exceeded, "sparring target NEVER pushes the player past Wounded(2) -- no incapacitation/death")
+	_assert_true(spar_max >= 2, "sparring return fire actually inflicts a real Wounded(2) (the data-driven non-stun path + the cap are both load-bearing, not a no-op)")
+	_assert_true(spar_max < CombatArena.DISABLED_SEVERITY, "the sparring-wounded player is never 'out' (severity stayed below DISABLED_SEVERITY)")
+	# Still able to act after being sparring-wounded (the cap kept them below the can't-act tier).
+	spar.submit_fire_intent(2, {"aim": 0})
+	_assert_equal(spar.pending_intent_count(), 1, "a sparring-wounded player can still queue a fire intent")
+
+	# Clamp only LOWERS: a player already at the ceiling stays exactly 2 after a sparring window
+	# (model maxi never heals below 2; arena mini never raises above 2).
+	var capped := CombatArena.new(_rules, _sparring_data())
+	capped.register_player(2, "Capped", {"attributes": {"dexterity": "2D", "strength": "1D"}, "skills": {}})
+	capped.set_player_combat(2, {"player_wound_severity": 2})
+	capped.reset_target()
+	capped.submit_fire_intent(2, {"aim": 0})
+	capped.resolve_window(7000)
+	_assert_equal(int(capped.player_state(2).get("player_wound_severity", 0)), 2, "the ceiling clamp holds a wounded player at exactly 2")
+
+	# Stun-default regression: a target WITHOUT stun_return_fire (defaults true) returns PURE WEG stun
+	# -- the player can never exceed Stunned(1), exactly as before this change.
+	var stun := CombatArena.new(_rules, _combat_data())
+	stun.register_player(2, "StunTrainee", {"attributes": {"dexterity": "2D", "strength": "1D"}, "skills": {}})
+	var stun_max := 0
+	for w in range(40):
+		stun.reset_target()
+		stun.submit_fire_intent(2, {"aim": 0})
+		stun.resolve_window(8000 + w)
+		stun_max = maxi(stun_max, int(stun.player_state(2).get("player_wound_severity", 0)))
+	_assert_true(stun_max <= 1, "default (no stun_return_fire) return fire is pure WEG stun -- player never exceeds Stunned(1)")
+
 	if _rules.has_method("free"):
 		_rules.free()
 	_finish()
@@ -147,6 +193,14 @@ func _combat_data() -> Dictionary:
 			},
 		},
 	}
+
+## DIV-0016: a copy of the combat data whose training target returns fire as a REAL (arena-capped)
+## wound instead of pure stun. Isolated from _combat_data() so the existing tests (which expect the
+## stun-default behavior) are untouched.
+func _sparring_data() -> Dictionary:
+	var d := _combat_data()
+	((d["targets"] as Dictionary)["b1_training_silhouette"] as Dictionary)["stun_return_fire"] = false
+	return d
 
 func _finish() -> void:
 	if _failures.is_empty():

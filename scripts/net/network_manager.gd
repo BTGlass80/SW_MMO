@@ -560,7 +560,7 @@ func submit_heal(target_id: int) -> void:
 		heal_result.rpc_id(healer, {"ok": false, "reason": "no_target"})
 		return
 	var t_sheet: Dictionary = t_record.get("sheet", {})
-	var level := String(t_sheet.get("wound_state", "healthy"))
+	var level := _live_wound_state(target_id, t_sheet)  # DIV-0016: treat the LIVE combat wound, not the autosave-lagged sheet
 	if level == "healthy":
 		heal_result.rpc_id(healer, {"ok": false, "reason": "no_wound", "target_id": target_id})
 		return
@@ -940,7 +940,7 @@ func _recover_wounds() -> void:
 		if record.is_empty():
 			continue
 		var sheet: Dictionary = record.get("sheet", {})
-		var level := String(sheet.get("wound_state", "healthy"))
+		var level := _live_wound_state(peer_id, sheet)  # DIV-0016: recover LIVE combat wounds too, not just the autosave-lagged sheet
 		if not HEALABLE_WOUND_LEVELS.has(level):
 			continue
 		var strength_code := String((sheet.get("attributes", {}) as Dictionary).get("strength", "2D"))
@@ -958,6 +958,17 @@ func _recover_wounds() -> void:
 		print("[recovery] peer %d %s healed %s -> %s (Strength %s rolled %d vs %d)" % [
 			peer_id, character_id, level, new_level, strength_code,
 			int(result.get("roll_total", 0)), int(result.get("difficulty", 0))])
+
+# DIV-0016: the player's CURRENT wound level. During play the LIVE wound lives in the arena
+# (player_wound_severity — combat damage, recovery, First Aid all flow through it; the condition HUD
+# + nameplate + you.wound already read it). sheet.wound_state only catches up on autosave (~30s), so
+# a freshly combat-wounded player would otherwise read 'healthy' to First Aid + natural recovery and
+# be untreatable. Prefer the arena (the live truth, seeded from the sheet at login, persisted back on
+# save); fall back to the sheet for any character not currently in the arena.
+func _live_wound_state(peer_id: int, sheet: Dictionary) -> String:
+	if arena != null and arena.has_player(peer_id):
+		return PersistenceStore.wound_state_for_severity(int((arena.player_state(peer_id) as Dictionary).get("player_wound_severity", 0)))
+	return String(sheet.get("wound_state", "healthy"))
 
 func _attribute_for_skill(skill: String) -> String:
 	return String(_skill_attr.get(skill, "dexterity"))

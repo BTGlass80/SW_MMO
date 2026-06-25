@@ -302,7 +302,12 @@ func _resolve_return_fire(rules: Object, state: Dictionary, pools: Dictionary, d
 	var soak_cp_spent := _consume_cp(state, "pending_soak_cp")
 	var target_damage_pool: Dictionary = pools.get("target_damage_pool", pools["damage_pool"])
 	var damage_pool: Dictionary = rules.apply_scale_to_damage_pool(target_damage_pool, target_scale, player_scale)
-	var damage: Dictionary = rules.resolve_damage(damage_pool, player_soak_pool, rng, true, soak_cp_spent)
+	# DIV-0016: incoming-fire lethality is data-driven. DEFAULT true = pure WEG STUN (incoming fire
+	# can only Stun, sev<=1) — unchanged for every existing caller/path. A sparring target sets
+	# target_stun_mode=false so its fire can roll a real wound (the arena then caps it at
+	# SPARRING_MAX_SEVERITY so it stays non-lethal).
+	var stun_mode := bool(pools.get("target_stun_mode", true))
+	var damage: Dictionary = rules.resolve_damage(damage_pool, player_soak_pool, rng, stun_mode, soak_cp_spent)
 	var wound: Dictionary = damage["wound"]
 	var armor_state := {
 		"player_armor_quality_pips": player_armor_quality_pips,
@@ -464,7 +469,12 @@ func _resolve_single_incoming_attack(rules: Object, state: Dictionary, pools: Di
 	var soak_cp_spent := _consume_cp(state, "pending_soak_cp")
 	var target_damage_pool: Dictionary = pools.get("target_damage_pool", pools["damage_pool"])
 	var damage_pool: Dictionary = rules.apply_scale_to_damage_pool(target_damage_pool, target_scale, player_scale)
-	var damage: Dictionary = rules.resolve_damage(damage_pool, player_soak_pool, rng, true, soak_cp_spent)
+	# DIV-0016: incoming-fire lethality is data-driven. DEFAULT true = pure WEG STUN (incoming fire
+	# can only Stun, sev<=1) — unchanged for every existing caller/path. A sparring target sets
+	# target_stun_mode=false so its fire can roll a real wound (the arena then caps it at
+	# SPARRING_MAX_SEVERITY so it stays non-lethal).
+	var stun_mode := bool(pools.get("target_stun_mode", true))
+	var damage: Dictionary = rules.resolve_damage(damage_pool, player_soak_pool, rng, stun_mode, soak_cp_spent)
 	var wound: Dictionary = damage["wound"]
 	var armor_state := {
 		"player_armor_quality_pips": player_armor_quality_pips,

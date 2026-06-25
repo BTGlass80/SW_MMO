@@ -53,7 +53,7 @@ F32 commit, trust the code + `docs/UNATTENDED_BACKLOG.md` Log over this file.
   - **Robustness/guards (F4–F6, F10, F14, F21):** record-cache eviction on disconnect; FIVE [HOT]
     composition guards (claims/auth/First Aid/zone/chat) locked into the gate.
 - **Green bar (current truth):** the **full** `tools/check_project.ps1` passes — **59
-  GDScript smokes** + 7 python + import + launch (green at every commit). DIV-0001..0015.
+  GDScript smokes** + 7 python + import + launch (green at every commit). DIV-0001..0016.
 - **STATUS: Wave E + the F1–F32 follow-ups are DONE; the prototype is a playable, populated,
   traversable multi-zone MMO** (chargen/progression → species-paced movement → combat (CP/FP) →
   full visible medical loop → equip → travel/presence → org claims+treasury → say/ooc/org chat +
@@ -71,7 +71,7 @@ F32 commit, trust the code + `docs/UNATTENDED_BACKLOG.md` Log over this file.
 ## 1. First actions (do these now, in order)
 
 1. **Orient:** read `CLAUDE.md`, this file, and `docs/UNATTENDED_BACKLOG.md` (the Wave E
-   queue + Guardrails + the F1–F32 Log). Skim `docs/DIVERGENCE_LEDGER.md` (DIV-0001..0015).
+   queue + Guardrails + the F1–F44 Log). Skim `docs/DIVERGENCE_LEDGER.md` (DIV-0001..0016).
 2. **Confirm the baseline is green** before changing anything:
    ```powershell
    .\tools\check_project.ps1 -GodotConsole "C:\Godot 4\Godot_v4.6.3-stable_win64_console.exe"
@@ -214,13 +214,15 @@ Each owner decision below makes a chunk of **already-built, already-gate-tested*
 **reachable in live play**. Highest leverage first. (This is a prioritization aid — the loop
 does NOT pre-decide any of these.)
 
-- **Player-damage path** (needs: **death-PENALTY numbers** + a respawn flow; DIV-0006 shape
-  already decided — and/or **PvP-consent**, and/or hostile-NPC wiring) — **the single biggest
-  unlock.** Nothing damages players today (the training dummy doesn't return fire), so the ENTIRE
-  wound/medical loop is built but LATENT: `wound_ladder_model` (E2), `recovery_model` + natural
-  recovery (E3/F7), First Aid by a medic (F8), the incapacitated/dead "out" state — can't act
-  (F31) or move (F32), the condition HUD (F9), and wound nameplates (F17). Decide how a player
-  takes damage + what death costs/where they respawn → all of that goes live at once.
+- **Player-damage path** — ✅ **PARTIALLY UNLOCKED (F44, owner-directed 2026-06-25).** The
+  NON-LETHAL portion is now LIVE: the B1 training remote returns real fire capped at Wounded(2)
+  (DIV-0016), so the whole wound/medical loop is reachable and verified end-to-end — `wound_ladder`
+  (E2), natural recovery (E3/F7), First Aid (F8), condition HUD (F9), wound nameplates (F17), the
+  "out" gates (F31/F32, untriggered by the cap). A player now spars, gets stunned/wounded, and
+  recovers (self or medic). STILL GATED: the **LETHAL** path — real death (incapacitated/mortally/
+  dead), **death-PENALTY numbers** (loot %, durability, insurance, respawn timer/location; DIV-0006
+  shape decided, numbers gated), **PvP-consent**, and hostile-NPC lethality. Deciding those lifts
+  the SPARRING_MAX_SEVERITY cap for real-stakes encounters and wires death/respawn.
 - **Economy / vendor** (needs: prices, spawn rates, item values) — unlocks three modeled-and-
   smoked-but-orphaned systems: `vendor_model` (E11), `creature_spawn_model` (E10),
   `reputation_model` (E12); plus **melee** (F18 already makes melee pools/`STR+ND` damage correct,

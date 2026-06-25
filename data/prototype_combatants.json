@@ -47,7 +47,8 @@
       "weapon": "remote_stun_blaster",
       "soak": "2D",
       "scale": "character",
-      "source_note": "Uses B1 strength baseline from Clone Wars combat templates."
+      "stun_return_fire": false,
+      "source_note": "Uses B1 strength baseline from Clone Wars combat templates. DIV-0016: this sparring remote pulls REAL (but non-lethal) shots — its return fire rolls a true wound so trainees exercise the wound/recovery/First-Aid loop, while combat_arena caps the player at Wounded (SPARRING_MAX_SEVERITY=2), never incapacitated. Targets omitting stun_return_fire default to pure WEG stun (sev<=1)."
     },
     "walker_armor_plate": {
       "name": "Walker-Scale Armor Plate",
