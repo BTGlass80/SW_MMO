@@ -320,35 +320,35 @@ optionally reads it, falling back to the hardcoded layout when absent. **No asse
 files touched.**
 - Acceptance: `world_builder_smoke` extended (parses + deterministic placement); solo + net build identically; full gate green.
 
-### E15 — Snapshot zone-merge smoke  [STATUS: OPEN] [PAR] [tests] [S]
+### E15 — Snapshot zone-merge smoke  [STATUS: DONE] [PAR] [tests] [S]
 `scripts/tests/snapshot_merge_smoke.gd`: replicate `_build_snapshot`'s merge (WorldState
 snapshot + `zones.zone_summary` under `zone`) and assert the merged shape clients consume.
 - Acceptance: wired & green ("snapshot_merge_smoke: OK"); fails if a zone key is missing.
 
-### E16 — Wire round-trip fidelity smoke  [STATUS: OPEN] [PAR] [tests] [S]
+### E16 — Wire round-trip fidelity smoke  [STATUS: DONE] [PAR] [tests] [S]
 `scripts/tests/wire_roundtrip_smoke.gd`: run a snapshot + a combat envelope through
 JSON/var round-trip; assert no field/type loss on the RPC payloads.
 - Acceptance: wired & green; breaking a field type locally makes it fail.
 
-### E17 — Skill→attribute resolution smoke  [STATUS: OPEN] [PAR] [tests] [S]
+### E17 — Skill→attribute resolution smoke  [STATUS: DONE] [PAR] [tests] [S]
 `scripts/tests/skill_attribute_smoke.gd`: replicate `_load_skill_attributes` over
 `weg_skill_catalog.json`; assert known maps (blaster→dexterity, starship_gunnery→
 mechanical, …) + sane default. Locks the lookup behind server skill-raises.
 - Acceptance: wired & green.
 
-### E18 — Chargen→persistence lifecycle smoke  [STATUS: OPEN] [PAR] [tests] [S]
+### E18 — Chargen→persistence lifecycle smoke  [STATUS: DONE] [PAR] [tests] [S]
 `scripts/tests/character_lifecycle_smoke.gd`: Chargen build → PersistenceStore save →
 reload; assert CP/FP/wound + attributes/skills survive. Verifies the create→persist→reload
 chain `register_account`/`_create_character` depend on (using tested pure pieces only).
 - Acceptance: wired & green; throwaway `user://` dir cleaned; RNG seeded.
 
-### E19 — CP-award-on-disable rule smoke  [STATUS: OPEN] [PAR] [tests] [S]
+### E19 — CP-award-on-disable rule smoke  [STATUS: DONE] [PAR] [tests] [S]
 `scripts/tests/cp_award_smoke.gd`: model the post-disable reward (Progression.award
 'gameplay' 3 per shooter) and assert the wallet gain is spendable. Guards the `_award_cp`
 economy hook without editing `network_manager.gd`.
 - Acceptance: wired & green.
 
-### E20 — Harden combat_event_log ordering asserts  [STATUS: OPEN] [PAR] [tests] [S]
+### E20 — Harden combat_event_log ordering asserts  [STATUS: DONE] [PAR] [tests] [S]
 Extend `combat_event_log_model_smoke.gd`: assert trim-keeps-newest ordering + stable
 kind-filter chronological order. Test-file only.
 - Acceptance: gate green; reversing trim order in the model locally fails the smoke.
@@ -403,6 +403,7 @@ The spawn/sim foundation beyond headline-only events.
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-25 E15+E16+E17+E18+E19+E20 DONE (Wave E test-coverage batch 5) — six regression-guard smokes authored concurrently by the **gdscript-test-author** subagent (author→adversarial-review per slice, 12 agents), each cross-checking its asserted literals against the REAL source; all six passed standalone first try. **E15** `snapshot_merge_smoke` (replicates `network_manager._build_snapshot` merging WorldState snapshot + `zones.zone_summary` under `zone`; fails if the zone key/keys go missing). **E16** `wire_roundtrip_smoke` (a real envelope + snapshot through JSON.stringify→parse; guards field/type loss on RPC payloads — reviewer verified the Vector3→JSON-string behavior against Godot 4.6 `json.cpp`). **E17** `skill_attribute_smoke` (replicates `_load_skill_attributes` over `weg_skill_catalog.json`; all 16 skill→attribute maps + the dexterity default verified against the catalog; locks the lookup behind server skill-raises). **E18** `character_lifecycle_smoke` (Chargen build → PersistenceStore save → reload; CP/FP/wound/attributes/skills/equipment survive; throwaway user:// cleaned). **E19** `cp_award_smoke` (models the `_award_cp` reward via the pure progression_model — award 3 gameplay CP then spend it on a raise; guards the economy hook). **E20** extended `combat_event_log_model_smoke` (trim-keeps-newest ordering + stable chronological kind-filter; would fail if trim kept oldest or the filter order shuffled). 5 new smokes wired (E20 extends an already-wired test); full gate GREEN (49 GDScript smokes + 7 python + import + launch). No source files touched (test-only).
 - 2026-06-25 E5+E6 DONE (Wave E rules batch 4, ledger-first) — two additive, backward-compatible rules edits authored concurrently by the **d6-rules-engineer** subagent (disjoint files), integrated with one full gate; all affected smokes (rules_smoke/chargen_smoke/all combat) stayed green. **E5** weapon-driven range bands: `d6_rules.range_band_for_weapon(distance, ranges)` uses each weapon's own `[short_min,short_max,med_max,long_max]` (point-blank<short_min=VE5, Short=E10, Medium=M15, Long=D20, beyond=Extreme30; malformed→fixed-table fallback), threaded through `resolve_ranged_attack` via a FINAL optional `weapon_ranges: Array = []` arg so every existing caller is byte-identical; `rules_smoke` extended (per-weapon bands for blaster_pistol [3,10,30,120] + legacy fallback + a divergence case). Live ground-combat callers don't pass weapon_ranges yet (tracked wiring follow-up). **DIV-0010** added. **E6** default-off Force data hook: new pure `scripts/rules/force_skills_model.gd` (static) declares WEG control/sense/alter at 0D, INACTIVE unless `sheet.force_sensitive` (default false); `can_use_force`/`force_skill_pool`/`initial_force_skills`; `chargen_model.build_sheet` now carries the `force_skills` hook (additive — `force_sensitive` stays false, `chargen_smoke` unaffected). NO power list / NO access-scarcity policy (owner-gated). **DIV-0011** added (Force access/scarcity = OPEN owner decision). 1 new smoke wired (`force_skills_model_smoke`); full gate GREEN (44 GDScript smokes + 7 python + import + launch).
 - 2026-06-25 E2+E3 DONE (Wave E rules batch 3, ledger-first) — restored the WEG cumulative wound ladder + recovery, authored by the **d6-rules-engineer** subagent (sequential workflow: E2 then E3, adversarial review each). **E2** new pure `scripts/rules/wound_ladder_model.gd` (all `static func`): canonical WEG ladder (healthy/stunned/wounded/wounded_twice/incapacitated/mortally_wounded/dead), per-level penalty dice, `level_for_severity`, `penalty_dice_for_severity` (0,1,1,**2,2**,0 — the FIX vs the old silent 0D for sev≥3), and a TOTAL cumulative `escalate()` (wounded+wounded→incap, stun-on-wounded→wounded_twice, incap+any→mortally, mortally+any→dead, monotonic). `ground_combat_model._wound_penalty_dice` now delegates to it — **edit scoped to ONLY that body + the preload const** (maxi accumulation + wound_name_for_severity untouched), so `ground_combat_model_smoke`/`combat_arena_smoke`/`net_smoke` stay green. **DIV-0008** added. Wiring `escalate()` into live action-window accumulation is a tracked follow-up (would shift the seeded combat smokes). **E3** new pure `scripts/rules/recovery_model.gd` (static, RNG passed in): stun auto-expiry (2 rounds), First Aid/Medicine `heal_check` vs Guide_19 §3 difficulties (8/11/14/16/21, drops one level on success), Mortally-Wounded `death_roll` (2D < rounds → dead), post-death −1D debuff window. **DIV-0009** added for the recovery timing/roll approximations (death debuff 6 rounds vs 1 real-time hour; heal roll without the Wild Die). The E3 reviewer caught + fixed a real `:=`-on-preloaded-const-`.find()` parse trap (→ explicit `var idx: int`). 2 new smokes wired; full gate GREEN (43 GDScript smokes + 7 python + import + launch).
 - 2026-06-25 E7+E8+E9 DONE (Wave E [PAR] batch 2) — three world-sim pure substrate models in `scripts/net/*`, authored concurrently via a Workflow (author→adversarial-review per slice, 6 agents), integrated serially + ONE full gate; all 3 smokes passed standalone first try (the batch-1 `:=`-on-untyped lesson was fed to the agents as an explicit warning). **E7** `scripts/net/security_gate.gd` (+smoke): pure `get_effective_security` implementing WORLD_SIM_DESIGN §3.2's 4-step precedence (room override REPLACE → citizen one-step upgrade captured as a safety FLOOR → claim lawless→contested → Director overlay hutt≥80 downgrade / republic_crackdown upgrade), floor enforced last via `more_secure`. Pure only — NOT wired into the live attack path (that stays for a [HOT] slice). **E8** `scripts/net/pending_influence_model.gd` (+smoke): non-mutating accrual of `world_hooks.pending_zone_influence` ({zone_id,axis,delta}) with add/fold_zone/clear_zone/fold_and_clear/apply_deltas (clamped 0–100); the player→world influence substrate for [HOT] E24. **E9** `scripts/net/org_model.gd` (+smoke): membership validation (one faction + ≤3 guilds, rank gates 3=claim/5=city) + `can_claim_command` composing rank + zone security + influence floor, REUSING `territory_model.CLAIMABLE_BASES`/`CLAIM_MIN_INFLUENCE` (one source of truth); substrate for [HOT] E23. 3 new smokes wired; full gate GREEN (41 GDScript smokes + 7 python + import + launch). No ledger rows (no divergences; E8/E9 axis enums match `zone_state` FACTIONS).

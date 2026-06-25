@@ -48,6 +48,101 @@ func _init() -> void:
 	_assert_equal(empty_summary["latest_armor_present"], false, "empty armor hidden")
 	_assert_equal(CombatEventLogModel.append_envelope(log, {}, 0).size(), 0, "zero limit clears log")
 
+	# -------------------------------------------------------------------------
+	# E20: trim keeps NEWEST entries — strong ordering asserts
+	# -------------------------------------------------------------------------
+	# Build a fresh log with cap=3, push 5 envelopes (seeds 10..14).
+	# _trim calls pop_front() until size <= limit, so it discards the oldest.
+	# After all appends the log must contain exactly seeds [12, 13, 14] in that
+	# chronological order (index 0 = oldest-of-kept, index 2 = newest).
+	var trim_log: Array = []
+	trim_log = CombatEventLogModel.append_envelope(trim_log, _envelope(10, "ground_range_shot", 1), 3)
+	trim_log = CombatEventLogModel.append_envelope(trim_log, _envelope(11, "ground_range_shot", 2), 3)
+	trim_log = CombatEventLogModel.append_envelope(trim_log, _envelope(12, "ground_range_shot", 3), 3)
+	trim_log = CombatEventLogModel.append_envelope(trim_log, _envelope(13, "ground_range_shot", 4), 3)
+	trim_log = CombatEventLogModel.append_envelope(trim_log, _envelope(14, "ground_range_shot", 5), 3)
+
+	_assert_equal(trim_log.size(), 3, "E20 trim: log size equals cap")
+
+	# Oldest-kept must be seed 12 (seeds 10 and 11 were popped from front)
+	var trim_entry_0: Dictionary = trim_log[0]
+	_assert_equal(int(trim_entry_0.get("exchange_seed", -1)), 12, "E20 trim: index 0 is seed 12 (oldest-kept)")
+
+	var trim_entry_1: Dictionary = trim_log[1]
+	_assert_equal(int(trim_entry_1.get("exchange_seed", -1)), 13, "E20 trim: index 1 is seed 13")
+
+	var trim_entry_2: Dictionary = trim_log[2]
+	_assert_equal(int(trim_entry_2.get("exchange_seed", -1)), 14, "E20 trim: index 2 is seed 14 (newest)")
+
+	# latest() reads log[size-1] — must be the newest seed
+	var trim_latest: Dictionary = CombatEventLogModel.latest(trim_log)
+	_assert_equal(int(trim_latest.get("exchange_seed", -1)), 14, "E20 trim: latest() returns newest seed")
+
+	# -------------------------------------------------------------------------
+	# E20: kind-filtered view is in stable CHRONOLOGICAL order
+	# -------------------------------------------------------------------------
+	# Build a log with interleaved kinds, cap=10 (no trim).
+	# envelopes_for_kind iterates log forward so matches come out in insertion
+	# order (ascending seed).  Reversing trim or shuffling the filter loop
+	# would produce a different order and break these asserts.
+	var kind_log: Array = []
+	kind_log = CombatEventLogModel.append_envelope(kind_log, _envelope(20, "ground_range_shot",     1), 10)
+	kind_log = CombatEventLogModel.append_envelope(kind_log, _envelope(21, "ground_range_incoming", 2), 10)
+	kind_log = CombatEventLogModel.append_envelope(kind_log, _envelope(22, "ground_range_shot",     3), 10)
+	kind_log = CombatEventLogModel.append_envelope(kind_log, _envelope(23, "ground_range_incoming", 4), 10)
+	kind_log = CombatEventLogModel.append_envelope(kind_log, _envelope(24, "ground_range_shot",     5), 10)
+
+	var shots: Array = CombatEventLogModel.envelopes_for_kind(kind_log, "ground_range_shot")
+	_assert_equal(shots.size(), 3, "E20 kind filter: shot count")
+
+	var shot_0: Dictionary = shots[0]
+	_assert_equal(int(shot_0.get("exchange_seed", -1)), 20, "E20 kind filter: shots[0] seed=20 (chronological first)")
+
+	var shot_1: Dictionary = shots[1]
+	_assert_equal(int(shot_1.get("exchange_seed", -1)), 22, "E20 kind filter: shots[1] seed=22 (chronological second)")
+
+	var shot_2: Dictionary = shots[2]
+	_assert_equal(int(shot_2.get("exchange_seed", -1)), 24, "E20 kind filter: shots[2] seed=24 (chronological third)")
+
+	var incomings: Array = CombatEventLogModel.envelopes_for_kind(kind_log, "ground_range_incoming")
+	_assert_equal(incomings.size(), 2, "E20 kind filter: incoming count")
+
+	var inc_0: Dictionary = incomings[0]
+	_assert_equal(int(inc_0.get("exchange_seed", -1)), 21, "E20 kind filter: incomings[0] seed=21 (chronological first)")
+
+	var inc_1: Dictionary = incomings[1]
+	_assert_equal(int(inc_1.get("exchange_seed", -1)), 23, "E20 kind filter: incomings[1] seed=23 (chronological second)")
+
+	# A kind with no entries must return an empty array, not a crash
+	var none_found: Array = CombatEventLogModel.envelopes_for_kind(kind_log, "melee_strike")
+	_assert_equal(none_found.size(), 0, "E20 kind filter: unknown kind returns empty")
+
+	# -------------------------------------------------------------------------
+	# E20: trim + kind-filter interaction — newest N kept, filter still ordered
+	# -------------------------------------------------------------------------
+	# Push 5 mixed-kind envelopes with cap=3; oldest 2 are dropped.
+	# Remaining are seeds 22..24.  kind-filter on "ground_range_shot" must
+	# return [22, 24] in order — not [24, 22] (reverse) and not [20, 22, 24].
+	var combo_log: Array = []
+	combo_log = CombatEventLogModel.append_envelope(combo_log, _envelope(20, "ground_range_shot",     1), 3)
+	combo_log = CombatEventLogModel.append_envelope(combo_log, _envelope(21, "ground_range_incoming", 2), 3)
+	combo_log = CombatEventLogModel.append_envelope(combo_log, _envelope(22, "ground_range_shot",     3), 3)
+	combo_log = CombatEventLogModel.append_envelope(combo_log, _envelope(23, "ground_range_incoming", 4), 3)
+	combo_log = CombatEventLogModel.append_envelope(combo_log, _envelope(24, "ground_range_shot",     5), 3)
+
+	_assert_equal(combo_log.size(), 3, "E20 combo: log trimmed to cap=3")
+
+	var combo_shots: Array = CombatEventLogModel.envelopes_for_kind(combo_log, "ground_range_shot")
+	# seeds 20 and 21 were trimmed; only seeds 22, 23, 24 survive.
+	# Of those, "ground_range_shot" matches seeds 22 and 24.
+	_assert_equal(combo_shots.size(), 2, "E20 combo: 2 shots survive trim+filter")
+
+	var cshot_0: Dictionary = combo_shots[0]
+	_assert_equal(int(cshot_0.get("exchange_seed", -1)), 22, "E20 combo: combo_shots[0] is seed 22 (oldest surviving shot)")
+
+	var cshot_1: Dictionary = combo_shots[1]
+	_assert_equal(int(cshot_1.get("exchange_seed", -1)), 24, "E20 combo: combo_shots[1] is seed 24 (newest)")
+
 	_finish()
 
 func _envelope(seed: int, kind: String, round_num: int) -> Dictionary:
