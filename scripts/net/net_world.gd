@@ -33,6 +33,10 @@ var _account := "guest"
 var _name := ""
 var _species := ""
 var _quickstart := false
+var _raise_skill := ""
+var _raise_accum := 0.0
+var _raise_sent := false
+var _wallet_label: Label
 var _combat_log: Label
 var _combat_lines: Array[String] = []
 var _zone_label: Label
@@ -46,6 +50,8 @@ func _ready() -> void:
 	Net.client_connected.connect(_on_client_connected)
 	Net.client_failed.connect(_on_client_failed)
 	Net.combat_envelope.connect(_on_combat_envelope)
+	Net.wallet_updated.connect(_on_wallet_updated)
+	Net.skill_raise_replied.connect(_on_skill_raise_replied)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -74,6 +80,7 @@ func _parse_args() -> void:
 	_name = _arg_value("--name")
 	_species = _arg_value("--species")
 	_quickstart = args.has("--quickstart")
+	_raise_skill = _arg_value("--raise-skill")
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -96,6 +103,11 @@ func _process(delta: float) -> void:
 		if _autofire_accum >= 0.4:
 			_autofire_accum = 0.0
 			Net.send_fire_intent({"aim": 3, "cover": 0, "cp": 0, "fp": false})
+	if _raise_skill != "" and not _raise_sent and Net.connected:
+		_raise_accum += delta
+		if _raise_accum >= 6.0:  # let some CP accrue first, then raise once (headless test)
+			_raise_sent = true
+			Net.send_skill_raise(_raise_skill)
 
 # --- input / camera (client only) ---
 func _send_local_input() -> void:
@@ -116,8 +128,11 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		_yaw -= event.relative.x * MOUSE_SENSITIVITY
 		_pitch = clampf(_pitch - event.relative.y * MOUSE_SENSITIVITY, -1.25, 0.8)
-	elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	elif event is InputEventKey and event.pressed:
+		if event.keycode == KEY_ESCAPE:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		elif event.keycode == KEY_K:
+			Net.send_skill_raise("blaster")  # spend CP to raise Blaster a pip
 	elif event is InputEventMouseButton and event.pressed:
 		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -285,6 +300,13 @@ func _build_hud() -> void:
 	_zone_label.modulate = Color(0.10, 0.09, 0.07)
 	layer.add_child(_zone_label)
 
+	_wallet_label = Label.new()
+	_wallet_label.position = Vector2(760, 40)
+	_wallet_label.text = "CP: -   (K: raise Blaster)"
+	_wallet_label.add_theme_font_size_override("font_size", 14)
+	_wallet_label.modulate = Color(0.10, 0.09, 0.07)
+	layer.add_child(_wallet_label)
+
 func _set_status(text: String) -> void:
 	if _status != null:
 		_status.text = text
@@ -325,3 +347,15 @@ func _wound_label(severity: int) -> String:
 		3: return "Incapacitated"
 		4: return "Mortally Wounded"
 		_: return "Killed"
+
+func _on_wallet_updated(wallet: Dictionary) -> void:
+	if _wallet_label != null:
+		_wallet_label.text = "CP: gameplay %d · prestige %d   (K: raise Blaster)" % [
+			int(wallet.get("gameplay_cp", 0)), int(wallet.get("rp_cp", 0))]
+	print("[cp] wallet g=%d r=%d" % [int(wallet.get("gameplay_cp", 0)), int(wallet.get("rp_cp", 0))])
+
+func _on_skill_raise_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		print("[skillraise] %s raised to %s (cost %d)" % [String(result.get("skill", "")), String(result.get("new_bonus", "")), int(result.get("cost", 0))])
+	else:
+		print("[skillraise] %s rejected (%s, need %d)" % [String(result.get("skill", "")), String(result.get("reason", "")), int(result.get("cost", 0))])

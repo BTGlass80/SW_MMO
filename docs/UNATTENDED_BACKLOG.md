@@ -149,7 +149,7 @@ CP wallet (gameplay CP + slow RP-prestige CP), with spend-validation. Pure +
 `progression_smoke`.
 - Acceptance: `progression_smoke` + full gate green.
 
-### C4 — Wire CP earning + spending  [STATUS: TODO]
+### C4 — Wire CP earning + spending  [STATUS: DONE] (Wave C complete)
 Award gameplay CP for combat (disabling the shared target) on the dual track; an RPC to
 spend CP to raise a skill; persist via the store. Client shows CP wallet + a raise action.
 - Acceptance: full gate green; two-process check: defeating the target awards CP and a
@@ -158,6 +158,8 @@ spend CP to raise a skill; persist via the store. Client shows CP wallet + a rai
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
 - 2026-06-24 LOOP RESUMED — owner chose Wave C (Character Creation & Progression). Next: C1.
+- 2026-06-24 C4 DONE — wired CP earn/spend: disabling the shared target awards gameplay CP (`_award_cp` -> the character's persisted `sheet.cp_wallet`, COMBAT_CP_REWARD=3, tunable); `submit_skill_raise(skill)` RPC validates via progression_model against the char's wallet + governing attribute (from the skill catalog) + current bonus, applies the new bonus to the sheet, persists, and replies; server pushes the wallet via `apply_wallet`. Client shows a CP HUD + `K` raises Blaster (+`--raise-skill` headless). Verified over the wire: a new quickstart char earned CP from kills and raised `blaster 0D -> 0D+1 (cost 3)`, persisted. Full gate green (37 smokes). **WAVE C COMPLETE.**
+- 2026-06-24 LOOP STOP (Wave C complete) — backlog dry of unblocked, non-owner-decision, non-visual items. Remaining needs the owner: visual check (A1b/P1) + design calls (siege/Drop-6D tuning, Force/Jedi access, PvP-consent, LLM-Director-at-launch). Handed back.
 - 2026-06-24 C3 DONE — pure `scripts/rules/progression_model.gd` (WEG R&E / Guide_09): skill_raise_cost = total-pool dice (attribute + skill bonus), cost steps up at die boundaries, optional guild discount; DIV-0007 dual-track wallet {gameplay_cp, rp_cp} with `raise_skill` (adds a pip to the bonus, spends gameplay-first then RP, rejects if short) + `award`. `progression_smoke` (cost table, dual-track spend, boundary step-up, insufficient-CP rejection). Full gate green (37 smokes). Next: C4 wires CP earn (combat) + a spend RPC + persist.
 - 2026-06-24 C2 DONE — server chargen flow: `register_account(account_id, name, build)` now runs `_create_character` for NEW characters — validates the requested WEG build (or a deterministic quick-start) via chargen_model against the server-loaded species data, persists the resulting sheet via the M1.4 store. Client passes `--species`/`--quickstart`. Verified over the wire: a new `--species rodian --quickstart` account created `species=rodian dex=3D+1 cp=5` (species-aware), persisted. Existing characters load unchanged. Full gate green (36 smokes). Combat still uses the shared trainee pools — using the per-character sheet IN combat is a later slice.
 - 2026-06-24 C1 DONE — pure `scripts/rules/chargen_model.gd` (WEG R&E): validate_build enforces exactly 18D attributes within species min/max + a 7D skill budget, produces the player_persistence `sheet` (CP 5 / FP 1 / force_sensitive false / healthy); default_build gives a deterministic in-range quick-start. `chargen_smoke`. Full gate green (36 smokes). NOTE: a parallel session owns the asset pipeline (`docs/ASSET_PIPELINE.md` etc.) — kept scoped commits.

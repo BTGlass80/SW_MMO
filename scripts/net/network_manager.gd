@@ -17,8 +17,11 @@ const PersistenceStore := preload("res://scripts/net/persistence_store.gd")
 const ZoneState := preload("res://scripts/net/zone_state.gd")
 const Territory := preload("res://scripts/net/territory_model.gd")
 const Chargen := preload("res://scripts/rules/chargen_model.gd")
+const Progression := preload("res://scripts/rules/progression_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
+const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
+const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 
 const DEFAULT_PORT := 24555
 const MAX_CLIENTS := 32
@@ -39,6 +42,8 @@ signal player_joined(peer_id: int)
 signal player_left(peer_id: int)
 signal snapshot_applied(snapshot: Dictionary)
 signal combat_envelope(envelope: Dictionary)
+signal wallet_updated(wallet: Dictionary)
+signal skill_raise_replied(result: Dictionary)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -49,7 +54,9 @@ var territory: Territory = null       # server only (org claims + passive income
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 
 var _species_data := {}               # server only (chargen species ranges)
+var _skill_attr := {}                 # server only (skill key -> governing attribute)
 var last_snapshot: Dictionary = {}    # client view of the world
+var last_wallet: Dictionary = {}      # client view of its own CP wallet
 var connected: bool = false           # client: handshake complete
 
 var _server_accum := 0.0
@@ -88,6 +95,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 		"Mos Eisley Spaceport District")
 	territory = Territory.new()
 	_species_data = _load_species()
+	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
 	print("[net] server listening on port %d (combat window %.1fs)" % [port, combat_window_seconds])
 	server_started.emit(port)
@@ -283,6 +291,91 @@ func _species_for(species_key: String) -> Dictionary:
 		}}
 	return species
 
+# --- C4: progression (CP earn + spend) ---
+# client -> server: spend CP to raise one skill by a pip (server validates + persists)
+@rpc("any_peer", "call_remote", "reliable")
+func submit_skill_raise(skill: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := store.load_record(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var wallet: Dictionary = sheet.get("cp_wallet", Progression.new_wallet())
+	var attribute := _attribute_for_skill(skill)
+	var attr_code := String((sheet.get("attributes", {}) as Dictionary).get(attribute, "2D"))
+	var bonus_code := String((sheet.get("skills", {}) as Dictionary).get(skill, "0D"))
+	var result: Dictionary = Progression.raise_skill(D6Rules, wallet, attr_code, bonus_code)
+	if bool(result.get("ok", false)):
+		var skills: Dictionary = sheet.get("skills", {})
+		skills[skill] = result["new_skill_bonus"]
+		sheet["skills"] = skills
+		sheet["cp_wallet"] = result["wallet"]
+		record["sheet"] = sheet
+		store.save_record(character_id, record)
+		print("[skillraise] peer %d %s %s -> %s (cost %d)" % [sender, skill, bonus_code, String(result["new_skill_bonus"]), int(result["cost"])])
+		skill_raise_result.rpc_id(sender, {"ok": true, "skill": skill, "new_bonus": result["new_skill_bonus"], "cost": result["cost"]})
+		apply_wallet.rpc_id(sender, result["wallet"])
+	else:
+		print("[skillraise] peer %d %s rejected (%s, need %d)" % [sender, skill, String(result.get("reason", "")), int(result.get("cost", 0))])
+		skill_raise_result.rpc_id(sender, {"ok": false, "skill": skill, "reason": result.get("reason", ""), "cost": result.get("cost", 0)})
+
+func send_skill_raise(skill: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_skill_raise.rpc_id(1, skill)
+
+# server -> client: push the player's current CP wallet
+@rpc("authority", "call_remote", "reliable")
+func apply_wallet(wallet: Dictionary) -> void:
+	last_wallet = wallet
+	wallet_updated.emit(wallet)
+
+# server -> client: result of a skill-raise attempt
+@rpc("authority", "call_remote", "reliable")
+func skill_raise_result(result: Dictionary) -> void:
+	skill_raise_replied.emit(result)
+
+func _award_cp(peer_id: int, track: String, amount: int) -> void:
+	if store == null:
+		return
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return
+	var record := store.load_record(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var wallet: Dictionary = Progression.award(sheet.get("cp_wallet", Progression.new_wallet()), track, amount)
+	sheet["cp_wallet"] = wallet
+	record["sheet"] = sheet
+	store.save_record(character_id, record)
+	print("[cp] peer %d +%d %s (wallet g=%d r=%d)" % [peer_id, amount, track, int(wallet.get("gameplay_cp", 0)), int(wallet.get("rp_cp", 0))])
+	apply_wallet.rpc_id(peer_id, wallet)
+
+func _attribute_for_skill(skill: String) -> String:
+	return String(_skill_attr.get(skill, "dexterity"))
+
+func _load_skill_attributes() -> Dictionary:
+	var out := {}
+	if not FileAccess.file_exists(SKILL_CATALOG_PATH):
+		return out
+	var file := FileAccess.open(SKILL_CATALOG_PATH, FileAccess.READ)
+	if file == null:
+		return out
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return out
+	var groups: Dictionary = (parsed as Dictionary).get("skills", {})
+	for attribute in groups:
+		for entry in groups[attribute]:
+			if typeof(entry) == TYPE_DICTIONARY:
+				out[String((entry as Dictionary).get("key", ""))] = String((entry as Dictionary).get("attribute", attribute))
+	return out
+
 func _physics_process(delta: float) -> void:
 	match mode:
 		Mode.SERVER:
@@ -351,6 +444,8 @@ func _resolve_combat_window() -> void:
 		int((result.get("target_state", {}) as Dictionary).get("wound_severity", 0)),
 	])
 	if bool(result.get("target_disabled", false)):
+		for envelope in envelopes:
+			_award_cp(int(envelope.get("shooter_id", 0)), "gameplay", COMBAT_CP_REWARD)
 		arena.reset_target()
 		print("[combat] target disabled — respawned")
 
