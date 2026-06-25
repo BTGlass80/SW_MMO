@@ -700,21 +700,28 @@ func _update_boost(cp: int, fp: int) -> void:
 		print("[boost] cp=%d fp=%d" % [cp, fp])
 
 # Update the org / territory readout from the snapshot's per-peer "territory" block (E23).
-# Shows the player's org, its treasury, and how many nodes it holds in the CURRENT zone
-# (so it updates as you travel, DIV-0014). Blank for a player with no org.
+# Shows the player's org, its treasury, and how many of the CURRENT zone's claimed nodes its
+# org holds vs the zone TOTAL (yours/total — territory control at a glance). `claims_in_zone`
+# carries EVERY org's claim (each tagged with org_id), so own-org is filtered out. Updates as
+# you travel (DIV-0014); blank for a player with no org.
 func _update_org(territory: Dictionary) -> void:
 	var org_id := String(territory.get("org_id", ""))
 	var line := ""
+	var mine := 0
+	var total := 0
 	if org_id != "":
 		var treasury := int(territory.get("treasury", 0))
-		var claims := (territory.get("claims_in_zone", []) as Array).size()
-		line = "Org: %s · %d cr · %d claim(s) here" % [_org_pretty(org_id), treasury, claims]
+		for c in territory.get("claims_in_zone", []):
+			total += 1
+			if String((c as Dictionary).get("org_id", "")) == org_id:
+				mine += 1
+		line = "Org: %s · %d cr · %d/%d claim(s) here" % [_org_pretty(org_id), treasury, mine, total]
 	if _org_label != null:
 		_org_label.text = line
 	if line != _last_org_line:
 		_last_org_line = line
 		if line != "":
-			print("[org] %s treasury=%d claims_here=%d" % [org_id, int(territory.get("treasury", 0)), (territory.get("claims_in_zone", []) as Array).size()])
+			print("[org] %s treasury=%d claims_here=%d/%d" % [org_id, int(territory.get("treasury", 0)), mine, total])
 
 func _org_pretty(org_id: String) -> String:
 	var s := org_id.trim_prefix("org_").replace("_", " ")
