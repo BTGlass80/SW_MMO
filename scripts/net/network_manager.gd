@@ -1061,12 +1061,16 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 				here.append(p)
 		snap["players"] = here
 	# Enrich each (zone-filtered) player entry with its live wound condition so OTHER players'
-	# nameplates show who's hurt (supports First Aid targeting). Entries are fresh per call.
-	if arena != null:
-		for p in snap.get("players", []):
-			var ppid := int((p as Dictionary).get("id", 0))
-			if arena.has_player(ppid):
-				(p as Dictionary)["wound"] = PersistenceStore.wound_state_for_severity(int((arena.player_state(ppid) as Dictionary).get("player_wound_severity", 0)))
+	# nameplates show who's hurt (supports First Aid targeting), AND its faction axis (F36) so
+	# nameplates + /who show allegiance — the people-level companion to the F35 zone-control HUD.
+	# Entries are fresh per call.
+	for p in snap.get("players", []):
+		var ppid := int((p as Dictionary).get("id", 0))
+		if arena != null and arena.has_player(ppid):
+			(p as Dictionary)["wound"] = PersistenceStore.wound_state_for_severity(int((arena.player_state(ppid) as Dictionary).get("player_wound_severity", 0)))
+		var pax := String(_peer_axes.get(ppid, ""))
+		if pax != "":
+			(p as Dictionary)["axis"] = pax  # F36: faction allegiance (only org members carry one)
 	if zones != null:
 		snap["zone"] = zones.zone_summary(zone_id)
 	if territory != null and peer_id != 0:

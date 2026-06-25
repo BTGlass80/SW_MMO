@@ -383,9 +383,10 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 		else:
 			root.global_position = pos
 			record["seen"] = true
-		# Show OTHER players' wound condition on their nameplate (so a medic can see who's hurt).
+		# Show OTHER players' wound condition on their nameplate (so a medic can see who's hurt)
+		# + faction allegiance (F36).
 		if id != _local_id:
-			_update_nameplate(record, id, String(entry.get("name", "")), String(entry.get("wound", "healthy")))
+			_update_nameplate(record, id, String(entry.get("name", "")), String(entry.get("wound", "healthy")), String(entry.get("axis", "")))
 	for id in _avatars.keys():
 		if not seen.has(id):
 			(_avatars[id]["root"] as Node3D).queue_free()
@@ -473,9 +474,11 @@ func _color_for_peer(peer_id: int) -> Color:
 
 # Show a remote player's wound condition on their nameplate (so a medic can see who's hurt
 # and target First Aid). Healthy -> just the name; wounded -> "Name — Condition" tinted.
-func _update_nameplate(record: Dictionary, peer_id: int, display_name: String, wound: String) -> void:
+func _update_nameplate(record: Dictionary, peer_id: int, display_name: String, wound: String, axis: String = "") -> void:
 	var label := (record["root"] as Node3D).get_node_or_null("Nameplate") as Label3D
 	var base := display_name if display_name != "" else "Spacer-%d" % peer_id
+	if axis != "":
+		base += " [%s]" % _axis_pretty(axis)  # F36: faction allegiance
 	if label != null:
 		if wound == "healthy":
 			label.text = base
@@ -981,6 +984,9 @@ func _show_who() -> void:
 	for entry in Net.last_snapshot.get("players", []):
 		var e: Dictionary = entry
 		var nm := String(e.get("name", "Spacer-%d" % int(e.get("id", 0))))
+		var ax := String(e.get("axis", ""))  # F36: faction allegiance (org members only)
+		if ax != "":
+			nm += " [%s]" % _axis_pretty(ax)
 		var wound := String(e.get("wound", "healthy"))
 		names.append(nm if wound == "healthy" else "%s (%s)" % [nm, _condition_pretty(wound)])
 	var line := "Here (%d): %s" % [names.size(), ", ".join(names)]
