@@ -35,9 +35,11 @@ var _use_fp := false        # Force Point staged for the NEXT shot (WEG: doubles
 var _cover := 0             # F50: take 1/4 cover for this shot (0/1). WEG: attacking exposes you, so
                             # firing caps your cover at 1/4 (COVER_QUARTER) — full cover needs a
                             # not-attacking stance, so this is an honest on/off toggle.
+var _dodge := false         # F52: active dodge staged for this shot (attack at -1D, defend with dodge)
 var _fire_cp := 0           # headless: --fire-cp N stages CP on the autofire path
 var _fire_fp := false       # headless: --fire-fp stages a Force Point on autofire
 var _fire_cover := 0        # headless: --fire-cover 1 takes 1/4 cover on the autofire path
+var _fire_dodge := false    # headless: --fire-dodge stages an active dodge on the autofire path (F52)
 var _autofire := false
 var _autodefend := false     # headless: --autodefend submits a full-dodge defensive stance each window (F51)
 var _autowalk := false
@@ -165,6 +167,7 @@ func _parse_args() -> void:
 	_fire_cp = maxi(int(_arg_value("--fire-cp")), 0)  # headless: stage CP on autofire shots
 	_fire_cover = clampi(int(_arg_value("--fire-cover")), 0, 1)  # headless: take 1/4 cover on autofire shots (F50)
 	_autodefend = args.has("--autodefend")  # headless: full-dodge defensive stance each window (F51)
+	_fire_dodge = args.has("--fire-dodge")  # headless: active dodge on autofire shots (F52)
 	_fire_fp = args.has("--fire-fp")  # headless: stage a Force Point on autofire shots
 	_start_wound = _arg_value("--start-wound")  # headless DIV-0012: new char starts wounded
 	_heal_other = args.has("--heal-other")  # headless DIV-0013: First-Aid the first other player once
@@ -194,7 +197,7 @@ func _process(delta: float) -> void:
 			if _autodefend:
 				Net.send_fire_intent({"full_dodge": true})  # F51: headless defensive-stance loop
 			else:
-				Net.send_fire_intent({"aim": 3, "cover": _fire_cover, "cp": _fire_cp, "fp": _fire_fp})
+				Net.send_fire_intent({"aim": 3, "cover": _fire_cover, "cp": _fire_cp, "fp": _fire_fp, "dodge": _fire_dodge})
 	if _raise_skill != "" and not _raise_sent and Net.connected:
 		_raise_accum += delta
 		if _raise_accum >= 6.0:  # let some CP accrue first, then raise once (headless test)
@@ -308,6 +311,9 @@ func _input(event: InputEvent) -> void:
 		elif event.keycode == KEY_G:
 			Net.send_fire_intent({"full_dodge": true})  # F51: defensive stance — forgo the attack, full dodge
 			_set_status("Defensive stance — full dodge (no attack this window).")
+		elif event.keycode == KEY_Z:
+			_dodge = not _dodge  # F52: toggle active dodge for the next shot (attack -1D, defend with dodge)
+			_announce_next_shot()
 	elif event is InputEventMouseButton and event.pressed:
 		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -315,11 +321,12 @@ func _input(event: InputEvent) -> void:
 			_aim = mini(_aim + 1, 3)
 			_announce_next_shot()
 		elif event.button_index == MOUSE_BUTTON_LEFT:
-			Net.send_fire_intent({"aim": _aim, "cover": _cover, "cp": _spend_cp, "fp": _use_fp})
+			Net.send_fire_intent({"aim": _aim, "cover": _cover, "cp": _spend_cp, "fp": _use_fp, "dodge": _dodge})
 			_aim = 0
 			_spend_cp = 0
 			_use_fp = false
 			_cover = 0
+			_dodge = false
 
 func _update_camera() -> void:
 	if _camera == null or _local_id == 0:
@@ -698,7 +705,9 @@ func _announce_next_shot() -> void:
 		bits += " · Force Point"
 	if _cover > 0:
 		bits += " · in cover"
-	_set_status("%s — LMB fires (C cycle CP · F Force Point · X cover)" % bits)
+	if _dodge:
+		bits += " · dodging"
+	_set_status("%s — LMB fires (C CP · F Force Point · X cover · Z dodge · G full-dodge)" % bits)
 
 func _on_combat_envelope(envelope: Dictionary) -> void:
 	var shooter := String(envelope.get("shooter_name", "Someone"))
@@ -711,12 +720,14 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 	var return_fire_hit := false  # F45: did the target shoot back and connect this window?
 	var return_fire_cover := 0    # F50: the player's cover applied against that return fire
 	var defended := false         # F51: the shooter took a defensive stance (full dodge) this window
+	var attacked_dodging := false # F52: the shooter attacked while actively dodging
 	for ev in envelope.get("events", []):
 		var event_type := String((ev as Dictionary).get("type", ""))
 		if event_type == "player_attack":
 			hit = bool((ev as Dictionary).get("success", false))
 			cp_spent = int((ev as Dictionary).get("attack_cp_spent", 0))
 			fp_spent = bool((ev as Dictionary).get("force_point_spent", false))
+			attacked_dodging = int((ev as Dictionary).get("action_count", 1)) >= 2  # F52: dodged while attacking
 		elif event_type == "target_damage":
 			wound = int((ev as Dictionary).get("wound_severity", -1))
 		elif event_type == "target_already_disabled":
@@ -741,6 +752,8 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 		line = "%s hit %s%s" % [shooter, target, (" → %s" % _wound_label(wound)) if wound >= 0 else ""]
 	else:
 		line = "%s missed %s" % [shooter, target]
+	if attacked_dodging:
+		line += " (dodging)"  # F52
 	line += spend
 	print("[combat] %s" % line)
 	_combat_lines.append(line)

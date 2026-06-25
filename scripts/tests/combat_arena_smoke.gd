@@ -195,6 +195,27 @@ func _init() -> void:
 		_assert_true(((fde[0] as Dictionary).get("event_types", []) as Array).has("player_full_dodge"), "defensive stance emits a player_full_dodge event")
 	_assert_equal(int((fdr.get("target_state", {}) as Dictionary).get("wound_severity", -1)), 0, "a full-dodging player does NOT damage the target")
 
+	# F52: an active-dodge intent attacks AND actively dodges -> the player's defense vs the return
+	# fire is "dodge" (reflected on the remote_return_fire event). Sparring data so return fire lands;
+	# reset the target each window so it keeps shooting back. The player_attack event also gets
+	# action_count 2 (the -1D multi-action attack penalty — dodging costs you offense).
+	var dg := CombatArena.new(_rules, _sparring_data())
+	dg.register_player(31, "Dodger", {"attributes": {"dexterity": "3D", "strength": "2D"}, "skills": {"dodge": "2D"}})
+	var found_dodge_defense := false
+	var found_multi_action := false
+	for w in range(20):
+		dg.reset_target()
+		dg.submit_fire_intent(31, {"aim": 0, "dodge": true})
+		for env in dg.resolve_window(5151 + w).get("envelopes", []):
+			for ev in (env as Dictionary).get("events", []):
+				var et := String((ev as Dictionary).get("type", ""))
+				if et == "remote_return_fire" and String((ev as Dictionary).get("defense_type", "")) == "dodge":
+					found_dodge_defense = true
+				elif et == "player_attack" and int((ev as Dictionary).get("action_count", 1)) == 2:
+					found_multi_action = true
+	_assert_true(found_dodge_defense, "an active-dodge attack defends the return fire with defense_type 'dodge'")
+	_assert_true(found_multi_action, "an active-dodge attack costs a -1D multi-action (player_attack action_count 2)")
+
 	if _rules.has_method("free"):
 		_rules.free()
 	_finish()
