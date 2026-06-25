@@ -66,6 +66,7 @@ signal claim_replied(result: Dictionary)
 signal chat_received(message: Dictionary)
 signal auth_replied(result: Dictionary)
 signal heal_replied(result: Dictionary)
+signal zone_replied(result: Dictionary)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -104,6 +105,7 @@ var _record_cache := {}               # E26: character_id -> record (kills per-c
 var _peer_rpc_budget := {}            # E26: peer_id -> {tokens, last_ms} reliable-RPC bucket
 var _ambient := {}                    # E27: zone_id -> ambient NPC roster (Director-advanced)
 var _heal_treated := {}               # DIV-0013: target_peer -> wound level last First-Aided (retry gate)
+var _zone_list_cache: Array = []      # DIV-0014: cached [{id, name}] travel list (zones are static)
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
@@ -296,8 +298,11 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 			return
 	_peer_characters[sender] = character_id
 	# Optional starting zone (carried on the build dict so the RPC signature is stable);
-	# only honored when it names a real loaded zone, else the peer keeps the default.
+	# only honored when it names a real loaded zone, else the peer keeps the default. With no
+	# explicit request, restore the last-traveled zone persisted on the record (DIV-0014).
 	var requested_zone := String(build.get("zone", ""))
+	if requested_zone == "":
+		requested_zone = String(record.get("zone", ""))
 	if requested_zone != "" and zones != null and zones.has_zone(requested_zone):
 		_peer_zones[sender] = requested_zone
 		print("[net] peer %d assigned zone %s (%s)" % [sender, requested_zone, zones.effective_security(requested_zone)])
@@ -569,6 +574,52 @@ func send_heal(target_id: int) -> void:
 @rpc("authority", "call_remote", "reliable")
 func heal_result(result: Dictionary) -> void:
 	heal_replied.emit(result)
+
+# --- DIV-0014: inter-zone travel (command fast-travel between the loaded zones) ---
+# client -> server: move to a loaded zone. Server updates the peer's zone (snapshot routing,
+# zone-scoped chat, ambient, and the territory view all follow `_peer_zones`), persists it on
+# the record (restored on next login), and replies. No adjacency/route/cost modeled yet.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_change_zone(zone_id: String) -> void:
+	if mode != Mode.SERVER or store == null or zones == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	if not zones.has_zone(zone_id):
+		zone_result.rpc_id(sender, {"ok": false, "reason": "unknown_zone", "zone_id": zone_id})
+		return
+	if String(_peer_zones.get(sender, _default_zone)) == zone_id:
+		zone_result.rpc_id(sender, {"ok": false, "reason": "already_here", "zone_id": zone_id})
+		return
+	_peer_zones[sender] = zone_id
+	var record := _cached_load(character_id)
+	if not record.is_empty():
+		record["zone"] = zone_id  # persist so the next login restores this zone
+		_cached_save(character_id, record)
+	print("[zone] peer %d traveled to %s (%s)" % [sender, zone_id, zones.effective_security(zone_id)])
+	zone_result.rpc_id(sender, {"ok": true, "zone_id": zone_id, "display_name": zones.zone_summary(zone_id).get("display_name", zone_id)})
+
+func send_change_zone(zone_id: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_change_zone.rpc_id(1, zone_id)
+
+# server -> client: the outcome of a travel request
+@rpc("authority", "call_remote", "reliable")
+func zone_result(result: Dictionary) -> void:
+	zone_replied.emit(result)
+
+# Static {id, display_name} list of loaded zones (for the client's travel picker). Cached —
+# zones are seeded once at start, so this is built at most once per server.
+func _zone_list() -> Array:
+	if not _zone_list_cache.is_empty() or zones == null:
+		return _zone_list_cache
+	for zid in zones.zones:
+		_zone_list_cache.append({"id": String(zid), "name": String((zones.zone_summary(zid) as Dictionary).get("display_name", zid))})
+	return _zone_list_cache
 
 # --- E23: org territory claim / release commands ---
 # client -> server: claim a node in the player's CURRENT zone for their org. Validated
@@ -936,6 +987,7 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 	if territory != null and peer_id != 0:
 		snap["territory"] = _territory_summary(String(_peer_orgs.get(peer_id, "")), zone_id)
 	snap["npcs"] = _ambient.get(zone_id, [])  # E27: ambient NPCs in the player's zone
+	snap["zone_list"] = _zone_list()  # DIV-0014: loaded zones for the client's travel picker (cached)
 	# Per-peer "you" block: the player's OWN live wound condition (so the client can show a
 	# condition readout that reflects combat damage, natural recovery, and First Aid). Pure
 	# presentation data surfaced from the live combat state — no new mechanic.

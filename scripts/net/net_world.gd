@@ -59,6 +59,12 @@ var _start_wound := ""       # headless DIV-0012 test: start a new char at a rec
 var _heal_other := false     # headless DIV-0013 test: First-Aid the first other player once
 var _heal_sent := false
 var _heal_accum := 0.0
+var _travel := ""            # headless DIV-0014 test: travel to this zone_id once after connecting
+var _travel_sent := false
+var _travel_accum := 0.0
+var _zone_list: Array = []   # DIV-0014: loaded zones from the snapshot (for the T travel key)
+var _travel_idx := 0
+var _last_zone_name := ""    # log zone CHANGES only
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
@@ -88,6 +94,7 @@ func _ready() -> void:
 	Net.chat_received.connect(_on_chat_received)
 	Net.auth_replied.connect(_on_auth_replied)
 	Net.heal_replied.connect(_on_heal_replied)
+	Net.zone_replied.connect(_on_zone_replied)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -136,6 +143,7 @@ func _parse_args() -> void:
 	_fire_fp = args.has("--fire-fp")  # headless: stage a Force Point on autofire shots
 	_start_wound = _arg_value("--start-wound")  # headless DIV-0012: new char starts wounded
 	_heal_other = args.has("--heal-other")  # headless DIV-0013: First-Aid the first other player once
+	_travel = _arg_value("--travel")  # headless DIV-0014: travel to this zone_id once
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -189,6 +197,11 @@ func _process(delta: float) -> void:
 			if other != 0:
 				_heal_sent = true
 				Net.send_heal(other)
+	if _travel != "" and not _travel_sent and Net.connected:
+		_travel_accum += delta
+		if _travel_accum >= 3.0:  # after register, travel to the requested zone once
+			_travel_sent = true
+			Net.send_change_zone(_travel)
 
 # --- input / camera (client only) ---
 func _send_local_input() -> void:
@@ -221,6 +234,12 @@ func _input(event: InputEvent) -> void:
 				_set_status("First Aid -> peer %d…" % other)
 			else:
 				_set_status("First Aid: no one else here.")
+		elif event.keycode == KEY_T:
+			if not _zone_list.is_empty():  # cycle travel to the next loaded zone
+				_travel_idx = (_travel_idx + 1) % _zone_list.size()
+				var z: Dictionary = _zone_list[_travel_idx]
+				Net.send_change_zone(String(z.get("id", "")))
+				_set_status("Traveling to %s…" % String(z.get("name", z.get("id", ""))))
 		elif event.keycode == KEY_C:
 			_spend_cp = (_spend_cp + 1) % 6  # cycle 0..5 CP staged for the next shot (WEG: +1D each)
 			_announce_next_shot()
@@ -333,6 +352,11 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 			String(zone.get("alert_level", "")),
 			String(zone.get("effective_security", "")),
 		]
+	var zone_name := String(zone.get("display_name", ""))
+	if zone_name != "" and zone_name != _last_zone_name:
+		_last_zone_name = zone_name
+		print("[zone] now in %s (%s)" % [zone_name, String(zone.get("effective_security", ""))])
+	_zone_list = snapshot.get("zone_list", _zone_list)  # cache the travel list (DIV-0014)
 	var headline := String(zone.get("event", ""))
 	if _news_label != null:
 		_news_label.text = ("NEWS — " + headline) if headline != "" else ""
@@ -400,7 +424,7 @@ func _build_hud() -> void:
 
 	var controls := Label.new()
 	controls.position = Vector2(18, 40)
-	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · Esc release"
+	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · T travel · Esc release"
 	controls.add_theme_font_size_override("font_size", 14)
 	controls.modulate = Color(0.09, 0.08, 0.06)
 	layer.add_child(controls)
@@ -583,6 +607,14 @@ func _on_heal_replied(result: Dictionary) -> void:
 	else:
 		print("[firstaid] heal failed (%s)" % String(result.get("reason", "")))
 		_set_status("First Aid failed (%s)." % String(result.get("reason", "")))
+
+func _on_zone_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		print("[zone] traveled to %s" % String(result.get("display_name", result.get("zone_id", ""))))
+		_set_status("Arrived in %s." % String(result.get("display_name", result.get("zone_id", ""))))
+	else:
+		print("[zone] travel rejected (%s)" % String(result.get("reason", "")))
+		_set_status("Travel rejected (%s)." % String(result.get("reason", "")))
 
 func _on_chat_received(message: Dictionary) -> void:
 	var line := ChatModel.format_line(message)
