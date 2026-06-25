@@ -335,7 +335,7 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 		seen[id] = true
 		var pos: Vector3 = entry.get("pos", Vector3.ZERO)
 		if not _avatars.has(id):
-			_avatars[id] = {"root": _spawn_avatar(id, String(entry.get("name", ""))), "seen": false}
+			_avatars[id] = {"root": _spawn_avatar(id, String(entry.get("name", ""))), "seen": false, "wound": "healthy"}
 		var record: Dictionary = _avatars[id]
 		var root := record["root"] as Node3D
 		# First person: hide our own capsule.
@@ -345,6 +345,9 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 		else:
 			root.global_position = pos
 			record["seen"] = true
+		# Show OTHER players' wound condition on their nameplate (so a medic can see who's hurt).
+		if id != _local_id:
+			_update_nameplate(record, id, String(entry.get("name", "")), String(entry.get("wound", "healthy")))
 	for id in _avatars.keys():
 		if not seen.has(id):
 			(_avatars[id]["root"] as Node3D).queue_free()
@@ -400,6 +403,7 @@ func _spawn_avatar(peer_id: int, display_name: String) -> Node3D:
 	root.add_child(mesh)
 
 	var label := Label3D.new()
+	label.name = "Nameplate"
 	label.text = display_name if display_name != "" else "Spacer-%d" % peer_id
 	label.position.y = 2.1
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
@@ -413,6 +417,22 @@ func _spawn_avatar(peer_id: int, display_name: String) -> Node3D:
 func _color_for_peer(peer_id: int) -> Color:
 	var hue := fposmod(float(peer_id) * 0.6180339887, 1.0)
 	return Color.from_hsv(hue, 0.55, 0.72)
+
+# Show a remote player's wound condition on their nameplate (so a medic can see who's hurt
+# and target First Aid). Healthy -> just the name; wounded -> "Name — Condition" tinted.
+func _update_nameplate(record: Dictionary, peer_id: int, display_name: String, wound: String) -> void:
+	var label := (record["root"] as Node3D).get_node_or_null("Nameplate") as Label3D
+	var base := display_name if display_name != "" else "Spacer-%d" % peer_id
+	if label != null:
+		if wound == "healthy":
+			label.text = base
+			label.modulate = Color(0.09, 0.08, 0.06)
+		else:
+			label.text = "%s — %s" % [base, _condition_pretty(wound)]
+			label.modulate = _condition_color(wound)
+	if String(record.get("wound", "healthy")) != wound:
+		record["wound"] = wound
+		print("[nameplate] %s is %s" % [base, _condition_pretty(wound)])
 
 # E27: render the zone's ambient NPCs as muted markers (distinct from player avatars),
 # reconciled each snapshot — spawn new, lerp existing, free despawned/zone-left. The roster

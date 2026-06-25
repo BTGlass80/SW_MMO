@@ -1003,6 +1003,13 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 			if String(_peer_zones.get(int((p as Dictionary).get("id", 0)), _default_zone)) == zone_id:
 				here.append(p)
 		snap["players"] = here
+	# Enrich each (zone-filtered) player entry with its live wound condition so OTHER players'
+	# nameplates show who's hurt (supports First Aid targeting). Entries are fresh per call.
+	if arena != null:
+		for p in snap.get("players", []):
+			var ppid := int((p as Dictionary).get("id", 0))
+			if arena.has_player(ppid):
+				(p as Dictionary)["wound"] = PersistenceStore.wound_state_for_severity(int((arena.player_state(ppid) as Dictionary).get("player_wound_severity", 0)))
 	if zones != null:
 		snap["zone"] = zones.zone_summary(zone_id)
 	if territory != null and peer_id != 0:
