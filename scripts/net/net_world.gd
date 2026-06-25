@@ -31,6 +31,8 @@ var _autowalk := false
 var _autofire_accum := 0.0
 var _account := "guest"
 var _name := ""
+var _species := ""
+var _quickstart := false
 var _combat_log: Label
 var _combat_lines: Array[String] = []
 var _zone_label: Label
@@ -70,6 +72,8 @@ func _parse_args() -> void:
 	if account != "":
 		_account = account
 	_name = _arg_value("--name")
+	_species = _arg_value("--species")
+	_quickstart = args.has("--quickstart")
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -137,7 +141,10 @@ func _update_camera() -> void:
 # --- net signal handlers ---
 func _on_client_connected() -> void:
 	_local_id = Net.local_peer_id()
-	Net.send_register(_account, _name)
+	var build := {}
+	if _species != "" or _quickstart:
+		build = {"species": _species if _species != "" else "human", "quickstart": true}
+	Net.send_register(_account, _name, build)
 	var who := _name if _name != "" else "account %s" % _account
 	_set_status("Connected as peer %d (%s)." % [_local_id, who])
 

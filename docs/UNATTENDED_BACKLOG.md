@@ -134,7 +134,7 @@ attribute-dice budget; starting skill dice budget; produce a starting sheet
 `chargen_smoke` (valid build accepted, over-budget/out-of-range rejected, sheet shape).
 - Acceptance: `chargen_smoke` + full gate green.
 
-### C2 — Server chargen flow  [STATUS: TODO]
+### C2 — Server chargen flow  [STATUS: DONE]
 New characters run chargen on first login: extend the register/create path so a client
 with no saved record sends {species, attributes, skills, name} (validated by C1) and the
 server persists the resulting sheet via the M1.4 store; a quick-start default build if
@@ -158,6 +158,7 @@ spend CP to raise a skill; persist via the store. Client shows CP wallet + a rai
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
 - 2026-06-24 LOOP RESUMED — owner chose Wave C (Character Creation & Progression). Next: C1.
+- 2026-06-24 C2 DONE — server chargen flow: `register_account(account_id, name, build)` now runs `_create_character` for NEW characters — validates the requested WEG build (or a deterministic quick-start) via chargen_model against the server-loaded species data, persists the resulting sheet via the M1.4 store. Client passes `--species`/`--quickstart`. Verified over the wire: a new `--species rodian --quickstart` account created `species=rodian dex=3D+1 cp=5` (species-aware), persisted. Existing characters load unchanged. Full gate green (36 smokes). Combat still uses the shared trainee pools — using the per-character sheet IN combat is a later slice.
 - 2026-06-24 C1 DONE — pure `scripts/rules/chargen_model.gd` (WEG R&E): validate_build enforces exactly 18D attributes within species min/max + a 7D skill budget, produces the player_persistence `sheet` (CP 5 / FP 1 / force_sensitive false / healthy); default_build gives a deterministic in-range quick-start. `chargen_smoke`. Full gate green (36 smokes). NOTE: a parallel session owns the asset pipeline (`docs/ASSET_PIPELINE.md` etc.) — kept scoped commits.
 - 2026-06-24 Content drop 2 DONE — one-way extract from read-only SW_MUSH: `data/starships_clone_wars.json` (6 era-appropriate civilian craft; GCW/Imperial ships excluded — content_smoke asserts none leak), `data/droids_clone_wars.json` (3 commerce droids), `data/creatures_clone_wars.json` (22 wildlife). content_smoke extended; manifest updated. Full gate green.
 - 2026-06-24 **LOOP STOP** — backlog dry of unblocked, non-owner-decision, non-visual items. Remaining: A1b/P1 (DEFERRED, need owner visual check) and the owner-gated features (org/claim commands, guard NPCs, siege/Drop-6D, Force/Jedi, death penalty, LLM-Director-at-launch). Handed back to owner.

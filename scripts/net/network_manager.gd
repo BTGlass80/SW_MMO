@@ -16,7 +16,9 @@ const CombatArena := preload("res://scripts/net/combat_arena.gd")
 const PersistenceStore := preload("res://scripts/net/persistence_store.gd")
 const ZoneState := preload("res://scripts/net/zone_state.gd")
 const Territory := preload("res://scripts/net/territory_model.gd")
+const Chargen := preload("res://scripts/rules/chargen_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
+const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 
 const DEFAULT_PORT := 24555
 const MAX_CLIENTS := 32
@@ -45,6 +47,8 @@ var store: PersistenceStore = null    # server only
 var zones: ZoneState = null           # server only (world-sim director)
 var territory: Territory = null       # server only (org claims + passive income)
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
+
+var _species_data := {}               # server only (chargen species ranges)
 var last_snapshot: Dictionary = {}    # client view of the world
 var connected: bool = false           # client: handshake complete
 
@@ -83,6 +87,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 		{"republic": 50, "cis": 5, "hutt": 40, "independent": 25},
 		"Mos Eisley Spaceport District")
 	territory = Territory.new()
+	_species_data = _load_species()
 	_server_rng.randomize()
 	print("[net] server listening on port %d (combat window %.1fs)" % [port, combat_window_seconds])
 	server_started.emit(port)
@@ -194,10 +199,11 @@ func send_fire_intent(intent: Dictionary) -> void:
 	if mode == Mode.CLIENT and connected:
 		submit_fire_intent.rpc_id(1, intent)
 
-# client -> server: identify which character to load/persist for this peer, and the
-# chosen display name (empty keeps the saved/default name)
+# client -> server: identify the character to load/persist, the chosen display name
+# (empty keeps the saved/default name), and a chargen BUILD used only when the
+# character does not exist yet ({species, quickstart} or {species, attributes, skills}).
 @rpc("any_peer", "call_remote", "reliable")
-func register_account(account_id: String, display_name: String = "") -> void:
+func register_account(account_id: String, display_name: String = "", build: Dictionary = {}) -> void:
 	if mode != Mode.SERVER or store == null or state == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
@@ -213,7 +219,7 @@ func register_account(account_id: String, display_name: String = "") -> void:
 	if chosen_name == "":
 		chosen_name = String(record.get("name", existing.get("name", "")))
 	if record.is_empty():
-		record = store.default_record(character_id, character_id, chosen_name, WorldState.SPAWN_POINT)
+		record = _create_character(character_id, chosen_name, build)  # new char: run chargen
 	else:
 		record["name"] = chosen_name
 	var pos := PersistenceStore.record_pos(record, WorldState.SPAWN_POINT)
@@ -224,9 +230,58 @@ func register_account(account_id: String, display_name: String = "") -> void:
 		arena.set_player_name(sender, chosen_name)
 	print("[persist] peer %d -> %s (%s) loaded at (%.1f, %.1f, %.1f)" % [sender, character_id, chosen_name, pos.x, pos.y, pos.z])
 
-func send_register(account_id: String, display_name: String = "") -> void:
+func send_register(account_id: String, display_name: String = "", build: Dictionary = {}) -> void:
 	if mode == Mode.CLIENT and connected:
-		register_account.rpc_id(1, account_id, display_name)
+		register_account.rpc_id(1, account_id, display_name, build)
+
+# Build a brand-new character record: validate the requested WEG build (or use a
+# deterministic quick-start) and persist it immediately.
+func _create_character(character_id: String, display_name: String, build: Dictionary) -> Dictionary:
+	var record := store.default_record(character_id, character_id, display_name, WorldState.SPAWN_POINT)
+	var species_key := String(build.get("species", "human"))
+	var species := _species_for(species_key)
+	var sheet := {}
+	if build.has("attributes") and not bool(build.get("quickstart", false)):
+		var result: Dictionary = Chargen.validate_build(D6Rules, species, build.get("attributes", {}), build.get("skills", {}))
+		if bool(result.get("valid", false)):
+			sheet = result["sheet"]
+		else:
+			print("[chargen] invalid build for %s %s — using quick-start" % [character_id, str(result.get("errors", []))])
+	if sheet.is_empty():
+		sheet = Chargen.default_sheet(D6Rules, species)
+	record["sheet"] = sheet
+	record["species"] = species_key
+	store.save_record(character_id, record)
+	print("[chargen] created %s species=%s dex=%s cp=%d" % [
+		character_id, species_key,
+		String((sheet.get("attributes", {}) as Dictionary).get("dexterity", "?")),
+		int(sheet.get("character_points", 0)),
+	])
+	return record
+
+func _load_species() -> Dictionary:
+	if not FileAccess.file_exists(SPECIES_DATA_PATH):
+		return {}
+	var file := FileAccess.open(SPECIES_DATA_PATH, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return {}
+	return (parsed as Dictionary).get("species", {})
+
+func _species_for(species_key: String) -> Dictionary:
+	var species: Dictionary = _species_data.get(species_key, {})
+	if species.is_empty():
+		species = _species_data.get("human", {})
+	if species.is_empty():
+		# Last-resort fallback so chargen never hard-fails if data is missing.
+		var human_range := {"min": "2D", "max": "4D"}
+		species = {"attributes": {
+			"dexterity": human_range, "knowledge": human_range, "mechanical": human_range,
+			"perception": human_range, "strength": human_range, "technical": human_range,
+		}}
+	return species
 
 func _physics_process(delta: float) -> void:
 	match mode:
