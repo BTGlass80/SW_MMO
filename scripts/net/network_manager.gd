@@ -18,6 +18,7 @@ const ZoneState := preload("res://scripts/net/zone_state.gd")
 const Territory := preload("res://scripts/net/territory_model.gd")
 const Chargen := preload("res://scripts/rules/chargen_model.gd")
 const Progression := preload("res://scripts/rules/progression_model.gd")
+const Equipment := preload("res://scripts/rules/equipment_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -47,6 +48,7 @@ signal snapshot_applied(snapshot: Dictionary)
 signal combat_envelope(envelope: Dictionary)
 signal wallet_updated(wallet: Dictionary)
 signal skill_raise_replied(result: Dictionary)
+signal equip_replied(result: Dictionary)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -59,6 +61,8 @@ var director_tick_seconds: float = DIRECTOR_TICK_SECONDS
 
 var _species_data := {}               # server only (chargen species ranges)
 var _skill_attr := {}                 # server only (skill key -> governing attribute)
+var _weapons_catalog := {}            # server only (weapon key -> stats; for equip)
+var _armor_catalog := {}              # server only (armor key -> stats; for equip)
 var last_snapshot: Dictionary = {}    # client view of the world
 var last_wallet: Dictionary = {}      # client view of its own CP wallet
 var connected: bool = false           # client: handshake complete
@@ -92,9 +96,10 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	mode = Mode.SERVER
 	state = WorldState.new()
+	_weapons_catalog = _load_json_container(WEAPONS_DATA_PATH, "weapons")
+	_armor_catalog = _load_json_container(ARMOR_DATA_PATH, "armor")
 	arena = CombatArena.new(D6Rules, _load_combat_data(), "b1_training_silhouette",
-		_load_json_container(WEAPONS_DATA_PATH, "weapons"),
-		_load_json_container(ARMOR_DATA_PATH, "armor"))
+		_weapons_catalog, _armor_catalog)
 	store = PersistenceStore.new("user://persistence")
 	zones = ZoneState.new()
 	_load_zones()  # seed the multi-zone roster (the Director ticks them all)
@@ -250,7 +255,8 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 		arena.set_player_combat(sender, PersistenceStore.combat_from_record(record))
 		arena.set_player_name(sender, chosen_name)
 		arena.set_player_sheet(sender, record.get("sheet", {}))  # combat uses the character's own stats
-	print("[persist] peer %d -> %s (%s) loaded at (%.1f, %.1f, %.1f)" % [sender, character_id, chosen_name, pos.x, pos.y, pos.z])
+	print("[persist] peer %d -> %s (%s) loaded at (%.1f, %.1f, %.1f) [weapon=%s]" % [sender, character_id, chosen_name, pos.x, pos.y, pos.z,
+		String((record.get("sheet", {}) as Dictionary).get("equipment", {}).get("weapon", "?"))])
 
 func send_register(account_id: String, display_name: String = "", build: Dictionary = {}) -> void:
 	if mode == Mode.CLIENT and connected:
@@ -356,6 +362,45 @@ func submit_skill_raise(skill: String) -> void:
 func send_skill_raise(skill: String) -> void:
 	if mode == Mode.CLIENT and connected:
 		submit_skill_raise.rpc_id(1, skill)
+
+# --- E22: inventory / equipment swap (D3) ---
+# client -> server: equip a different OWNED item into a slot. The server validates it
+# against the loaded catalog + the character's inventory, writes sheet.equipment,
+# persists, and rebuilds combat pools so the swap takes effect immediately.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_equip(slot: String, item_key: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := store.load_record(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var result: Dictionary = Equipment.equip(sheet, slot, item_key, _weapons_catalog, _armor_catalog)
+	if bool(result.get("ok", false)):
+		var new_sheet: Dictionary = result["sheet"]
+		record["sheet"] = new_sheet
+		store.save_record(character_id, record)
+		if arena != null:
+			arena.set_player_sheet(sender, new_sheet)  # swap takes effect in combat immediately
+		print("[equip] peer %d %s -> %s (damage pool now %s)" % [
+			sender, slot, item_key, arena.damage_pool_text(sender) if arena != null else "?"])
+		equip_result.rpc_id(sender, {"ok": true, "slot": slot, "item_key": item_key})
+	else:
+		print("[equip] peer %d %s %s rejected (%s)" % [sender, slot, item_key, String(result.get("reason", ""))])
+		equip_result.rpc_id(sender, {"ok": false, "slot": slot, "item_key": item_key, "reason": result.get("reason", "")})
+
+func send_equip(slot: String, item_key: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_equip.rpc_id(1, slot, item_key)
+
+# server -> client: the outcome of an equip request
+@rpc("authority", "call_remote", "reliable")
+func equip_result(result: Dictionary) -> void:
+	equip_replied.emit(result)
 
 # server -> client: push the player's current CP wallet
 @rpc("authority", "call_remote", "reliable")

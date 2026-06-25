@@ -141,4 +141,6 @@ Invoke-GodotStep "CP award smoke:" @("--headless", "--path", $projectRoot, "--sc
 
 Invoke-GodotStep "Zones smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/zones_smoke.gd")
 
+Invoke-GodotStep "Equip smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/equip_smoke.gd")
+
 Write-Host "`nAll checks passed."

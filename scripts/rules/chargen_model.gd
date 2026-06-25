@@ -20,6 +20,10 @@ const START_CP := 5
 const START_FP := 1
 const STARTER_WEAPON := "blaster_pistol"   # data/weapons_clone_wars.json
 const STARTER_ARMOR := "blast_vest"        # data/armor_clone_wars.json
+# Owned-item inventory a fresh character starts with (equip-swap candidates, E22). Keys
+# are real catalog entries: the equipped sidearm + vest, plus a concealed hold-out
+# blaster and a blast helmet so a loadout swap is possible from the first login.
+const STARTER_INVENTORY := ["blaster_pistol", "blast_vest", "hold_out_blaster", "blast_helmet"]
 
 static func _pips(rules: Object, code: String) -> int:
 	var pool: Dictionary = rules.parse_pool(code)
@@ -84,6 +88,7 @@ static func build_sheet(rules: Object, attributes: Dictionary, skills: Dictionar
 		"wound_state": "healthy",
 		"credits": 0,
 		"equipment": {"weapon": STARTER_WEAPON, "armor": STARTER_ARMOR},
+		"inventory": STARTER_INVENTORY.duplicate(),
 	}
 
 ## A deterministic quick-start attribute allocation: each attribute at its species

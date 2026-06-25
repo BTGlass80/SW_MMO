@@ -35,6 +35,9 @@ var _species := ""
 var _quickstart := false
 var _raise_skill := ""
 var _zone := ""
+var _equip := ""            # headless: "slot:item_key" to equip once after connecting
+var _equip_sent := false
+var _equip_accum := 0.0
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
@@ -55,6 +58,7 @@ func _ready() -> void:
 	Net.combat_envelope.connect(_on_combat_envelope)
 	Net.wallet_updated.connect(_on_wallet_updated)
 	Net.skill_raise_replied.connect(_on_skill_raise_replied)
+	Net.equip_replied.connect(_on_equip_replied)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -88,6 +92,7 @@ func _parse_args() -> void:
 	_quickstart = args.has("--quickstart")
 	_raise_skill = _arg_value("--raise-skill")
 	_zone = _arg_value("--zone")  # optional starting zone (server validates)
+	_equip = _arg_value("--equip")  # headless "slot:item_key" equip-swap test affordance
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -115,6 +120,13 @@ func _process(delta: float) -> void:
 		if _raise_accum >= 6.0:  # let some CP accrue first, then raise once (headless test)
 			_raise_sent = true
 			Net.send_skill_raise(_raise_skill)
+	if _equip != "" and not _equip_sent and Net.connected:
+		_equip_accum += delta
+		if _equip_accum >= 3.0:  # after register, swap loadout once (headless test)
+			_equip_sent = true
+			var parts := _equip.split(":")
+			if parts.size() == 2:
+				Net.send_equip(String(parts[0]), String(parts[1]))
 
 # --- input / camera (client only) ---
 func _send_local_input() -> void:
@@ -383,3 +395,10 @@ func _on_skill_raise_replied(result: Dictionary) -> void:
 		print("[skillraise] %s raised to %s (cost %d)" % [String(result.get("skill", "")), String(result.get("new_bonus", "")), int(result.get("cost", 0))])
 	else:
 		print("[skillraise] %s rejected (%s, need %d)" % [String(result.get("skill", "")), String(result.get("reason", "")), int(result.get("cost", 0))])
+
+func _on_equip_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		print("[equip] equipped %s in %s" % [String(result.get("item_key", "")), String(result.get("slot", ""))])
+		_set_status("Equipped %s." % String(result.get("item_key", "")))
+	else:
+		print("[equip] %s rejected (%s)" % [String(result.get("item_key", "")), String(result.get("reason", ""))])
