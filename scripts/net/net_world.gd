@@ -835,10 +835,14 @@ func _on_wallet_updated(wallet: Dictionary) -> void:
 	print("[cp] wallet g=%d r=%d" % [int(wallet.get("gameplay_cp", 0)), int(wallet.get("rp_cp", 0))])
 
 func _on_skill_raise_replied(result: Dictionary) -> void:
+	# F41: surface the result on the GUI status line too (print() only reaches the console; the
+	# player who typed /raise otherwise sees the optimistic "Raising…" forever). Parity w/ heal/zone.
 	if bool(result.get("ok", false)):
 		print("[skillraise] %s raised to %s (cost %d)" % [String(result.get("skill", "")), String(result.get("new_bonus", "")), int(result.get("cost", 0))])
+		_set_status("Raised %s to %s (cost %d CP)." % [String(result.get("skill", "")), String(result.get("new_bonus", "")), int(result.get("cost", 0))])
 	else:
 		print("[skillraise] %s rejected (%s, need %d)" % [String(result.get("skill", "")), String(result.get("reason", "")), int(result.get("cost", 0))])
+		_set_status("Raise failed: %s (need %d CP)." % [String(result.get("reason", "")), int(result.get("cost", 0))])
 
 func _on_equip_replied(result: Dictionary) -> void:
 	if bool(result.get("ok", false)):
@@ -846,6 +850,7 @@ func _on_equip_replied(result: Dictionary) -> void:
 		_set_status("Equipped %s." % String(result.get("item_key", "")))
 	else:
 		print("[equip] %s rejected (%s)" % [String(result.get("item_key", "")), String(result.get("reason", ""))])
+		_set_status("Equip failed: %s." % String(result.get("reason", "")))  # F41: parity
 
 func _on_auth_replied(result: Dictionary) -> void:
 	if not bool(result.get("ok", false)):
@@ -1036,10 +1041,17 @@ func _close_chat_input() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED  # resume first-person look + movement
 
 func _on_claim_replied(result: Dictionary) -> void:
+	# F41: surface the result on the GUI status line too (parity w/ heal/zone — print() only
+	# reaches the console, so the player who typed /claim otherwise sees "Claiming…" forever).
+	var node_id := String(result.get("node_id", ""))
 	if bool(result.get("ok", false)):
 		if bool(result.get("released", false)):
-			print("[territory] released %s" % String(result.get("node_id", "")))
+			print("[territory] released %s" % node_id)
+			_set_status("Released %s." % node_id)
 		else:
-			print("[territory] claimed %s for %s (tier %s)" % [String(result.get("node_id", "")), String(result.get("org_id", "")), String(result.get("tier", ""))])
+			print("[territory] claimed %s for %s (tier %s)" % [node_id, String(result.get("org_id", "")), String(result.get("tier", ""))])
+			_set_status("Claimed %s (%s)." % [node_id, String(result.get("tier", ""))])
 	else:
-		print("[territory] %s %s rejected (%s)" % ["release" if bool(result.get("released", false)) else "claim", String(result.get("node_id", "")), String(result.get("reason", ""))])
+		var verb := "release" if bool(result.get("released", false)) else "claim"
+		print("[territory] %s %s rejected (%s)" % [verb, node_id, String(result.get("reason", ""))])
+		_set_status("%s of %s rejected: %s." % [verb.capitalize(), node_id, String(result.get("reason", ""))])
