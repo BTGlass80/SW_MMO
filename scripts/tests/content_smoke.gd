@@ -9,7 +9,12 @@ const SKILL_CATALOG := "res://data/weg_skill_catalog.json"
 const SPECIES := "res://data/species_clone_wars.json"
 const WEAPONS := "res://data/weapons_clone_wars.json"
 const ARMOR := "res://data/armor_clone_wars.json"
+const STARSHIPS := "res://data/starships_clone_wars.json"
+const DROIDS := "res://data/droids_clone_wars.json"
+const CREATURES := "res://data/creatures_clone_wars.json"
 const ATTRIBUTES := ["dexterity", "knowledge", "mechanical", "perception", "strength", "technical"]
+# GCW/Imperial-era craft that must NOT appear in the Clone Wars starship roster.
+const FORBIDDEN_SHIPS := ["x_wing", "a_wing", "b_wing", "tie_fighter", "tie_interceptor", "tie_bomber", "lambda_shuttle", "imperial_star_destroyer"]
 
 var _failures: Array[String] = []
 
@@ -55,6 +60,31 @@ func _init() -> void:
 		var a: Dictionary = armor_map[key]
 		_assert_true((a.get("coverage", []) as Array).size() > 0, "armor '%s' has coverage" % key)
 		_assert_true(a.has("protection_energy") or a.has("protection_physical"), "armor '%s' has protection" % key)
+
+	# Content drop 2: starships, droids, creatures.
+	var starships := _load(STARSHIPS)
+	var droids := _load(DROIDS)
+	var creatures := _load(CREATURES)
+	for d in [starships, droids, creatures]:
+		_assert_true(d.has("source") or d.has("source_policy"), "drop-2 file carries provenance")
+
+	var ship_map: Dictionary = starships.get("starships", {})
+	_assert_true(ship_map.size() >= 5, "at least five starships (got %d)" % ship_map.size())
+	for key in ship_map:
+		var s: Dictionary = ship_map[key]
+		_assert_true(String(s.get("scale", "")) != "" and String(s.get("hull", "")) != "", "starship '%s' has scale + hull" % key)
+		_assert_true(not FORBIDDEN_SHIPS.has(key), "no GCW/Imperial-era ship '%s' in the Clone Wars roster" % key)
+
+	var droid_map: Dictionary = droids.get("droids", {})
+	_assert_true(droid_map.size() >= 3, "at least three droids (got %d)" % droid_map.size())
+	for key in droid_map:
+		_assert_true(String((droid_map[key] as Dictionary).get("name", "")) != "", "droid '%s' has a name" % key)
+
+	var creature_map: Dictionary = creatures.get("creatures", {})
+	_assert_true(creature_map.size() >= 15, "at least fifteen creatures (got %d)" % creature_map.size())
+	for key in creature_map:
+		var c: Dictionary = creature_map[key]
+		_assert_true(String(c.get("name", "")) != "" and String(c.get("scale", "")) != "", "creature '%s' has name + scale" % key)
 
 	_finish()
 

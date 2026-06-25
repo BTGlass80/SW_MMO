@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "era": "20 BBY Clone Wars",
+  "source_policy": "Derived one-way from READ-ONLY C:\\SW_MUSH. SW_MUSH remains read-only. WEG Star Wars D6 R&E; Clone Wars era (20 BBY). Source: data/vendor_droids.yaml (era-neutral commerce droids for the player-vendor economy).",
+  "source_note": "Content drop 2 (2026-06-24).",
+  "droids": {
+    "gn4": {
+      "name": "GN-4 Vendor Droid",
+      "tier": 1,
+      "cost": 2000,
+      "slots": 10,
+      "listing_fee_pct": 2.0,
+      "bargain_dice": 0,
+      "bargain_pips": 0,
+      "buy_orders": false,
+      "description": "A basic vendor droid with simple text-listing capability."
+    },
+    "gn7": {
+      "name": "GN-7 Merchant Droid",
+      "tier": 2,
+      "cost": 5000,
+      "slots": 25,
+      "listing_fee_pct": 1.5,
+      "bargain_dice": 2,
+      "bargain_pips": 0,
+      "buy_orders": false,
+      "description": "A mid-tier droid with a Bargain processor. Negotiates small discounts for buyers."
+    },
+    "gn12": {
+      "name": "GN-12 Commerce Droid",
+      "tier": 3,
+      "cost": 12000,
+      "slots": 50,
+      "listing_fee_pct": 1.0,
+      "bargain_dice": 3,
+      "bargain_pips": 1,
+      "buy_orders": true,
+      "description": "Top-tier commerce droid. Posts buy orders, offers the best terms."
+    }
+  }
+}

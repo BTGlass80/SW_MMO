@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "era": "20 BBY Clone Wars",
+  "source_policy": "Derived one-way from READ-ONLY C:\\SW_MUSH. SW_MUSH remains read-only. WEG Star Wars D6 R&E; Clone Wars era (20 BBY). Source: data/starships.yaml. GCW/Imperial-era craft (X/A/B-wing, all TIE variants, Lambda/Sentinel shuttles, Nebulon-B, Imperial Star Destroyer) were EXCLUDED as not Clone Wars-appropriate.",
+  "source_note": "Content drop 2 (2026-06-24). CW-specific military starfighters (V-19 Torrent, ARC-170, Eta-2, Delta-7, Vulture droid, Tri-fighter) are a future WEG-authored addition, not present in the SW_MUSH source.",
+  "starships": {
+    "yt_1300": {
+      "name": "YT-1300 Transport",
+      "nickname": "YT-1300",
+      "scale": "starfighter",
+      "hull": "4D",
+      "shields": "1D",
+      "speed": 4,
+      "maneuverability": "1D",
+      "crew": 1,
+      "passengers": 6,
+      "cargo": 100,
+      "consumables": "2 months",
+      "hyperdrive": 2,
+      "hyperdrive_backup": 12,
+      "cost": 100000,
+      "mod_slots": 5,
+      "reactor_power": 10,
+      "weapons": [
+        {
+          "name": "Laser Cannon",
+          "fire_arc": "turret",
+          "damage": "4D",
+          "fire_control": "1D",
+          "skill": "starship_gunnery"
+        }
+      ]
+    },
+    "yt_2400": {
+      "name": "YT-2400 Transport",
+      "mod_slots": 5,
+      "reactor_power": 12,
+      "nickname": "YT-2400",
+      "scale": "starfighter",
+      "hull": "4D+2",
+      "shields": "2D",
+      "speed": 5,
+      "maneuverability": "1D+2",
+      "crew": 1,
+      "passengers": 6,
+      "cargo": 150,
+      "consumables": "2 months",
+      "hyperdrive": 2,
+      "hyperdrive_backup": 12,
+      "cost": 130000,
+      "weapons": [
+        {
+          "name": "Dorsal Laser Cannon",
+          "fire_arc": "turret",
+          "damage": "4D",
+          "fire_control": "2D",
+          "skill": "starship_gunnery"
+        },
+        {
+          "name": "Ventral Laser Cannon",
+          "fire_arc": "turret",
+          "damage": "4D",
+          "fire_control": "2D",
+          "skill": "starship_gunnery"
+        }
+      ]
+    },
+    "ghtroc_720": {
+      "name": "Ghtroc 720 Freighter",
+      "mod_slots": 4,
+      "reactor_power": 10,
+      "nickname": "Ghtroc 720",
+      "scale": "starfighter",
+      "hull": "4D",
+      "shields": "1D",
+      "speed": 3,
+      "maneuverability": "1D",
+      "crew": 1,
+      "passengers": 10,
+      "cargo": 135,
+      "consumables": "3 months",
+      "hyperdrive": 2,
+      "hyperdrive_backup": 15,
+      "cost": 98500,
+      "weapons": [
+        {
+          "name": "Double Laser Cannon",
+          "fire_arc": "turret",
+          "damage": "4D",
+          "fire_control": "1D",
+          "skill": "starship_gunnery"
+        }
+      ]
+    },
+    "z_95": {
+      "name": "Z-95 Headhunter",
+      "mod_slots": 2,
+      "reactor_power": 8,
+      "nickname": "Headhunter",
+      "scale": "starfighter",
+      "hull": "3D",
+      "shields": "1D",
+      "speed": 7,
+      "maneuverability": "1D",
+      "crew": 1,
+      "passengers": 0,
+      "cargo": 5,
+      "consumables": "1 day",
+      "hyperdrive": 0,
+      "hyperdrive_backup": 0,
+      "cost": 40000,
+      "weapons": [
+        {
+          "name": "Two Triple Blasters (fire-linked)",
+          "fire_arc": "front",
+          "damage": "3D",
+          "fire_control": "1D",
+          "skill": "starship_gunnery"
+        },
+        {
+          "name": "Concussion Missile Launcher",
+          "fire_arc": "front",
+          "damage": "7D",
+          "fire_control": "0D",
+          "skill": "starship_gunnery",
+          "ammo": 6
+        }
+      ]
+    },
+    "firespray": {
+      "name": "Firespray Patrol Craft",
+      "mod_slots": 3,
+      "reactor_power": 10,
+      "nickname": "Firespray",
+      "scale": "starfighter",
+      "hull": "5D",
+      "shields": "2D",
+      "speed": 7,
+      "maneuverability": "1D",
+      "crew": 1,
+      "passengers": 6,
+      "cargo": 40,
+      "consumables": "1 month",
+      "hyperdrive": 2,
+      "hyperdrive_backup": 15,
+      "cost": 120000,
+      "weapons": [
+        {
+          "name": "Twin Blaster Cannon",
+          "fire_arc": "front",
+          "damage": "5D",
+          "fire_control": "2D",
+          "skill": "starship_gunnery"
+        },
+        {
+          "name": "Concussion Missile Launcher",
+          "fire_arc": "front",
+          "damage": "7D",
+          "fire_control": "1D",
+          "skill": "starship_gunnery",
+          "ammo": 6
+        },
+        {
+          "name": "Tractor Beam Projector",
+          "fire_arc": "rear",
+          "damage": "3D",
+          "fire_control": "2D",
+          "skill": "starship_gunnery",
+          "tractor": true
+        }
+      ]
+    },
+    "corellian_corvette": {
+      "name": "Corellian Corvette",
+      "mod_slots": 6,
+      "reactor_power": 16,
+      "nickname": "CR90 Corvette",
+      "scale": "capital",
+      "hull": "4D",
+      "shields": "2D",
+      "speed": 6,
+      "maneuverability": "2D",
+      "crew": 30,
+      "passengers": 10,
+      "cargo": 3000,
+      "consumables": "1 year",
+      "hyperdrive": 2,
+      "hyperdrive_backup": 12,
+      "cost": 3500000,
+      "weapons": [
+        {
+          "name": "Six Turbolaser Batteries",
+          "fire_arc": "turret",
+          "damage": "4D+2",
+          "fire_control": "3D",
+          "skill": "capital_ship_gunnery"
+        }
+      ]
+    }
+  }
+}

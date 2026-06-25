@@ -1,0 +1,1008 @@
+{
+  "schema_version": 1,
+  "era": "20 BBY Clone Wars",
+  "source_policy": "Derived one-way from READ-ONLY C:\\SW_MUSH. SW_MUSH remains read-only. WEG Star Wars D6 R&E; Clone Wars era (20 BBY). Source: data/npcs_creatures.yaml (era-neutral wildlife/fauna).",
+  "source_note": "Content drop 2 (2026-06-24).",
+  "creatures": {
+    "worrt": {
+      "id": "worrt",
+      "name": "Worrt",
+      "species": "Worrt",
+      "scale": "creature",
+      "size": "0.5-1.5m",
+      "hostile": false,
+      "pack_count": [
+        1,
+        3
+      ],
+      "description": "A squat, toad-like creature the colour of wet sand sits motionless in a shallow scrape, only its bulging eyes moving. Worrts are blindly stupid ambush feeders \u2014 it will snap its long sticky tongue at anything roughly its own size or smaller that crawls past, prey or droid or drifting rock alike. Harmless to a grown being, endlessly annoying everywhere else.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "1D",
+          "perception": "0D+2",
+          "strength": "1D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "4D"
+        },
+        "move": 3,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "tongue",
+        "to_hit_skill": "brawling",
+        "damage": "1D"
+      },
+      "source": "COTG \u00a72.1 (WEG40080)"
+    },
+    "glim_worm": {
+      "id": "glim_worm",
+      "name": "Glim Worm",
+      "species": "Glim Worm",
+      "scale": "creature",
+      "size": "<=1m",
+      "hostile": true,
+      "pack_count": [
+        3,
+        4
+      ],
+      "description": "The sand here is undisturbed \u2014 until it isn't. Glim worms track prey by vibration at speed beneath the dunes and erupt directly underneath it, wrapping the victim in adhesive scales and rolling it toward a ring of teeth. They travel in small knots of three or four. The first warning is usually the ground giving way.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "1D",
+          "perception": "1D",
+          "strength": "1D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "sneak": "4D",
+          "brawling": "3D"
+        },
+        "move": 10,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "grapple",
+        "to_hit_skill": "brawling",
+        "damage": "opposed (brawling vs. brawling or STR)"
+      },
+      "special": [
+        "Burrows at ~40 kph; digging 4D. Erupts from beneath prey for a surprise grapple."
+      ],
+      "special_attack": {
+        "restraint": {
+          "kind": "grapple",
+          "hold_damage": "",
+          "note": "Adhesive coils; opposed brawling/STR to break free."
+        }
+      },
+      "source": "COTG \u00a72.1 (WEG40080)"
+    },
+    "hitcher_crab": {
+      "id": "hitcher_crab",
+      "name": "Hitcher Crab",
+      "species": "Hitcher Crab",
+      "scale": "creature",
+      "size": "1.3m",
+      "hostile": true,
+      "pack_count": [
+        1,
+        2
+      ],
+      "description": "A spiked desert crustacean the size of a footlocker, half-buried to wait out the heat \u2014 easy to tread on before you see it. Its claws carry a slow-acting venom that is merely painful to most beings if treated, and its body holds water sacs that make it a genuine survival prize for anyone who can kill one without getting clawed.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "1D",
+          "perception": "1D+2",
+          "strength": "1D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 12,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "claws",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D"
+      },
+      "armor": {
+        "note": "Shell: +1D vs energy, +2D vs physical."
+      },
+      "special": [
+        "Claw venom 2D+2 (slow-acting; painful, treatable). Shell venom 1D+2 on contact.",
+        "Burrows to wait out the heat \u2014 often encountered buried/unseen."
+      ],
+      "special_attack": {
+        "poison": {
+          "damage": "2D+2",
+          "rounds": 2,
+          "onset": 1,
+          "note": "Slow-acting claw venom; painful but treatable."
+        }
+      },
+      "harvest": {
+        "good": "water_sacs",
+        "resource": "chemical",
+        "note": "Internal water sacs are a desert survival/sale good; field-dressed on kill."
+      },
+      "source": "COTG \u00a72.1 (WEG40080)"
+    },
+    "magus": {
+      "id": "magus",
+      "name": "Magus",
+      "species": "Magus",
+      "scale": "creature",
+      "size": "58cm",
+      "hostile": false,
+      "pack_count": [
+        1,
+        2
+      ],
+      "description": "A low, armoured burrower about the length of a forearm, plated in a hide tough enough that it is hunted commercially for it. The magus wants nothing to do with you \u2014 threaten it and it vanishes under the sand, leaving behind the eye-watering reek of its defensive oil-gland.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "2D+1",
+          "perception": "2D+1",
+          "strength": "1D+1",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "sneak": "4D+1",
+          "stamina": "5D"
+        },
+        "move": 9,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "claws",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2"
+      },
+      "armor": {
+        "note": "Armoured hide: +1D+1."
+      },
+      "special": [
+        "Defensive odor: closing within 3-4m requires a Very Difficult stamina roll."
+      ],
+      "harvest": {
+        "good": "magus_hide",
+        "resource": "organic",
+        "note": "Armour-tough hide is a commercially hunted good; field-dressed on kill."
+      },
+      "source": "COTG \u00a72.1 (WEG40080)"
+    },
+    "stalker_lizard": {
+      "id": "stalker_lizard",
+      "name": "Stalker Lizard",
+      "species": "Stalker Lizard",
+      "scale": "creature",
+      "size": "<=3.5m",
+      "hostile": true,
+      "pack_count": [
+        1,
+        1
+      ],
+      "description": "Low and fast and the purple-blue of dune-grass, the stalker lizard is a patient plains constrictor. It shadows a target for distance, then sprints the last fifty metres and throws its coils, crushing the windpipe. It hunts alone and takes one kill at a time \u2014 which is small comfort when you are the one it has chosen.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "1D",
+          "perception": "2D",
+          "strength": "3D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "search": "3D+2",
+          "sneak": "5D",
+          "brawling": "4D"
+        },
+        "move": 13,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "constriction",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2D+2"
+      },
+      "special": [
+        "Stalks, then a burst sprint over the final ~50m before constricting."
+      ],
+      "special_attack": {
+        "restraint": {
+          "kind": "constriction",
+          "hold_damage": "STR+2D+2",
+          "note": "Crushes the windpipe each round once it has a coil on you."
+        }
+      },
+      "harvest": {
+        "good": "stalker_hide",
+        "resource": "organic",
+        "note": "Thick constrictor hide; field-dressed on kill (Lane A Phase C)."
+      },
+      "source": "COTG \u00a72.1 (WEG40080)"
+    },
+    "yeomet": {
+      "id": "yeomet",
+      "name": "Yeomet",
+      "species": "Yeomet",
+      "scale": "creature",
+      "size": "60cm",
+      "hostile": false,
+      "pack_count": [
+        2,
+        5
+      ],
+      "description": "A scaled, rat-faced vermin the height of a knee, the yeomet is the definitive pest of built worlds, ships, and stations. It chews through almost anything \u2014 cables and conduits included, which makes it a fire hazard \u2014 carries disease, and breeds in non-hierarchical herds that sleep in heaped piles. It flees unless cornered, at which point its teeth are a real problem. Exterminators who clear them are respected.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "4D",
+          "perception": "2D",
+          "strength": "1D+1",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 8,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "teeth",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2D"
+      },
+      "special": [
+        "Claws STR+1D.",
+        "Disease transmission: a bite forces a Moderate stamina (or STR) roll.",
+        "Gnaws through cables/conduits \u2014 an infrastructure/electrical-fire hazard."
+      ],
+      "source": "COTG \u00a72.4 (WEG40080)"
+    },
+    "borcatu": {
+      "id": "borcatu",
+      "name": "Borcatu",
+      "species": "Borcatu",
+      "scale": "creature",
+      "size": "0.2-0.5m",
+      "hostile": false,
+      "pack_count": [
+        1,
+        3
+      ],
+      "description": "A bad-tempered little stowaway scavenger, spread galaxy-wide from desert origins by riding cargo holds into the urban slums. Rock-hard digging claws, an armoured hide, and a reflex to bite anything that grabs it make the borcatu a dockworker's curse \u2014 cheap to find, irritating to remove.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D",
+          "perception": "2D",
+          "strength": "1D+2",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 11,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "bite",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2"
+      },
+      "armor": {
+        "note": "Armoured hide: +2."
+      },
+      "special": [
+        "Claws STR+1; rock-hard digging claws (burrows).",
+        "Bites anything that grabs it."
+      ],
+      "source": "COTG \u00a72.4 (WEG40080)"
+    },
+    "tymp": {
+      "id": "tymp",
+      "name": "Tymp",
+      "species": "Tymp",
+      "scale": "creature",
+      "size": "0.7m (+0.7m tail)",
+      "hostile": true,
+      "pack_count": [
+        1,
+        3
+      ],
+      "description": "The tymp began as a forest forager, but a city-bred subspecies has turned aggressive \u2014 raiding trash and grain stores after dark and, more and more, attacking the people it finds there. Tusked, sharp-clawed, and a strong climber when pressed, it owns the night in the lower levels.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D",
+          "perception": "1D",
+          "strength": "1D+1",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 10,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "tusks",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D"
+      },
+      "special": [
+        "Night vision +2D.",
+        "Climbing (+2D under stress)."
+      ],
+      "harvest": {
+        "good": "tymp_hide",
+        "resource": "organic",
+        "note": "Tough urban-beast hide; field-dressed on kill (Lane A Phase C)."
+      },
+      "source": "COTG \u00a72.4 (WEG40080)"
+    },
+    "spor_crawler": {
+      "id": "spor_crawler",
+      "name": "Spor Crawler",
+      "species": "Spor Crawler",
+      "scale": "creature",
+      "size": "8cm",
+      "hostile": true,
+      "pack_count": [
+        3,
+        6
+      ],
+      "description": "Barely the length of a finger joint, the spor crawler is a tiny, deadly thing \u2014 an assassin's pet that hides in dirt, drawers, and bedding and stings with a venom that kills slowly and agonizingly. Its hives swarm anything that disturbs them. Ownership is tightly regulated; the black market in them thrives anyway.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "0D+2",
+          "perception": "0D+2",
+          "strength": "0D+2",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 1,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "sting",
+        "to_hit_skill": "brawling",
+        "damage": "Poison 5D"
+      },
+      "special": [
+        "Venom: roll every 5 minutes for 1 hour; Difficult stamina to resist the pain.",
+        "Burrowing; camouflage (Difficult search to spot) \u2014 a hidden hazard.",
+        "Hives swarm intruders."
+      ],
+      "special_attack": {
+        "poison": {
+          "damage": "5D",
+          "rounds": 3,
+          "onset": 0,
+          "note": "Lethal venom; source cadence is every 5 min for 1 hr out of combat."
+        }
+      },
+      "harvest": {
+        "good": "spor_venom",
+        "resource": "chemical",
+        "difficulty": 10,
+        "note": "Black-market venom; field-dressed on kill (Lane A Phase C)."
+      },
+      "source": "COTG \u00a72.4 (WEG40080)"
+    },
+    "somago": {
+      "id": "somago",
+      "name": "Somago",
+      "species": "Somago",
+      "scale": "creature",
+      "size": "50cm",
+      "hostile": true,
+      "pack_count": [
+        1,
+        1
+      ],
+      "description": "A net-shaped ambush creature that comes in several body-forms; the \"helmet\" form is sized to a humanoid head and drops to choke its prey head-first. Its origin is debated \u2014 rumoured to be engineered, though by whom no one agrees. It haunts cramped interiors and ship corridors, waiting overhead.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "4D",
+          "perception": "2D",
+          "strength": "3D+1",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 4,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "choke",
+        "to_hit_skill": "brawling",
+        "damage": "+3D/round once it has the head"
+      },
+      "special": [
+        "Hooks STR+1D.",
+        "Drops from above; the helmet form engulfs and chokes head-first."
+      ],
+      "special_attack": {
+        "restraint": {
+          "kind": "choke",
+          "hold_damage": "STR+3D",
+          "note": "Engulfs the head and chokes for +3D/round once it has a grip."
+        }
+      },
+      "source": "COTG \u00a72.4 (WEG40080), origin recast (engineered, debated)"
+    },
+    "voroos": {
+      "id": "voroos",
+      "name": "Voroos",
+      "species": "Voroos",
+      "scale": "creature",
+      "size": "1-10m",
+      "hostile": true,
+      "pack_count": [
+        1,
+        1
+      ],
+      "description": "What looks like a mound of sand, moss, or drifted snow is, sometimes, a voroos \u2014 a stationary terrain-mimic that waits, perfectly disguised, for something to wander within reach of its tongue. It grabs, hauls the prey in, and bites down; the bigger the voroos, the harder it is to tear free. The land itself, it turns out, can be hungry.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "4D",
+          "perception": "2D",
+          "strength": "6D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 0,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "tongue",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D, then grasp (vs brawling parry)"
+      },
+      "special": [
+        "Camouflage: a Difficult perception roll to notice before it strikes.",
+        "STR 4D / 6D / 8D by size (1-10m) \u2014 scale the threat to the region.",
+        "Teeth do half STR; +3D damage to anything trying to pull free of the grasp."
+      ],
+      "special_attack": {
+        "restraint": {
+          "kind": "grapple",
+          "hold_damage": "",
+          "note": "Sticky tongue-grasp; opposed brawling/STR to break free."
+        }
+      },
+      "harvest": {
+        "good": "voroos_hide",
+        "resource": "organic",
+        "yield": 2,
+        "note": "Bulk hide/flesh from a large beast; field-dressed on kill (Lane A Phase C)."
+      },
+      "source": "COTG \u00a73 (WEG40080)"
+    },
+    "shredder_bat": {
+      "id": "shredder_bat",
+      "name": "Shredder Bat",
+      "species": "Shredder Bat",
+      "scale": "creature",
+      "size": "<=1m (1m wingspan)",
+      "hostile": true,
+      "pack_count": [
+        6,
+        12
+      ],
+      "description": "Eyeless and silent until it isn't, the shredder bat hunts by hearing alone \u2014 it can pick out prey from kilometres off, then folds its wings and dives for an artery. They travel in packs of twenty or more, sometimes hundreds, and they have spread to a thousand worlds. A cloud of them coming out of the dark is a very bad sign.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "1D+2",
+          "perception": "5D",
+          "strength": "2D+2",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "search": "7D",
+          "sneak": "6D+2",
+          "brawling": "3D+2",
+          "flight": "4D"
+        },
+        "move": 18,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "fangs",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D (diving strike STR+2D+2)"
+      },
+      "special": [
+        "Eyeless; hunts by hearing, detecting prey to ~15km.",
+        "Dive-strikes the artery; attacks in packs."
+      ],
+      "source": "COTG \u00a73 (WEG40080)"
+    },
+    "wrix": {
+      "id": "wrix",
+      "name": "Wrix",
+      "species": "Wrix",
+      "scale": "creature",
+      "size": "<=2.5m",
+      "hostile": true,
+      "pack_count": [
+        3,
+        5
+      ],
+      "description": "A pack carnivore out of mountain folklore, the wrix preys on banthas and herd stock and drifts to the fringes of settlements for easier prey. Its howl is built to freeze you in place a half-second too long. Larger subspecies run to three and a half metres; none of them hunt alone.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "1D",
+          "perception": "2D",
+          "strength": "3D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "5D",
+          "search": "3D",
+          "sneak": "3D+2",
+          "climbing": "4D+1"
+        },
+        "move": 13,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "claws",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D"
+      },
+      "special": [
+        "Intimidating howl (intimidation 5D) \u2014 freezes prey.",
+        "Hunts in packs; subspecies up to 3.5m."
+      ],
+      "harvest": {
+        "good": "wrix_pelt",
+        "resource": "organic",
+        "note": "Pack-carnivore pelt; field-dressed on kill (Lane A Phase C)."
+      },
+      "source": "COTG \u00a73 (WEG40080)"
+    },
+    "winged_xendrite": {
+      "id": "winged_xendrite",
+      "name": "Winged Xendrite",
+      "species": "Winged Xendrite",
+      "scale": "creature",
+      "size": "40cm (80cm wingspan)",
+      "hostile": false,
+      "pack_count": [
+        10,
+        20
+      ],
+      "description": "A pinpoint insect-hunter introduced to \"fix\" infestations, the winged xendrite did its job too well and then overran the ecosystems it was meant to protect. One is harmless \u2014 a fast, sharp-eyed bug. A cloud of them sweeping through a passage is a different matter, and a sign that something upstream has gone badly out of balance.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D",
+          "perception": "4D",
+          "strength": "1D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 30,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "mandibles",
+        "to_hit_skill": "brawling",
+        "damage": "STR (negligible to a humanoid; dangerous only en masse)"
+      },
+      "special": [
+        "Eyesight +2D \u2014 a pinpoint hunter of smaller insects.",
+        "Harmless individually; the hazard is an overpopulation swarm."
+      ],
+      "source": "COTG \u00a73 (WEG40080)"
+    },
+    "acklay": {
+      "id": "acklay",
+      "name": "Acklay",
+      "species": "Acklay",
+      "scale": "creature",
+      "size": "~3m tall (claw-reach to 5m)",
+      "hostile": true,
+      "pack_count": [
+        1,
+        1
+      ],
+      "description": "A nightmare of chitin and blades: six long, bladed legs carry a low armoured body and a wedge of a head fringed with sensory stalks. Acklays run prey down on those legs and open it with them, then finish with a crushing bite. Geonosian beast-handlers prize them for the arena \u2014 a single acklay can clear a pit \u2014 and the wild ones that have slipped their handlers hunt the badlands and the shore of the Ebon Sea. The first sign is usually the drumming of legs on rock.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D+1",
+          "perception": "2D",
+          "strength": "5D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "6D",
+          "dodge": "4D"
+        },
+        "move": 16,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "claws",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2D"
+      },
+      "armor": {
+        "note": "+1D chitin."
+      },
+      "special": [
+        "Bite: STR+1D (the killing blow once prey is pinned by the legs).",
+        "Claw-reach ~5m on the six bladed legs \u2014 strikes before most foes close.",
+        "D6 stub re-statted from WotC lore; calibrate on the dev box."
+      ],
+      "harvest": {
+        "good": "acklay_chitin",
+        "note": "Arena armourers buy intact chitin plate; NOT wired (no creature-harvest runtime path yet)."
+      },
+      "source": "Geonosis & Outer Rim (WotC d20) \u00a71.8 \u2014 D6 re-stat from scratch; calibrate on dev box."
+    },
+    "mutant_acklay": {
+      "id": "mutant_acklay",
+      "name": "Mutant Acklay",
+      "species": "Acklay",
+      "scale": "creature",
+      "size": "~3m+ (Ebon Sea strain)",
+      "hostile": true,
+      "pack_count": [
+        1,
+        1
+      ],
+      "description": "The chemical sludge that bled from Golbah's Pit into the Ebon Sea did not kill the acklays that took to the water \u2014 it changed them. The Ebon Sea strain is bigger and better armoured than its desert kin, breathes the stagnant water as easily as air, and hunts the lightless depths beneath the scum film by sense and echo. It lies submerged until something crosses the shore, then comes up out of the black water all at once.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D+1",
+          "perception": "2D",
+          "strength": "5D+2",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "6D",
+          "dodge": "4D"
+        },
+        "move": 14,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "claws",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2D+2"
+      },
+      "armor": {
+        "note": "+2D thickened chitin."
+      },
+      "special": [
+        "Amphibious \u2014 breathes water; Move 12 swimming.",
+        "Low-light / echo-sense: hunts the dark water unimpaired by darkness.",
+        "+1D vs radiation and toxin (acclimated to the poisoned sea).",
+        "Bite STR+1D. D6 stub re-statted from WotC lore; calibrate on the dev box."
+      ],
+      "source": "Geonosis & Outer Rim (WotC d20) \u00a71.8 \u2014 D6 re-stat from scratch; calibrate on dev box."
+    },
+    "merdeth": {
+      "id": "merdeth",
+      "name": "Merdeth",
+      "species": "Merdeth",
+      "scale": "creature",
+      "size": "immense (\"bigger than a star freighter\")",
+      "hostile": true,
+      "pack_count": [
+        1,
+        1
+      ],
+      "description": "A merdeth is less an animal than a slow catastrophe: a vast armoured shell hauling itself across the dunes on barbed tentacles, consuming anything organic in its path. It is nearly unstoppable and nearly mindless, and it corners prey by smashing whatever the prey has fled into \u2014 a hive wall, a den mouth, a parked ship. Geonosians cannot kill them, so before the annual flood they herd them into the low desert to drown; the receding water leaves their glittering shells behind. Each one carries a cloud of mip parasites.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "1D",
+          "perception": "1D+2",
+          "strength": "8D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "8D"
+        },
+        "move": 4,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "barbed tentacles",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2D"
+      },
+      "armor": {
+        "note": "+4D shell."
+      },
+      "special": [
+        "Walker-scale-equivalent juggernaut (STR 8D, \"bigger than a star freighter\"); D6 stub \u2014 calibrate scale (likely walker) on the dev box before live combat.",
+        "Hosts 1D6 Mip swarms (see mip_swarm); they disperse if the merdeth dies.",
+        "Attacks structures (\"nests\") to corner fleeing prey."
+      ],
+      "special_attack": {
+        "restraint": {
+          "kind": "grapple",
+          "hold_damage": "STR+2D",
+          "note": "Barbed tentacles seize and crush; opposed brawling/STR to break free."
+        }
+      },
+      "harvest": {
+        "good": "merdeth_shell",
+        "note": "The glittering post-flood shells are a salvage good; NOT wired (no creature-harvest runtime path yet)."
+      },
+      "source": "Geonosis & Outer Rim (WotC d20) \u00a71.8 \u2014 D6 re-stat from scratch; calibrate on dev box."
+    },
+    "mip_swarm": {
+      "id": "mip_swarm",
+      "name": "Mip Swarm",
+      "species": "Mip",
+      "scale": "creature",
+      "size": "swarm (individuals tiny)",
+      "hostile": true,
+      "pack_count": [
+        1,
+        1
+      ],
+      "description": "Mips are tiny flying parasites that ride a merdeth in a humming cloud, scouting food for the host and screening it like interceptors. Singly they are nothing; as a swarm they fill the air in a stinging haze that blinds and bleeds anything caught inside it. Kill the merdeth they serve and the cloud loses its purpose and scatters.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D",
+          "perception": "3D",
+          "strength": "1D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 20,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "swarm",
+        "to_hit_skill": "brawling",
+        "damage": "2D auto-damage to anything sharing its space (no to-hit; the swarm is everywhere at once)"
+      },
+      "special": [
+        "Distraction: a target engulfed suffers a penalty to actions (calibrate on the dev box).",
+        "Screens and scouts for its host merdeth; disperses if the host dies."
+      ],
+      "source": "Geonosis & Outer Rim (WotC d20) \u00a71.8 \u2014 D6 re-stat from scratch; calibrate on dev box."
+    },
+    "dewback": {
+      "id": "dewback",
+      "name": "Dewback",
+      "species": "Dewback",
+      "scale": "creature",
+      "size": "2-2.5m at the shoulder",
+      "hostile": false,
+      "pack_count": [
+        3,
+        6
+      ],
+      "description": "A heavy, four-legged desert reptile the colour of weathered sandstone, thick-tailed and slow-blinking. Dewbacks are docile beasts of burden \u2014 the moisture farmers and Tusken bands of the Dune Sea ride them where a repulsorlift would choke on grit. Left alone they amble and graze; pressed into a corner, the tail comes around like a dropped girder. Their pebbled hide turns a glancing blow that would open softer skin.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "1D+2",
+          "perception": "1D",
+          "strength": "5D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "3D+2"
+        },
+        "move": 10,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "tail and bite",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D"
+      },
+      "special": [
+        "Riding beast: an orneriness-coded mount in WEG; the spawn path uses it only as fauna.",
+        "Thick scaled hide turns light blows (flavor; creature-armour soak is not wired in the spawn path)."
+      ],
+      "source": "WEG D6 dewback (Galaxy Guide 1 / Creatures of the Galaxy); the block is not in the on-box WEG40120 PDF, so stats are calibrated to the statted R&E pack-beast family in WEG40120 ch. Creatures (bantha STR 8D, Ukian torbull STR 4D + tough hide, tauntaun STR 4D). Confirm on the dev box if the GG1 block is recovered."
+    },
+    "tusken_warrior": {
+      "id": "tusken_warrior",
+      "name": "Tusken Raider",
+      "species": "Tusken Raider",
+      "scale": "character",
+      "intelligent": true,
+      "hostile": true,
+      "pack_count": [
+        2,
+        3
+      ],
+      "description": "A desert warrior wrapped head to foot in stained bandages and salvaged cloth, eye-lenses and a breath-mask hiding any face beneath. Tuskens move in disciplined bands across the Dune Sea, gaderffii sticks held ready and a settler's stolen slugthrower slung across the back. They do not parley with offworlders. The bandages and the silence are the only warning you will get before the first one is already inside your guard.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D",
+          "perception": "3D",
+          "strength": "3D",
+          "knowledge": "2D",
+          "mechanical": "2D",
+          "technical": "1D+2"
+        },
+        "skills": {
+          "melee combat": "4D",
+          "brawling": "3D+2",
+          "dodge": "3D+1",
+          "firearms": "3D+1",
+          "sneak": "3D+2",
+          "survival": "4D",
+          "intimidation": "3D"
+        },
+        "move": 10,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "gaderffii",
+        "to_hit_skill": "melee combat",
+        "damage": "STR+1D"
+      },
+      "special": [
+        "Carries a stolen slugthrower (cycler rifle) as a ranged option; modelled as flavor \u2014 the spawn fights with the gaderffii.",
+        "Hunts in coordinated bands; the war party (4-6) is a deep-desert, Contested-Marches+ threat."
+      ],
+      "source": "D6 stats from scratch per docs/design/secrets_of_tatooine_extraction_v1.md (SoT is d20; that block is discarded under the WEG-only invariant). Calibrated to the R&E NPC-template conventions in WEG40120 (e.g. the trained-trooper template: DEX 3D, STR 3D+1, brawling 4D+1)."
+    },
+    "maze_predator": {
+      "id": "maze_predator",
+      "name": "Maze Predator",
+      "species": "Maze Predator",
+      "scale": "creature",
+      "hostile": true,
+      "pack_count": [
+        3,
+        5
+      ],
+      "description": "Low to the ground, grey as the ferrocrete it hunts across, a maze predator is all shoulder and jaw \u2014 a pack carnivore bred by a hundred generations of the abandoned deep levels into something fast, silent and patient. They run down prey in coordinated packs, eyes catching what little light filters through the grates, and the first sign you have of them is usually the musk and ozone smell a heartbeat before they break cover. Singly dangerous; in a pack, the reason the lower warrens are quiet.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D",
+          "perception": "3D+1",
+          "strength": "4D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "4D+2",
+          "sneak": "4D",
+          "search": "4D"
+        },
+        "move": 13,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "fangs and foreclaws",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D"
+      },
+      "special": [
+        "Pack hunter: maze predators attack in coordinated packs (3-5); isolating one is the only mercy.",
+        "Ambush from darkness: undetected approach is their advantage (flavor; calibrate on the dev box)."
+      ],
+      "source": "Bespoke Coruscant Underworld creature (D6 from scratch). Anchored to the in-repo anomaly canon (engine/wilderness_anomalies.py maze_predator_outbreak / maze_predator_apex \u2014 the T2/T3 escalations) and the R&E predator conventions in WEG40120 ch. Creatures (ghest/wampa family)."
+    },
+    "underworld_thug": {
+      "id": "underworld_thug",
+      "name": "Underworld Thug",
+      "species": "Human",
+      "scale": "character",
+      "intelligent": true,
+      "hostile": true,
+      "pack_count": [
+        2,
+        4
+      ],
+      "description": "Gang muscle from the lower levels \u2014 tattooed knuckles, mismatched armour scraps over a flightsuit, a blaster pistol already clearing its holster. The underworld's gangs run these toughs in packs of two to four to work a corridor, lean on a stranger, and take what isn't bolted down. Not trained, not subtle, but there are always more of them and they shoot first.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D",
+          "perception": "2D+1",
+          "strength": "3D",
+          "knowledge": "2D",
+          "mechanical": "1D+2",
+          "technical": "2D"
+        },
+        "skills": {
+          "blaster": "3D+1",
+          "brawling": "3D+2",
+          "dodge": "3D",
+          "melee combat": "3D+1",
+          "streetwise": "4D",
+          "intimidation": "3D+1"
+        },
+        "move": 10,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "blaster pistol",
+        "to_hit_skill": "blaster",
+        "damage": "4D"
+      },
+      "special": [
+        "Armed: blaster pistol (4D) with a vibroblade backup; gangs travel 2-4 strong.",
+        "Black Sun / Pyke street-level muscle \u2014 the canonical Frontier-tier underworld hostile."
+      ],
+      "source": "D6 stats from scratch \u2014 R&E NPC-template conventions in WEG40120 (trained-trooper / pirate-sentry templates: DEX 3D, STR 3D, blaster 3D+1, brawling 3D+2). Flavor from GG11 Criminal Organizations + the Coruscant underworld lore."
+    }
+  }
+}

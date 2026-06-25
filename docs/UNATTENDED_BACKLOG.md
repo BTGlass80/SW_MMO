@@ -112,13 +112,15 @@ In `net_world`: smoother remote-avatar interpolation, a clean combat-log panel, 
 target-state readout. Presentation only.
 - Acceptance: import + runtime-launch checks clean; full gate green.
 
-### 7. Content drop 2 — vehicles/starships + droids  [STATUS: TODO]
+### 7. Content drop 2 — vehicles/starships + droids  [STATUS: DONE]
 One-way extract era-appropriate vehicles/starships + droid models from read-only
 `C:\SW_MUSH` into new `data/*.json` with provenance; extend `content_smoke`.
 - Acceptance: `content_smoke` green; full gate green.
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-24 Content drop 2 DONE — one-way extract from read-only SW_MUSH: `data/starships_clone_wars.json` (6 era-appropriate civilian craft; GCW/Imperial ships excluded — content_smoke asserts none leak), `data/droids_clone_wars.json` (3 commerce droids), `data/creatures_clone_wars.json` (22 wildlife). content_smoke extended; manifest updated. Full gate green.
+- 2026-06-24 **LOOP STOP** — backlog dry of unblocked, non-owner-decision, non-visual items. Remaining: A1b/P1 (DEFERRED, need owner visual check) and the owner-gated features (org/claim commands, guard NPCs, siege/Drop-6D, Force/Jedi, death penalty, LLM-Director-at-launch). Handed back to owner.
 - 2026-06-24 M2.1 DONE — pure `scripts/net/territory_model.gd`: an org claims a node in a contested/lawless zone (precondition: influence >= foothold floor; secured not claimable; one claim per node), deriving influence tier (foothold/dominant/control) + member effective-security (lawless->contested upgrade); passive income accrues to org treasuries on a 60s resource tick, scaled by tier x risk (lawless > contested). `territory_smoke`. NetworkManager holds the registry + resource tick (no-op until the future org/claim command layer). Siege/Drop-6D deliberately NOT built (owner-gated). Full gate green (35 smokes).
 - 2026-06-24 M2.0 DONE — pure `scripts/net/zone_state.gd` world-sim director: per-zone faction influence (republic/cis/hutt/independent) with DERIVED alert level (lockdown/high_alert/standard/lax/underworld/unrest) + DERIVED effective security tier (hutt>=80 downgrades; crackdown upgrades contested), advanced by a slow deterministic 30s Director tick (decay->baseline, no LLM — owner decision left off). Server seeds a Mos Eisley zone and folds its posture into the snapshot; client shows an alert/security badge. `zone_state_smoke` + two-process check (`zone=high_alert/secured`). Full gate green (34 smokes).
 - 2026-06-24 M1.5 DONE — client `--name <name>` flows via `register_account(account_id, display_name)`; server applies it to the WorldState player name (snapshot nameplates), the CombatArena player name (`set_player_name` → combat envelopes), and persists it. Coverage in net_smoke (restore_player rename) + combat_arena_smoke (named shooter). Verified over the wire: a `--name "Mara Jade"` client shows `Mara Jade hit B1 ...` in the combat log. Full gate green.

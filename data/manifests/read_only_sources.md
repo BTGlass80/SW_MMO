@@ -91,3 +91,33 @@ extracted into standalone JSON snapshots under `data/`. All four files carry
   included with `vendor_stocked: false`.
 - **Powersuit Operation**: 76th skill (mechanical) — added by MUSH design note
   CRAFT.powered_suit_design 2026-06-13; documented in `era_note` field.
+
+## Imported — Clone Wars Content Drop 2 (2026-06-24)
+
+Vehicles/starships, droids, and creatures extracted READ-ONLY into standalone JSON.
+All three files carry `source_policy` provenance.
+
+### Sources consumed
+
+| Source file | Destination |
+|---|---|
+| `C:\SW_MUSH\data\starships.yaml` | `data/starships_clone_wars.json` |
+| `C:\SW_MUSH\data\vendor_droids.yaml` | `data/droids_clone_wars.json` |
+| `C:\SW_MUSH\data\npcs_creatures.yaml` | `data/creatures_clone_wars.json` |
+
+### Destination files created
+
+| File | Contents |
+|---|---|
+| `data/starships_clone_wars.json` | 6 era-appropriate civilian craft (YT-1300, YT-2400, Ghtroc 720, Z-95 Headhunter, Firespray, Corellian Corvette) |
+| `data/droids_clone_wars.json` | 3 commerce/vendor droids (GN-4/GN-7/GN-12) for the player-vendor economy |
+| `data/creatures_clone_wars.json` | 22 era-neutral wildlife creatures (worrt, krayt fauna, etc.) |
+
+### Curation decisions
+
+- **Excluded GCW/Imperial-era starships**: X/A/B-wing, all TIE variants, Lambda &
+  Sentinel shuttles, Nebulon-B, Imperial Star Destroyer — not Clone Wars-appropriate.
+  (`content_smoke` asserts none of these leak into the roster.)
+- **CW-specific military starfighters** (V-19 Torrent, ARC-170, Eta-2, Delta-7,
+  Vulture droid, Tri-fighter) are NOT in the SW_MUSH source; authoring them from WEG
+  sourcebook stats is a future drop, noted in the file's `source_note`.
