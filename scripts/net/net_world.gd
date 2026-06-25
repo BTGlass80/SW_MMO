@@ -32,8 +32,12 @@ var _last_npc_shown := -1       # log ambient-NPC render-count CHANGES only
 var _aim := 0
 var _spend_cp := 0          # Character Points staged for the NEXT shot (WEG: +1D each); reset on fire
 var _use_fp := false        # Force Point staged for the NEXT shot (WEG: doubles dice); reset on fire
+var _cover := 0             # F50: take 1/4 cover for this shot (0/1). WEG: attacking exposes you, so
+                            # firing caps your cover at 1/4 (COVER_QUARTER) — full cover needs a
+                            # not-attacking stance, so this is an honest on/off toggle.
 var _fire_cp := 0           # headless: --fire-cp N stages CP on the autofire path
 var _fire_fp := false       # headless: --fire-fp stages a Force Point on autofire
+var _fire_cover := 0        # headless: --fire-cover 1 takes 1/4 cover on the autofire path
 var _autofire := false
 var _autowalk := false
 var _walk_accum := 0.0       # headless: throttles the [pos] readout while autowalking
@@ -158,6 +162,7 @@ func _parse_args() -> void:
 	_chat = _arg_value("--chat")  # headless: "channel:text" to send once after connecting
 	_secret = _arg_value("--secret")  # account ownership secret (binds the peer to the account)
 	_fire_cp = maxi(int(_arg_value("--fire-cp")), 0)  # headless: stage CP on autofire shots
+	_fire_cover = clampi(int(_arg_value("--fire-cover")), 0, 1)  # headless: take 1/4 cover on autofire shots (F50)
 	_fire_fp = args.has("--fire-fp")  # headless: stage a Force Point on autofire shots
 	_start_wound = _arg_value("--start-wound")  # headless DIV-0012: new char starts wounded
 	_heal_other = args.has("--heal-other")  # headless DIV-0013: First-Aid the first other player once
@@ -184,7 +189,7 @@ func _process(delta: float) -> void:
 		_autofire_accum += delta
 		if _autofire_accum >= 0.4:
 			_autofire_accum = 0.0
-			Net.send_fire_intent({"aim": 3, "cover": 0, "cp": _fire_cp, "fp": _fire_fp})
+			Net.send_fire_intent({"aim": 3, "cover": _fire_cover, "cp": _fire_cp, "fp": _fire_fp})
 	if _raise_skill != "" and not _raise_sent and Net.connected:
 		_raise_accum += delta
 		if _raise_accum >= 6.0:  # let some CP accrue first, then raise once (headless test)
@@ -292,6 +297,9 @@ func _input(event: InputEvent) -> void:
 		elif event.keycode == KEY_F:
 			_use_fp = not _use_fp  # toggle a Force Point for the next shot (WEG: doubles dice)
 			_announce_next_shot()
+		elif event.keycode == KEY_X:
+			_cover = 1 - _cover  # F50: toggle 1/4 cover for the next shot (reduces incoming return fire)
+			_announce_next_shot()
 	elif event is InputEventMouseButton and event.pressed:
 		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -299,10 +307,11 @@ func _input(event: InputEvent) -> void:
 			_aim = mini(_aim + 1, 3)
 			_announce_next_shot()
 		elif event.button_index == MOUSE_BUTTON_LEFT:
-			Net.send_fire_intent({"aim": _aim, "cover": 0, "cp": _spend_cp, "fp": _use_fp})
+			Net.send_fire_intent({"aim": _aim, "cover": _cover, "cp": _spend_cp, "fp": _use_fp})
 			_aim = 0
 			_spend_cp = 0
 			_use_fp = false
+			_cover = 0
 
 func _update_camera() -> void:
 	if _camera == null or _local_id == 0:
@@ -679,7 +688,9 @@ func _announce_next_shot() -> void:
 		bits += " · +%dCP" % _spend_cp
 	if _use_fp:
 		bits += " · Force Point"
-	_set_status("%s — LMB fires (C cycle CP · F Force Point)" % bits)
+	if _cover > 0:
+		bits += " · in cover"
+	_set_status("%s — LMB fires (C cycle CP · F Force Point · X cover)" % bits)
 
 func _on_combat_envelope(envelope: Dictionary) -> void:
 	var shooter := String(envelope.get("shooter_name", "Someone"))
@@ -690,6 +701,7 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 	var cp_spent := 0
 	var fp_spent := false
 	var return_fire_hit := false  # F45: did the target shoot back and connect this window?
+	var return_fire_cover := 0    # F50: the player's cover applied against that return fire
 	for ev in envelope.get("events", []):
 		var event_type := String((ev as Dictionary).get("type", ""))
 		if event_type == "player_attack":
@@ -702,6 +714,7 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 			already = true
 		elif event_type == "remote_return_fire":
 			return_fire_hit = return_fire_hit or bool((ev as Dictionary).get("hit", false))
+			return_fire_cover = int((ev as Dictionary).get("cover_level", 0))
 	# WEG in-play spend surfaced publicly on the shooter's line (both GUI + headless log).
 	var spend := ""
 	if cp_spent > 0:
@@ -724,7 +737,8 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 	# uncapped raw event severity).
 	if return_fire_hit:
 		var pw := int((envelope.get("state_delta", {}) as Dictionary).get("player_wound_severity", 0))
-		var rf := "%s takes return fire%s" % [shooter, (" → %s" % _wound_label(pw)) if pw > 0 else " (no damage)"]
+		var cov := " (in cover)" if return_fire_cover > 0 else ""  # F50: the 1/4 cover applied to the return fire
+		var rf := "%s takes return fire%s%s" % [shooter, cov, (" → %s" % _wound_label(pw)) if pw > 0 else " (no damage)"]
 		print("[combat] %s" % rf)
 		_combat_lines.append(rf)
 	while _combat_lines.size() > 8:
