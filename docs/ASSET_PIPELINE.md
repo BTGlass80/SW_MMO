@@ -1,14 +1,17 @@
-# Asset Pipeline (handoff)
+# Asset Pipeline
 
-> Hand this file to the Codex dev session. It explains how 3D art enters the
-> project so gameplay work and asset work can run in parallel without colliding.
+> Reference for whichever session is driving development (per the project's
+> single-driver coordination model, memory mmo-direction #5). Explains how 3D art
+> enters the project.
 
 ## TL;DR
 
-A second AI session (Claude Code) built an automated, license-clean 3D-asset
-pipeline. **You (Codex) do not make art.** Assets arrive as game-ready GLB files
-under `res://assets/3d/`. To get more, run one Python tool; to use them, instance
-the GLBs. Everything is CC0/generic — no Star Wars trademarks ever enter the repo.
+This project has an automated, license-clean 3D-asset pipeline, so **art is not
+hand-modeled**. Assets arrive as game-ready GLB files under `res://assets/3d/`. To
+get more, run one Python tool; to use them, instance the GLBs. The downloadable /
+generated ART is generic sci-fi (CC0 or owned API output); the game's Star Wars
+setting, rules, and names are used freely per the project's private/fan direction
+(memory mmo-direction #4).
 
 ## The one tool
 
@@ -81,13 +84,16 @@ list and re-run `curate`.
 
 ## License / IP rules (do not break)
 
-- Everything is **CC0** (Kenney, Quaternius) or filtered to CC0 (poly.pizza) or
-  owned paid-API output (Tripo). Provenance is logged to `ASSET_MANIFEST.json`.
-- **Generic sci-fi only.** Never search for, generate, or commit anything named or
-  shaped as Star Wars IP (X-Wing, stormtrooper, landspeeder, moisture vaporator,
-  astromech, Tatooine, etc.). poly.pizza is user-uploaded — vet titles before use.
-- This protects the project's "public distribution avoids copyrighted assets"
-  posture in `docs/ARCHITECTURE.md`.
+- Every downloaded/generated ASSET is **CC0** (Kenney, Quaternius), filtered to CC0
+  (poly.pizza), or owned paid-API output (Tripo). Provenance is logged to
+  `ASSET_MANIFEST.json` so the asset layer's licensing stays auditable.
+- **Asset SOURCES stay generic sci-fi** — not because the game avoids Star Wars (it's
+  a private/fan project that uses the SW setting, WEG D6 rules, and names freely per
+  memory mmo-direction #4), but because CC0 libraries and AI generators can't supply
+  trademarked SW models anyway, and a generic downloaded layer keeps licensing clean.
+  So build SW-flavored scenes by ARRANGING generic parts (domes, dishes, droids,
+  hovercraft); don't depend on a pack literally labeled "X-Wing".
+- poly.pizza is user-uploaded — vet titles before use (mislabeled fan models happen).
 
 ## Known rough edges (low priority)
 
