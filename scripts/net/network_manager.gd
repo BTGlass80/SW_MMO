@@ -34,6 +34,7 @@ const AUTOSAVE_SECONDS := 30.0
 const DIRECTOR_TICK_SECONDS := 30.0
 const RESOURCE_TICK_SECONDS := 60.0
 const CURRENT_ZONE := "tatooine.mos_eisley.spaceport"
+const ZONES_DATA_PATH := "res://data/zones_clone_wars.json"
 
 enum Mode { NONE, SERVER, CLIENT }
 
@@ -69,6 +70,8 @@ var _autosave_accum := 0.0
 var _director_accum := 0.0
 var _resource_accum := 0.0
 var _peer_characters := {}            # peer_id -> character_id (server)
+var _peer_zones := {}                 # peer_id -> current_zone_id (server)
+var _default_zone: String = CURRENT_ZONE  # server: zone new peers start in
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
@@ -94,10 +97,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 		_load_json_container(ARMOR_DATA_PATH, "armor"))
 	store = PersistenceStore.new("user://persistence")
 	zones = ZoneState.new()
-	zones.add_zone(CURRENT_ZONE, "secured",
-		{"republic": 55, "cis": 5, "hutt": 42, "independent": 25},
-		{"republic": 50, "cis": 5, "hutt": 40, "independent": 25},
-		"Mos Eisley Spaceport District")
+	_load_zones()  # seed the multi-zone roster (the Director ticks them all)
 	territory = Territory.new()
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
@@ -149,6 +149,7 @@ func _on_peer_connected(id: int) -> void:
 	state.add_player(id)
 	if arena != null:
 		arena.register_player(id)
+	_peer_zones[id] = _default_zone  # new peers start in the default zone
 	print("[net] peer %d joined (players=%d)" % [id, state.player_count()])
 	player_joined.emit(id)
 
@@ -160,6 +161,7 @@ func _on_peer_disconnected(id: int) -> void:
 	if arena != null:
 		arena.remove_player(id)
 	_peer_characters.erase(id)
+	_peer_zones.erase(id)
 	print("[net] peer %d left (players=%d)" % [id, state.player_count()])
 	player_left.emit(id)
 
@@ -226,6 +228,12 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	if character_id == "":
 		character_id = "peer_%d" % sender
 	_peer_characters[sender] = character_id
+	# Optional starting zone (carried on the build dict so the RPC signature is stable);
+	# only honored when it names a real loaded zone, else the peer keeps the default.
+	var requested_zone := String(build.get("zone", ""))
+	if requested_zone != "" and zones != null and zones.has_zone(requested_zone):
+		_peer_zones[sender] = requested_zone
+		print("[net] peer %d assigned zone %s (%s)" % [sender, requested_zone, zones.effective_security(requested_zone)])
 	var existing := state.get_player(sender)
 	var record := store.load_record(character_id)
 	var chosen_name := display_name.strip_edges()
@@ -405,7 +413,9 @@ func _physics_process(delta: float) -> void:
 			while _server_accum >= step:
 				state.tick(step)
 				_server_accum -= step
-			apply_snapshot.rpc(_build_snapshot())
+			# Per-peer snapshot: shared world state + the player's OWN zone summary.
+			for pid in multiplayer.get_peers():
+				apply_snapshot.rpc_id(pid, _build_snapshot(String(_peer_zones.get(pid, _default_zone))))
 			_combat_accum += delta
 			if _combat_accum >= combat_window_seconds:
 				_combat_accum = 0.0
@@ -435,11 +445,47 @@ func _physics_process(delta: float) -> void:
 				_client_accum = 0.0
 				submit_input.rpc_id(1, _local_move, _local_yaw, _local_jump)
 
-func _build_snapshot() -> Dictionary:
+func _build_snapshot(zone_id: String = CURRENT_ZONE) -> Dictionary:
 	var snap := state.snapshot()
 	if zones != null:
-		snap["zone"] = zones.zone_summary(CURRENT_ZONE)
+		snap["zone"] = zones.zone_summary(zone_id)
 	return snap
+
+# Seed the server's zone roster from data/zones_clone_wars.json (the Director ticks
+# them all). Falls back to the single hardcoded Mos Eisley zone when the file is
+# absent or malformed, so the server always has at least one zone. Sets _default_zone.
+func _load_zones() -> void:
+	var added := false
+	if FileAccess.file_exists(ZONES_DATA_PATH):
+		var file := FileAccess.open(ZONES_DATA_PATH, FileAccess.READ)
+		if file != null:
+			var parsed: Variant = JSON.parse_string(file.get_as_text())
+			if typeof(parsed) == TYPE_DICTIONARY:
+				var data: Dictionary = parsed
+				var list: Array = data.get("zones", [])
+				for entry in list:
+					if typeof(entry) != TYPE_DICTIONARY:
+						continue
+					var z: Dictionary = entry
+					var zid := String(z.get("zone_id", ""))
+					if zid == "":
+						continue
+					zones.add_zone(zid, String(z.get("security_base", "secured")),
+						z.get("influence", {}), z.get("baseline", {}),
+						String(z.get("display_name", zid)))
+					added = true
+				var dz := String(data.get("default_zone", ""))
+				if dz != "" and zones.has_zone(dz):
+					_default_zone = dz
+				elif not list.is_empty() and typeof(list[0]) == TYPE_DICTIONARY:
+					_default_zone = String((list[0] as Dictionary).get("zone_id", CURRENT_ZONE))
+	if not added:
+		zones.add_zone(CURRENT_ZONE, "secured",
+			{"republic": 55, "cis": 5, "hutt": 42, "independent": 25},
+			{"republic": 50, "cis": 5, "hutt": 40, "independent": 25},
+			"Mos Eisley Spaceport District")
+		_default_zone = CURRENT_ZONE
+	print("[net] %d zone(s) seeded; default=%s" % [zones.zones.size(), _default_zone])
 
 func _load_combat_data() -> Dictionary:
 	if not FileAccess.file_exists(COMBATANT_DATA_PATH):

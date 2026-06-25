@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "era": "20 BBY Clone Wars",
+  "source_note": "Wave E E21: the seeded zone roster the server-authoritative Director ticks. Bases per docs/WORLD_SIM_DESIGN.md security tiers (secured/contested/lawless). Influence 0-100 per faction axis (republic/cis/hutt/independent), NOT zero-sum; baseline is the value the Director decays toward. A contested/lawless zone is the precondition for territory claims (territory_model: secured zones cannot be claimed).",
+  "default_zone": "tatooine.mos_eisley.spaceport",
+  "zones": [
+    {
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "display_name": "Mos Eisley Spaceport District",
+      "security_base": "secured",
+      "influence": {"republic": 55, "cis": 5, "hutt": 42, "independent": 25},
+      "baseline": {"republic": 50, "cis": 5, "hutt": 40, "independent": 25}
+    },
+    {
+      "zone_id": "tatooine.mos_eisley.port_fringe",
+      "display_name": "Spaceport Fringe",
+      "security_base": "contested",
+      "influence": {"republic": 30, "cis": 15, "hutt": 50, "independent": 30},
+      "baseline": {"republic": 30, "cis": 15, "hutt": 48, "independent": 30}
+    },
+    {
+      "zone_id": "tatooine.mos_eisley.market_district",
+      "display_name": "Mos Eisley Market District",
+      "security_base": "contested",
+      "influence": {"republic": 35, "cis": 10, "hutt": 45, "independent": 35},
+      "baseline": {"republic": 35, "cis": 10, "hutt": 45, "independent": 35}
+    },
+    {
+      "zone_id": "tatooine.dune_sea",
+      "display_name": "The Dune Sea",
+      "security_base": "lawless",
+      "influence": {"republic": 10, "cis": 20, "hutt": 60, "independent": 30},
+      "baseline": {"republic": 10, "cis": 18, "hutt": 58, "independent": 30}
+    }
+  ]
+}

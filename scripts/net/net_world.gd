@@ -34,6 +34,7 @@ var _name := ""
 var _species := ""
 var _quickstart := false
 var _raise_skill := ""
+var _zone := ""
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
@@ -86,6 +87,7 @@ func _parse_args() -> void:
 	_species = _arg_value("--species")
 	_quickstart = args.has("--quickstart")
 	_raise_skill = _arg_value("--raise-skill")
+	_zone = _arg_value("--zone")  # optional starting zone (server validates)
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -164,6 +166,8 @@ func _on_client_connected() -> void:
 	var build := {}
 	if _species != "" or _quickstart:
 		build = {"species": _species if _species != "" else "human", "quickstart": true}
+	if _zone != "":
+		build["zone"] = _zone  # request a starting zone (server validates against its roster)
 	Net.send_register(_account, _name, build)
 	var who := _name if _name != "" else "account %s" % _account
 	_set_status("Connected as peer %d (%s)." % [_local_id, who])
@@ -185,7 +189,7 @@ func _on_player_left(peer_id: int) -> void:
 		_avatars.erase(peer_id)
 
 func _on_snapshot(snapshot: Dictionary) -> void:
-	if _snapshots_logged < 2:
+	if _snapshots_logged < 6:
 		_snapshots_logged += 1
 		var z: Dictionary = snapshot.get("zone", {})
 		print("[net] client received snapshot tick=%d players=%d zone=%s/%s" % [

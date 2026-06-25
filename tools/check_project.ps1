@@ -139,4 +139,6 @@ Invoke-GodotStep "Character lifecycle smoke:" @("--headless", "--path", $project
 
 Invoke-GodotStep "CP award smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/cp_award_smoke.gd")
 
+Invoke-GodotStep "Zones smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/zones_smoke.gd")
+
 Write-Host "`nAll checks passed."
