@@ -65,6 +65,7 @@ signal equip_replied(result: Dictionary)
 signal claim_replied(result: Dictionary)
 signal chat_received(message: Dictionary)
 signal auth_replied(result: Dictionary)
+signal heal_replied(result: Dictionary)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -102,6 +103,7 @@ var _pending_zone_influence := []     # E8/E24: [{zone_id, axis, delta}] accrued
 var _record_cache := {}               # E26: character_id -> record (kills per-call JSON I/O)
 var _peer_rpc_budget := {}            # E26: peer_id -> {tokens, last_ms} reliable-RPC bucket
 var _ambient := {}                    # E27: zone_id -> ambient NPC roster (Director-advanced)
+var _heal_treated := {}               # DIV-0013: target_peer -> wound level last First-Aided (retry gate)
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
@@ -199,6 +201,7 @@ func _on_peer_disconnected(id: int) -> void:
 	_peer_orgs.erase(id)
 	_peer_axes.erase(id)
 	_peer_rpc_budget.erase(id)
+	_heal_treated.erase(id)  # DIV-0013: drop this peer's First-Aid retry gate (keyed by target peer)
 	# Evict the record cache on disconnect: _save_peer just flushed final state to disk, the
 	# single-session lock means no other peer holds this character, and the next login does a
 	# fresh read-through. Bounds _record_cache to connected players (no unbounded session leak)
@@ -495,6 +498,77 @@ func send_equip(slot: String, item_key: String) -> void:
 @rpc("authority", "call_remote", "reliable")
 func equip_result(result: Dictionary) -> void:
 	equip_replied.emit(result)
+
+# --- DIV-0013: First Aid / Medicine — a medic heals a wounded ally ---
+# client -> server: apply First Aid to another CONNECTED player in the SAME zone. Heal pool =
+# the healer's Technical attribute + first_aid skill; rolled vs the target's wound-level
+# difficulty (Guide_19 §3, server-owned seed). Success drops the target's wound ONE level
+# (CAN treat incapacitated + stabilize mortally_wounded; healthy/dead rejected). A per-target
+# retry gate blocks re-treating the same wound level until it changes (no spam-to-success).
+# Cooperative healing only — NOT PvP (owner-gated); no death roll/penalty here.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_heal(target_id: int) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var healer := multiplayer.get_remote_sender_id()
+	if not _rate_ok(healer):
+		return
+	var healer_char := String(_peer_characters.get(healer, ""))
+	if healer_char == "":
+		return
+	if target_id == healer:
+		heal_result.rpc_id(healer, {"ok": false, "reason": "self"})
+		return
+	var target_char := String(_peer_characters.get(target_id, ""))
+	if target_char == "":
+		heal_result.rpc_id(healer, {"ok": false, "reason": "no_target"})
+		return
+	if String(_peer_zones.get(healer, _default_zone)) != String(_peer_zones.get(target_id, _default_zone)):
+		heal_result.rpc_id(healer, {"ok": false, "reason": "out_of_range"})
+		return
+	var t_record := _cached_load(target_char)
+	if t_record.is_empty():
+		heal_result.rpc_id(healer, {"ok": false, "reason": "no_target"})
+		return
+	var t_sheet: Dictionary = t_record.get("sheet", {})
+	var level := String(t_sheet.get("wound_state", "healthy"))
+	if level == "healthy":
+		heal_result.rpc_id(healer, {"ok": false, "reason": "no_wound", "target_id": target_id})
+		return
+	if level == "dead":
+		heal_result.rpc_id(healer, {"ok": false, "reason": "beyond_help", "target_id": target_id})
+		return
+	if String(_heal_treated.get(target_id, "")) == level:
+		heal_result.rpc_id(healer, {"ok": false, "reason": "already_treated", "target_id": target_id})
+		return
+	_heal_treated[target_id] = level  # one First Aid per wound level until it changes
+	var h_sheet: Dictionary = _cached_load(healer_char).get("sheet", {})
+	var tech := String((h_sheet.get("attributes", {}) as Dictionary).get("technical", "2D"))
+	var first_aid := String((h_sheet.get("skills", {}) as Dictionary).get("first_aid", "0D"))
+	var heal_pool: Dictionary = D6Rules.add_pools(D6Rules.parse_pool(tech), D6Rules.parse_pool(first_aid))
+	var result: Dictionary = Recovery.heal_check(_server_rng, heal_pool, level)
+	var healed := bool(result.get("healed", false))
+	var new_level := String(result.get("new_level", level))
+	if healed:
+		t_sheet["wound_state"] = new_level
+		t_record["sheet"] = t_sheet
+		_cached_save(target_char, t_record)
+		if arena != null:
+			arena.set_player_combat(target_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(new_level)})
+	print("[firstaid] peer %d -> peer %d (%s): %s -> %s (First Aid %s rolled %d vs %d)" % [
+		healer, target_id, target_char, level, new_level,
+		String(D6Rules.pool_to_string(heal_pool)), int(result.get("roll_total", 0)), int(result.get("difficulty", 0))])
+	heal_result.rpc_id(healer, {"ok": healed, "reason": "" if healed else "failed",
+		"target_id": target_id, "from": level, "to": new_level})
+
+func send_heal(target_id: int) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_heal.rpc_id(1, target_id)
+
+# server -> client: the outcome of a First Aid attempt
+@rpc("authority", "call_remote", "reliable")
+func heal_result(result: Dictionary) -> void:
+	heal_replied.emit(result)
 
 # --- E23: org territory claim / release commands ---
 # client -> server: claim a node in the player's CURRENT zone for their org. Validated

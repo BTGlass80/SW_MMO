@@ -56,6 +56,9 @@ var _chat_sent := false
 var _chat_accum := 0.0
 var _secret := ""           # account ownership secret (E26)
 var _start_wound := ""       # headless DIV-0012 test: start a new char at a recoverable wound tier
+var _heal_other := false     # headless DIV-0013 test: First-Aid the first other player once
+var _heal_sent := false
+var _heal_accum := 0.0
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
@@ -82,6 +85,7 @@ func _ready() -> void:
 	Net.claim_replied.connect(_on_claim_replied)
 	Net.chat_received.connect(_on_chat_received)
 	Net.auth_replied.connect(_on_auth_replied)
+	Net.heal_replied.connect(_on_heal_replied)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -129,6 +133,7 @@ func _parse_args() -> void:
 	_fire_cp = maxi(int(_arg_value("--fire-cp")), 0)  # headless: stage CP on autofire shots
 	_fire_fp = args.has("--fire-fp")  # headless: stage a Force Point on autofire shots
 	_start_wound = _arg_value("--start-wound")  # headless DIV-0012: new char starts wounded
+	_heal_other = args.has("--heal-other")  # headless DIV-0013: First-Aid the first other player once
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -175,6 +180,13 @@ func _process(delta: float) -> void:
 			var parts := _chat.split(":", true, 1)  # split on the FIRST colon only
 			if parts.size() == 2:
 				Net.send_chat(String(parts[0]), String(parts[1]))
+	if _heal_other and not _heal_sent and Net.connected:
+		_heal_accum += delta
+		if _heal_accum >= 4.0:  # after both peers have registered, First-Aid the other once
+			var other := _first_other_peer()
+			if other != 0:
+				_heal_sent = true
+				Net.send_heal(other)
 
 # --- input / camera (client only) ---
 func _send_local_input() -> void:
@@ -200,6 +212,13 @@ func _input(event: InputEvent) -> void:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		elif event.keycode == KEY_K:
 			Net.send_skill_raise("blaster")  # spend CP to raise Blaster a pip
+		elif event.keycode == KEY_H:
+			var other := _first_other_peer()  # First Aid the first other player in range
+			if other != 0:
+				Net.send_heal(other)
+				_set_status("First Aid -> peer %d…" % other)
+			else:
+				_set_status("First Aid: no one else here.")
 		elif event.keycode == KEY_C:
 			_spend_cp = (_spend_cp + 1) % 6  # cycle 0..5 CP staged for the next shot (WEG: +1D each)
 			_announce_next_shot()
@@ -378,7 +397,7 @@ func _build_hud() -> void:
 
 	var controls := Label.new()
 	controls.position = Vector2(18, 40)
-	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · Esc release"
+	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · Esc release"
 	controls.add_theme_font_size_override("font_size", 14)
 	controls.modulate = Color(0.09, 0.08, 0.06)
 	layer.add_child(controls)
@@ -508,6 +527,23 @@ func _on_auth_replied(result: Dictionary) -> void:
 	if not bool(result.get("ok", false)):
 		print("[auth] login denied for %s (%s)" % [String(result.get("account_id", "")), String(result.get("reason", ""))])
 		_set_status("Login denied (%s)." % String(result.get("reason", "")))
+
+# First other player's peer id in the latest snapshot (0 if alone). Used by the H key /
+# --heal-other affordance to pick a First-Aid target without a full targeting UI.
+func _first_other_peer() -> int:
+	for entry in Net.last_snapshot.get("players", []):
+		var id := int((entry as Dictionary).get("id", 0))
+		if id != 0 and id != _local_id:
+			return id
+	return 0
+
+func _on_heal_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		print("[firstaid] healed peer %d: %s -> %s" % [int(result.get("target_id", 0)), String(result.get("from", "")), String(result.get("to", ""))])
+		_set_status("First Aid: %s -> %s" % [String(result.get("from", "")), String(result.get("to", ""))])
+	else:
+		print("[firstaid] heal failed (%s)" % String(result.get("reason", "")))
+		_set_status("First Aid failed (%s)." % String(result.get("reason", "")))
 
 func _on_chat_received(message: Dictionary) -> void:
 	var line := ChatModel.format_line(message)
