@@ -23,7 +23,9 @@ var _windows := ActionWindowModel.new()
 
 var _target_pools: Dictionary = {}         # shared target side (from combat data)
 var _default_player_pools: Dictionary = {} # fallback player side (trainee), used when no sheet
-var _default_weapon_damage := "4D"         # starter blaster damage until an inventory exists
+var _default_weapon_damage := "4D"         # fallback blaster damage when a player has no equipped weapon
+var _weapons: Dictionary = {}              # weapon catalog (key -> {damage, ...})
+var _armors: Dictionary = {}               # armor catalog (key -> {protection_*, coverage})
 var _target_profile: Dictionary = {}
 
 var _players: Dictionary = {}         # peer_id -> {state: Dictionary, name: String}
@@ -31,8 +33,10 @@ var _target_state: Dictionary = {}    # shared training target {wound_severity, 
 var _intents: Dictionary = {}         # peer_id -> normalized intent for the current window
 var _window_index := 0
 
-func _init(rules: Object, combat_data: Dictionary, target_id: String = "b1_training_silhouette") -> void:
+func _init(rules: Object, combat_data: Dictionary, target_id: String = "b1_training_silhouette", weapon_catalog: Dictionary = {}, armor_catalog: Dictionary = {}) -> void:
 	_rules = rules
+	_weapons = weapon_catalog
+	_armors = armor_catalog
 	_build_pools(combat_data, target_id)
 	reset_target()
 
@@ -94,12 +98,16 @@ func _pools_from_sheet(sheet: Dictionary) -> Dictionary:
 	var strength := String(attrs.get("strength", "2D"))
 	var blaster_bonus := String(skills.get("blaster", "0D"))
 	var dodge_bonus := String(skills.get("dodge", "0D"))
+	# Equipped weapon damage + armor profile (fallbacks when no equipment / catalog).
+	var equipment: Dictionary = sheet.get("equipment", {})
+	var weapon: Dictionary = _weapons.get(String(equipment.get("weapon", "")), {})
+	var armor: Dictionary = _armors.get(String(equipment.get("armor", "")), {})
 	return {
 		"attacker_pool": _rules.add_pools(_rules.parse_pool(dex), _rules.parse_pool(blaster_bonus)),
-		"damage_pool": _rules.parse_pool(_default_weapon_damage),
+		"damage_pool": _rules.parse_pool(String(weapon.get("damage", _default_weapon_damage))),
 		"player_dodge_pool": _rules.add_pools(_rules.parse_pool(dex), _rules.parse_pool(dodge_bonus)),
 		"player_soak_pool": _rules.parse_pool(strength),
-		"player_armor": {},
+		"player_armor": armor,
 		"attacker_scale": "character",
 	}
 
@@ -107,6 +115,11 @@ func _pools_from_sheet(sheet: Dictionary) -> Dictionary:
 func attacker_pool_text(peer_id: int) -> String:
 	var pools: Dictionary = (_players.get(peer_id, {}) as Dictionary).get("pools", {})
 	return String(_rules.pool_to_string(pools.get("attacker_pool", {"dice": 0, "pips": 0})))
+
+## The player's current weapon damage dice pool as a string (for tests / inspection).
+func damage_pool_text(peer_id: int) -> String:
+	var pools: Dictionary = (_players.get(peer_id, {}) as Dictionary).get("pools", {})
+	return String(_rules.pool_to_string(pools.get("damage_pool", {"dice": 0, "pips": 0})))
 
 func remove_player(peer_id: int) -> void:
 	_players.erase(peer_id)

@@ -16,6 +16,8 @@ const ATTRIBUTE_PIPS := 54   # 18D total to distribute (exactly)
 const SKILL_PIPS := 21       # 7D total skill-dice budget (a maximum)
 const START_CP := 5
 const START_FP := 1
+const STARTER_WEAPON := "blaster_pistol"   # data/weapons_clone_wars.json
+const STARTER_ARMOR := "blast_vest"        # data/armor_clone_wars.json
 
 static func _pips(rules: Object, code: String) -> int:
 	var pool: Dictionary = rules.parse_pool(code)
@@ -78,6 +80,7 @@ static func build_sheet(rules: Object, attributes: Dictionary, skills: Dictionar
 		"force_sensitive": false,
 		"wound_state": "healthy",
 		"credits": 0,
+		"equipment": {"weapon": STARTER_WEAPON, "armor": STARTER_ARMOR},
 	}
 
 ## A deterministic quick-start attribute allocation: each attribute at its species

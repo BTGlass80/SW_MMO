@@ -179,9 +179,18 @@ from their own persisted `sheet` instead.
   KNOWN follow-up: damage still uses a default weapon until an inventory/equipment
   system exists (a later slice / owner-scoped).
 
+### D2 — Combat uses equipped weapon + armor  [STATUS: DONE]
+Chargen sheets now carry a starter `equipment: {weapon, armor}` (blaster_pistol +
+blast_vest). `combat_arena` takes weapon/armor catalogs and builds each player's
+`damage_pool` from the equipped weapon and `player_armor` from the equipped armor
+(fallback to defaults when absent). NetworkManager loads `weapons_clone_wars.json` +
+`armor_clone_wars.json` and passes them to the arena. KNOWN follow-up (D3): an actual
+inventory/equipment-swap system so players can change loadout.
+
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
 - 2026-06-25 LOOP RESUMED — owner chose Wave D (combat uses the character sheet). Next: D1. Now driven by a recurring CronCreate timer (job, every ~10 min) instead of manual /loop; no owner questions.
+- 2026-06-25 D2 DONE — combat uses equipped gear: chargen sheets carry starter `equipment {weapon: blaster_pistol, armor: blast_vest}`; combat_arena takes weapon/armor catalogs and sets each player's damage_pool from the equipped weapon + player_armor from the equipped armor (defaults when absent); NetworkManager loads weapons_clone_wars.json + armor_clone_wars.json and passes them in. chargen_smoke + combat_arena_smoke extended (equipped heavy_blaster -> 5D damage; no-equipment -> default). Full gate green (37 smokes). Next self-extended: D3 inventory/equipment swap, or org/claim command layer.
 - 2026-06-25 D1 DONE — `combat_arena.gd` now builds each player's combat pools from their character sheet (attacker = DEX + blaster bonus, dodge = DEX + dodge bonus, soak = STR; damage = a default starter blaster until inventory exists; target side stays shared). `register_player`/`set_player_sheet` accept a sheet (no sheet = trainee fallback, backward-compatible). NetworkManager applies the sheet on login and re-applies on a skill raise (raise takes effect in combat immediately). `combat_arena_smoke` extended. Verified over the wire: a new quickstart char fought with attack pool DEX 3D and raising blaster grew it to 3D+1. Full gate green (37 smokes). KNOWN follow-up: damage uses a default weapon until an inventory/equipment system exists.
 - 2026-06-24 LOOP RESUMED — owner chose Wave C (Character Creation & Progression). Next: C1.
 - 2026-06-24 C4 DONE — wired CP earn/spend: disabling the shared target awards gameplay CP (`_award_cp` -> the character's persisted `sheet.cp_wallet`, COMBAT_CP_REWARD=3, tunable); `submit_skill_raise(skill)` RPC validates via progression_model against the char's wallet + governing attribute (from the skill catalog) + current bonus, applies the new bonus to the sheet, persists, and replies; server pushes the wallet via `apply_wallet`. Client shows a CP HUD + `K` raises Blaster (+`--raise-skill` headless). Verified over the wire: a new quickstart char earned CP from kills and raised `blaster 0D -> 0D+1 (cost 3)`, persisted. Full gate green (37 smokes). **WAVE C COMPLETE.**

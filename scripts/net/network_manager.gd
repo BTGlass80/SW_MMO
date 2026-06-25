@@ -21,6 +21,8 @@ const Progression := preload("res://scripts/rules/progression_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
+const WEAPONS_DATA_PATH := "res://data/weapons_clone_wars.json"
+const ARMOR_DATA_PATH := "res://data/armor_clone_wars.json"
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 
 const DEFAULT_PORT := 24555
@@ -86,7 +88,9 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	mode = Mode.SERVER
 	state = WorldState.new()
-	arena = CombatArena.new(D6Rules, _load_combat_data())
+	arena = CombatArena.new(D6Rules, _load_combat_data(), "b1_training_silhouette",
+		_load_json_container(WEAPONS_DATA_PATH, "weapons"),
+		_load_json_container(ARMOR_DATA_PATH, "armor"))
 	store = PersistenceStore.new("user://persistence")
 	zones = ZoneState.new()
 	zones.add_zone(CURRENT_ZONE, "secured",
@@ -278,6 +282,17 @@ func _load_species() -> Dictionary:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return {}
 	return (parsed as Dictionary).get("species", {})
+
+func _load_json_container(path: String, key: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return {}
+	return (parsed as Dictionary).get(key, {})
 
 func _species_for(species_key: String) -> Dictionary:
 	var species: Dictionary = _species_data.get(species_key, {})

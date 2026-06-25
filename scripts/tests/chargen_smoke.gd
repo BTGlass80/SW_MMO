@@ -20,8 +20,9 @@ func _init() -> void:
 	var ok := Chargen.validate_build(_rules, human, _uniform("3D"))
 	_assert_true(bool(ok["valid"]), "all-3D human build is valid")
 	var sheet: Dictionary = ok["sheet"]
-	for key in ["attributes", "skills", "character_points", "force_points", "force_sensitive", "wound_state", "credits"]:
+	for key in ["attributes", "skills", "character_points", "force_points", "force_sensitive", "wound_state", "credits", "equipment"]:
 		_assert_true(sheet.has(key), "sheet has '%s'" % key)
+	_assert_true(String((sheet["equipment"] as Dictionary).get("weapon", "")) != "", "starter equipment includes a weapon")
 	_assert_equal(int(sheet["character_points"]), 5, "starting CP 5")
 	_assert_equal(int(sheet["force_points"]), 1, "starting FP 1")
 	_assert_equal(bool(sheet["force_sensitive"]), false, "force-sensitivity defaults false")

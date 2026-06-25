@@ -94,6 +94,15 @@ func _init() -> void:
 	arena.set_player_sheet(8, {"attributes": {"dexterity": "2D"}, "skills": {}})
 	_assert_equal(arena.attacker_pool_text(8), "2D", "set_player_sheet rebuilds the attack pool (DEX 2D, untrained)")
 
+	# D2: the equipped weapon drives the damage pool (armor catalog also supplied).
+	var weapons := {"blaster_pistol": {"damage": "4D"}, "heavy_blaster": {"damage": "5D"}}
+	var armors := {"blast_vest": {"protection_energy": "+1D", "coverage": ["torso"]}}
+	var geared := CombatArena.new(_rules, data, "b1_training_silhouette", weapons, armors)
+	geared.register_player(9, "Gunner", {"attributes": {"dexterity": "3D"}, "equipment": {"weapon": "heavy_blaster", "armor": "blast_vest"}})
+	_assert_equal(geared.damage_pool_text(9), "5D", "equipped heavy blaster sets a 5D damage pool")
+	geared.register_player(10, "Unarmed", {"attributes": {"dexterity": "3D"}})  # no equipment
+	_assert_equal(geared.damage_pool_text(10), "4D", "no equipment falls back to the default weapon damage")
+
 	if _rules.has_method("free"):
 		_rules.free()
 	_finish()
