@@ -24,6 +24,7 @@ func add_player(peer_id: int, display_name: String = "", spawn: Vector3 = SPAWN_
 		"yaw": 0.0,
 		"move": Vector2.ZERO,
 		"jump": false,
+		"move_speed": MOVE_SPEED,  # DIV-0015: per-player, set from species at login (default = baseline)
 	}
 	players[peer_id] = player
 	return player
@@ -36,6 +37,14 @@ func has_player(peer_id: int) -> bool:
 
 func get_player(peer_id: int) -> Dictionary:
 	return players.get(peer_id, {})
+
+## Set a player's authoritative real-time movement speed (DIV-0015: derived from species
+## at login). Clamped to a sane floor so a bad value can never freeze a player.
+func set_move_speed(peer_id: int, speed: float) -> void:
+	var player: Dictionary = players.get(peer_id, {})
+	if player.is_empty():
+		return
+	player["move_speed"] = maxf(speed, 0.5)
 
 ## Snap a player to an authoritative restored position (from persistence on login).
 func restore_player(peer_id: int, pos: Vector3, yaw: float, display_name: String = "") -> void:
@@ -70,7 +79,7 @@ func tick(delta: float) -> void:
 			var basis := Basis(Vector3.UP, yaw)
 			var direction: Vector3 = basis * Vector3(move.x, 0.0, move.y)
 			var pos: Vector3 = player.get("pos", SPAWN_POINT)
-			pos += direction * MOVE_SPEED * delta
+			pos += direction * float(player.get("move_speed", MOVE_SPEED)) * delta
 			pos.x = clampf(pos.x, -HALF_BOUNDS, HALF_BOUNDS)
 			pos.z = clampf(pos.z, -HALF_BOUNDS, HALF_BOUNDS)
 			pos.y = GROUND_Y

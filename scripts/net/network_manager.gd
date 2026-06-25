@@ -25,6 +25,7 @@ const ChatModel := preload("res://scripts/net/chat_model.gd")
 const Auth := preload("res://scripts/net/account_auth_model.gd")
 const AmbientSim := preload("res://scripts/net/ambient_sim_model.gd")
 const Recovery := preload("res://scripts/rules/recovery_model.gd")
+const DerivedStats := preload("res://scripts/rules/derived_stats_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -76,6 +77,7 @@ var zones: ZoneState = null           # server only (world-sim director)
 var territory: Territory = null       # server only (org claims + passive income)
 var _org_model = null                 # server only (OrgModel instance: claim validation)
 var _pending_model = null             # server only (PendingInfluence instance: E24 loop)
+var _derived = null                   # server only (DerivedStats instance: DIV-0015 species move)
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var director_tick_seconds: float = DIRECTOR_TICK_SECONDS
 var resource_tick_seconds: float = RESOURCE_TICK_SECONDS
@@ -136,6 +138,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	territory = Territory.new()
 	_org_model = OrgModel.new()
 	_pending_model = PendingInfluence.new()
+	_derived = DerivedStats.new()
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
@@ -344,6 +347,13 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	var pos := PersistenceStore.record_pos(record, WorldState.SPAWN_POINT)
 	var yaw := PersistenceStore.record_yaw(record, 0.0)
 	state.restore_player(sender, pos, yaw, chosen_name)
+	# DIV-0015: set the authoritative real-time move speed from the species' WEG Move rate,
+	# scaled to the baseline (move 10 -> the established 6.5; wookiee 11 -> ~7.15; etc.).
+	if _derived != null:
+		var species_move := int(_derived.move_for_species({"species": _species_data}, String(record.get("species", "human"))))
+		var move_speed := WorldState.MOVE_SPEED * float(species_move) / float(DerivedStats.DEFAULT_MOVE)
+		state.set_move_speed(sender, move_speed)
+		print("[move] peer %d species=%s move=%d speed=%.2f" % [sender, String(record.get("species", "human")), species_move, move_speed])
 	if arena != null:
 		arena.set_player_combat(sender, PersistenceStore.combat_from_record(record))
 		arena.set_player_name(sender, chosen_name)

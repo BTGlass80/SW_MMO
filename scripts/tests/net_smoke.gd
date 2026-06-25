@@ -72,6 +72,22 @@ func _init() -> void:
 	state.remove_player(3)
 	_assert_equal(state.player_count(), 0, "no players after everyone leaves")
 
+	# DIV-0015: per-player move_speed scales authoritative distance (isolated state). A
+	# faster species (e.g. wookiee ~1.1x) out-travels the baseline in equal time; the
+	# default (move-10 species) is unchanged.
+	var sstate: WorldState = WorldState.new()
+	sstate.add_player(1, "Base")
+	sstate.add_player(2, "Fast")
+	sstate.set_move_speed(2, WorldState.MOVE_SPEED * 1.1)
+	sstate.set_input(1, Vector2(0.0, -1.0), 0.0, false)
+	sstate.set_input(2, Vector2(0.0, -1.0), 0.0, false)
+	sstate.tick(0.5)
+	var base_z := (sstate.get_player(1).get("pos") as Vector3).z
+	var fast_z := (sstate.get_player(2).get("pos") as Vector3).z
+	_assert_approx(base_z, WorldState.SPAWN_POINT.z - WorldState.MOVE_SPEED * 0.5, "default move_speed is the baseline")
+	_assert_approx(fast_z, WorldState.SPAWN_POINT.z - WorldState.MOVE_SPEED * 1.1 * 0.5, "custom move_speed scales distance")
+	_assert_true(fast_z < base_z, "a 1.1x player out-travels the baseline in equal time")
+
 	_finish()
 
 func _finish() -> void:
