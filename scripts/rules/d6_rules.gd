@@ -285,6 +285,25 @@ func range_band_for_distance(distance: float) -> Dictionary:
 			return band
 	return {"name": "Extreme", "max": INF, "difficulty": 30}
 
+# Weapon-driven range bands (WEG R&E + data/weapons_clone_wars.json).
+# A weapon's ranges are [short_min, short_max, medium_max, long_max] in meters.
+# Range difficulties per the data file: point-blank (< short_min) = Very Easy (5),
+# short = Easy (10), medium = Moderate (15), long = Difficult (20),
+# beyond long_max = Extreme = Heroic (30).
+# If ranges is malformed (size < 4) fall back to the fixed RANGE_BANDS table.
+func range_band_for_weapon(distance: float, ranges: Array) -> Dictionary:
+	if ranges.size() < 4:
+		return range_band_for_distance(distance)
+	if distance < float(ranges[0]):
+		return {"name": "Point Blank", "max": float(ranges[0]), "difficulty": 5}
+	if distance <= float(ranges[1]):
+		return {"name": "Short", "max": float(ranges[1]), "difficulty": 10}
+	if distance <= float(ranges[2]):
+		return {"name": "Medium", "max": float(ranges[2]), "difficulty": 15}
+	if distance <= float(ranges[3]):
+		return {"name": "Long", "max": float(ranges[3]), "difficulty": 20}
+	return {"name": "Extreme", "max": INF, "difficulty": 30}
+
 func roll_cover_bonus(cover_level: int, rng: RandomNumberGenerator = null) -> Dictionary:
 	if rng == null:
 		rng = RandomNumberGenerator.new()
@@ -336,12 +355,12 @@ func prepare_ranged_defense(defense: Dictionary, rng: RandomNumberGenerator = nu
 	prepared["pool"] = defense_pool
 	return prepared
 
-func resolve_ranged_attack(attacker_pool: Dictionary, distance: float, cover_level: int = 0, rng: RandomNumberGenerator = null, defense: Dictionary = {}, attack_cp_count: int = 0) -> Dictionary:
+func resolve_ranged_attack(attacker_pool: Dictionary, distance: float, cover_level: int = 0, rng: RandomNumberGenerator = null, defense: Dictionary = {}, attack_cp_count: int = 0, weapon_ranges: Array = []) -> Dictionary:
 	if rng == null:
 		rng = RandomNumberGenerator.new()
 		rng.randomize()
 
-	var band := range_band_for_distance(distance)
+	var band: Dictionary = range_band_for_weapon(distance, weapon_ranges) if not weapon_ranges.is_empty() else range_band_for_distance(distance)
 	var cover := roll_cover_bonus(cover_level, rng)
 	var base_difficulty := int(band["difficulty"])
 	var defense_roll := {}

@@ -45,6 +45,39 @@ func _init() -> void:
 	_assert_equal(medium_band["name"], "Medium", "24m is medium range")
 	_assert_equal(medium_band["difficulty"], 15, "medium range difficulty")
 
+	# E5 — weapon-driven range bands. Blaster pistol ranges [short_min, short_max, medium_max, long_max].
+	var bp_ranges: Array = [3, 10, 30, 120]
+	var bp_pb: Dictionary = rules.range_band_for_weapon(2.0, bp_ranges)
+	_assert_equal(bp_pb["name"], "Point Blank", "blaster pistol 2m is point blank")
+	_assert_equal(bp_pb["difficulty"], 5, "blaster pistol point blank difficulty")
+	var bp_short: Dictionary = rules.range_band_for_weapon(8.0, bp_ranges)
+	_assert_equal(bp_short["name"], "Short", "blaster pistol 8m is short")
+	_assert_equal(bp_short["difficulty"], 10, "blaster pistol short difficulty")
+	var bp_medium: Dictionary = rules.range_band_for_weapon(25.0, bp_ranges)
+	_assert_equal(bp_medium["name"], "Medium", "blaster pistol 25m is medium")
+	_assert_equal(bp_medium["difficulty"], 15, "blaster pistol medium difficulty")
+	var bp_long: Dictionary = rules.range_band_for_weapon(100.0, bp_ranges)
+	_assert_equal(bp_long["name"], "Long", "blaster pistol 100m is long")
+	_assert_equal(bp_long["difficulty"], 20, "blaster pistol long difficulty")
+	var bp_extreme: Dictionary = rules.range_band_for_weapon(200.0, bp_ranges)
+	_assert_equal(bp_extreme["name"], "Extreme", "blaster pistol 200m is extreme")
+	_assert_equal(bp_extreme["difficulty"], 30, "blaster pistol extreme difficulty")
+
+	# Legacy fallback: malformed/empty ranges defer to the fixed RANGE_BANDS table.
+	_assert_equal(rules.range_band_for_weapon(12.0, []), rules.range_band_for_distance(12.0), "empty weapon ranges fall back to fixed band at 12m")
+	_assert_equal(rules.range_band_for_weapon(24.0, [3, 10]), rules.range_band_for_distance(24.0), "short weapon ranges fall back to fixed band at 24m")
+
+	# At 100m the weapon band (Long/20) and the fixed band (Extreme/30) diverge.
+	# resolve_ranged_attack with weapon_ranges must report the weapon band.
+	var weapon_band_check: Dictionary = rules.range_band_for_weapon(100.0, bp_ranges)
+	var fixed_band_check: Dictionary = rules.range_band_for_distance(100.0)
+	_assert_equal(weapon_band_check["difficulty"] != fixed_band_check["difficulty"], true, "weapon and fixed bands diverge at 100m")
+	var weapon_attack_rng := RandomNumberGenerator.new()
+	weapon_attack_rng.seed = 91
+	var weapon_attack: Dictionary = rules.resolve_ranged_attack({"dice": 4, "pips": 0}, 100.0, 0, weapon_attack_rng, {}, 0, bp_ranges)
+	_assert_equal(weapon_attack["range_name"], "Long", "weapon-ranged attack uses weapon band name at 100m")
+	_assert_equal(weapon_attack["range_difficulty"], 20, "weapon-ranged attack uses weapon band difficulty at 100m")
+
 	var full_cover: Dictionary = rules.resolve_ranged_attack({"dice": 4, "pips": 1}, 12.0, 4)
 	_assert_equal(full_cover["blocked"], true, "full cover blocks targeting")
 

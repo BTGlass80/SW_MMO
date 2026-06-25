@@ -11,6 +11,8 @@ extends RefCounted
 ## Pure/socket-free: pool math is delegated to a passed `rules` object (the D6Rules
 ## autoload, or a fresh instance in tests), so this is headlessly unit-testable.
 
+const ForceSkillsModel = preload("res://scripts/rules/force_skills_model.gd")
+
 const ATTRS := ["dexterity", "knowledge", "mechanical", "perception", "strength", "technical"]
 const ATTRIBUTE_PIPS := 54   # 18D total to distribute (exactly)
 const SKILL_PIPS := 21       # 7D total skill-dice budget (a maximum)
@@ -78,6 +80,7 @@ static func build_sheet(rules: Object, attributes: Dictionary, skills: Dictionar
 		"character_points": START_CP,
 		"force_points": START_FP,
 		"force_sensitive": false,
+		"force_skills": ForceSkillsModel.initial_force_skills(),
 		"wound_state": "healthy",
 		"credits": 0,
 		"equipment": {"weapon": STARTER_WEAPON, "armor": STARTER_ARMOR},

@@ -127,4 +127,6 @@ Invoke-GodotStep "Wound ladder model smoke:" @("--headless", "--path", $projectR
 
 Invoke-GodotStep "Recovery model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/recovery_model_smoke.gd")
 
+Invoke-GodotStep "Force skills model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/force_skills_model_smoke.gd")
+
 Write-Host "`nAll checks passed."
