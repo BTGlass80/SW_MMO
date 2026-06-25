@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "area_key": "tatooine.mos_eisley.approach",
+  "era": "20 BBY Clone Wars",
+  "source": {
+    "reference_paths": [
+      "C:\\SW_MUSH\\engine\\npc_space_traffic.py",
+      "C:\\SW_MUSH\\data\\worlds\\clone_wars\\traffic_archetypes.yaml",
+      "C:\\SW_MUSH\\data\\worlds\\clone_wars\\ships.yaml"
+    ],
+    "source_policy": "Curated prototype data for standalone Godot use. WEG space-combat concepts lead; SW_MUSH supplies useful Clone Wars traffic and setting references."
+  },
+  "plane": {
+    "name": "Mos Eisley Approach",
+    "scale_note": "2.5D tactical plane; distances are prototype display units, not final WEG range bands.",
+    "bounds": {"x_min": -320, "y_min": -180, "x_max": 320, "y_max": 180}
+  },
+  "range_bands": [
+    {"name": "Point Blank", "radius": 32},
+    {"name": "Short", "radius": 80},
+    {"name": "Medium", "radius": 150},
+    {"name": "Long", "radius": 240}
+  ],
+  "contacts": [
+    {
+      "id": "bay94_beacon",
+      "name": "Bay 94 Beacon",
+      "kind": "landing_beacon",
+      "position": {"x": 0, "y": 0},
+      "heading_degrees": 0,
+      "status": "landing corridor origin",
+      "scale": "battlestation",
+      "transponder": {
+        "declared_name": "Bay 94 Beacon",
+        "registry": "ME-94",
+        "affiliation": "Mos Eisley Port Authority",
+        "threat": "neutral",
+        "profile": "Landing corridor beacon"
+      },
+      "comms": {
+        "success_response": "Automated beacon confirms Bay 94 corridor telemetry.",
+        "failure_response": "Beacon repeats static and partial landing tones."
+      }
+    },
+    {
+      "id": "yt1300_training_contact",
+      "name": "YT-1300 Training Contact",
+      "kind": "freighter",
+      "position": {"x": -92, "y": 34},
+      "heading_degrees": 20,
+      "status": "friendly transponder",
+      "scale": "starfighter",
+      "transponder": {
+        "declared_name": "YT-1300 Training Contact",
+        "registry": "SIM-YT1300-94",
+        "affiliation": "local training traffic",
+        "threat": "friendly",
+        "profile": "Freighter training return"
+      },
+      "comms": {
+        "success_response": "Training contact acknowledges and holds friendly spacing.",
+        "failure_response": "Training contact keeps its squawk but does not answer."
+      },
+      "base_cost_credits": 100000,
+      "defense_pool": "3D",
+      "hull": "4D",
+      "shields": "1D",
+      "shield_arcs": {"front": "1D", "rear": "0D", "left": "0D", "right": "0D"},
+      "movement": {"move_units": 8, "turn_degrees": 2}
+    },
+    {
+      "id": "republic_customs_ping",
+      "name": "Republic Customs Ping",
+      "kind": "patrol",
+      "position": {"x": 118, "y": 58},
+      "heading_degrees": 200,
+      "status": "distant inspection sweep",
+      "scale": "starfighter",
+      "transponder": {
+        "declared_name": "Republic Customs Ping",
+        "registry": "REP-CUSTOMS-17",
+        "affiliation": "Republic customs",
+        "threat": "authority",
+        "profile": "Patrol craft running inspection sweeps"
+      },
+      "comms": {
+        "success_response": "Republic customs requests flight plan and confirms inspection channel.",
+        "failure_response": "Republic customs repeats a clipped inspection challenge."
+      },
+      "base_cost_credits": 75000,
+      "defense_pool": "4D",
+      "hull": "3D+2",
+      "shields": "1D",
+      "shield_arcs": {"front": "1D", "rear": "0D", "left": "0D", "right": "0D"},
+      "movement": {"move_units": 10, "turn_degrees": -4}
+    },
+    {
+      "id": "hutt_courier",
+      "name": "Hutt Courier",
+      "kind": "courier",
+      "position": {"x": 168, "y": -76},
+      "heading_degrees": 300,
+      "status": "priority lane",
+      "scale": "starfighter",
+      "transponder": {
+        "declared_name": "Hutt Courier",
+        "registry": "HUTT-PRIORITY-3",
+        "affiliation": "Hutt courier traffic",
+        "threat": "uncertain",
+        "profile": "Priority-lane courier with local protection"
+      },
+      "comms": {
+        "success_response": "Courier answers with paid-priority codes and a warning to stay clear.",
+        "failure_response": "Courier ignores the hail and keeps priority-lane posture."
+      },
+      "base_cost_credits": 65000,
+      "defense_pool": "3D+1",
+      "hull": "3D",
+      "shields": "0D+2",
+      "movement": {"move_units": 14, "turn_degrees": 3},
+      "condition": {
+        "repairable_systems": ["cargo lift", "sensor mast"],
+        "repair_difficulties": {
+          "cargo_lift": "very difficult",
+          "sensor mast": "difficult"
+        }
+      }
+    },
+    {
+      "id": "sensor_shadow",
+      "name": "Sensor Shadow",
+      "kind": "unknown",
+      "position": {"x": -214, "y": -96},
+      "heading_degrees": 30,
+      "status": "faint intermittent return",
+      "scale": "starfighter",
+      "transponder": {
+        "declared_name": "Masked Snub Contact",
+        "registry": "masked",
+        "affiliation": "unknown",
+        "threat": "hostile",
+        "masked": true,
+        "profile": "Masked intermittent contact with weapons behavior"
+      },
+      "comms": {
+        "success_response": "Masked contact clicks open for a breath, then cuts transmission.",
+        "failure_response": "Masked contact stays dark and keeps weapons posture."
+      },
+      "base_cost_credits": 45000,
+      "defense_pool": "4D+1",
+      "gunnery_pool": "3D+1",
+      "fire_control": "1D",
+      "weapon_damage": "3D+2",
+      "hull": "2D+2",
+      "shields": "0D",
+      "counterfire": true,
+      "counterfire_requires_solution": true,
+      "hidden_until_revealed": true,
+      "movement": {"move_units": 12, "track_target": "player", "turn_rate_degrees": 20, "hold_range": 80, "lock_rounds_to_fire": 2},
+      "crew": [
+        {"id": "shadow_pilot", "name": "Shadow Pilot", "station": "pilot", "soak": "3D"},
+        {"id": "shadow_gunner", "name": "Shadow Gunner", "station": "gunner", "damage_group": "gunners", "soak": "3D"}
+      ]
+    }
+  ],
+  "player_ship": {
+    "id": "local_freighter_sim",
+    "name": "Local Freighter Simulator",
+    "position": {"x": 0, "y": 0},
+    "heading_degrees": 0,
+    "scale": "starfighter",
+    "base_cost_credits": 98000,
+    "piloting_pool": "4D",
+    "copilot_assist_pool": "4D",
+    "maneuverability": "1D",
+    "gunnery_pool": "4D",
+    "navigator_pool": "4D",
+    "astrogation_pool": "4D",
+    "communications_pool": "4D",
+    "fire_control": "1D",
+    "weapon_damage": "4D+1",
+    "hull": "4D",
+    "shields": "1D",
+    "starship_shields_pool": "4D",
+    "shield_arcs": {"front": "1D", "rear": "0D", "left": "0D", "right": "0D"},
+    "crew": [
+      {"id": "local_pilot", "name": "Local Pilot", "station": "pilot", "soak": "3D"},
+      {"id": "local_copilot", "name": "Local Copilot", "station": "copilot", "assist_pool": "4D", "soak": "3D"},
+      {"id": "local_gunner", "name": "Local Gunner", "station": "gunner", "damage_group": "gunners", "soak": "3D"},
+      {"id": "local_engineer", "name": "Local Engineer", "station": "engineer", "soak": "2D+2"},
+      {"id": "local_navigator", "name": "Local Navigator", "station": "navigator", "assist_pool": "4D", "soak": "2D+2"},
+      {"id": "local_commander", "name": "Local Commander", "station": "commander", "assist_pool": "4D", "soak": "3D"},
+      {"id": "local_comms", "name": "Local Comms", "station": "communications", "assist_pool": "4D", "soak": "2D+2"}
+    ]
+  },
+  "gunnery_drill": {
+    "default_target_id": "sensor_shadow",
+    "shield_reroute_arcs": ["front", "rear"],
+    "damage_control_pool": "6D",
+    "station_assist_action": {
+      "name": "Copilot vectors",
+      "station": "copilot",
+      "target_action": "maneuver",
+      "pool": "4D",
+      "bonus_pool": "1D",
+      "difficulty": 10
+    },
+    "station_assist_actions": [
+      {
+        "name": "Copilot vectors",
+        "station": "copilot",
+        "target_action": "maneuver",
+        "pool": "4D",
+        "bonus_pool": "1D",
+        "difficulty": 10
+      },
+      {
+        "name": "Sensor focus",
+        "station": "sensors",
+        "target_action": "sensors",
+        "pool": "4D",
+        "bonus_pool": "1D",
+        "difficulty": 10
+      },
+      {
+        "name": "Tactical coordination",
+        "station": "commander",
+        "target_action": "targeting_solution",
+        "pool": "4D",
+        "bonus_pool": "1D",
+        "difficulty": 10
+      },
+      {
+        "name": "Gunner bracketing",
+        "station": "gunner",
+        "target_action": "gunnery",
+        "pool": "4D",
+        "bonus_pool": "1D",
+        "difficulty": 10
+      },
+      {
+        "name": "Shield timing",
+        "station": "copilot",
+        "target_action": "shields",
+        "pool": "4D",
+        "bonus_pool": "1D",
+        "difficulty": 10
+      },
+      {
+        "name": "Damage-control prep",
+        "station": "engineer",
+        "target_action": "repair",
+        "pool": "4D",
+        "bonus_pool": "1D",
+        "difficulty": 10
+      },
+      {
+        "name": "Navicomputer sync",
+        "station": "navigator",
+        "target_action": "astrogation",
+        "pool": "4D",
+        "bonus_pool": "1D",
+        "difficulty": 10
+      },
+      {
+        "name": "Traffic phrasebook",
+        "station": "communications",
+        "target_action": "communications",
+        "pool": "4D",
+        "bonus_pool": "1D",
+        "difficulty": 10
+      }
+    ],
+    "astrogation_action": {
+      "name": "Plot local jump corridor",
+      "difficulty": 15,
+      "pool": "4D"
+    },
+    "identification_action": {
+      "name": "Identify selected contact",
+      "difficulty": 15,
+      "track_penalty_step": 5,
+      "unresolved_penalty": 10
+    },
+    "comms_hail_action": {
+      "name": "Hail selected contact",
+      "difficulty": 10,
+      "unidentified_penalty": 5,
+      "delay_weapon_solution_on_success": true,
+      "weapon_solution_delay_rounds": 1,
+      "advance_weapon_solution_on_failure": true,
+      "weapon_solution_pressure_rounds": 1,
+      "threat_modifiers": {
+        "friendly": 0,
+        "neutral": 0,
+        "authority": 5,
+        "uncertain": 5,
+        "hostile": 10,
+        "unknown": 5
+      }
+    },
+    "maneuver_action": {
+      "name": "Bank through approach lane",
+      "difficulty": 10,
+      "modifier": 5,
+      "turn_degrees": 45,
+      "move_units": 28,
+      "speed": "cruise",
+      "collision_possible": true,
+      "break_weapon_solutions": true,
+      "hazards": [
+        {
+          "id": "approach_debris",
+          "name": "Approach Debris",
+          "position": {"x": 12, "y": 12},
+          "radius": 8,
+          "difficulty_modifier": 5,
+          "collision_possible": true
+        },
+        {
+          "id": "traffic_slot",
+          "name": "Traffic Slot",
+          "position": {"x": 18, "y": 18},
+          "radius": 7,
+          "difficulty_modifier": 5,
+          "collision_possible": false
+        }
+      ]
+    }
+  },
+  "stations": [
+    "pilot",
+    "copilot",
+    "sensors",
+    "commander",
+    "gunner",
+    "engineer",
+    "navigator",
+    "communications"
+  ]
+}

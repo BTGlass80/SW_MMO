@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sw-mmo-prototype/schemas/faction_zone_state.schema.json",
+  "title": "Faction Zone State",
+  "description": "Authoritative per-zone Director-AI world-sim state for ONE ground zone. The server owns one instance per zone; this is the persistent, restart-surviving truth the slow Director tick reads and writes. Mirrors SW_MUSH director_ai_design_v1 §3 (zone_influence) + Guide_26 alert levels, recast Clone Wars era and server-authoritative. NOT the territory-org influence table (see territory_claim.schema.json) - different system, different purpose. Bridged only via faction axis for narrative.",
+  "era": "20 BBY Clone Wars",
+  "source": {
+    "reference_paths": [
+      "C:\\SW_MUSH\\docs\\design\\Guide_26_Director_AI.md",
+      "C:\\SW_MUSH\\docs\\design\\director_ai_design_v1.md",
+      "C:\\SW_MUSH\\docs\\design\\security_zones_design_v1.md",
+      "docs/WORLD_SIM_DESIGN.md"
+    ],
+    "source_policy": "Design schema for standalone Godot server. WEG R&E + Clone Wars era lead; SW_MUSH supplies the Director influence/alert model as reference, not a 1:1 port. Old-era (Imperial/Rebel) labels are recast to Republic/CIS/Hutt/Independent."
+  },
+  "type": "object",
+  "required": ["schema_version", "zone_id", "influence", "alert_level", "security_base", "tick"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "zone_id": {
+      "type": "string",
+      "description": "Stable zone key, e.g. 'tatooine.mos_eisley.spaceport'. Matches the zones registry.",
+      "examples": ["tatooine.mos_eisley.spaceport", "tatooine.mos_eisley.cantina", "tatooine.jundland_wastes"]
+    },
+    "display_name": {"type": "string", "examples": ["Mos Eisley Spaceport District"]},
+    "influence": {
+      "type": "object",
+      "description": "Per-faction influence score, 0-100, NOT zero-sum (multiple factions can be high). Clone Wars factions. Director slow tick adjusts these; alert_level + security overlay are DERIVED from them every recompute (no LLM needed for derivation).",
+      "required": ["republic", "cis", "hutt", "independent"],
+      "additionalProperties": false,
+      "properties": {
+        "republic": {"type": "integer", "minimum": 0, "maximum": 100, "description": "Republic / legitimate authority (Clone Wars analogue of the GCW 'Imperial' axis in the MUSH)."},
+        "cis": {"type": "integer", "minimum": 0, "maximum": 100, "description": "Separatist / CIS (rebel-faction analogue)."},
+        "hutt": {"type": "integer", "minimum": 0, "maximum": 100, "description": "Hutt cartel / criminal underworld."},
+        "independent": {"type": "integer", "minimum": 0, "maximum": 100, "description": "Non-aligned locals, spacers, freelancers."}
+      }
+    },
+    "alert_level": {
+      "type": "string",
+      "description": "Derived from influence thresholds at recompute (see WORLD_SIM_DESIGN §Alert Levels). Player-visible tag; drives NPC spawn weights, encounter frequency, economy multipliers. Clone Wars recast of the MUSH's 6 alert levels.",
+      "enum": ["lockdown", "high_alert", "standard", "lax", "underworld", "unrest"]
+    },
+    "security_base": {
+      "type": "string",
+      "description": "Admin-set base security tier for the zone (the safe-zone <-> consensual-PvP gradient). Director influence/events apply a TRANSIENT overlay on top (see security_overlay); the base value is never overwritten by the sim.",
+      "enum": ["secured", "contested", "lawless"]
+    },
+    "security_overlay": {
+      "type": ["string", "null"],
+      "description": "Current EFFECTIVE security after Director overlay (influence thresholds + active events). Transient; recomputed each tick; null means 'equals security_base'. e.g. Hutt influence >= 80 downgrades one tier; a republic_crackdown event upgrades contested->secured.",
+      "enum": ["secured", "contested", "lawless", null]
+    },
+    "active_events": {
+      "type": "array",
+      "description": "World events currently affecting THIS zone. Each references a world_event_instance by id; the full instance row lives in the world-events store (see PERSISTENCE_DESIGN).",
+      "items": {
+        "type": "object",
+        "required": ["event_id", "type", "expires_at_tick"],
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {"type": "string", "description": "Unique instance id."},
+          "type": {
+            "type": "string",
+            "description": "Fixed-menu event type (the Director SELECTS from this menu, never invents). Clone Wars recast of the MUSH 12-event table.",
+            "enum": [
+              "republic_crackdown", "republic_checkpoint", "bounty_surge", "merchant_arrival",
+              "sandstorm", "cantina_brawl", "distress_signal", "pirate_surge",
+              "hutt_auction", "krayt_sighting", "cis_propaganda", "trade_boom"
+            ]
+          },
+          "headline": {"type": "string", "maxLength": 200, "description": "One-sentence player-facing news headline."},
+          "started_at_tick": {"type": "integer"},
+          "expires_at_tick": {"type": "integer", "description": "Director slow-tick index at which effects reset and the event expires."}
+        }
+      }
+    },
+    "ambient": {
+      "type": "object",
+      "description": "Ambient NPC-life + atmospheric-text driver state for this zone. Static pool is data-authored; dynamic pool is OPTIONAL LLM output (see WORLD_SIM_DESIGN §Atmospheric Layer). World stays consistent if the LLM is off.",
+      "additionalProperties": false,
+      "properties": {
+        "static_pool_key": {"type": "string", "description": "Key into the authored ambient-line data set for this zone archetype.", "examples": ["spaceport", "cantina", "wastes"]},
+        "dynamic_pool": {
+          "type": "array",
+          "description": "Director-generated atmospheric one-liners for the current cycle. OPTIONAL. Each <= 120 chars, validated, no player names/commands/anachronisms. Empty => 100% static. Drawn 70% static / 30% dynamic when non-empty.",
+          "items": {"type": "string", "maxLength": 120},
+          "maxItems": 5
+        },
+        "dynamic_refreshed_at_tick": {"type": "integer"}
+      }
+    },
+    "tick": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Director slow-tick index at which this state was last recomputed. The slow tick (~30s-30min cadence, owner-configurable) is DISTINCT from the 20 Hz movement tick in world_state.gd."
+    },
+    "last_recompute_unix": {"type": "number", "description": "Wall-clock epoch seconds of last recompute, for decay timers and admin display."},
+    "extra": {
+      "type": "object",
+      "description": "Forward-compat JSON blank (per project convention: every new persisted shape carries an 'extra' object so new fields need zero migration).",
+      "default": {}
+    }
+  },
+  "examples": [
+    {
+      "schema_version": 1,
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "display_name": "Mos Eisley Spaceport District",
+      "influence": {"republic": 62, "cis": 8, "hutt": 48, "independent": 25},
+      "alert_level": "high_alert",
+      "security_base": "secured",
+      "security_overlay": null,
+      "active_events": [
+        {"event_id": "evt_0001", "type": "republic_checkpoint", "headline": "Clone troopers intensify cargo scans at the spaceport.", "started_at_tick": 1840, "expires_at_tick": 1900}
+      ],
+      "ambient": {"static_pool_key": "spaceport", "dynamic_pool": ["A LAAT/i gunship thunders low over the bays, kicking up grit."], "dynamic_refreshed_at_tick": 1830},
+      "tick": 1860,
+      "last_recompute_unix": 1750000000.0,
+      "extra": {}
+    }
+  ]
+}

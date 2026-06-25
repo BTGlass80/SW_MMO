@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "characters": {
+    "range_trainee": {
+      "name": "Mos Eisley Range Trainee",
+      "species": "Human",
+      "attributes": {
+        "dexterity": "3D",
+        "knowledge": "2D+2",
+        "mechanical": "3D",
+        "perception": "3D",
+        "strength": "3D",
+        "technical": "2D+2"
+      },
+      "skill_bonuses": {
+        "blaster": "1D+1",
+        "dodge": "1D",
+        "sensors": "1D",
+        "starship_gunnery": "1D"
+      },
+      "equipment": {
+        "weapon": "training_blaster",
+        "armor": "training_blast_vest"
+      },
+      "character_points": 5,
+      "force_points": 1,
+      "dark_side_points": 0,
+      "wound_severity": 0,
+      "scale": "character"
+    }
+  }
+}

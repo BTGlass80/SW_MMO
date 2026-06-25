@@ -1,0 +1,484 @@
+{
+  "schema_version": 1,
+  "source_policy": "Derived READ-ONLY from C:\\SW_MUSH\\data\\skills.yaml and C:\\SW_MUSH\\docs\\design\\Guide_01_WEG_D6_Core_Mechanics.md. SW_MUSH is strictly read-only reference; this file is the authoritative project-owned copy. Data flows one way: out of SW_MUSH into data/.",
+  "source_note": "Ported 2026-06-24 from sw_mush skills.yaml (75 skills). Era-clean: specializations referencing Imperial/Rebel/stormtrooper/Alliance factions noted in era_note fields; the skill itself is Clone Wars-legal. One skill added by MUSH design note: Powersuit Operation (see skills.yaml CRAFT.powered_suit_design 2026-06-13).",
+  "attribute_dice": "18D",
+  "skill_dice": "7D",
+  "skills": {
+    "dexterity": [
+      {
+        "key": "blaster",
+        "name": "Blaster",
+        "attribute": "dexterity",
+        "specializations": ["Heavy Blaster Pistol", "Blaster Rifle", "Hold-Out Blaster"]
+      },
+      {
+        "key": "bowcaster",
+        "name": "Bowcaster",
+        "attribute": "dexterity",
+        "specializations": []
+      },
+      {
+        "key": "brawling_parry",
+        "name": "Brawling Parry",
+        "attribute": "dexterity",
+        "specializations": []
+      },
+      {
+        "key": "dodge",
+        "name": "Dodge",
+        "attribute": "dexterity",
+        "specializations": []
+      },
+      {
+        "key": "firearms",
+        "name": "Firearms",
+        "attribute": "dexterity",
+        "specializations": ["Pistol", "Rifle"]
+      },
+      {
+        "key": "grenade",
+        "name": "Grenade",
+        "attribute": "dexterity",
+        "specializations": ["Thermal Detonator", "Frag Grenade"]
+      },
+      {
+        "key": "lightsaber",
+        "name": "Lightsaber",
+        "attribute": "dexterity",
+        "specializations": []
+      },
+      {
+        "key": "melee_combat",
+        "name": "Melee Combat",
+        "attribute": "dexterity",
+        "specializations": ["Vibroblade", "Force Pike"]
+      },
+      {
+        "key": "melee_parry",
+        "name": "Melee Parry",
+        "attribute": "dexterity",
+        "specializations": []
+      },
+      {
+        "key": "missile_weapons",
+        "name": "Missile Weapons",
+        "attribute": "dexterity",
+        "specializations": []
+      },
+      {
+        "key": "pick_pocket",
+        "name": "Pick Pocket",
+        "attribute": "dexterity",
+        "specializations": []
+      },
+      {
+        "key": "running",
+        "name": "Running",
+        "attribute": "dexterity",
+        "specializations": []
+      },
+      {
+        "key": "thrown_weapons",
+        "name": "Thrown Weapons",
+        "attribute": "dexterity",
+        "specializations": []
+      },
+      {
+        "key": "vehicle_blasters",
+        "name": "Vehicle Blasters",
+        "attribute": "dexterity",
+        "specializations": []
+      }
+    ],
+    "knowledge": [
+      {
+        "key": "alien_species",
+        "name": "Alien Species",
+        "attribute": "knowledge",
+        "specializations": ["Wookiees", "Hutts", "Mon Calamari"]
+      },
+      {
+        "key": "bureaucracy",
+        "name": "Bureaucracy",
+        "attribute": "knowledge",
+        "specializations": ["Republic Senate", "Separatist Council"],
+        "era_note": "Original MUSH specializations were Imperial/Rebel Alliance — recast to Clone Wars-era equivalents."
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "attribute": "knowledge",
+        "specializations": []
+      },
+      {
+        "key": "cultures",
+        "name": "Cultures",
+        "attribute": "knowledge",
+        "specializations": []
+      },
+      {
+        "key": "intimidation",
+        "name": "Intimidation",
+        "attribute": "knowledge",
+        "specializations": []
+      },
+      {
+        "key": "languages",
+        "name": "Languages",
+        "attribute": "knowledge",
+        "specializations": ["Shyriiwook", "Huttese", "Binary"]
+      },
+      {
+        "key": "law_enforcement",
+        "name": "Law Enforcement",
+        "attribute": "knowledge",
+        "specializations": []
+      },
+      {
+        "key": "planetary_systems",
+        "name": "Planetary Systems",
+        "attribute": "knowledge",
+        "specializations": ["Tatooine", "Coruscant"]
+      },
+      {
+        "key": "scholar",
+        "name": "Scholar",
+        "attribute": "knowledge",
+        "specializations": ["History", "Physics", "Xenobiology"]
+      },
+      {
+        "key": "streetwise",
+        "name": "Streetwise",
+        "attribute": "knowledge",
+        "specializations": ["Mos Eisley", "Nar Shaddaa"]
+      },
+      {
+        "key": "survival",
+        "name": "Survival",
+        "attribute": "knowledge",
+        "specializations": ["Desert", "Forest", "Arctic", "Space"]
+      },
+      {
+        "key": "tactics",
+        "name": "Tactics",
+        "attribute": "knowledge",
+        "specializations": ["Ground", "Fleet", "Guerrilla"]
+      },
+      {
+        "key": "value",
+        "name": "Value",
+        "attribute": "knowledge",
+        "specializations": []
+      },
+      {
+        "key": "willpower",
+        "name": "Willpower",
+        "attribute": "knowledge",
+        "specializations": []
+      }
+    ],
+    "mechanical": [
+      {
+        "key": "astrogation",
+        "name": "Astrogation",
+        "attribute": "mechanical",
+        "specializations": []
+      },
+      {
+        "key": "beast_riding",
+        "name": "Beast Riding",
+        "attribute": "mechanical",
+        "specializations": ["Bantha", "Tauntaun"]
+      },
+      {
+        "key": "capital_ship_gunnery",
+        "name": "Capital Ship Gunnery",
+        "attribute": "mechanical",
+        "specializations": ["Turbolaser", "Ion Cannon"]
+      },
+      {
+        "key": "capital_ship_piloting",
+        "name": "Capital Ship Piloting",
+        "attribute": "mechanical",
+        "specializations": ["Venator-class", "Providence-class"],
+        "era_note": "Original specializations were Star Destroyer/Corvette — recast to Clone Wars-era capital ships."
+      },
+      {
+        "key": "capital_ship_shields",
+        "name": "Capital Ship Shields",
+        "attribute": "mechanical",
+        "specializations": []
+      },
+      {
+        "key": "communications",
+        "name": "Communications",
+        "attribute": "mechanical",
+        "specializations": []
+      },
+      {
+        "key": "ground_vehicle_operation",
+        "name": "Ground Vehicle Operation",
+        "attribute": "mechanical",
+        "specializations": ["Landspeeder", "AT-ST"]
+      },
+      {
+        "key": "hover_vehicle_operation",
+        "name": "Hover Vehicle Operation",
+        "attribute": "mechanical",
+        "specializations": []
+      },
+      {
+        "key": "powersuit_operation",
+        "name": "Powersuit Operation",
+        "attribute": "mechanical",
+        "specializations": [],
+        "era_note": "Added per CRAFT.powered_suit_design (2026-06-13 MUSH design note). WEG R&E Mechanical skill governing powered exo-armor. Clone Wars era: industrial loader frames up-armored for combat; no Imperial powersuit models."
+      },
+      {
+        "key": "repulsorlift_operation",
+        "name": "Repulsorlift Operation",
+        "attribute": "mechanical",
+        "specializations": []
+      },
+      {
+        "key": "sensors",
+        "name": "Sensors",
+        "attribute": "mechanical",
+        "specializations": []
+      },
+      {
+        "key": "space_transports",
+        "name": "Space Transports",
+        "attribute": "mechanical",
+        "specializations": ["YT-1300", "Consular-class"],
+        "era_note": "Original specialization Lambda Shuttle is Imperial-era; replaced with Consular-class (Republic diplomatic vessel)."
+      },
+      {
+        "key": "starfighter_piloting",
+        "name": "Starfighter Piloting",
+        "attribute": "mechanical",
+        "specializations": ["V-19 Torrent", "Eta-2 Actis", "Vulture Droid"],
+        "era_note": "Original X-Wing/TIE Fighter specializations are GCW-era; replaced with Clone Wars-era starfighters."
+      },
+      {
+        "key": "starship_gunnery",
+        "name": "Starship Gunnery",
+        "attribute": "mechanical",
+        "specializations": ["Laser Cannon", "Proton Torpedo"]
+      },
+      {
+        "key": "starship_shields",
+        "name": "Starship Shields",
+        "attribute": "mechanical",
+        "specializations": []
+      },
+      {
+        "key": "swoop_operation",
+        "name": "Swoop Operation",
+        "attribute": "mechanical",
+        "specializations": []
+      },
+      {
+        "key": "walker_operation",
+        "name": "Walker Operation",
+        "attribute": "mechanical",
+        "specializations": ["AT-TE", "AT-RT"],
+        "era_note": "Original AT-AT specialization is Imperial-era; replaced with Clone Wars-era walker types."
+      }
+    ],
+    "perception": [
+      {
+        "key": "bargain",
+        "name": "Bargain",
+        "attribute": "perception",
+        "specializations": []
+      },
+      {
+        "key": "command",
+        "name": "Command",
+        "attribute": "perception",
+        "specializations": ["Starship Crew", "Ground Troops"]
+      },
+      {
+        "key": "con",
+        "name": "Con",
+        "attribute": "perception",
+        "specializations": ["Disguise", "Fast Talk"]
+      },
+      {
+        "key": "forgery",
+        "name": "Forgery",
+        "attribute": "perception",
+        "specializations": []
+      },
+      {
+        "key": "gambling",
+        "name": "Gambling",
+        "attribute": "perception",
+        "specializations": ["Sabacc"]
+      },
+      {
+        "key": "hide",
+        "name": "Hide",
+        "attribute": "perception",
+        "specializations": []
+      },
+      {
+        "key": "investigation",
+        "name": "Investigation",
+        "attribute": "perception",
+        "specializations": []
+      },
+      {
+        "key": "persuasion",
+        "name": "Persuasion",
+        "attribute": "perception",
+        "specializations": []
+      },
+      {
+        "key": "search",
+        "name": "Search",
+        "attribute": "perception",
+        "specializations": []
+      },
+      {
+        "key": "sneak",
+        "name": "Sneak",
+        "attribute": "perception",
+        "specializations": []
+      }
+    ],
+    "strength": [
+      {
+        "key": "brawling",
+        "name": "Brawling",
+        "attribute": "strength",
+        "specializations": ["Martial Arts", "Wrestling"]
+      },
+      {
+        "key": "climbing_jumping",
+        "name": "Climbing/Jumping",
+        "attribute": "strength",
+        "specializations": []
+      },
+      {
+        "key": "lifting",
+        "name": "Lifting",
+        "attribute": "strength",
+        "specializations": []
+      },
+      {
+        "key": "stamina",
+        "name": "Stamina",
+        "attribute": "strength",
+        "specializations": []
+      },
+      {
+        "key": "swimming",
+        "name": "Swimming",
+        "attribute": "strength",
+        "specializations": []
+      }
+    ],
+    "technical": [
+      {
+        "key": "armor_repair",
+        "name": "Armor Repair",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "blaster_repair",
+        "name": "Blaster Repair",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "capital_ship_repair",
+        "name": "Capital Ship Repair",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "capital_ship_weapon_repair",
+        "name": "Capital Ship Weapon Repair",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "computer_programming_repair",
+        "name": "Computer Programming/Repair",
+        "attribute": "technical",
+        "specializations": ["Slicing"]
+      },
+      {
+        "key": "demolitions",
+        "name": "Demolitions",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "droid_programming",
+        "name": "Droid Programming",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "droid_repair",
+        "name": "Droid Repair",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "first_aid",
+        "name": "First Aid",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "ground_vehicle_repair",
+        "name": "Ground Vehicle Repair",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "medicine",
+        "name": "Medicine",
+        "attribute": "technical",
+        "specializations": ["Surgery", "Cybernetics"]
+      },
+      {
+        "key": "repulsorlift_repair",
+        "name": "Repulsorlift Repair",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "security",
+        "name": "Security",
+        "attribute": "technical",
+        "specializations": []
+      },
+      {
+        "key": "space_transport_repair",
+        "name": "Space Transport Repair",
+        "attribute": "technical",
+        "specializations": ["YT-1300"]
+      },
+      {
+        "key": "starfighter_repair",
+        "name": "Starfighter Repair",
+        "attribute": "technical",
+        "specializations": ["V-19 Torrent"],
+        "era_note": "Original X-Wing specialization is GCW-era; replaced with Clone Wars-era V-19 Torrent."
+      },
+      {
+        "key": "starship_weapon_repair",
+        "name": "Starship Weapon Repair",
+        "attribute": "technical",
+        "specializations": []
+      }
+    ]
+  }
+}

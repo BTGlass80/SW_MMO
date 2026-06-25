@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sw-mmo-prototype/schemas/siege_state.schema.json",
+  "title": "Siege / Hostile-Takeover Contest State",
+  "description": "Authoritative record of ONE org-vs-org hostile-takeover contest against a territory claim (or a player-city node). This is the concrete state machine for the MUSH's planned-but-undelivered 'Drop 6D' (Guide_11 §7): contest state machine, timer, rival-org no-consent PvP window, hostile takeover. The headline PvP loop. Server owns it; survives restart; the slow Director/territory tick advances its timers. See FACTION_TERRITORY_DESIGN for the full state diagram and rules.",
+  "era": "20 BBY Clone Wars",
+  "source": {
+    "reference_paths": [
+      "C:\\SW_MUSH\\docs\\design\\Guide_11_Territory_Control.md",
+      "C:\\SW_MUSH\\docs\\design\\Guide_12_Player_Cities.md",
+      "C:\\SW_MUSH\\docs\\design\\security_zones_design_v1.md",
+      "docs/FACTION_TERRITORY_DESIGN.md"
+    ],
+    "source_policy": "Original design for Drop 6D, which the MUSH specced as 'Planned' but never delivered. Grounded in Guide_11's claim/influence model and the security-zone consent model; numbers are starting points, owner-tunable. Clone Wars era. Server-authoritative: all RNG/timers owned by the server."
+  },
+  "type": "object",
+  "required": ["schema_version", "siege_id", "claim_id", "node_id", "zone_id", "defender_org_id", "attacker_org_id", "state", "phase_started_unix"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "siege_id": {"type": "string", "description": "Unique contest id."},
+    "claim_id": {"type": "string", "description": "The territory_claim under contest. (For a city node, the city's claim id.)"},
+    "node_id": {"type": "string"},
+    "zone_id": {"type": "string", "description": "Must be contested or lawless. Sieges cannot be declared on secured zones or on city-upgraded-to-secured citizen rooms."},
+    "defender_org_id": {"type": "string", "description": "Current owning org."},
+    "attacker_org_id": {"type": "string", "description": "Challenging org. Must meet a min-influence-in-zone gate to declare (default Foothold/50)."},
+    "state": {
+      "type": "string",
+      "description": "Current state-machine state. Transitions and dwell-times are defined in FACTION_TERRITORY_DESIGN §Siege State Machine. Terminal states: captured, repelled, aborted.",
+      "enum": ["declared", "active", "lockout", "resolving", "captured", "repelled", "aborted"]
+    },
+    "phase_started_unix": {"type": "number", "description": "Wall-clock epoch seconds the current state was entered. Timer math is relative to this."},
+    "phase_deadline_unix": {"type": "number", "description": "Epoch seconds at which the current state auto-advances or auto-resolves if conditions are unmet."},
+    "config": {
+      "type": "object",
+      "description": "Snapshot of the timing/threshold config this siege runs under (captured at declaration so a live siege is not disturbed by an admin retune). All values owner-tunable; defaults shown are starting points, NOT a flagged owner decision baked in.",
+      "additionalProperties": false,
+      "properties": {
+        "warning_hours": {"type": "number", "default": 24, "description": "DECLARED dwell: defender-warning window before the contest window opens. The 'planned-but-watched' telegraph (mirrors Guide_12's 24h city-expansion telegraph philosophy)."},
+        "contest_window_hours": {"type": "number", "default": 48, "description": "ACTIVE dwell: the no-consent PvP + control-point capture window."},
+        "lockout_hours": {"type": "number", "default": 168, "description": "Cooldown after a resolved siege before the same node can be contested again (default 7 days)."},
+        "attacker_min_influence": {"type": "integer", "default": 50, "description": "Attacker's required org influence in the zone to declare (Foothold)."},
+        "control_threshold": {"type": "number", "default": 0.6, "description": "Fraction of accumulated contest score the attacker must hold at window close to capture. Below it = repelled."}
+      }
+    },
+    "pvp_consent": {
+      "type": "object",
+      "description": "While state == active, members of attacker_org and defender_org are mutually flagged for NO-CONSENT PvP at the contested node and its adjacency, regardless of the zone's normal consent rules. This is the rival-org no-consent PvP window. Outside this window/scope, normal security-zone consent applies. Transient flag; the server re-derives it from state each tick and never trusts a client.",
+      "additionalProperties": false,
+      "properties": {
+        "active": {"type": "boolean", "default": false},
+        "scope_node_ids": {"type": "array", "items": {"type": "string"}, "description": "Nodes where the no-consent window applies (the claim node plus declared adjacency)."}
+      }
+    },
+    "score": {
+      "type": "object",
+      "description": "Accumulated contest score. The server owns all of this (server-authoritative; ties into action-window combat outcomes). Capture is decided by attacker_fraction vs config.control_threshold at window close.",
+      "additionalProperties": false,
+      "properties": {
+        "attacker_points": {"type": "number", "default": 0},
+        "defender_points": {"type": "number", "default": 0},
+        "contributions": {
+          "type": "array",
+          "description": "Audit log of scoring events that moved the contest (PvP kills in scope, control-point hold ticks, guard NPC defeats, sabotage objectives). Drives 'did you see what happened' social currency and post-siege news.",
+          "items": {
+            "type": "object",
+            "required": ["unix", "side", "kind", "points"],
+            "additionalProperties": false,
+            "properties": {
+              "unix": {"type": "number"},
+              "side": {"type": "string", "enum": ["attacker", "defender"]},
+              "kind": {"type": "string", "enum": ["pvp_kill", "control_hold_tick", "guard_defeated", "objective", "sabotage"]},
+              "char_id": {"type": "string"},
+              "points": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    "outcome": {
+      "type": ["object", "null"],
+      "description": "Set when the siege reaches a terminal state. Captured => claim ownership transfers to attacker_org (income/guard reset, lockout begins). Repelled => defender keeps the claim, lockout begins. Aborted => declaration cancelled before ACTIVE (e.g. attacker influence fell below gate).",
+      "additionalProperties": false,
+      "properties": {
+        "result": {"type": "string", "enum": ["captured", "repelled", "aborted"]},
+        "resolved_unix": {"type": "number"},
+        "attacker_fraction": {"type": "number"},
+        "news_headline": {"type": "string", "maxLength": 200, "description": "Player-facing news line (feeds the Director news bulletin)."},
+        "lockout_until_unix": {"type": "number"}
+      }
+    },
+    "declared_unix": {"type": "number", "description": "Epoch seconds the siege was declared."},
+    "extra": {"type": "object", "description": "Forward-compat JSON blank.", "default": {}}
+  },
+  "examples": [
+    {
+      "schema_version": 1,
+      "siege_id": "sg_0007",
+      "claim_id": "clm_0042",
+      "node_id": "narshaddaa.undercity.room_1421",
+      "zone_id": "narshaddaa.undercity",
+      "defender_org_id": "org_falleen_syndicate",
+      "attacker_org_id": "org_black_sun_cell",
+      "state": "active",
+      "phase_started_unix": 1750100000.0,
+      "phase_deadline_unix": 1750272800.0,
+      "config": {"warning_hours": 24, "contest_window_hours": 48, "lockout_hours": 168, "attacker_min_influence": 50, "control_threshold": 0.6},
+      "pvp_consent": {"active": true, "scope_node_ids": ["narshaddaa.undercity.room_1421", "narshaddaa.undercity.room_1420"]},
+      "score": {
+        "attacker_points": 34.0,
+        "defender_points": 21.0,
+        "contributions": [
+          {"unix": 1750110000.0, "side": "attacker", "kind": "guard_defeated", "char_id": "char_dren", "points": 10.0},
+          {"unix": 1750120000.0, "side": "defender", "kind": "pvp_kill", "char_id": "char_vask", "points": 6.0}
+        ]
+      },
+      "outcome": null,
+      "declared_unix": 1750013600.0,
+      "extra": {}
+    }
+  ]
+}

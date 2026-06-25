@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "source_policy": "Clone Wars-safe prototype subset of WEG D6 skills. Do not copy stale era examples from SW_MUSH skills.yaml without recasting.",
+  "skills": {
+    "blaster": {"name": "Blaster", "attribute": "dexterity"},
+    "dodge": {"name": "Dodge", "attribute": "dexterity"},
+    "melee_combat": {"name": "Melee Combat", "attribute": "dexterity"},
+    "melee_parry": {"name": "Melee Parry", "attribute": "dexterity"},
+    "brawling": {"name": "Brawling", "attribute": "strength"},
+    "stamina": {"name": "Stamina", "attribute": "strength"},
+    "command": {"name": "Command", "attribute": "perception"},
+    "search": {"name": "Search", "attribute": "perception"},
+    "sneak": {"name": "Sneak", "attribute": "perception"},
+    "streetwise": {"name": "Streetwise", "attribute": "knowledge"},
+    "survival": {"name": "Survival", "attribute": "knowledge"},
+    "astrogation": {"name": "Astrogation", "attribute": "mechanical"},
+    "repulsorlift_operation": {"name": "Repulsorlift Operation", "attribute": "mechanical"},
+    "sensors": {"name": "Sensors", "attribute": "mechanical"},
+    "space_transports": {"name": "Space Transports", "attribute": "mechanical"},
+    "starfighter_piloting": {"name": "Starfighter Piloting", "attribute": "mechanical"},
+    "starship_gunnery": {"name": "Starship Gunnery", "attribute": "mechanical"},
+    "starship_shields": {"name": "Starship Shields", "attribute": "mechanical"},
+    "walker_operation": {"name": "Walker Operation", "attribute": "mechanical"},
+    "armor_repair": {"name": "Armor Repair", "attribute": "technical"},
+    "blaster_repair": {"name": "Blaster Repair", "attribute": "technical"},
+    "first_aid": {"name": "First Aid", "attribute": "technical"},
+    "security": {"name": "Security", "attribute": "technical"}
+  }
+}

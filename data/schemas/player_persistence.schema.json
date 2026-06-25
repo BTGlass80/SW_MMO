@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sw-mmo-prototype/schemas/player_persistence.schema.json",
+  "title": "Player Persistence Record",
+  "description": "The durable per-CHARACTER save record: identity, position, WEG D6 sheet, org membership, city role, and the hooks the world sim reads/writes (cooldowns, influence-credit). This is what the server loads on login and snapshots on save/logout (M1.4 persistence backbone). Account-level data (login, owned character list) is referenced by account_id and lives in a separate account table; see PERSISTENCE_DESIGN. The live in-memory shape is world_state.gd's player dict + the D6 sheet; this is its persisted superset.",
+  "era": "20 BBY Clone Wars",
+  "source": {
+    "reference_paths": [
+      "scripts/net/world_state.gd",
+      "docs/MULTIPLAYER_FOUNDATION.md",
+      "C:\\SW_MUSH\\docs\\design\\Guide_10_Organizations_Factions.md",
+      "C:\\SW_MUSH\\docs\\design\\Guide_12_Player_Cities.md",
+      "docs/PERSISTENCE_DESIGN.md"
+    ],
+    "source_policy": "Design schema for the standalone Godot server's persistence backbone. WEG R&E leads the sheet shape; SW_MUSH supplies org/city role models. Position fields match world_state.gd's authoritative units. Owner-deferred items (Force/Jedi access, death/loot penalty, CP pace) are represented as data fields but their RULES are NOT decided here - see PERSISTENCE_DESIGN open questions."
+  },
+  "type": "object",
+  "required": ["schema_version", "character_id", "account_id", "name", "position", "sheet"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "character_id": {"type": "string", "description": "Stable character id (primary key)."},
+    "account_id": {"type": "string", "description": "Owning account. One account may own multiple characters; account auth lives in the accounts table, not here."},
+    "name": {"type": "string", "description": "Display name. Matches world_state.gd player['name'].", "examples": ["Spacer-12", "Vask Tann"]},
+    "species": {"type": "string", "examples": ["Human", "Twi'lek", "Rodian"]},
+    "position": {
+      "type": "object",
+      "description": "Last authoritative position. Server owns truth (world_state.gd never trusts client position). On login the server spawns the character here (or at a safe fallback if the zone is unavailable).",
+      "required": ["zone_id", "pos", "yaw"],
+      "additionalProperties": false,
+      "properties": {
+        "zone_id": {"type": "string", "examples": ["tatooine.mos_eisley.spaceport"]},
+        "pos": {
+          "type": "object",
+          "description": "World coordinates in the same units as world_state.gd (GROUND_Y=1.2, settlement bounds +/-58).",
+          "required": ["x", "y", "z"],
+          "additionalProperties": false,
+          "properties": {"x": {"type": "number"}, "y": {"type": "number"}, "z": {"type": "number"}}
+        },
+        "yaw": {"type": "number", "description": "Facing in radians."}
+      }
+    },
+    "sheet": {
+      "type": "object",
+      "description": "WEG D6 R&E character sheet. Dice codes are strings like '4D+1'. D6Rules autoload owns dice math; this is the persisted data only.",
+      "required": ["attributes", "skills", "character_points", "force_points", "wound_state"],
+      "additionalProperties": false,
+      "properties": {
+        "attributes": {
+          "type": "object",
+          "description": "Six WEG attributes as dice codes.",
+          "additionalProperties": {"type": "string"},
+          "examples": [{"dexterity": "3D", "knowledge": "2D+1", "mechanical": "2D", "perception": "3D", "strength": "2D+2", "technical": "2D"}]
+        },
+        "skills": {
+          "type": "object",
+          "description": "Skill code by skill key. Dice codes.",
+          "additionalProperties": {"type": "string"},
+          "examples": [{"blaster": "4D+1", "dodge": "4D", "pilot": "3D+2"}]
+        },
+        "character_points": {"type": "integer", "minimum": 0, "description": "CP. Earned and spent on advancement. The CP PROGRESSION PACE is an OPEN OWNER DECISION (see PERSISTENCE_DESIGN) - this field stores the value but does not bake a rate."},
+        "force_points": {"type": "integer", "minimum": 0, "description": "FP."},
+        "force_sensitive": {"type": "boolean", "default": false, "description": "Whether the character has Force access. Force/Jedi SCARCITY and access rules are an OPEN OWNER DECISION - this flag is the data hook, not the policy."},
+        "wound_state": {
+          "type": "string",
+          "description": "WEG wound ladder. Death/loot PENALTY consequences (what happens at incapacitated/dead) are an OPEN OWNER DECISION - this field stores the state, not the penalty.",
+          "enum": ["healthy", "stunned", "wounded", "wounded_twice", "incapacitated", "mortally_wounded", "dead"]
+        },
+        "credits": {"type": "integer", "minimum": 0, "default": 0}
+      }
+    },
+    "org": {
+      "type": ["object", "null"],
+      "description": "Faction/guild membership (Guide_10). One faction at a time; up to three guilds. Drives stipends, territory presence/influence credit, and city citizenship.",
+      "additionalProperties": false,
+      "properties": {
+        "faction_id": {"type": ["string", "null"], "examples": ["org_republic", "org_cis", "org_hutt_cartel", "org_bounty_hunters_guild", null]},
+        "faction_axis": {"type": ["string", "null"], "enum": ["republic", "cis", "hutt", "independent", null], "description": "Maps the character's faction to a Director influence axis for narrative bridging."},
+        "faction_rank": {"type": "integer", "minimum": 0, "default": 0},
+        "faction_rep": {"type": "integer", "minimum": 0, "maximum": 100, "default": 0},
+        "guild_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 3},
+        "faction_switch_cooldown_unix": {"type": "number", "description": "Epoch seconds until the 7-day faction-switch cooldown expires."}
+      }
+    },
+    "city_role": {
+      "type": ["object", "null"],
+      "description": "Player-city relationship (Guide_12), if any. Exactly one role per city the character relates to; the load-bearing one is the character's own org city. Drives the citizen security upgrade, +city home teleport cooldown, and citizen-only access.",
+      "additionalProperties": false,
+      "properties": {
+        "city_id": {"type": "string"},
+        "role": {"type": "string", "enum": ["founder", "mayor", "citizen", "guest", "outsider", "banished"]},
+        "home_teleport_cooldown_unix": {"type": "number", "description": "Epoch seconds until +city home is available again (60-min cooldown, persists across logout)."},
+        "banished_until_unix": {"type": ["number", "null"], "description": "If banished, epoch seconds the banishment lifts (default 30 days)."}
+      }
+    },
+    "world_hooks": {
+      "type": "object",
+      "description": "Transient-but-persisted hooks the world sim reads/writes per character. Kept on the save so cooldowns and pending credit survive restart.",
+      "additionalProperties": false,
+      "properties": {
+        "pending_zone_influence": {
+          "type": "array",
+          "description": "Uncommitted faction-influence deltas this character generated (kills, missions, PvP) that the next Director recompute will fold into faction_zone_state. Cleared after commit. Lets influence survive a crash between action and recompute.",
+          "items": {
+            "type": "object",
+            "required": ["zone_id", "axis", "delta"],
+            "additionalProperties": false,
+            "properties": {
+              "zone_id": {"type": "string"},
+              "axis": {"type": "string", "enum": ["republic", "cis", "hutt", "independent"]},
+              "delta": {"type": "integer"}
+            }
+          }
+        },
+        "active_bounty": {"type": ["boolean", "null"], "description": "Whether the character currently has a bounty (reduces PvP protection in contested zones; bounty IS the consent for a guild hunter)."},
+        "lawless_warning_ack_session": {"type": "boolean", "default": false, "description": "Whether the one-time-per-session lawless-entry warning was acknowledged. Session-scoped; reset on login."}
+      }
+    },
+    "created_unix": {"type": "number"},
+    "last_saved_unix": {"type": "number", "description": "Epoch seconds of last save snapshot. Server saves on logout and on a periodic autosave tick."},
+    "extra": {"type": "object", "description": "Forward-compat JSON blank.", "default": {}}
+  },
+  "examples": [
+    {
+      "schema_version": 1,
+      "character_id": "char_vask",
+      "account_id": "acct_0099",
+      "name": "Vask Tann",
+      "species": "Falleen",
+      "position": {"zone_id": "narshaddaa.undercity", "pos": {"x": -12.0, "y": 1.2, "z": 4.5}, "yaw": 1.57},
+      "sheet": {
+        "attributes": {"dexterity": "3D", "knowledge": "2D+1", "mechanical": "2D", "perception": "3D+1", "strength": "2D+2", "technical": "2D"},
+        "skills": {"blaster": "4D+2", "dodge": "4D", "command": "3D+1"},
+        "character_points": 14,
+        "force_points": 1,
+        "force_sensitive": false,
+        "wound_state": "healthy",
+        "credits": 2300
+      },
+      "org": {"faction_id": "org_hutt_cartel", "faction_axis": "hutt", "faction_rank": 4, "faction_rep": 62, "guild_ids": ["guild_slicers"], "faction_switch_cooldown_unix": 0},
+      "city_role": {"city_id": "city_velvet_district", "role": "founder", "home_teleport_cooldown_unix": 0, "banished_until_unix": null},
+      "world_hooks": {"pending_zone_influence": [{"zone_id": "narshaddaa.undercity", "axis": "hutt", "delta": 5}], "active_bounty": false, "lawless_warning_ack_session": false},
+      "created_unix": 1740000000.0,
+      "last_saved_unix": 1749950000.0,
+      "extra": {}
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "schema_version": 1,
+  "source_policy": "Derived READ-ONLY from C:\\SW_MUSH\\data\\species\\*.yaml and C:\\SW_MUSH\\docs\\design\\Guide_02_Character_Creation.md. SW_MUSH is strictly read-only reference; this file is the authoritative project-owned copy. Data flows one way: out of SW_MUSH into data/.",
+  "source_note": "Ported 2026-06-24 from sw_mush data/species/ (9 species YAML files). All 9 species are Clone Wars-era appropriate. Story factors updated to Clone Wars framing where the MUSH YAML had already done so. attribute_dice and skill_dice are universal (18D / 7D) per WEG R&E. move in meters per round.",
+  "attribute_dice": "18D",
+  "skill_dice": "7D",
+  "species": {
+    "human": {
+      "name": "Human",
+      "homeworld": "Various (Coruscant is the political center)",
+      "description": "Humans are the galaxy's most numerous and politically dominant species. Adaptable and ambitious, they can be found on nearly every inhabited world, filling every conceivable role from farmer to senator to Jedi Knight.",
+      "attributes": {
+        "dexterity":  { "min": "2D",   "max": "4D" },
+        "knowledge":  { "min": "2D",   "max": "4D" },
+        "mechanical": { "min": "2D",   "max": "4D" },
+        "perception": { "min": "2D",   "max": "4D" },
+        "strength":   { "min": "2D",   "max": "4D" },
+        "technical":  { "min": "2D",   "max": "4D" }
+      },
+      "move": 10,
+      "special_abilities": [],
+      "story_factors": [
+        "Humans are the most common species and face no particular prejudice.",
+        "They are found in all walks of life across the galaxy."
+      ]
+    },
+    "bothan": {
+      "name": "Bothan",
+      "homeworld": "Bothawui",
+      "description": "Furred humanoids renowned throughout the galaxy as spies, information brokers, and political schemers. Bothans operate the galaxy's most extensive intelligence network, trading secrets to Republic and Separatist clients alike when the price is right.",
+      "attributes": {
+        "dexterity":  { "min": "1D+1", "max": "3D+2" },
+        "knowledge":  { "min": "2D",   "max": "4D+1" },
+        "mechanical": { "min": "1D",   "max": "3D" },
+        "perception": { "min": "2D+1", "max": "4D+2" },
+        "strength":   { "min": "1D",   "max": "2D+2" },
+        "technical":  { "min": "1D",   "max": "3D+1" }
+      },
+      "move": 10,
+      "special_abilities": [],
+      "story_factors": [
+        "Bothans are naturally inclined toward politics, manipulation, and espionage.",
+        "The Bothan Spynet is one of the galaxy's premier intelligence organizations.",
+        "Other species sometimes distrust Bothans due to their reputation for scheming."
+      ]
+    },
+    "duros": {
+      "name": "Duros",
+      "homeworld": "Duro",
+      "description": "Tall, thin humanoids with blue-green skin, red eyes, and no nose. The Duros were among the galaxy's first interstellar travelers and remain legendary pilots and navigators. Their culture prizes exploration and spacefaring above all else.",
+      "attributes": {
+        "dexterity":  { "min": "1D",   "max": "3D+2" },
+        "knowledge":  { "min": "1D+1", "max": "4D" },
+        "mechanical": { "min": "2D+1", "max": "4D+2" },
+        "perception": { "min": "1D",   "max": "3D+1" },
+        "strength":   { "min": "1D",   "max": "3D" },
+        "technical":  { "min": "1D+1", "max": "4D" }
+      },
+      "move": 10,
+      "special_abilities": [
+        {
+          "name": "Natural Pilots",
+          "description": "Duros gain +1D to Astrogation checks when plotting hyperspace routes they have personally traveled before."
+        }
+      ],
+      "story_factors": [
+        "Duros are among the most respected spacers in the galaxy.",
+        "Their homeworld has been heavily polluted, driving most Duros to live in orbital cities."
+      ]
+    },
+    "mon_calamari": {
+      "name": "Mon Calamari",
+      "homeworld": "Mon Cala",
+      "description": "Amphibious beings from the ocean world of Mon Cala. Known for their brilliant engineering and leadership, Mon Calamari designed many of the galaxy's most celebrated capital warships. They are thoughtful, artistic, and deeply committed to justice.",
+      "attributes": {
+        "dexterity":  { "min": "1D",   "max": "3D" },
+        "knowledge":  { "min": "1D+1", "max": "4D" },
+        "mechanical": { "min": "1D+1", "max": "3D+1" },
+        "perception": { "min": "1D",   "max": "3D+1" },
+        "strength":   { "min": "1D",   "max": "3D" },
+        "technical":  { "min": "1D+1", "max": "4D+1" }
+      },
+      "move": 9,
+      "swim": 12,
+      "special_abilities": [
+        {
+          "name": "Amphibious",
+          "description": "Mon Calamari can breathe both air and water. They suffer no penalties for underwater activity and can hold their breath for extended periods on land."
+        },
+        {
+          "name": "Moist Environment",
+          "description": "When in very dry conditions for extended periods, Mon Calamari suffer -1D to all actions until they can rehydrate."
+        }
+      ],
+      "story_factors": [
+        "Mon Calamari broadly favor the Galactic Republic, valuing its ideals of democracy and justice.",
+        "They share their homeworld with the Quarren, with whom relations are often tense."
+      ]
+    },
+    "rodian": {
+      "name": "Rodian",
+      "homeworld": "Rodia",
+      "description": "Green-skinned reptilian humanoids from Rodia, a world plagued by violence and predators. Rodians are natural hunters with keen senses and a cultural emphasis on martial prowess.",
+      "attributes": {
+        "dexterity":  { "min": "1D+1", "max": "4D" },
+        "knowledge":  { "min": "1D",   "max": "3D" },
+        "mechanical": { "min": "1D",   "max": "3D+1" },
+        "perception": { "min": "2D",   "max": "4D+1" },
+        "strength":   { "min": "1D",   "max": "3D" },
+        "technical":  { "min": "1D",   "max": "3D+1" }
+      },
+      "move": 10,
+      "special_abilities": [],
+      "story_factors": [
+        "Rodian culture glorifies hunting; the most successful hunters hold great status.",
+        "Many Rodians work as bounty hunters throughout the galaxy."
+      ]
+    },
+    "sullustan": {
+      "name": "Sullustan",
+      "homeworld": "Sullust",
+      "description": "Jowled, mouse-eared humanoids from the subterranean caverns of Sullust. Sullustans possess an extraordinary sense of direction that makes them superb navigators. The SoroSuub Corporation dominates their homeworld and is a major galactic manufacturer.",
+      "attributes": {
+        "dexterity":  { "min": "1D",   "max": "3D+1" },
+        "knowledge":  { "min": "1D",   "max": "3D" },
+        "mechanical": { "min": "1D+2", "max": "4D+1" },
+        "perception": { "min": "1D",   "max": "3D+1" },
+        "strength":   { "min": "1D",   "max": "3D" },
+        "technical":  { "min": "1D+1", "max": "3D+2" }
+      },
+      "move": 10,
+      "special_abilities": [
+        {
+          "name": "Direction Sense",
+          "description": "Sullustans have an innate sense of direction. They always know which way is north and can retrace any path they have traveled. They gain +1D to Astrogation and Search checks related to navigation."
+        },
+        {
+          "name": "Enhanced Senses",
+          "description": "Sullustans have exceptional hearing and vision in low-light conditions, granting +1D to Perception checks in darkness or when relying on hearing."
+        }
+      ],
+      "story_factors": [
+        "Sullustans are gregarious and dislike being alone for long periods.",
+        "Many serve as navigators and co-pilots throughout the galaxy."
+      ]
+    },
+    "trandoshan": {
+      "name": "Trandoshan",
+      "homeworld": "Trandosha",
+      "description": "Large, reptilian predators from Trandosha. Trandoshans worship a deity called the Scorekeeper, who awards points for kills. They are natural rivals of the Wookiees and frequently raid Kashyyyk for slaves and hunting trophies.",
+      "attributes": {
+        "dexterity":  { "min": "1D",   "max": "3D" },
+        "knowledge":  { "min": "1D",   "max": "2D+2" },
+        "mechanical": { "min": "1D",   "max": "2D+2" },
+        "perception": { "min": "1D",   "max": "3D" },
+        "strength":   { "min": "2D",   "max": "4D+2" },
+        "technical":  { "min": "1D",   "max": "2D+2" }
+      },
+      "move": 10,
+      "special_abilities": [
+        {
+          "name": "Regeneration",
+          "description": "Trandoshans can regenerate lost limbs over time. Once per day, they may attempt a Moderate Strength check to heal one wound level naturally without medical aid."
+        },
+        {
+          "name": "Claws",
+          "description": "Trandoshan claws add +1D to brawling damage in melee combat."
+        },
+        {
+          "name": "Vision",
+          "description": "Trandoshans can see in the infrared spectrum, granting them the ability to see in total darkness with no penalty."
+        }
+      ],
+      "story_factors": [
+        "Trandoshans and Wookiees are ancestral enemies.",
+        "Their Scorekeeper religion drives many to become bounty hunters or slavers."
+      ]
+    },
+    "twilek": {
+      "name": "Twi'lek",
+      "homeworld": "Ryloth",
+      "description": "Colorful, lekku-bearing humanoids from the harsh world of Ryloth. Twi'leks are known for their grace, cunning, and a complex silent language communicated through subtle lekku movements.",
+      "attributes": {
+        "dexterity":  { "min": "1D",   "max": "3D+2" },
+        "knowledge":  { "min": "1D",   "max": "4D" },
+        "mechanical": { "min": "1D",   "max": "3D" },
+        "perception": { "min": "2D",   "max": "4D+2" },
+        "strength":   { "min": "1D",   "max": "3D" },
+        "technical":  { "min": "1D",   "max": "3D+1" }
+      },
+      "move": 10,
+      "special_abilities": [
+        {
+          "name": "Lekku Communication",
+          "description": "Twi'leks can silently communicate basic concepts to other Twi'leks through lekku movements. This cannot be detected by non-Twi'leks without a Difficult Perception check."
+        }
+      ],
+      "story_factors": [
+        "Twi'leks are frequently targeted by slavers due to their perceived beauty.",
+        "Many Twi'leks are gifted negotiators and merchants.",
+        "Ryloth was contested during the Clone Wars, and many Twi'leks joined resistance cells against Separatist occupation."
+      ]
+    },
+    "wookiee": {
+      "name": "Wookiee",
+      "homeworld": "Kashyyyk",
+      "description": "Towering, fur-covered beings from the wroshyr-tree forests of Kashyyyk. Wookiees are renowned for their strength, loyalty, and fearsome temper. They speak Shyriiwook, a language of growls and roars that most other species cannot reproduce but can learn to understand.",
+      "attributes": {
+        "dexterity":  { "min": "1D",   "max": "3D+2" },
+        "knowledge":  { "min": "1D",   "max": "2D+1" },
+        "mechanical": { "min": "1D",   "max": "3D+2" },
+        "perception": { "min": "1D",   "max": "2D+1" },
+        "strength":   { "min": "3D",   "max": "6D" },
+        "technical":  { "min": "1D",   "max": "3D+1" }
+      },
+      "move": 11,
+      "special_abilities": [
+        {
+          "name": "Berserker Rage",
+          "description": "When a Wookiee becomes enraged (wounded or a companion is hurt), they gain +2D to Strength for brawling damage. However, they cannot perform any other action except attacking until they succeed at a Moderate Perception check to calm down."
+        },
+        {
+          "name": "Climbing Claws",
+          "description": "Wookiees have retractable claws granting +2D to climbing checks. Using claws in combat is considered dishonorable and results in exile from Wookiee society."
+        }
+      ],
+      "story_factors": [
+        "Wookiees cannot speak Basic, though they understand it fluently.",
+        "Wookiee warriors stand alongside Republic clone forces in the Clone Wars; Kashyyyk is both strategic ground and sacred home.",
+        "Wookiee life debts are sacred and unbreakable obligations."
+      ]
+    }
+  }
+}

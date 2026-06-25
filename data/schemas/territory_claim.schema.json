@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sw-mmo-prototype/schemas/territory_claim.schema.json",
+  "title": "Territory Claim",
+  "description": "Authoritative state for ONE org-claimed node (room/sector) in a contested or lawless zone. The server owns this; it is the persistent unit of org-vs-org territorial power - passive income, guard NPCs, and the contestable target of the siege state machine (see siege_state.schema.json). Grounds Guide_11 Territory Control (Drops 6A-6C delivered) and is the object Drop 6D's hostile-takeover acts upon. SEPARATE from Director zone influence (faction_zone_state.schema.json).",
+  "era": "20 BBY Clone Wars",
+  "source": {
+    "reference_paths": [
+      "C:\\SW_MUSH\\docs\\design\\Guide_11_Territory_Control.md",
+      "C:\\SW_MUSH\\docs\\design\\Guide_12_Player_Cities.md",
+      "C:\\SW_MUSH\\docs\\design\\Guide_10_Organizations_Factions.md",
+      "docs/FACTION_TERRITORY_DESIGN.md"
+    ],
+    "source_policy": "Design schema for standalone Godot server. SW_MUSH Guide_11 supplies the influence/claim/guard/resource model as reference; thresholds and economy numbers are starting points, owner-tunable. Clone Wars era."
+  },
+  "type": "object",
+  "required": ["schema_version", "claim_id", "node_id", "zone_id", "org_id", "security_effective", "claimed_at_unix"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "claim_id": {"type": "string", "description": "Unique claim id."},
+    "node_id": {
+      "type": "string",
+      "description": "The claimable node (a room or sector cell). One claim per node. Player-owned housing nodes cannot be claimed.",
+      "examples": ["tatooine.jundland_wastes.cell_07", "narshaddaa.undercity.room_1421"]
+    },
+    "zone_id": {"type": "string", "description": "Zone the node belongs to. Must be contested or lawless (secured zones cannot be claimed)."},
+    "org_id": {"type": "string", "description": "Owning organization id."},
+    "claimed_by_char_id": {"type": "string", "description": "Character who placed the claim (rank-gated; default rank 3+)."},
+    "security_effective": {
+      "type": "string",
+      "description": "Effective security inside this claim FOR OWNING-ORG MEMBERS. Claiming upgrades lawless->contested for members (PvP-consent protection on home turf). Outsiders still see the zone base. A player city further upgrades citizens (contested->secured); see FACTION_TERRITORY_DESIGN.",
+      "enum": ["secured", "contested", "lawless"]
+    },
+    "influence_tier_at_claim": {
+      "type": "string",
+      "description": "Org influence tier in the zone when the claim was made / last evaluated. Drives passive-income yield band.",
+      "enum": ["foothold", "dominant", "control"]
+    },
+    "guard": {
+      "type": ["object", "null"],
+      "description": "Optional stationed guard NPC. Aggressive combat NPC that attacks hostile intruders. Adds weekly upkeep on top of base maintenance. Faction-flavored stats are pulled from a guard template by org axis; see FACTION_TERRITORY_DESIGN.",
+      "additionalProperties": false,
+      "properties": {
+        "guard_npc_id": {"type": "string"},
+        "template_key": {"type": "string", "description": "Guard template by org axis.", "examples": ["republic_clone_sentry", "cis_b2_enforcer", "hutt_gamorrean_enforcer", "bhg_hunter"]},
+        "stationed_at_unix": {"type": "number"},
+        "alive": {"type": "boolean", "default": true}
+      }
+    },
+    "maintenance": {
+      "type": "object",
+      "description": "Recurring treasury drain. Claim lapses (auto-unclaim) if the org treasury cannot cover maintenance on the maintenance tick. Numbers are starting points (Guide_11), owner-tunable.",
+      "additionalProperties": false,
+      "properties": {
+        "claim_weekly_credits": {"type": "integer", "default": 200},
+        "guard_weekly_credits": {"type": "integer", "default": 100},
+        "next_charge_unix": {"type": "number"}
+      }
+    },
+    "income": {
+      "type": "object",
+      "description": "Passive resource generation on the slow resource tick (daily by default). Yield scales by (security, influence_tier). Lawless yields more than contested - higher risk, higher reward.",
+      "additionalProperties": false,
+      "properties": {
+        "last_yield_unix": {"type": "number"},
+        "last_yield": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "credits": {"type": "integer"},
+            "resources": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["type", "qty"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {"type": "string", "examples": ["metal", "chemical", "rare"]},
+                  "qty": {"type": "integer"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "siege": {
+      "type": ["object", "null"],
+      "description": "Live siege reference if this claim is currently under a hostile-takeover contest (Drop 6D). Null when not contested. The full contest record lives in siege_state.schema.json; this is a back-pointer so claim reads cheaply see 'under siege'.",
+      "additionalProperties": false,
+      "properties": {
+        "siege_id": {"type": "string"},
+        "state": {"type": "string", "enum": ["declared", "active", "lockout", "resolving"]},
+        "attacker_org_id": {"type": "string"}
+      }
+    },
+    "claimed_at_unix": {"type": "number", "description": "Wall-clock epoch seconds the claim was created."},
+    "last_presence_unix": {"type": "number", "description": "Last time an owning-org member was present in the zone. Drives influence-decay timer (no presence 48h => influence decays; claims can ultimately lapse)."},
+    "extra": {"type": "object", "description": "Forward-compat JSON blank.", "default": {}}
+  },
+  "examples": [
+    {
+      "schema_version": 1,
+      "claim_id": "clm_0042",
+      "node_id": "narshaddaa.undercity.room_1421",
+      "zone_id": "narshaddaa.undercity",
+      "org_id": "org_falleen_syndicate",
+      "claimed_by_char_id": "char_vask",
+      "security_effective": "contested",
+      "influence_tier_at_claim": "dominant",
+      "guard": {"guard_npc_id": "npc_grk_9", "template_key": "hutt_gamorrean_enforcer", "stationed_at_unix": 1749000000.0, "alive": true},
+      "maintenance": {"claim_weekly_credits": 200, "guard_weekly_credits": 100, "next_charge_unix": 1750200000.0},
+      "income": {"last_yield_unix": 1749900000.0, "last_yield": {"credits": 280, "resources": [{"type": "metal", "qty": 3}, {"type": "chemical", "qty": 2}]}},
+      "siege": null,
+      "claimed_at_unix": 1748000000.0,
+      "last_presence_unix": 1749950000.0,
+      "extra": {}
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "range_trainee": {
+    "name": "Mos Eisley range trainee",
+    "blaster": "4D+1",
+    "dodge": "4D",
+    "soak": "3D",
+    "character_points": 5,
+    "force_points": 1,
+    "weapon": "training_blaster",
+    "armor": "training_blast_vest"
+  },
+  "weapons": {
+    "training_blaster": {
+      "name": "Training Blaster",
+      "damage": "4D"
+    },
+    "remote_stun_blaster": {
+      "name": "Remote Stun Blaster",
+      "damage": "3D+2",
+      "stun": true
+    },
+    "walker_plate_tester": {
+      "name": "Walker Plate Tester",
+      "damage": "0D",
+      "stun": true
+    }
+  },
+  "armors": {
+    "training_blast_vest": {
+      "name": "Training Blast Vest",
+      "protection_physical": "1D",
+      "protection_energy": "0D+1",
+      "dexterity_penalty": "0D",
+      "coverage": ["torso"]
+    },
+    "heavy_battle_armor": {
+      "name": "Heavy Battle Armor",
+      "protection_physical": "2D",
+      "protection_energy": "1D",
+      "dexterity_penalty": "-1D"
+    }
+  },
+  "targets": {
+    "b1_training_silhouette": {
+      "name": "B1 Training Silhouette",
+      "blaster": "3D",
+      "weapon": "remote_stun_blaster",
+      "soak": "2D",
+      "scale": "character",
+      "source_note": "Uses B1 strength baseline from Clone Wars combat templates."
+    },
+    "walker_armor_plate": {
+      "name": "Walker-Scale Armor Plate",
+      "blaster": "0D",
+      "weapon": "walker_plate_tester",
+      "soak": "4D",
+      "scale": "walker",
+      "source_note": "Prototype cross-scale target for character weapons versus walker-scale body."
+    }
+  }
+}

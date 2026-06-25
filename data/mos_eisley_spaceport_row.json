@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "area_key": "tatooine.mos_eisley.spaceport_row",
+  "era": "20 BBY Clone Wars",
+  "source": {
+    "map_path": "C:\\SW_MUSH\\data\\worlds\\clone_wars\\maps\\mos_eisley.yaml",
+    "planet_path": "C:\\SW_MUSH\\data\\worlds\\clone_wars\\planets\\tatooine.yaml",
+    "source_policy": "Curated copy for standalone Godot use. SW_MUSH remains read-only and is not loaded at runtime."
+  },
+  "action_window_seconds": 5.0,
+  "rooms": [
+    {
+      "id": 0,
+      "slug": "docking_bay_94_entrance",
+      "name": "Docking Bay 94 - Entrance",
+      "zone": "spaceport",
+      "style": "dock",
+      "map_position": {"x": 5.17, "y": -0.01},
+      "scene_position": {"x": -25.5, "y": 1.3, "z": -10.0},
+      "inspect_text": "Cracked duracrete steps descend toward the famous Bay 94 pit. Beggars, dockhands, and quick-eyed opportunists watch arrivals beneath a faded De Maal Docking Services sign."
+    },
+    {
+      "id": 1,
+      "slug": "docking_bay_94_pit",
+      "name": "Docking Bay 94 - Pit Floor",
+      "zone": "spaceport",
+      "style": "dock",
+      "map_position": {"x": 4.38, "y": 0.0},
+      "scene_position": {"x": -20.0, "y": 0.0, "z": -13.0},
+      "inspect_text": "The sunken landing floor is scorched from countless arrivals. Load lifters, fuel cells, landing lights, and cargo cover make it a natural place for the range drill."
+    },
+    {
+      "id": 2,
+      "slug": "spaceport_customs_office",
+      "name": "Spaceport Customs Office",
+      "zone": "spaceport",
+      "style": "civic",
+      "map_position": {"x": 4.95, "y": 1.62},
+      "scene_position": {"x": -3.0, "y": 1.6, "z": 8.9},
+      "inspect_text": "A dusty customs office where datadisks, confiscated cargo, and quiet bribes pile up faster than inspections."
+    },
+    {
+      "id": 3,
+      "slug": "spaceport_speeders",
+      "name": "Spaceport Speeders",
+      "zone": "spaceport",
+      "style": "vendor",
+      "map_position": {"x": 6.2, "y": 0.63},
+      "scene_position": {"x": 9.0, "y": 1.6, "z": -16.4},
+      "inspect_text": "A cluttered speeder shop smelling of lubricant, ozone, and hard bargaining. A partially stripped XP-38 occupies the best-lit work bay."
+    },
+    {
+      "id": 4,
+      "slug": "docking_bay_86",
+      "name": "Docking Bay 86",
+      "zone": "spaceport",
+      "style": "dock",
+      "map_position": {"x": 6.89, "y": 1.43},
+      "scene_position": {"x": 14.0, "y": 1.2, "z": -7.5},
+      "inspect_text": "A practical small-craft bay with brusque admin-droid service, modest landing fees, and little patience for loitering."
+    },
+    {
+      "id": 5,
+      "slug": "docking_bay_87",
+      "name": "Docking Bay 87",
+      "zone": "spaceport",
+      "style": "dock",
+      "map_position": {"x": 4.05, "y": 1.43},
+      "scene_position": {"x": -16.0, "y": 1.2, "z": 8.5},
+      "inspect_text": "A modernized bay favored by smugglers, merchants, and anyone who prefers flexible inspections."
+    },
+    {
+      "id": 7,
+      "slug": "mos_eisley_spaceport_row",
+      "name": "Mos Eisley Street - Spaceport Row",
+      "zone": "spaceport",
+      "style": "street",
+      "map_position": {"x": 5.39, "y": 1.43},
+      "scene_position": {"x": 3.0, "y": 2.4, "z": 0.0},
+      "inspect_text": "A wide, dusty street linking the busiest docking bays. Jawas, vendors, and heat shimmer compete for attention between low concrete mounds."
+    },
+    {
+      "id": 26,
+      "slug": "mos_eisley_control_tower",
+      "name": "Mos Eisley Spaceport Control Tower",
+      "zone": "spaceport",
+      "style": "civic",
+      "map_position": {"x": 5.42, "y": -0.5},
+      "scene_position": {"x": -7.0, "y": 4.5, "z": -20.8},
+      "inspect_text": "A five-story observation module coordinates traffic while droids, local technicians, and the occasional Republic officer try to keep the chaos airborne."
+    },
+    {
+      "id": 34,
+      "slug": "transport_depot",
+      "name": "Transport Depot",
+      "zone": "spaceport",
+      "style": "civic",
+      "map_position": {"x": 6.08, "y": 1.32},
+      "scene_position": {"x": 9.0, "y": 1.6, "z": 7.9},
+      "inspect_text": "A decrepit transport terminal with rows of worn chairs, prerecorded monitors, lockers, and a cafe selling overpriced food to stranded passengers."
+    }
+  ],
+  "exits": [
+    {"from": 0, "to": 1},
+    {"from": 0, "to": 7},
+    {"from": 2, "to": 7},
+    {"from": 3, "to": 7},
+    {"from": 4, "to": 7},
+    {"from": 5, "to": 7},
+    {"from": 26, "to": 7},
+    {"from": 34, "to": 7}
+  ]
+}

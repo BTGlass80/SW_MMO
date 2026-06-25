@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sw-mmo-prototype/schemas/security_zone.schema.json",
+  "title": "Security Zone Definition",
+  "description": "Static-ish registry record for ONE ground (or space) zone's security configuration: the admin-set base tier on the safe-zone <-> consensual-PvP gradient, room-level faction overrides, and lawless incentives. The Director applies a TRANSIENT overlay computed from faction_zone_state influence + active events; this record holds only the durable base the overlay never overwrites. Grounds security_zones_design_v1.",
+  "era": "20 BBY Clone Wars",
+  "source": {
+    "reference_paths": [
+      "C:\\SW_MUSH\\docs\\design\\security_zones_design_v1.md",
+      "C:\\SW_MUSH\\docs\\design\\Guide_11_Territory_Control.md",
+      "docs/WORLD_SIM_DESIGN.md"
+    ],
+    "source_policy": "Design schema. security_zones_design_v1 (EVE-style high/low/null adapted) supplies the three-tier model as reference; recast Clone Wars era (Republic authority, not Imperial). The effective-security function is server-authoritative and the single gate every combat initiation routes through."
+  },
+  "type": "object",
+  "required": ["schema_version", "zone_id", "security_base"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "zone_id": {"type": "string", "examples": ["tatooine.mos_eisley.cantina", "tatooine.jundland_wastes", "narshaddaa.undercity"]},
+    "display_name": {"type": "string"},
+    "domain": {"type": "string", "enum": ["ground", "space"], "default": "ground", "description": "Space zones mirror the model: dock=secured, orbit/lane=contested, deep_space=lawless."},
+    "security_base": {
+      "type": "string",
+      "description": "Admin-set base tier. secured = no combat (safe zone, new-player ground); contested = PvE on, PvP by mutual consent (challenge/accept, bounty, territory contest); lawless = unrestricted PvP. This is the consensual-PvP gradient. Director overlays may shift the EFFECTIVE tier transiently but never change this value.",
+      "enum": ["secured", "contested", "lawless"]
+    },
+    "faction_overrides": {
+      "type": "array",
+      "description": "Room-level overrides inside an otherwise-secured zone (e.g. a Republic garrison interior is effectively lawless for CIS/hostile-standing players). Checked first in the effective-security function.",
+      "items": {
+        "type": "object",
+        "required": ["node_id", "faction_axis"],
+        "additionalProperties": false,
+        "properties": {
+          "node_id": {"type": "string"},
+          "faction_axis": {"type": "string", "enum": ["republic", "cis", "hutt", "independent"], "description": "Owning faction. Players hostile/unfriendly to it get a downgraded effective tier in this node."}
+        }
+      }
+    },
+    "overlay_rules": {
+      "type": "object",
+      "description": "Declarative thresholds the Director uses to compute the transient effective-security overlay from faction_zone_state influence + active events. Owner-tunable; defaults from security_zones_design_v1.",
+      "additionalProperties": false,
+      "properties": {
+        "hutt_surge_downgrade_at": {"type": "integer", "default": 80, "description": "Hutt (criminal) influence >= this downgrades effective security one tier."},
+        "crackdown_upgrades_contested": {"type": "boolean", "default": true, "description": "An active republic_crackdown event upgrades contested -> secured for the duration."}
+      }
+    },
+    "lawless_incentives": {
+      "type": "object",
+      "description": "Why players risk lawless zones (security_zones_design_v1 §7). Data hooks only; the CP-rate bonus interacts with the OPEN OWNER DECISION on CP pace and must not be baked here.",
+      "additionalProperties": false,
+      "properties": {
+        "rare_resources": {"type": "boolean", "default": true},
+        "cp_rate_bonus_flag": {"type": "boolean", "default": false, "description": "Whether a lawless CP-tick bonus applies. The MAGNITUDE/whether-at-all is an OPEN OWNER DECISION (CP progression pace) - this is the on/off hook only."},
+        "claimable": {"type": "boolean", "description": "Whether orgs may claim nodes here (contested + lawless only)."}
+      }
+    },
+    "extra": {"type": "object", "description": "Forward-compat JSON blank.", "default": {}}
+  },
+  "examples": [
+    {
+      "schema_version": 1,
+      "zone_id": "tatooine.mos_eisley.cantina",
+      "display_name": "Chalmun's Cantina District",
+      "domain": "ground",
+      "security_base": "secured",
+      "faction_overrides": [],
+      "overlay_rules": {"hutt_surge_downgrade_at": 80, "crackdown_upgrades_contested": true},
+      "lawless_incentives": {"rare_resources": false, "cp_rate_bonus_flag": false, "claimable": false},
+      "extra": {}
+    },
+    {
+      "schema_version": 1,
+      "zone_id": "tatooine.jundland_wastes",
+      "display_name": "Jundland Wastes",
+      "domain": "ground",
+      "security_base": "lawless",
+      "faction_overrides": [],
+      "overlay_rules": {"hutt_surge_downgrade_at": 80, "crackdown_upgrades_contested": true},
+      "lawless_incentives": {"rare_resources": true, "cp_rate_bonus_flag": false, "claimable": true},
+      "extra": {}
+    }
+  ]
+}
