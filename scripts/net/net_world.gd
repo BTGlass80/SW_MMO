@@ -964,9 +964,13 @@ func _dispatch_command(cmd: String, arg: String) -> void:
 			if arg != "":
 				Net.send_skill_raise(arg)
 				_set_status("Raising %s…" % arg)
+			else:
+				_usage("/raise <skill>  (e.g. /raise dodge)")  # F40: no silent no-op on a missing arg
 		"travel":
 			if arg != "":
 				Net.send_change_zone(arg)
+			else:
+				_usage("/travel <zone>  (e.g. /travel tatooine.dune_sea)")
 		"heal":
 			var t := _best_heal_target()
 			if t != 0:
@@ -978,16 +982,25 @@ func _dispatch_command(cmd: String, arg: String) -> void:
 			if arg != "":
 				Net.send_claim_node(arg)  # org claims a node in the current zone
 				_set_status("Claiming %s…" % arg)
+			else:
+				_usage("/claim <node>  (e.g. /claim n1)")
 		"release":
 			if arg != "":
 				Net.send_release_claim(arg)
 				_set_status("Releasing %s…" % arg)
+			else:
+				_usage("/release <node>  (e.g. /release n1)")
 		"who":
 			_show_who()  # client-local roster of same-zone players (from the snapshot)
 		"help":
 			var help := ChatModel.command_help()
 			_set_status(help)
 			print("[help] %s" % help)
+
+# F40: a command typed without its required argument gets a usage hint, not a silent no-op.
+func _usage(msg: String) -> void:
+	print("[cmd] usage: %s" % msg)
+	_set_status("Usage: %s" % msg)
 
 func _on_chat_submitted(text: String) -> void:
 	_submit_chat_line(text)
