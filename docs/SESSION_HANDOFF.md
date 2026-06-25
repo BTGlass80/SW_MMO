@@ -5,9 +5,9 @@ taking over **unattended, all-day, parallelized** development of the SW_MMO prot
 Read this top to bottom, then execute **§1 First actions**. You should not need to ask
 the owner anything to begin — the work is queued and the guardrails are explicit.
 
-Written 2026-06-25 after a full 5-reader codebase audit. Ground truth as of HEAD
-`15aa6df` (M2.2). If git HEAD has moved, trust the code + `docs/UNATTENDED_BACKLOG.md`
-Log over this file.
+Written 2026-06-25 after a full 5-reader codebase audit; **reconciled through follow-up
+F32** (Wave E + F1–F32 complete, RPC surface 21, 59 smokes). If git HEAD has moved past the
+F32 commit, trust the code + `docs/UNATTENDED_BACKLOG.md` Log over this file.
 
 ---
 
@@ -27,8 +27,8 @@ Log over this file.
   equipment-swap, org claim/release commands with treasury income, the player→influence
   causal loop, chat/emote, account-auth + rate-limit + record cache, and a Director-paced
   ambient NPC sim. Plus a review-driven **hardening** pass (2 `register_account` fixes) and a
-  long **follow-up series F1–F22** (each gate-green + two-process verified) that grew the slice
-  into a genuinely playable MMO. Highlights:
+  long **follow-up series F1–F32** (each gate-green + two-process verified) that grew the slice
+  into a genuinely playable MMO and then hardened it. Highlights:
   - **Wound/medical loop (F7–F10, F17, F19):** natural self-recovery (DIV-0012) + First Aid by a
     medic (DIV-0013, reaches incapacitated/mortally) + a colour-coded own-condition HUD + other
     players' condition on their nameplates + "First-Aid the nearest WOUNDED ally" targeting.
@@ -37,29 +37,41 @@ Log over this file.
   - **Per-species movement speed (F15, DIV-0015):** wired the orphaned derived-stats model.
   - **Combat correctness (F18):** equipped-weapon SKILL drives the attack pool + melee `STR+ND`
     damage (wires derived-stats melee) — latent fix, melee is acquirable only once an economy exists.
-  - **Social (F2, F20, F22):** zone say/emote + global ooc + ORG chat (cross-zone) + a **GUI chat
-    LineEdit** with a `/say //ooc //org //emote` slash parser.
-  - **Visibility (F9, F12, F16, F17):** condition/org HUDs + RENDERED ambient NPCs + wound nameplates.
+  - **Social (F2, F20, F22, F25–F27):** zone say/emote + global ooc + ORG chat (cross-zone) + a **GUI chat
+    LineEdit** with a `/say //ooc //org //emote` slash parser AND a game-command bar
+    (`/raise /travel /heal /claim /release /who /help` via `chat_model.parse_command`).
+  - **Character readouts (F23, F24):** in-combat CP/FP boost readout + a toggleable (V) character-sheet
+    panel (attributes/skills/gear/wallet), pushed on register + skill-raise + equip + CP award (F30).
+  - **Visibility (F9, F12, F16, F17, F29):** condition/org HUDs (org HUD shows OWN-org vs TOTAL zone
+    claims) + RENDERED ambient NPCs + wound nameplates.
+  - **Correctness-audit pass (F28–F32):** reset the First-Aid retry gate on full heal (F28); org
+    own-vs-total claim count (F29); refresh the sheet on CP award (F30); **the WEG "out" state** — an
+    incapacitated/mortally/dead character can neither act (F31, `combat_arena`) nor move (F32,
+    `world_state.set_input`'s `can_act`), gated on `wound >= DISABLED_SEVERITY (3)`. F31/F32 are
+    faithful-WEG but currently **LATENT** (nothing damages a player in live play yet — the wound loop
+    becomes reachable only when the owner-gated PvP / hostile-NPC / death path lands).
   - **Robustness/guards (F4–F6, F10, F14, F21):** record-cache eviction on disconnect; FIVE [HOT]
     composition guards (claims/auth/First Aid/zone/chat) locked into the gate.
 - **Green bar (current truth):** the **full** `tools/check_project.ps1` passes — **59
   GDScript smokes** + 7 python + import + launch (green at every commit). DIV-0001..0015.
-- **STATUS: Wave E + the F1–F22 follow-ups are DONE; the prototype is a playable, populated,
+- **STATUS: Wave E + the F1–F32 follow-ups are DONE; the prototype is a playable, populated,
   traversable multi-zone MMO** (chargen/progression → species-paced movement → combat (CP/FP) →
-  full visible medical loop → equip → travel/presence → org claims+treasury → say/ooc/org chat w/
-  GUI input → news → rendered NPCs), all gate-guarded. **The unblocked, non-owner-gated backlog is
-  DRY** — the substantive remainders cluster behind the **economy/vendor** (unlocks melee +
-  the orphaned creature_spawn/vendor/reputation models) and the parked owner forks (§5: siege,
-  Force access, PvP-consent, death-penalty numbers, CP rates, LLM-Director, visual A1b/P1). A fresh
+  full visible medical loop → equip → travel/presence → org claims+treasury → say/ooc/org chat +
+  command bar w/ GUI input → character-sheet panel → news → rendered NPCs), all gate-guarded. **The
+  unblocked, non-owner-gated backlog is DRY** — the last five ticks (F28–F32) were correctness/
+  faithfulness audit fixes, not new features; the substantive remainders cluster behind the
+  **economy/vendor** (unlocks melee + the orphaned creature_spawn/vendor/reputation models) and the
+  parked owner forks (§5: siege, Force access, PvP-consent, **the death/damage loop that would make
+  F31/F32 reachable**, death-penalty numbers, CP rates, LLM-Director, visual A1b/P1). A fresh
   session should **confirm green and HOLD for an owner steer**, not invent owner-gated scope. (Full
-  history: `docs/NIGHTLY_HANDOFF.md` + the `UNATTENDED_BACKLOG.md` Log — F1–F22.)
+  history: `docs/NIGHTLY_HANDOFF.md` + the `UNATTENDED_BACKLOG.md` Log — F1–F32.)
 
 ---
 
 ## 1. First actions (do these now, in order)
 
 1. **Orient:** read `CLAUDE.md`, this file, and `docs/UNATTENDED_BACKLOG.md` (the Wave E
-   queue + Guardrails + the F1–F22 Log). Skim `docs/DIVERGENCE_LEDGER.md` (DIV-0001..0015).
+   queue + Guardrails + the F1–F32 Log). Skim `docs/DIVERGENCE_LEDGER.md` (DIV-0001..0015).
 2. **Confirm the baseline is green** before changing anything:
    ```powershell
    .\tools\check_project.ps1 -GodotConsole "C:\Godot 4\Godot_v4.6.3-stable_win64_console.exe"
@@ -239,14 +251,18 @@ Decided & usable (NOT parked): **DIV-0006** death-penalty shape, **DIV-0007** du
   `submit_release_claim` command layer wired into `network_manager`), plus the Wave E pure
   models `security_gate`, `pending_influence_model`, `org_model`, `chat_model`,
   `account_auth_model`, `ambient_sim_model`; `network_manager` + `net_world` (the two **HOT** files).
-- **RPC surface (20, all in `network_manager.gd`):** client→server (`any_peer`)
+- **RPC surface (21, all in `network_manager.gd`):** client→server (`any_peer`, 10)
   `submit_input`, `submit_fire_intent`, `register_account`, `submit_skill_raise`,
   `submit_equip`, `submit_claim_node`, `submit_release_claim`, `submit_chat`,
   `submit_heal` (F8 First Aid), `submit_change_zone` (F11 travel); server→client
-  (`authority`) `apply_snapshot`, `apply_combat_envelope`, `apply_wallet`,
+  (`authority`, 11) `apply_snapshot`, `apply_combat_envelope`, `apply_wallet`,
   `skill_raise_result`, `equip_result`, `claim_result`, `apply_chat`, `auth_result`,
-  `heal_result`, `zone_result`. The per-peer snapshot also carries `you` (own wound), each
-  player entry's `wound` (F17 nameplates), `npcs` (F16), `zone_list` (F11), and `territory` (F12).
+  `heal_result`, `zone_result`, `apply_sheet` (F24 character-sheet panel, re-pushed on
+  register/skill-raise/equip/CP-award). The per-peer snapshot also carries `you` (own
+  wound + CP/FP boost, F9/F23), each player entry's `wound` (F17 nameplates), `npcs` (F16),
+  `zone_list` (F11), and `territory` (F12, with `claims_in_zone` tagged by `org_id`, F29).
+  `submit_input` zeroes movement for an incapacitated player (F32). Headless client
+  affordances now include `--autowalk`'s `[pos]` readout (F32 net-movement test).
 - **Tick model:** 20 Hz movement (per-player speed from species, DIV-0015) + snapshot; ~5s
   combat window (`--combat-window`); ~30s Director tick (`--director-tick`) — folds influence,
   advances ambient NPCs, AND runs natural wound recovery (DIV-0012); 30s autosave; 60s territory
