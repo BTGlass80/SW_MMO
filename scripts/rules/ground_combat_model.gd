@@ -1,6 +1,7 @@
 extends RefCounted
 
 const ArmorConditionModel = preload("res://scripts/rules/armor_condition_model.gd")
+const WoundLadderModel = preload("res://scripts/rules/wound_ladder_model.gd")
 const MAX_AIM_DICE := 3
 const ACTION_WINDOW_SECONDS := 5.0
 const COVER_QUARTER := 1
@@ -556,15 +557,10 @@ func _consume_force_point(state: Dictionary) -> bool:
 	return true
 
 func _wound_penalty_dice(severity: int) -> int:
-	if severity == 1:
-		return 1
-	if severity == 2:
-		return 1
-	if severity == 3:
-		return 0
-	if severity >= 4:
-		return 0
-	return 0
+	# Delegate to the canonical WEG wound ladder (DIV-0008). This restores the
+	# -2D tier for severity >= 3 that this function previously collapsed to 0D.
+	# sev 0->0, 1->1, 2->1 (unchanged), 3->2, 4->2 (the fix), 5->0 (dead, moot).
+	return WoundLadderModel.penalty_dice_for_severity(severity)
 
 func _build_defense(dodge_pool: Dictionary, defense_type: String) -> Dictionary:
 	if defense_type == DEFENSE_NONE:

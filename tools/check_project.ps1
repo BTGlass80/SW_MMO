@@ -123,4 +123,8 @@ Invoke-GodotStep "Pending influence smoke:" @("--headless", "--path", $projectRo
 
 Invoke-GodotStep "Org model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/org_model_smoke.gd")
 
+Invoke-GodotStep "Wound ladder model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/wound_ladder_model_smoke.gd")
+
+Invoke-GodotStep "Recovery model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/recovery_model_smoke.gd")
+
 Write-Host "`nAll checks passed."
