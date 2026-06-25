@@ -184,6 +184,7 @@ func _on_peer_disconnected(id: int) -> void:
 	if mode != Mode.SERVER:
 		return
 	_save_peer(id)
+	var character_id := String(_peer_characters.get(id, ""))  # capture before the map erase below
 	state.remove_player(id)
 	if arena != null:
 		arena.remove_player(id)
@@ -192,6 +193,12 @@ func _on_peer_disconnected(id: int) -> void:
 	_peer_orgs.erase(id)
 	_peer_axes.erase(id)
 	_peer_rpc_budget.erase(id)
+	# Evict the record cache on disconnect: _save_peer just flushed final state to disk, the
+	# single-session lock means no other peer holds this character, and the next login does a
+	# fresh read-through. Bounds _record_cache to connected players (no unbounded session leak)
+	# and prevents a record outliving its session.
+	if character_id != "" and _record_cache.erase(character_id):
+		print("[cache] evicted %s on disconnect (cache size=%d)" % [character_id, _record_cache.size()])
 	print("[net] peer %d left (players=%d)" % [id, state.player_count()])
 	player_left.emit(id)
 
