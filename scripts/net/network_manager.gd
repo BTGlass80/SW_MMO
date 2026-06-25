@@ -24,6 +24,7 @@ const PendingInfluence := preload("res://scripts/net/pending_influence_model.gd"
 const ChatModel := preload("res://scripts/net/chat_model.gd")
 const Auth := preload("res://scripts/net/account_auth_model.gd")
 const AmbientSim := preload("res://scripts/net/ambient_sim_model.gd")
+const Recovery := preload("res://scripts/rules/recovery_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -32,6 +33,11 @@ const ARMOR_DATA_PATH := "res://data/armor_clone_wars.json"
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 const DISABLE_INFLUENCE := 5  # Director zone-influence a disable feeds to the shooter's faction axis (owner-tunable)
 const KILL_TERRITORY_INFLUENCE := 2  # org territory-influence a kill-in-zone earns (FACTION_TERRITORY_DESIGN §2)
+# DIV-0012: wound tiers a character recovers from naturally (own Strength vs Guide_19 §3
+# difficulty, one Director tick = one recovery interval). incapacitated/mortally_wounded/
+# dead are EXCLUDED — they need First Aid/Medicine by another, and the lethal tiers are
+# owner-gated death (DIV-0006).
+const HEALABLE_WOUND_LEVELS := ["stunned", "wounded", "wounded_twice"]
 
 const DEFAULT_PORT := 24555
 const MAX_CLIENTS := 32
@@ -356,6 +362,11 @@ func _create_character(character_id: String, display_name: String, build: Dictio
 			print("[chargen] invalid build for %s %s — using quick-start" % [character_id, str(result.get("errors", []))])
 	if sheet.is_empty():
 		sheet = Chargen.default_sheet(D6Rules, species)
+	# Debug/test affordance (DIV-0012 verification): start a new character at a recoverable
+	# wound tier so the recovery tick has something to heal. Only the "can still act" tiers.
+	var start_wound := String(build.get("wound", ""))
+	if HEALABLE_WOUND_LEVELS.has(start_wound):
+		sheet["wound_state"] = start_wound
 	record["sheet"] = sheet
 	record["species"] = species_key
 	_cached_save(character_id, record)
@@ -722,6 +733,40 @@ func _advance_ambient() -> void:
 		counts[zone_id] = (_ambient[zone_id] as Array).size()
 	print("[ambient] tick %d npc counts %s" % [zones.tick_index, str(counts)])
 
+# DIV-0012: natural wound recovery. Once per Director tick (= one recovery interval), each
+# CONNECTED character whose persisted wound is a "can still act" tier (stunned/wounded/
+# wounded_twice) makes a self-recovery heal_check with their OWN Strength vs the Guide_19 §3
+# difficulty (server-owned RNG). On success the wound drops one level: persist it and refresh
+# ONLY the live combat wound penalty (set_player_combat merges just player_wound_severity, so
+# depleted CP/FP are untouched). incapacitated+ are excluded (need medical / owner-gated death).
+func _recover_wounds() -> void:
+	if arena == null:
+		return
+	for peer_id in _peer_characters.keys():
+		var character_id := String(_peer_characters[peer_id])
+		if character_id == "":
+			continue
+		var record := _cached_load(character_id)
+		if record.is_empty():
+			continue
+		var sheet: Dictionary = record.get("sheet", {})
+		var level := String(sheet.get("wound_state", "healthy"))
+		if not HEALABLE_WOUND_LEVELS.has(level):
+			continue
+		var strength_code := String((sheet.get("attributes", {}) as Dictionary).get("strength", "2D"))
+		var strength_pool: Dictionary = D6Rules.parse_pool(strength_code)
+		var result: Dictionary = Recovery.heal_check(_server_rng, strength_pool, level)
+		if not bool(result.get("healed", false)):
+			continue
+		var new_level := String(result.get("new_level", level))
+		sheet["wound_state"] = new_level
+		record["sheet"] = sheet
+		_cached_save(character_id, record)
+		arena.set_player_combat(peer_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(new_level)})
+		print("[recovery] peer %d %s healed %s -> %s (Strength %s rolled %d vs %d)" % [
+			peer_id, character_id, level, new_level, strength_code,
+			int(result.get("roll_total", 0)), int(result.get("difficulty", 0))])
+
 func _attribute_for_skill(skill: String) -> String:
 	return String(_skill_attr.get(skill, "dexterity"))
 
@@ -794,6 +839,7 @@ func _physics_process(delta: float) -> void:
 					_fold_pending_influence()  # E24: fold player activity into influence first
 					zones.director_tick()
 					_advance_ambient()  # E27: advance the ambient NPC roster per zone
+				_recover_wounds()  # DIV-0012: natural wound recovery for connected players
 			_resource_accum += delta
 			if _resource_accum >= resource_tick_seconds:
 				_resource_accum = 0.0

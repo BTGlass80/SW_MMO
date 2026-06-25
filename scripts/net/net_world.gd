@@ -55,6 +55,7 @@ var _chat := ""             # headless: "channel:text" to send once after connec
 var _chat_sent := false
 var _chat_accum := 0.0
 var _secret := ""           # account ownership secret (E26)
+var _start_wound := ""       # headless DIV-0012 test: start a new char at a recoverable wound tier
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
@@ -127,6 +128,7 @@ func _parse_args() -> void:
 	_secret = _arg_value("--secret")  # account ownership secret (binds the peer to the account)
 	_fire_cp = maxi(int(_arg_value("--fire-cp")), 0)  # headless: stage CP on autofire shots
 	_fire_fp = args.has("--fire-fp")  # headless: stage a Force Point on autofire shots
+	_start_wound = _arg_value("--start-wound")  # headless DIV-0012: new char starts wounded
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -243,6 +245,8 @@ func _on_client_connected() -> void:
 		}
 	if _secret != "":
 		build["secret"] = _secret  # E26: bind/authorize this account
+	if _start_wound != "":
+		build["wound"] = _start_wound  # DIV-0012 test: seed a recoverable wound on a new char
 	Net.send_register(_account, _name, build)
 	var who := _name if _name != "" else "account %s" % _account
 	_set_status("Connected as peer %d (%s)." % [_local_id, who])
