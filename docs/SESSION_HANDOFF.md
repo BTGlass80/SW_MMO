@@ -207,6 +207,34 @@ If a slice would require deciding any of these, stop it and mark it
 
 Decided & usable (NOT parked): **DIV-0006** death-penalty shape, **DIV-0007** dual-track CP.
 
+### 5a. What each gate UNLOCKS (already built + tested — ROI map for the owner)
+
+The non-owner-gated backlog is DRY; the loop has built the substrate ahead of the gates.
+Each owner decision below makes a chunk of **already-built, already-gate-tested** work
+**reachable in live play**. Highest leverage first. (This is a prioritization aid — the loop
+does NOT pre-decide any of these.)
+
+- **Player-damage path** (needs: **death-PENALTY numbers** + a respawn flow; DIV-0006 shape
+  already decided — and/or **PvP-consent**, and/or hostile-NPC wiring) — **the single biggest
+  unlock.** Nothing damages players today (the training dummy doesn't return fire), so the ENTIRE
+  wound/medical loop is built but LATENT: `wound_ladder_model` (E2), `recovery_model` + natural
+  recovery (E3/F7), First Aid by a medic (F8), the incapacitated/dead "out" state — can't act
+  (F31) or move (F32), the condition HUD (F9), and wound nameplates (F17). Decide how a player
+  takes damage + what death costs/where they respawn → all of that goes live at once.
+- **Economy / vendor** (needs: prices, spawn rates, item values) — unlocks three modeled-and-
+  smoked-but-orphaned systems: `vendor_model` (E11), `creature_spawn_model` (E10),
+  `reputation_model` (E12); plus **melee** (F18 already makes melee pools/`STR+ND` damage correct,
+  latent until weapons are acquirable) and inventory beyond the chargen kit.
+- **Force / Jedi ACCESS policy** (rarity, how one becomes force-sensitive) — unlocks
+  `force_skills_model` (E6 — the off-by-default data hook is already built; only the access
+  economy is gated).
+- **Siege durations / capture threshold** — unlocks the `siege_state` schema state machine on top
+  of the live territory-claim substrate (claims + treasury income + rank authority: E9/E23/F29/F34,
+  validated F38).
+- **CP award-RATE tuning** (DIV-0007 dual-track mechanic already live) — only the numbers gate how
+  fast progression/prestige accrue; the earning + spending paths work (C4/F30).
+- **LLM Director flavor / visual A1b+P1** — additive polish on a working deterministic baseline.
+
 ---
 
 ## 6. Verification discipline
