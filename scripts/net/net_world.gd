@@ -38,6 +38,13 @@ var _zone := ""
 var _equip := ""            # headless: "slot:item_key" to equip once after connecting
 var _equip_sent := false
 var _equip_accum := 0.0
+var _faction := ""          # headless org membership (test affordance)
+var _faction_axis := ""
+var _faction_rank := ""
+var _territory_influence := ""
+var _claim := ""            # headless: node_id to claim once after connecting
+var _claim_sent := false
+var _claim_accum := 0.0
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
@@ -59,6 +66,7 @@ func _ready() -> void:
 	Net.wallet_updated.connect(_on_wallet_updated)
 	Net.skill_raise_replied.connect(_on_skill_raise_replied)
 	Net.equip_replied.connect(_on_equip_replied)
+	Net.claim_replied.connect(_on_claim_replied)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -67,6 +75,9 @@ func _ready() -> void:
 		var director_tick := _arg_value("--director-tick")
 		if director_tick != "":
 			Net.director_tick_seconds = maxf(float(director_tick), 0.1)
+		var resource_tick := _arg_value("--resource-tick")
+		if resource_tick != "":
+			Net.resource_tick_seconds = maxf(float(resource_tick), 0.1)
 		Net.start_server()
 		return
 
@@ -93,6 +104,11 @@ func _parse_args() -> void:
 	_raise_skill = _arg_value("--raise-skill")
 	_zone = _arg_value("--zone")  # optional starting zone (server validates)
 	_equip = _arg_value("--equip")  # headless "slot:item_key" equip-swap test affordance
+	_faction = _arg_value("--faction")
+	_faction_axis = _arg_value("--faction-axis")
+	_faction_rank = _arg_value("--faction-rank")
+	_territory_influence = _arg_value("--territory-influence")
+	_claim = _arg_value("--claim")  # headless: node_id to claim once after connecting
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -127,6 +143,11 @@ func _process(delta: float) -> void:
 			var parts := _equip.split(":")
 			if parts.size() == 2:
 				Net.send_equip(String(parts[0]), String(parts[1]))
+	if _claim != "" and not _claim_sent and Net.connected:
+		_claim_accum += delta
+		if _claim_accum >= 3.5:  # after register + org set, claim a node once (headless test)
+			_claim_sent = true
+			Net.send_claim_node(_claim)
 
 # --- input / camera (client only) ---
 func _send_local_input() -> void:
@@ -180,6 +201,13 @@ func _on_client_connected() -> void:
 		build = {"species": _species if _species != "" else "human", "quickstart": true}
 	if _zone != "":
 		build["zone"] = _zone  # request a starting zone (server validates against its roster)
+	if _faction != "":
+		build["org"] = {
+			"faction_id": _faction,
+			"faction_axis": _faction_axis if _faction_axis != "" else "independent",
+			"faction_rank": int(_faction_rank) if _faction_rank != "" else 1,
+			"influence": int(_territory_influence) if _territory_influence != "" else 0,
+		}
 	Net.send_register(_account, _name, build)
 	var who := _name if _name != "" else "account %s" % _account
 	_set_status("Connected as peer %d (%s)." % [_local_id, who])
@@ -402,3 +430,12 @@ func _on_equip_replied(result: Dictionary) -> void:
 		_set_status("Equipped %s." % String(result.get("item_key", "")))
 	else:
 		print("[equip] %s rejected (%s)" % [String(result.get("item_key", "")), String(result.get("reason", ""))])
+
+func _on_claim_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		if bool(result.get("released", false)):
+			print("[territory] released %s" % String(result.get("node_id", "")))
+		else:
+			print("[territory] claimed %s for %s (tier %s)" % [String(result.get("node_id", "")), String(result.get("org_id", "")), String(result.get("tier", ""))])
+	else:
+		print("[territory] %s %s rejected (%s)" % ["release" if bool(result.get("released", false)) else "claim", String(result.get("node_id", "")), String(result.get("reason", ""))])

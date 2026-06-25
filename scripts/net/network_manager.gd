@@ -19,6 +19,7 @@ const Territory := preload("res://scripts/net/territory_model.gd")
 const Chargen := preload("res://scripts/rules/chargen_model.gd")
 const Progression := preload("res://scripts/rules/progression_model.gd")
 const Equipment := preload("res://scripts/rules/equipment_model.gd")
+const OrgModel := preload("res://scripts/net/org_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -49,6 +50,7 @@ signal combat_envelope(envelope: Dictionary)
 signal wallet_updated(wallet: Dictionary)
 signal skill_raise_replied(result: Dictionary)
 signal equip_replied(result: Dictionary)
+signal claim_replied(result: Dictionary)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -56,8 +58,10 @@ var arena: CombatArena = null         # server only
 var store: PersistenceStore = null    # server only
 var zones: ZoneState = null           # server only (world-sim director)
 var territory: Territory = null       # server only (org claims + passive income)
+var _org_model = null                 # server only (OrgModel instance: claim validation)
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var director_tick_seconds: float = DIRECTOR_TICK_SECONDS
+var resource_tick_seconds: float = RESOURCE_TICK_SECONDS
 
 var _species_data := {}               # server only (chargen species ranges)
 var _skill_attr := {}                 # server only (skill key -> governing attribute)
@@ -76,6 +80,8 @@ var _resource_accum := 0.0
 var _peer_characters := {}            # peer_id -> character_id (server)
 var _peer_zones := {}                 # peer_id -> current_zone_id (server)
 var _default_zone: String = CURRENT_ZONE  # server: zone new peers start in
+var _peer_orgs := {}                  # peer_id -> org_id (server; for snapshot treasury)
+var _territory_influence := {}        # org_id -> {zone_id -> int} (server; territory infl)
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
@@ -104,6 +110,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	zones = ZoneState.new()
 	_load_zones()  # seed the multi-zone roster (the Director ticks them all)
 	territory = Territory.new()
+	_org_model = OrgModel.new()
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
@@ -167,6 +174,7 @@ func _on_peer_disconnected(id: int) -> void:
 		arena.remove_player(id)
 	_peer_characters.erase(id)
 	_peer_zones.erase(id)
+	_peer_orgs.erase(id)
 	print("[net] peer %d left (players=%d)" % [id, state.player_count()])
 	player_left.emit(id)
 
@@ -248,6 +256,24 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 		record = _create_character(character_id, chosen_name, build)  # new char: run chargen
 	else:
 		record["name"] = chosen_name
+	# Optional org membership (test affordance on the build dict): set the persisted
+	# record.org and seed the org's territory influence in the player's current zone
+	# (real influence accrual is a later slice). Always refresh _peer_orgs from the record.
+	var build_org: Dictionary = build.get("org", {})
+	if not build_org.is_empty() and String(build_org.get("faction_id", "")) != "":
+		record["org"] = {
+			"faction_id": String(build_org.get("faction_id", "")),
+			"faction_axis": String(build_org.get("faction_axis", "independent")),
+			"faction_rank": int(build_org.get("faction_rank", 1)),
+			"faction_rep": int(build_org.get("faction_rep", 0)),
+			"guild_ids": [],
+		}
+		store.save_record(character_id, record)
+		var seed_infl := int(build_org.get("influence", 0))
+		if seed_infl > 0:
+			_set_territory_influence(String(build_org["faction_id"]), String(_peer_zones.get(sender, _default_zone)), seed_infl)
+	if record.has("org") and typeof(record["org"]) == TYPE_DICTIONARY:
+		_peer_orgs[sender] = String((record["org"] as Dictionary).get("faction_id", ""))
 	var pos := PersistenceStore.record_pos(record, WorldState.SPAWN_POINT)
 	var yaw := PersistenceStore.record_yaw(record, 0.0)
 	state.restore_player(sender, pos, yaw, chosen_name)
@@ -402,6 +428,112 @@ func send_equip(slot: String, item_key: String) -> void:
 func equip_result(result: Dictionary) -> void:
 	equip_replied.emit(result)
 
+# --- E23: org territory claim / release commands ---
+# client -> server: claim a node in the player's CURRENT zone for their org. Validated
+# via the org-model (valid member + rank>=3) + territory-model (zone claimable, influence
+# floor, one-claim-per-node), then persisted into the live Territory so the resource tick
+# credits the org treasury. The siege / hostile-takeover loop is owner-gated, NOT here.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_claim_node(node_id: String) -> void:
+	if mode != Mode.SERVER or territory == null or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var node := node_id.strip_edges()
+	var org := _org_for_peer(sender)
+	if org.is_empty():
+		claim_result.rpc_id(sender, {"ok": false, "node_id": node, "reason": "no_org"})
+		return
+	var zone_id := String(_peer_zones.get(sender, _default_zone))
+	var security_base := String(zones.get_zone(zone_id).get("security_base", "secured")) if zones != null else "secured"
+	var org_id := String(org.get("faction_id", ""))
+	var org_influence := _territory_influence_for(org_id, zone_id)
+	var check: Dictionary = _org_model.can_claim_command(org, security_base, org_influence)
+	if not bool(check["allowed"]):
+		print("[territory] peer %d claim %s denied (%s)" % [sender, node, String(check["reason"])])
+		claim_result.rpc_id(sender, {"ok": false, "node_id": node, "reason": String(check["reason"])})
+		return
+	var claim_id := "%s::%s" % [org_id, node]
+	var claim: Dictionary = territory.claim_node(claim_id, node, zone_id, org_id, security_base, org_influence)
+	if claim.is_empty():
+		print("[territory] peer %d claim %s denied (node_unavailable / already claimed)" % [sender, node])
+		claim_result.rpc_id(sender, {"ok": false, "node_id": node, "reason": "node_unavailable"})
+		return
+	print("[territory] peer %d (%s) CLAIMED %s in %s (tier %s, infl %d)" % [sender, org_id, node, zone_id, String(claim["influence_tier_at_claim"]), org_influence])
+	claim_result.rpc_id(sender, {"ok": true, "node_id": node, "org_id": org_id, "zone_id": zone_id, "tier": String(claim["influence_tier_at_claim"])})
+
+# client -> server: release the player's org claim on a node.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_release_claim(node_id: String) -> void:
+	if mode != Mode.SERVER or territory == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var node := node_id.strip_edges()
+	var org_id := String(_org_for_peer(sender).get("faction_id", ""))
+	var claim_id := territory.claim_for_node(node)
+	if claim_id == "" or String((territory.get_claim(claim_id) as Dictionary).get("org_id", "")) != org_id:
+		claim_result.rpc_id(sender, {"ok": false, "node_id": node, "released": true, "reason": "not_your_claim"})
+		return
+	territory.release_claim(claim_id)
+	print("[territory] peer %d (%s) RELEASED %s" % [sender, org_id, node])
+	claim_result.rpc_id(sender, {"ok": true, "node_id": node, "released": true})
+
+func send_claim_node(node_id: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_claim_node.rpc_id(1, node_id)
+
+func send_release_claim(node_id: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_release_claim.rpc_id(1, node_id)
+
+# server -> client: the outcome of a claim / release command
+@rpc("authority", "call_remote", "reliable")
+func claim_result(result: Dictionary) -> void:
+	claim_replied.emit(result)
+
+# The persisted org membership dict for a peer (loads the record). {} when none.
+# JSON reload can widen ints to float, so coerce the numeric fields the org-model
+# validates with a strict typeof == TYPE_INT check (faction_rank / faction_rep).
+func _org_for_peer(peer_id: int) -> Dictionary:
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return {}
+	var record := store.load_record(character_id)
+	var org: Variant = record.get("org", {})
+	if typeof(org) != TYPE_DICTIONARY:
+		return {}
+	var o: Dictionary = (org as Dictionary).duplicate()
+	if o.has("faction_rank"):
+		o["faction_rank"] = int(o["faction_rank"])
+	if o.has("faction_rep"):
+		o["faction_rep"] = int(o["faction_rep"])
+	return o
+
+func _territory_influence_for(org_id: String, zone_id: String) -> int:
+	var by_zone: Dictionary = _territory_influence.get(org_id, {})
+	return int(by_zone.get(zone_id, 0))
+
+func _set_territory_influence(org_id: String, zone_id: String, value: int) -> void:
+	if not _territory_influence.has(org_id):
+		_territory_influence[org_id] = {}
+	(_territory_influence[org_id] as Dictionary)[zone_id] = maxi(value, 0)
+
+# A compact territory view for a peer's snapshot: their org treasury + claims in the zone.
+func _territory_summary(org_id: String, zone_id: String) -> Dictionary:
+	var claims_here: Array = []
+	for cid in territory.claims:
+		var c: Dictionary = territory.claims[cid]
+		if String(c.get("zone_id", "")) == zone_id:
+			claims_here.append({
+				"node_id": String(c.get("node_id", "")),
+				"org_id": String(c.get("org_id", "")),
+				"tier": String(c.get("influence_tier_at_claim", "")),
+			})
+	return {
+		"org_id": org_id,
+		"treasury": territory.get_org_credits(org_id),
+		"claims_in_zone": claims_here,
+	}
+
 # server -> client: push the player's current CP wallet
 @rpc("authority", "call_remote", "reliable")
 func apply_wallet(wallet: Dictionary) -> void:
@@ -458,9 +590,9 @@ func _physics_process(delta: float) -> void:
 			while _server_accum >= step:
 				state.tick(step)
 				_server_accum -= step
-			# Per-peer snapshot: shared world state + the player's OWN zone summary.
+			# Per-peer snapshot: shared world state + the player's OWN zone + territory view.
 			for pid in multiplayer.get_peers():
-				apply_snapshot.rpc_id(pid, _build_snapshot(String(_peer_zones.get(pid, _default_zone))))
+				apply_snapshot.rpc_id(pid, _build_snapshot(String(_peer_zones.get(pid, _default_zone)), pid))
 			_combat_accum += delta
 			if _combat_accum >= combat_window_seconds:
 				_combat_accum = 0.0
@@ -476,11 +608,11 @@ func _physics_process(delta: float) -> void:
 				if zones != null:
 					zones.director_tick()
 			_resource_accum += delta
-			if _resource_accum >= RESOURCE_TICK_SECONDS:
+			if _resource_accum >= resource_tick_seconds:
 				_resource_accum = 0.0
 				if territory != null and territory.claim_count() > 0:
 					var gained := territory.accrue_income()
-					print("[territory] resource tick: %d claims, org gains %s" % [territory.claim_count(), str(gained)])
+					print("[territory] resource tick: %d claims, org gains %s; treasuries %s" % [territory.claim_count(), str(gained), str(territory.org_credits)])
 		Mode.CLIENT:
 			if not connected:
 				return
@@ -490,10 +622,12 @@ func _physics_process(delta: float) -> void:
 				_client_accum = 0.0
 				submit_input.rpc_id(1, _local_move, _local_yaw, _local_jump)
 
-func _build_snapshot(zone_id: String = CURRENT_ZONE) -> Dictionary:
+func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictionary:
 	var snap := state.snapshot()
 	if zones != null:
 		snap["zone"] = zones.zone_summary(zone_id)
+	if territory != null and peer_id != 0:
+		snap["territory"] = _territory_summary(String(_peer_orgs.get(peer_id, "")), zone_id)
 	return snap
 
 # Seed the server's zone roster from data/zones_clone_wars.json (the Director ticks
