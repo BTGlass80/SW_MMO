@@ -25,6 +25,7 @@ var _pitch := -0.18
 var _camera: Camera3D
 var _status: Label
 var _snapshots_logged := 0
+var _npcs_seen := false
 var _avatars: Dictionary = {}   # peer_id -> {"root": Node3D, "seen": bool}
 var _aim := 0
 var _autofire := false
@@ -249,14 +250,19 @@ func _on_player_left(peer_id: int) -> void:
 		_avatars.erase(peer_id)
 
 func _on_snapshot(snapshot: Dictionary) -> void:
-	if _snapshots_logged < 6:
+	var npc_count := (snapshot.get("npcs", []) as Array).size()
+	var first_npcs := npc_count > 0 and not _npcs_seen  # log the moment ambient NPCs appear
+	if npc_count > 0:
+		_npcs_seen = true
+	if _snapshots_logged < 6 or first_npcs:
 		_snapshots_logged += 1
 		var z: Dictionary = snapshot.get("zone", {})
-		print("[net] client received snapshot tick=%d players=%d zone=%s/%s" % [
+		print("[net] client received snapshot tick=%d players=%d zone=%s/%s npcs=%d" % [
 			int(snapshot.get("tick", -1)),
 			(snapshot.get("players", []) as Array).size(),
 			String(z.get("alert_level", "-")),
 			String(z.get("effective_security", "-")),
+			npc_count,
 		])
 	if _is_server:
 		return

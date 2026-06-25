@@ -23,6 +23,7 @@ const OrgModel := preload("res://scripts/net/org_model.gd")
 const PendingInfluence := preload("res://scripts/net/pending_influence_model.gd")
 const ChatModel := preload("res://scripts/net/chat_model.gd")
 const Auth := preload("res://scripts/net/account_auth_model.gd")
+const AmbientSim := preload("res://scripts/net/ambient_sim_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -93,6 +94,7 @@ var _territory_influence := {}        # org_id -> {zone_id -> int} (server; terr
 var _pending_zone_influence := []     # E8/E24: [{zone_id, axis, delta}] accrued from play
 var _record_cache := {}               # E26: character_id -> record (kills per-call JSON I/O)
 var _peer_rpc_budget := {}            # E26: peer_id -> {tokens, last_ms} reliable-RPC bucket
+var _ambient := {}                    # E27: zone_id -> ambient NPC roster (Director-advanced)
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
@@ -670,6 +672,18 @@ func _fold_pending_influence() -> void:
 			String(zid), str(deltas), str(z.get("influence", {})),
 			String(z.get("alert_level", "")), zones.effective_security(String(zid))])
 
+# E27: advance each zone's ambient NPC roster (Director-paced, deterministic, hash-seeded
+# like zone_state). Folded into the per-peer snapshot as npcs[].
+func _advance_ambient() -> void:
+	if zones == null:
+		return
+	var counts := {}
+	for zone_id in zones.zones:
+		var alert := String((zones.get_zone(zone_id) as Dictionary).get("alert_level", "standard"))
+		_ambient[zone_id] = AmbientSim.advance(_ambient.get(zone_id, []), String(zone_id), alert, zones.tick_index, {})
+		counts[zone_id] = (_ambient[zone_id] as Array).size()
+	print("[ambient] tick %d npc counts %s" % [zones.tick_index, str(counts)])
+
 func _attribute_for_skill(skill: String) -> String:
 	return String(_skill_attr.get(skill, "dexterity"))
 
@@ -741,6 +755,7 @@ func _physics_process(delta: float) -> void:
 				if zones != null:
 					_fold_pending_influence()  # E24: fold player activity into influence first
 					zones.director_tick()
+					_advance_ambient()  # E27: advance the ambient NPC roster per zone
 			_resource_accum += delta
 			if _resource_accum >= resource_tick_seconds:
 				_resource_accum = 0.0
@@ -762,6 +777,7 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 		snap["zone"] = zones.zone_summary(zone_id)
 	if territory != null and peer_id != 0:
 		snap["territory"] = _territory_summary(String(_peer_orgs.get(peer_id, "")), zone_id)
+	snap["npcs"] = _ambient.get(zone_id, [])  # E27: ambient NPCs in the player's zone
 	return snap
 
 # Seed the server's zone roster from data/zones_clone_wars.json (the Director ticks
