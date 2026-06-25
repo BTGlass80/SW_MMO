@@ -12,3 +12,6 @@ MMO_Assets/
 __pycache__/
 *.pyc
 
+# Claude Code runtime locks (keep tracked: .claude/agents/, CLAUDE.md)
+.claude/scheduled_tasks.lock
+
