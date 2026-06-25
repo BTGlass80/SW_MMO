@@ -610,7 +610,7 @@ func _build_hud() -> void:
 	layer.add_child(_chat_log)
 
 	_chat_input = LineEdit.new()  # F22: GUI chat entry (Enter opens, type, Enter sends, Esc cancels)
-	_chat_input.placeholder_text = "Enter to chat — /say  /ooc  /org  /emote  (plain text = say)"
+	_chat_input.placeholder_text = "Enter: chat (/say /ooc /org /emote) or a command (/help lists them)"
 	_chat_input.position = Vector2(18, 510)
 	_chat_input.size = Vector2(560, 30)
 	_chat_input.add_theme_font_size_override("font_size", 15)
@@ -893,10 +893,29 @@ func _dispatch_command(cmd: String, arg: String) -> void:
 			if arg != "":
 				Net.send_release_claim(arg)
 				_set_status("Releasing %s…" % arg)
+		"who":
+			_show_who()  # client-local roster of same-zone players (from the snapshot)
+		"help":
+			var help := ChatModel.command_help()
+			_set_status(help)
+			print("[help] %s" % help)
 
 func _on_chat_submitted(text: String) -> void:
 	_submit_chat_line(text)
 	_close_chat_input()
+
+# Client-local /who roster: the same-zone players (the snapshot is already zone-scoped, F13)
+# with their condition (F17). No RPC — reads the latest snapshot.
+func _show_who() -> void:
+	var names: Array = []
+	for entry in Net.last_snapshot.get("players", []):
+		var e: Dictionary = entry
+		var nm := String(e.get("name", "Spacer-%d" % int(e.get("id", 0))))
+		var wound := String(e.get("wound", "healthy"))
+		names.append(nm if wound == "healthy" else "%s (%s)" % [nm, _condition_pretty(wound)])
+	var line := "Here (%d): %s" % [names.size(), ", ".join(names)]
+	_set_status(line)
+	print("[who] %d players: %s" % [names.size(), ", ".join(names)])
 
 func _open_chat_input() -> void:
 	if _chat_input == null:

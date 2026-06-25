@@ -17,7 +17,12 @@ const COMMANDS := {
 }
 
 ## GUI game commands (distinct from chat channels) recognized by the command bar.
-const GAME_COMMANDS := ["raise", "travel", "heal", "claim", "release"]
+## raise/travel/heal/claim/release send RPCs; help/who are client-local info commands.
+const GAME_COMMANDS := ["raise", "travel", "heal", "claim", "release", "who", "help"]
+
+## One-line help listing every command the bar understands (for the /help command + onboarding).
+static func command_help() -> String:
+	return "Commands: /raise <skill> · /travel <zone> · /heal · /claim <node> · /release <node> · /who · /help.  Chat: /say /ooc /org /emote (plain text = say)."
 
 ## Recognize a GUI game command in a free-text line: "/raise dodge" -> {cmd:"raise",
 ## arg:"dodge"}; "/travel tatooine.dune_sea" -> {cmd:"travel", arg:"…"}; "/heal" ->
