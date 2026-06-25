@@ -42,7 +42,13 @@ func _heal(st: Dictionary, healer: int, target: int, heal_pool: Dictionary) -> D
 	var new_level := String(result.get("new_level", level))
 	if healed:
 		(t_record["sheet"] as Dictionary)["wound_state"] = new_level
+		if new_level == "healthy":
+			st["heal_treated"].erase(target)  # fully healed -> reset the gate (F28)
 	return {"ok": healed, "reason": "" if healed else "failed", "to": new_level}
+
+# Test affordance: simulate the target taking a fresh wound (combat damage / re-injury).
+func _rewound(st: Dictionary, target_char: String, wound: String) -> void:
+	(st["records"][target_char] as Dictionary)["sheet"] = {"wound_state": wound}
 
 func _fresh() -> Dictionary:
 	return {"peer_characters": {}, "peer_zones": {}, "records": {}, "heal_treated": {}}
@@ -94,6 +100,18 @@ func _init() -> void:
 	var f1: Dictionary = _heal(st3, 30, 31, NONE)
 	_assert_eq(String(f1["reason"]), "failed", "zero pool fails the heal roll")
 	_assert_eq(_heal(st3, 30, 31, NONE)["reason"], "already_treated", "retry at the same wound level is gated (no spam-to-success)")
+
+	# --- F28: the gate RESETS when the wound fully heals, so a re-wound to a previously-treated
+	#     level is heal-able again (without the reset, _heal_treated would stale-block it). ---
+	var st4: Dictionary = _fresh()
+	_register(st4, 40, "medic4", "spaceport", "healthy")
+	_register(st4, 41, "ally4", "spaceport", "stunned")
+	_assert_true(bool(_heal(st4, 40, 41, BIG)["ok"]), "heal stunned -> healthy (gate had recorded 'stunned')")
+	_assert_eq(_heal(st4, 40, 41, BIG)["reason"], "no_wound", "now healthy -> no_wound")
+	_rewound(st4, "ally4", "stunned")  # the ally is stunned AGAIN later
+	var reheal: Dictionary = _heal(st4, 40, 41, BIG)
+	_assert_true(bool(reheal["ok"]), "a re-wound to the same level is heal-able (gate was reset on full heal)")
+	_assert_eq(String(reheal["to"]), "healthy", "the re-wound stun heals normally")
 
 	if _failures.is_empty():
 		print("heal_flow_smoke: OK")

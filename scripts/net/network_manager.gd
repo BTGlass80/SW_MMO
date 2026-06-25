@@ -574,6 +574,8 @@ func submit_heal(target_id: int) -> void:
 		_cached_save(target_char, t_record)
 		if arena != null:
 			arena.set_player_combat(target_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(new_level)})
+		if new_level == "healthy":
+			_heal_treated.erase(target_id)  # fully healed -> reset the retry gate (a future wound is fresh)
 	print("[firstaid] peer %d -> peer %d (%s): %s -> %s (First Aid %s rolled %d vs %d)" % [
 		healer, target_id, target_char, level, new_level,
 		String(D6Rules.pool_to_string(heal_pool)), int(result.get("roll_total", 0)), int(result.get("difficulty", 0))])
@@ -940,6 +942,8 @@ func _recover_wounds() -> void:
 		record["sheet"] = sheet
 		_cached_save(character_id, record)
 		arena.set_player_combat(peer_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(new_level)})
+		if new_level == "healthy":
+			_heal_treated.erase(peer_id)  # fully recovered -> reset the First-Aid retry gate (DIV-0013/F8)
 		print("[recovery] peer %d %s healed %s -> %s (Strength %s rolled %d vs %d)" % [
 			peer_id, character_id, level, new_level, strength_code,
 			int(result.get("roll_total", 0)), int(result.get("difficulty", 0))])
