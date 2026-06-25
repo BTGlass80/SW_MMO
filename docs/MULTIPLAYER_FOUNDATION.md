@@ -1,9 +1,14 @@
 # Multiplayer Foundation (Milestone M1)
 
-Status as of 2026-06-24: **M1.1 and M1.2 complete and verified; M1.3 combat core
-complete and verified (RPC/HUD wiring next).** This is the start of turning the
-single-player slice into a server-authoritative shared world — the owner-chosen
-first priority (see "Direction" below).
+Status as of 2026-06-25: **M1.1 → M1.5 complete and verified, plus M2.0–M2.2
+(zone/security Director + world events) and Waves C (chargen + dual-track CP) and
+D (combat uses the real sheet + equipped gear).** The single-player slice is now a
+server-authoritative shared world: clients send intents, the server owns
+`WorldState` truth + all RNG/seeds, ticks the sim (20 Hz) and a slow Director (~30s),
+resolves WEG action-window combat, and persists per-character JSON. Active work is
+`docs/UNATTENDED_BACKLOG.md` → **Wave E** (persistent-world depth). See "Direction"
+below for the owner-chosen priorities and `docs/SESSION_HANDOFF.md` for the
+clean-session entry point.
 
 ## Direction (owner decisions, 2026-06-24)
 
@@ -68,12 +73,14 @@ Notes:
 - The solo experience is unchanged: `res://scenes/main.tscn` is still the project
   main scene.
 
-## Verified (2026-06-24)
+## Verified (2026-06-25)
 
-- `net_smoke: OK`, `world_builder_smoke: OK`, `content_smoke: OK`,
-  `combat_arena_smoke: OK`, and the **full `check_project.ps1` suite green** (32
-  GDScript smokes + 7 python tests). The `main.gd` rewrite to use the shared builder
-  regressed nothing.
+- The **full `check_project.ps1` suite is green** (import + 2s runtime launch + 34
+  GDScript smokes + 7 python tests), including `net_smoke`, `world_builder_smoke`,
+  `content_smoke`, `combat_arena_smoke`, `zone_state_smoke`, `territory_smoke`,
+  `chargen_smoke`, `progression_smoke`, and `persistence_smoke`. The A0 colormap fix
+  made `--import` green; the old "import can fail on half-curated assets" caveat is
+  stale — the full gate is the bar.
 - End-to-end ENet handshake proven with two headless processes: client connects,
   server registers the peer (`players=1`), client receives authoritative
   snapshots over RPC, clean disconnect (`players=0`).
@@ -90,21 +97,49 @@ Notes:
   (first person), and interpolates remote avatars. Verified headlessly (full gate
   green + two-process handshake with the real settlement). REMAINING: a human
   visual check of two GUI clients walking Bay 94 together (cannot be done headless).
-- **M1.3 Server-authoritative WEG action-window combat** — CORE DONE.
+- **M1.3 Server-authoritative WEG action-window combat** — DONE.
   `scripts/net/combat_arena.gd` (pure, server-owned) holds a shared training target
   + per-player combat state, queues fire intents, and resolves them in WEG
   initiative order each window via `action_window_model.gd` (initiative +
   declarations) + `ground_combat_model.gd` (attack/damage/return-fire) + `D6Rules`,
   under a **server-owned seed**, emitting one `combat.exchange.resolved` envelope
   per shooter. Deterministic/replayable; covered by `combat_arena_smoke`.
-  REMAINING (M1.3b wiring): hold a `CombatArena` on the server in `NetworkManager`
-  (load `prototype_combatants.json`, register players on join); a `submit_fire_intent`
-  RPC; a ~5s window timer calling `resolve_window(server_seed)`; broadcast envelopes
-  via an `apply_combat_envelope` RPC; client fire-on-click + a HUD combat log. The
-  client raycast becomes aim intent the server re-validates (seed + all dice already
-  server-side in the arena).
-- **M1.4 Persistence backbone** — accounts/characters; save/load position + sheet
-  (JSON first, then SQLite per the architecture doc).
+- **M1.3b Combat netcode wiring** — DONE. `NetworkManager` holds the server
+  `CombatArena` (loads `prototype_combatants.json`, registers players on join), a
+  `submit_fire_intent` RPC, a ~5s window timer → `resolve_window(server_seed)`, and an
+  `apply_combat_envelope` broadcast; the `net_world` client fires on LMB / aims on RMB
+  and renders a HUD combat log. Verified end-to-end via a two-process autofire run.
+- **M1.4 Persistence backbone (JSON)** — DONE. Pure `scripts/net/persistence_store.gd`
+  saves/loads one JSON record per character (shape per
+  `data/schemas/player_persistence.schema.json`) under `user://persistence`;
+  `register_account` restores on login, saves on disconnect + 30s autosave. Covered by
+  `persistence_smoke`; reconnect-restores-position verified over the wire.
+- **M1.5 Player identity / nameplate** — DONE. Clients pass `--name`; it flows into
+  snapshot nameplates, combat envelopes, and the persisted record.
+- **M2.0 Zone & security-state scaffold** — DONE. Pure `scripts/net/zone_state.gd`:
+  per-zone faction influence (republic/cis/hutt/independent) with a DERIVED alert level
+  + effective security tier, advanced by a slow deterministic ~30s Director tick (no
+  LLM). Folded into the snapshot. Covered by `zone_state_smoke`.
+- **M2.1 Territory-claim scaffold** — DONE. Pure `scripts/net/territory_model.gd`: an
+  org claims a contested/lawless node (influence-floor precondition), accruing passive
+  income on a 60s resource tick. Covered by `territory_smoke`. (The Drop-6D siege loop
+  is deliberately NOT built — owner-gated tuning.)
+- **M2.2 Director world events** — DONE. `zone_state.gd` fires one deterministic event
+  at a time per zone from a fixed 12-event menu keyed off dominant influence, surfaced
+  in `zone_summary` and rendered as a client NEWS line. Still no LLM (owner-gated).
+- **Wave C — Character creation & dual-track progression** — DONE. Pure
+  `scripts/rules/chargen_model.gd` (WEG R&E build validation → starting sheet) +
+  `scripts/rules/progression_model.gd` (DIV-0007 dual-track CP wallet); server chargen
+  on first login; CP earned on combat target-disable and spent via a `submit_skill_raise`
+  RPC. Covered by `chargen_smoke` / `progression_smoke`.
+- **Wave D — Combat uses the character sheet** — DONE. `combat_arena.gd` builds each
+  player's attack/dodge/soak/damage/armor pools from their persisted sheet + equipped
+  weapon/armor (catalogs loaded by `NetworkManager`), with a trainee fallback when no
+  sheet is set.
+- **Wave E — Persistent-world depth & faithfulness** — IN PROGRESS
+  (`docs/UNATTENDED_BACKLOG.md`): WEG wound ladder/recovery, derived stats, weapon range
+  bands, the player→world influence loop, org claim commands, ambient NPC sim, chat, and
+  account-auth hardening.
 
 ## Constraints
 

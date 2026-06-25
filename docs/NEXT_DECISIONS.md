@@ -1,5 +1,17 @@
 # Next Decisions
 
+> **ARCHIVED (2026-06-25).** This is an early-prototype artifact; all three questions
+> below are long-resolved and the project has moved well past them. Kept for history
+> only — it is NOT a live decision queue. The current queue is
+> `docs/UNATTENDED_BACKLOG.md` (Wave E); open owner-gated forks live in
+> `docs/SESSION_HANDOFF.md` §5.
+>
+> **Resolutions:** (1) First sub-area → Spaceport Row / Docking Bay 94 (built; the
+> shared `world_builder.gd` Mos Eisley). (2) First combat target → training targets
+> first, then live targets (the combat arena + action-window model shipped). (3) Data
+> import policy → scripted one-way extraction from read-only `C:\SW_MUSH` into `data/`
+> (the established pipeline; the `mush-content-porter` agent).
+
 Resolved:
 
 - First settlement: Mos Eisley.

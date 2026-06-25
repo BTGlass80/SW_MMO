@@ -11,9 +11,9 @@ or be reverted. Mark items `DONE` / `BLOCKED` as you go; append the commit hash.
   `assets/`, `docs/ASSET_CATALOG.md`). Adopt and maintain them. Prefer clean, scoped
   logical commits (`git add <paths>`). If the owner says Codex is actively running
   again, switch to strictly scoped commits and never revert files you didn't change.
-- **Green bar:** GDScript smokes + runtime launch + python tests (run directly). The
-  full `check_project.ps1 --import` currently fails on a half-curated Kenney asset —
-  fix it in item A0, then the full gate is the bar again.
+- **Green bar:** the **full** `check_project.ps1` (import + runtime launch + GDScript
+  smokes + python tests). A0 fixed the `--import` break (the A0 colormap fix is live);
+  the old "import can fail on a half-curated Kenney asset" caveat is **stale**.
 - `C:\SW_MUSH` is STRICTLY READ-ONLY. Never write under it.
 - Clone Wars era only. WEG R&E leads mechanics. Keep the pure/presentation split.
   The **server owns all RNG/seeds/dice**.
@@ -214,7 +214,7 @@ features and adds the test coverage the loop relies on. **Divergence-ledger-firs
 items are flagged: add the `DIVERGENCE_LEDGER.md` row IN the same slice, before/with the
 code (these are faithful WEG restorations, NOT owner forks).
 
-### E1 — Reconcile stale roadmap docs  [STATUS: OPEN] [PAR] [docs] [S]
+### E1 — Reconcile stale roadmap docs  [STATUS: DONE] [PAR] [docs] [S]
 Docs-only: move `docs/MULTIPLAYER_FOUNDATION.md` Status/Roadmap forward (M1.3b/M1.4/M1.5
 DONE; add M2.0–2.2 + Wave C + Wave D); delete the self-contradicted "loop has STOPPED at
 Wave C" paragraph in `docs/NIGHTLY_HANDOFF.md`; mark `docs/NEXT_DECISIONS.md`
@@ -403,6 +403,7 @@ The spawn/sim foundation beyond headline-only events.
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-25 E1 DONE — docs-only reconcile (zero code touched). `MULTIPLAYER_FOUNDATION.md`: status header + Roadmap advanced (M1.3 DONE not "core/wiring next"; added M1.3b/M1.4/M1.5/M2.0–2.2/Wave C/Wave D, Wave E in-progress; Verified count → 34 smokes + 7 python). `NIGHTLY_HANDOFF.md`: deleted the self-contradicted "loop has STOPPED at Wave C" sentence (the same paragraph already records D1/D2/Wave E). `NEXT_DECISIONS.md`: ARCHIVED banner (its 3 questions long-resolved → Bay 94 / training-then-live targets / scripted one-way import). Stale "`--import` can fail on half-curated assets" caveat corrected in `UNATTENDED_LOOP.md` + this file's Guardrails (A0 colormap fix is live; full gate is the bar). Gate unaffected (markdown only) — baseline was green at HEAD 5ba15f0.
 - 2026-06-25 AUDIT + WAVE E STOCKED — a 5-reader Workflow audit (rules/netcode/world-sim+data/tests/docs, ~560k tokens) mapped the whole prototype and produced the **Wave E** queue above (E1–E27): parallel-safe pure-model + test + docs slices `[PAR]` and serialized hot-file feature slices `[HOT]`. Also wrote `docs/SESSION_HANDOFF.md` as the clean-session entry point (parallelization playbook + re-arm-the-loop contract, since the CronCreate driver is session-only and dies on session switch). Owner-gated forks re-confirmed parked (siege tuning, Force/Jedi access policy, PvP-consent, LLM-Director-at-launch, death-PENALTY numbers, CP award-rate tuning, visual A1b/P1). Loop now: push all day, batch `[PAR]` via Workflow, serialize `[HOT]`, scoped commits, full gate + two-process bar.
 - 2026-06-25 ASSET-PIPELINE NOTE (session 43c92aa7, the origin session A0 adopted) — Re-verified the full `check_project.ps1` GREEN on the current tree (import + 33 GDScript smokes + 7 python); A0's colormap-texture fix is live (796 texture PNGs under `assets/3d/`, incl. `GLB format/Textures/colormap.png`). Corrected `docs/ASSET_PIPELINE.md`: IP framing now matches [[mmo-direction]] #4 (private/fan project uses the SW setting/rules/names freely; only the *downloadable* art layer stays generic CC0) and the doc is session-agnostic per #5 (was framed as a "Codex handoff"). Added a new Claude memory `windows-tls-interception` documenting why `fetch_assets.py` relaxes `VERIFY_X509_STRICT` (HTTPS-scanning CA on this machine) — relevant to ANY future Python HTTPS here, not just assets. FYI: an earlier note of mine guessed the `--import` break was a half-curated `nature-kit`; that was WRONG — A0's root cause (external `colormap.png` dropped by GLB-only curate) is correct. (self-extended world-sim): `zone_state.gd` fires one deterministic event at a time per zone from a fixed 12-event menu (no LLM), `hash(tick:zone) % EVENT_CHANCE`, type chosen by dominant influence (republic/hutt/cis/neutral), exposed in `zone_summary` as `event`/`event_type`; client shows a NEWS HUD line + logs `[news] <headline>`. Added a `--director-tick` server override for fast headless verification. zone_state_smoke extended (fires <40 ticks, valid type, deterministic). Verified over the wire: a client received neutral Tatooine headlines (sandstorm/distress/krayt/trade-boom). Full gate green (37 smokes). Next self-extended: D3 inventory/equipment swap, or org/claim command layer + guard NPCs.
 - 2026-06-25 LOOP RESUMED — owner chose Wave D (combat uses the character sheet). Next: D1. Now driven by a recurring CronCreate timer (job, every ~10 min) instead of manual /loop; no owner questions.

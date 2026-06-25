@@ -67,9 +67,10 @@ Mechanism and guardrails:
   `git reset --hard`, or `git clean`, which would destroy Codex's in-flight asset work.
   Codex owns `tools/fetch_assets.py`, `tools/asset_sources.json`, `MMO_Assets/`,
   `assets/`, `docs/ASSET_CATALOG.md`, `docs/asset_previews/` — never stage or revert those.
-- **Green bar:** the GDScript smokes + runtime launch + python tests (run them
-  directly). The full `check_project.ps1` `--import` step can fail on Codex's
-  half-curated assets — that is an asset-pipeline issue, NOT a code regression.
+- **Green bar:** the **full** `check_project.ps1` (import + runtime launch + GDScript
+  smokes + python tests). The A0 colormap fix made `--import` green; the old
+  "`--import` can fail on half-curated assets" caveat is **stale** — the full gate is
+  the bar now.
 - **Per-iteration contract:** pick the top unblocked, non-owner-decision backlog item
   → implement → run the green-bar checks → GREEN: `git add <your paths> && git commit`,
   mark the item DONE + hash, append a one-line note to `docs/NIGHTLY_HANDOFF.md` and
