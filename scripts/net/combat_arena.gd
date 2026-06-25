@@ -15,11 +15,13 @@ extends RefCounted
 const GroundCombatModel := preload("res://scripts/rules/ground_combat_model.gd")
 const ActionWindowModel := preload("res://scripts/rules/action_window_model.gd")
 const CombatEventEnvelopeModel := preload("res://scripts/rules/combat_event_envelope_model.gd")
+const DerivedStats := preload("res://scripts/rules/derived_stats_model.gd")
 const DISABLED_SEVERITY := 3
 
 var _rules: Object
 var _ground := GroundCombatModel.new()
 var _windows := ActionWindowModel.new()
+var _derived := DerivedStats.new()
 
 var _target_pools: Dictionary = {}         # shared target side (from combat data)
 var _default_player_pools: Dictionary = {} # fallback player side (trainee), used when no sheet
@@ -95,18 +97,32 @@ func _pools_from_sheet(sheet: Dictionary) -> Dictionary:
 	var attrs: Dictionary = sheet.get("attributes", {})
 	var skills: Dictionary = sheet.get("skills", {})
 	var dex := String(attrs.get("dexterity", "2D"))
-	var strength := String(attrs.get("strength", "2D"))
-	var blaster_bonus := String(skills.get("blaster", "0D"))
 	var dodge_bonus := String(skills.get("dodge", "0D"))
 	# Equipped weapon damage + armor profile (fallbacks when no equipment / catalog).
 	var equipment: Dictionary = sheet.get("equipment", {})
 	var weapon: Dictionary = _weapons.get(String(equipment.get("weapon", "")), {})
 	var armor: Dictionary = _armors.get(String(equipment.get("armor", "")), {})
+	# Attack uses the EQUIPPED weapon's OWN skill (blaster / melee_combat / bowcaster / …), not
+	# always blaster; untrained -> just the governing attribute (DEX).
+	var weapon_skill := String(weapon.get("skill", "blaster"))
+	var attack_bonus := String(skills.get(weapon_skill, "0D"))
+	# Damage: a "STR+ND" melee weapon resolves as STR + the weapon bonus via the (now-wired)
+	# derived-stats melee model; a ranged weapon's damage is a flat pool. This fixes melee
+	# weapons dealing 0D — parse_pool can't read "STR+3D" (int("STR+3")==0).
+	var damage_text := String(weapon.get("damage", _default_weapon_damage))
+	var damage_pool: Dictionary
+	if damage_text.to_upper().begins_with("STR"):
+		var bonus := damage_text.substr(3)
+		if bonus.begins_with("+"):
+			bonus = bonus.substr(1)
+		damage_pool = _derived.melee_damage_pool(_rules, sheet, bonus)
+	else:
+		damage_pool = _rules.parse_pool(damage_text)
 	return {
-		"attacker_pool": _rules.add_pools(_rules.parse_pool(dex), _rules.parse_pool(blaster_bonus)),
-		"damage_pool": _rules.parse_pool(String(weapon.get("damage", _default_weapon_damage))),
+		"attacker_pool": _rules.add_pools(_rules.parse_pool(dex), _rules.parse_pool(attack_bonus)),
+		"damage_pool": damage_pool,
 		"player_dodge_pool": _rules.add_pools(_rules.parse_pool(dex), _rules.parse_pool(dodge_bonus)),
-		"player_soak_pool": _rules.parse_pool(strength),
+		"player_soak_pool": _rules.parse_pool(String(attrs.get("strength", "2D"))),
 		"player_armor": armor,
 		"attacker_scale": "character",
 	}

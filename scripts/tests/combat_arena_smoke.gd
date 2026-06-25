@@ -103,6 +103,15 @@ func _init() -> void:
 	geared.register_player(10, "Unarmed", {"attributes": {"dexterity": "3D"}})  # no equipment
 	_assert_equal(geared.damage_pool_text(10), "4D", "no equipment falls back to the default weapon damage")
 
+	# Melee weapon: damage = STR + the weapon bonus (derived-stats melee model), and the attack
+	# uses the weapon's OWN skill (melee_combat), not blaster. Previously a melee weapon dealt
+	# 0D because parse_pool("STR+3D") == 0D.
+	var mweapons := {"vibroblade": {"damage": "STR+3D", "skill": "melee_combat"}}
+	var melee_arena := CombatArena.new(_rules, data, "b1_training_silhouette", mweapons, armors)
+	melee_arena.register_player(11, "Blademaster", {"attributes": {"dexterity": "3D", "strength": "2D"}, "skills": {"melee_combat": "1D"}, "equipment": {"weapon": "vibroblade"}})
+	_assert_equal(melee_arena.damage_pool_text(11), "5D", "melee vibroblade damage = STR 2D + 3D bonus")
+	_assert_equal(melee_arena.attacker_pool_text(11), "4D", "melee attack uses DEX 3D + melee_combat 1D (not blaster)")
+
 	if _rules.has_method("free"):
 		_rules.free()
 	_finish()
