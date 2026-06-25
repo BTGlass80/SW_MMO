@@ -240,8 +240,14 @@ func submit_input(move: Vector2, yaw: float, jump: bool) -> void:
 	if mode != Mode.SERVER or state == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
-	if state.has_player(sender):
-		state.set_input(sender, move, yaw, jump)
+	if not state.has_player(sender):
+		return
+	# F32: an incapacitated/mortally/dead character (arena wound >= DISABLED_SEVERITY) is out
+	# and cannot move — zero their input (mirrors F31's no-fire gate so the "out" state is coherent).
+	var can_act := true
+	if arena != null and arena.has_player(sender):
+		can_act = int((arena.player_state(sender) as Dictionary).get("player_wound_severity", 0)) < CombatArena.DISABLED_SEVERITY
+	state.set_input(sender, move, yaw, jump, can_act)
 
 @rpc("authority", "call_remote", "unreliable_ordered")
 func apply_snapshot(snapshot: Dictionary) -> void:

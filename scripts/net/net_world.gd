@@ -36,6 +36,7 @@ var _fire_cp := 0           # headless: --fire-cp N stages CP on the autofire pa
 var _fire_fp := false       # headless: --fire-fp stages a Force Point on autofire
 var _autofire := false
 var _autowalk := false
+var _walk_accum := 0.0       # headless: throttles the [pos] readout while autowalking
 var _autofire_accum := 0.0
 var _account := "guest"
 var _name := ""
@@ -221,6 +222,13 @@ func _process(delta: float) -> void:
 		if _say_accum >= 3.0:  # after register, send one free-text chat line via parse_input
 			_say_sent = true
 			_submit_chat_line(_say)
+	# headless net-movement readout: log the server-authoritative position while autowalking
+	if _autowalk and Net.connected:
+		_walk_accum += delta
+		if _walk_accum >= 1.5:
+			_walk_accum = 0.0
+			var p := _my_position()
+			print("[pos] x=%.2f y=%.2f z=%.2f" % [p.x, p.y, p.z])
 
 # --- input / camera (client only) ---
 func _send_local_input() -> void:

@@ -88,6 +88,16 @@ func _init() -> void:
 	_assert_approx(fast_z, WorldState.SPAWN_POINT.z - WorldState.MOVE_SPEED * 1.1 * 0.5, "custom move_speed scales distance")
 	_assert_true(fast_z < base_z, "a 1.1x player out-travels the baseline in equal time")
 
+	# F32: an incapacitated character (can_act=false) cannot move — set_input zeroes movement.
+	var fstate: WorldState = WorldState.new()
+	fstate.add_player(1, "Out")
+	fstate.set_input(1, Vector2(0.0, -1.0), 0.0, false, false)  # forward input, but can_act=false
+	fstate.tick(0.5)
+	_assert_true((fstate.get_player(1).get("pos") as Vector3).is_equal_approx(WorldState.SPAWN_POINT), "an incapacitated (can_act=false) player does not move")
+	fstate.set_input(1, Vector2(0.0, -1.0), 0.0, false, true)  # recovered -> can act
+	fstate.tick(0.5)
+	_assert_true((fstate.get_player(1).get("pos") as Vector3).z < WorldState.SPAWN_POINT.z, "once can_act again, the player moves")
+
 	_finish()
 
 func _finish() -> void:

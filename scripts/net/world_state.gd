@@ -57,17 +57,19 @@ func restore_player(peer_id: int, pos: Vector3, yaw: float, display_name: String
 		player["name"] = display_name
 
 ## Record a client's most recent input intent. The server applies it on the next
-## tick; clients never move themselves authoritatively.
-func set_input(peer_id: int, move: Vector2, yaw: float, jump: bool = false) -> void:
+## tick; clients never move themselves authoritatively. `can_act` = false (an
+## incapacitated / mortally wounded / dead character — see CombatArena.DISABLED_SEVERITY)
+## zeroes movement + jump: an out character can't walk. yaw (look direction) still applies.
+func set_input(peer_id: int, move: Vector2, yaw: float, jump: bool = false, can_act: bool = true) -> void:
 	var player: Dictionary = players.get(peer_id, {})
 	if player.is_empty():
 		return
-	var clamped := move
+	var clamped := move if can_act else Vector2.ZERO
 	if clamped.length() > 1.0:
 		clamped = clamped.normalized()
 	player["move"] = clamped
 	player["yaw"] = yaw
-	player["jump"] = jump
+	player["jump"] = jump and can_act
 
 ## Advance the authoritative simulation by delta seconds.
 func tick(delta: float) -> void:
