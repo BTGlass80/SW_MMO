@@ -680,6 +680,7 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 	var already := false
 	var cp_spent := 0
 	var fp_spent := false
+	var return_fire_hit := false  # F45: did the target shoot back and connect this window?
 	for ev in envelope.get("events", []):
 		var event_type := String((ev as Dictionary).get("type", ""))
 		if event_type == "player_attack":
@@ -690,6 +691,8 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 			wound = int((ev as Dictionary).get("wound_severity", -1))
 		elif event_type == "target_already_disabled":
 			already = true
+		elif event_type == "remote_return_fire":
+			return_fire_hit = return_fire_hit or bool((ev as Dictionary).get("hit", false))
 	# WEG in-play spend surfaced publicly on the shooter's line (both GUI + headless log).
 	var spend := ""
 	if cp_spent > 0:
@@ -706,6 +709,15 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 	line += spend
 	print("[combat] %s" % line)
 	_combat_lines.append(line)
+	# F45: surface the target's RETURN FIRE so a sparring-wounded player sees WHY their condition
+	# changed (the medical loop, DIV-0016). The shooter is also who got shot back at; state_delta
+	# carries their resulting, sparring-CAPPED wound (so this matches the condition HUD, not the
+	# uncapped raw event severity).
+	if return_fire_hit:
+		var pw := int((envelope.get("state_delta", {}) as Dictionary).get("player_wound_severity", 0))
+		var rf := "%s takes return fire%s" % [shooter, (" → %s" % _wound_label(pw)) if pw > 0 else " (no damage)"]
+		print("[combat] %s" % rf)
+		_combat_lines.append(rf)
 	while _combat_lines.size() > 8:
 		_combat_lines.pop_front()
 	if _combat_log != null:
