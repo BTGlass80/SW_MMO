@@ -142,7 +142,7 @@ none provided. Existing characters load as today.
 - Acceptance: full gate green; two-process check: a new account creates a character that
   persists and reloads with its sheet.
 
-### C3 — Progression model  [STATUS: TODO]
+### C3 — Progression model  [STATUS: DONE]
 Pure `scripts/rules/progression_model.gd`: WEG advancement costs (raise a skill: CP =
 the skill's current die code rounded; attributes per R&E), and the DIV-0007 DUAL-TRACK
 CP wallet (gameplay CP + slow RP-prestige CP), with spend-validation. Pure +
@@ -158,6 +158,7 @@ spend CP to raise a skill; persist via the store. Client shows CP wallet + a rai
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
 - 2026-06-24 LOOP RESUMED — owner chose Wave C (Character Creation & Progression). Next: C1.
+- 2026-06-24 C3 DONE — pure `scripts/rules/progression_model.gd` (WEG R&E / Guide_09): skill_raise_cost = total-pool dice (attribute + skill bonus), cost steps up at die boundaries, optional guild discount; DIV-0007 dual-track wallet {gameplay_cp, rp_cp} with `raise_skill` (adds a pip to the bonus, spends gameplay-first then RP, rejects if short) + `award`. `progression_smoke` (cost table, dual-track spend, boundary step-up, insufficient-CP rejection). Full gate green (37 smokes). Next: C4 wires CP earn (combat) + a spend RPC + persist.
 - 2026-06-24 C2 DONE — server chargen flow: `register_account(account_id, name, build)` now runs `_create_character` for NEW characters — validates the requested WEG build (or a deterministic quick-start) via chargen_model against the server-loaded species data, persists the resulting sheet via the M1.4 store. Client passes `--species`/`--quickstart`. Verified over the wire: a new `--species rodian --quickstart` account created `species=rodian dex=3D+1 cp=5` (species-aware), persisted. Existing characters load unchanged. Full gate green (36 smokes). Combat still uses the shared trainee pools — using the per-character sheet IN combat is a later slice.
 - 2026-06-24 C1 DONE — pure `scripts/rules/chargen_model.gd` (WEG R&E): validate_build enforces exactly 18D attributes within species min/max + a 7D skill budget, produces the player_persistence `sheet` (CP 5 / FP 1 / force_sensitive false / healthy); default_build gives a deterministic in-range quick-start. `chargen_smoke`. Full gate green (36 smokes). NOTE: a parallel session owns the asset pipeline (`docs/ASSET_PIPELINE.md` etc.) — kept scoped commits.
 - 2026-06-24 Content drop 2 DONE — one-way extract from read-only SW_MUSH: `data/starships_clone_wars.json` (6 era-appropriate civilian craft; GCW/Imperial ships excluded — content_smoke asserts none leak), `data/droids_clone_wars.json` (3 commerce droids), `data/creatures_clone_wars.json` (22 wildlife). content_smoke extended; manifest updated. Full gate green.

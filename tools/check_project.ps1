@@ -107,4 +107,6 @@ Invoke-GodotStep "Territory smoke:" @("--headless", "--path", $projectRoot, "--s
 
 Invoke-GodotStep "Chargen smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/chargen_smoke.gd")
 
+Invoke-GodotStep "Progression smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/progression_smoke.gd")
+
 Write-Host "`nAll checks passed."
