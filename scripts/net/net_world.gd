@@ -28,6 +28,10 @@ var _snapshots_logged := 0
 var _npcs_seen := false
 var _avatars: Dictionary = {}   # peer_id -> {"root": Node3D, "seen": bool}
 var _aim := 0
+var _spend_cp := 0          # Character Points staged for the NEXT shot (WEG: +1D each); reset on fire
+var _use_fp := false        # Force Point staged for the NEXT shot (WEG: doubles dice); reset on fire
+var _fire_cp := 0           # headless: --fire-cp N stages CP on the autofire path
+var _fire_fp := false       # headless: --fire-fp stages a Force Point on autofire
 var _autofire := false
 var _autowalk := false
 var _autofire_accum := 0.0
@@ -121,6 +125,8 @@ func _parse_args() -> void:
 	_claim = _arg_value("--claim")  # headless: node_id to claim once after connecting
 	_chat = _arg_value("--chat")  # headless: "channel:text" to send once after connecting
 	_secret = _arg_value("--secret")  # account ownership secret (binds the peer to the account)
+	_fire_cp = maxi(int(_arg_value("--fire-cp")), 0)  # headless: stage CP on autofire shots
+	_fire_fp = args.has("--fire-fp")  # headless: stage a Force Point on autofire shots
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -142,7 +148,7 @@ func _process(delta: float) -> void:
 		_autofire_accum += delta
 		if _autofire_accum >= 0.4:
 			_autofire_accum = 0.0
-			Net.send_fire_intent({"aim": 3, "cover": 0, "cp": 0, "fp": false})
+			Net.send_fire_intent({"aim": 3, "cover": 0, "cp": _fire_cp, "fp": _fire_fp})
 	if _raise_skill != "" and not _raise_sent and Net.connected:
 		_raise_accum += delta
 		if _raise_accum >= 6.0:  # let some CP accrue first, then raise once (headless test)
@@ -192,15 +198,23 @@ func _input(event: InputEvent) -> void:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		elif event.keycode == KEY_K:
 			Net.send_skill_raise("blaster")  # spend CP to raise Blaster a pip
+		elif event.keycode == KEY_C:
+			_spend_cp = (_spend_cp + 1) % 6  # cycle 0..5 CP staged for the next shot (WEG: +1D each)
+			_announce_next_shot()
+		elif event.keycode == KEY_F:
+			_use_fp = not _use_fp  # toggle a Force Point for the next shot (WEG: doubles dice)
+			_announce_next_shot()
 	elif event is InputEventMouseButton and event.pressed:
 		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			_aim = mini(_aim + 1, 3)
-			_set_status("Aim +%dD — RMB adds, LMB fires" % _aim)
+			_announce_next_shot()
 		elif event.button_index == MOUSE_BUTTON_LEFT:
-			Net.send_fire_intent({"aim": _aim, "cover": 0, "cp": 0, "fp": false})
+			Net.send_fire_intent({"aim": _aim, "cover": 0, "cp": _spend_cp, "fp": _use_fp})
 			_aim = 0
+			_spend_cp = 0
+			_use_fp = false
 
 func _update_camera() -> void:
 	if _camera == null or _local_id == 0:
@@ -360,7 +374,7 @@ func _build_hud() -> void:
 
 	var controls := Label.new()
 	controls.position = Vector2(18, 40)
-	controls.text = "WASD move · mouse look · RMB aim · LMB fire · Esc release"
+	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · Esc release"
 	controls.add_theme_font_size_override("font_size", 14)
 	controls.modulate = Color(0.09, 0.08, 0.06)
 	layer.add_child(controls)
@@ -410,20 +424,39 @@ func _set_status(text: String) -> void:
 	if _status != null:
 		_status.text = text
 
+# Show what's staged for the next shot (aim dice + any CP / Force Point spend).
+func _announce_next_shot() -> void:
+	var bits := "Aim +%dD" % _aim if _aim > 0 else "Next shot"
+	if _spend_cp > 0:
+		bits += " · +%dCP" % _spend_cp
+	if _use_fp:
+		bits += " · Force Point"
+	_set_status("%s — LMB fires (C cycle CP · F Force Point)" % bits)
+
 func _on_combat_envelope(envelope: Dictionary) -> void:
 	var shooter := String(envelope.get("shooter_name", "Someone"))
 	var target := String(envelope.get("target_name", "the target"))
 	var hit := false
 	var wound := -1
 	var already := false
+	var cp_spent := 0
+	var fp_spent := false
 	for ev in envelope.get("events", []):
 		var event_type := String((ev as Dictionary).get("type", ""))
 		if event_type == "player_attack":
 			hit = bool((ev as Dictionary).get("success", false))
+			cp_spent = int((ev as Dictionary).get("attack_cp_spent", 0))
+			fp_spent = bool((ev as Dictionary).get("force_point_spent", false))
 		elif event_type == "target_damage":
 			wound = int((ev as Dictionary).get("wound_severity", -1))
 		elif event_type == "target_already_disabled":
 			already = true
+	# WEG in-play spend surfaced publicly on the shooter's line (both GUI + headless log).
+	var spend := ""
+	if cp_spent > 0:
+		spend += " [+%dCP]" % cp_spent
+	if fp_spent:
+		spend += " [Force Point]"
 	var line := ""
 	if already:
 		line = "%s: %s is already down" % [shooter, target]
@@ -431,6 +464,7 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 		line = "%s hit %s%s" % [shooter, target, (" → %s" % _wound_label(wound)) if wound >= 0 else ""]
 	else:
 		line = "%s missed %s" % [shooter, target]
+	line += spend
 	print("[combat] %s" % line)
 	_combat_lines.append(line)
 	while _combat_lines.size() > 8:
