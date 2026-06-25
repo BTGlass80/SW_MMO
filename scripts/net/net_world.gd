@@ -90,6 +90,7 @@ var _news_label: Label
 var _chat_log: Label
 var _chat_lines: Array[String] = []
 var _last_news := ""
+var _last_control := ""       # F35: log zone faction-control CHANGES only
 
 func _ready() -> void:
 	_parse_args()
@@ -396,16 +397,29 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 		_last_player_count = here_count
 		print("[presence] players_here=%d" % here_count)
 	var zone: Dictionary = snapshot.get("zone", {})
+	var ranked: Array = _sorted_influence(zone.get("influence", {}))  # F35: zone faction control
 	if _zone_label != null and not zone.is_empty():
-		_zone_label.text = "%s — alert: %s | security: %s" % [
+		_zone_label.text = "%s — alert: %s | security: %s | control: %s" % [
 			String(zone.get("display_name", "Zone")),
 			String(zone.get("alert_level", "")),
 			String(zone.get("effective_security", "")),
+			_control_summary(ranked),
 		]
 	var zone_name := String(zone.get("display_name", ""))
 	if zone_name != "" and zone_name != _last_zone_name:
 		_last_zone_name = zone_name
 		print("[zone] now in %s (%s)" % [zone_name, String(zone.get("effective_security", ""))])
+	# F35: surface the Director's per-zone faction influence (who controls/contests this place —
+	# the persistent-world state the player's actions feed via E24). Already in the snapshot; just
+	# render + log it on change. Pure presentation.
+	var control_log := ""
+	for pair in ranked:
+		control_log += "%s=%d " % [String(pair[0]), int(pair[1])]
+	control_log = control_log.strip_edges()
+	if control_log != _last_control:
+		_last_control = control_log
+		if control_log != "":
+			print("[control] %s %s" % [String(zone.get("zone_id", zone_name)), control_log])
 	_zone_list = snapshot.get("zone_list", _zone_list)  # cache the travel list (DIV-0014)
 	var headline := String(zone.get("event", ""))
 	if _news_label != null:
@@ -747,6 +761,33 @@ func _rank_pretty(rank: int, territory: Dictionary) -> String:
 func _org_pretty(org_id: String) -> String:
 	var s := org_id.trim_prefix("org_").replace("_", " ")
 	return s.capitalize() if s != "" else org_id
+
+# F35: faction axes by zone influence (desc, nonzero only) → [[axis, inf], ...].
+func _sorted_influence(influence: Dictionary) -> Array:
+	var pairs: Array = []
+	for axis in influence:
+		var v := int(influence[axis])
+		if v > 0:
+			pairs.append([String(axis), v])
+	pairs.sort_custom(func(a, b): return int(a[1]) > int(b[1]))
+	return pairs
+
+# F35: the zone-control HUD string — the top two factions ("Republic 55 · Hutt 42").
+func _control_summary(ranked: Array) -> String:
+	if ranked.is_empty():
+		return "uncontested"
+	var parts: Array[String] = []
+	for i in range(mini(2, ranked.size())):
+		parts.append("%s %d" % [_axis_pretty(String(ranked[i][0])), int(ranked[i][1])])
+	return " · ".join(parts)
+
+func _axis_pretty(axis: String) -> String:
+	match axis:
+		"republic": return "Republic"
+		"cis": return "CIS"
+		"hutt": return "Hutt"
+		"independent": return "Indep."
+	return axis.capitalize()
 
 func _condition_pretty(wound: String) -> String:
 	match wound:
