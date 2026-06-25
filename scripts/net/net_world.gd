@@ -855,11 +855,36 @@ func _on_chat_received(message: Dictionary) -> void:
 # Parse a free-text chat line ("/org regroup" / plain text) and send it. Shared by the GUI
 # chat box and the headless --say affordance (F22). Empty channel/text -> nothing sent.
 func _submit_chat_line(raw: String) -> void:
+	# Command bar: a recognized "/raise|/travel|/heal …" is a game COMMAND; anything else is
+	# chat (parse_input -> send_chat). Lets the GUI input reach the full command surface, not
+	# just the hardcoded keys (e.g. raise ANY skill, not only blaster via K).
+	var command: Dictionary = ChatModel.parse_command(raw)
+	var cmd := String(command.get("cmd", ""))
+	if cmd != "":
+		_dispatch_command(cmd, String(command.get("arg", "")))
+		return
 	var parsed: Dictionary = ChatModel.parse_input(raw)
 	var channel := String(parsed.get("channel", ""))
 	var body := String(parsed.get("text", ""))
 	if channel != "" and body != "":
 		Net.send_chat(channel, body)
+
+func _dispatch_command(cmd: String, arg: String) -> void:
+	match cmd:
+		"raise":
+			if arg != "":
+				Net.send_skill_raise(arg)
+				_set_status("Raising %s…" % arg)
+		"travel":
+			if arg != "":
+				Net.send_change_zone(arg)
+		"heal":
+			var t := _best_heal_target()
+			if t != 0:
+				Net.send_heal(t)
+				_set_status("First Aid -> peer %d…" % t)
+			else:
+				_set_status("First Aid: no wounded ally nearby.")
 
 func _on_chat_submitted(text: String) -> void:
 	_submit_chat_line(text)

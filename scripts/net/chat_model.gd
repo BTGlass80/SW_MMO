@@ -16,6 +16,25 @@ const COMMANDS := {
 	"emote": "emote", "em": "emote", "me": "emote", "e": "emote",
 }
 
+## GUI game commands (distinct from chat channels) recognized by the command bar.
+const GAME_COMMANDS := ["raise", "travel", "heal"]
+
+## Recognize a GUI game command in a free-text line: "/raise dodge" -> {cmd:"raise",
+## arg:"dodge"}; "/travel tatooine.dune_sea" -> {cmd:"travel", arg:"…"}; "/heal" ->
+## {cmd:"heal", arg:""}. A chat channel ("/say", "/ooc", …) or any non-command line returns
+## {cmd:"", arg:""} so the caller falls through to chat (parse_input). Command words never
+## overlap the chat channels, so the two parsers compose cleanly.
+static func parse_command(raw: String) -> Dictionary:
+	var text := raw.strip_edges()
+	if not text.begins_with("/"):
+		return {"cmd": "", "arg": ""}
+	var sp := text.find(" ")
+	var cmd := text.substr(1).to_lower() if sp < 0 else text.substr(1, sp - 1).to_lower()
+	var arg := "" if sp < 0 else text.substr(sp + 1).strip_edges()
+	if GAME_COMMANDS.has(cmd):
+		return {"cmd": cmd, "arg": arg}
+	return {"cmd": "", "arg": ""}
+
 ## Parse a free-text chat line into {channel, text}. "/ooc hi" -> {ooc, "hi"}; "/g regroup"
 ## -> {org, "regroup"}; plain "hello" -> {say, "hello"}; an UNKNOWN "/cmd …" is kept verbatim
 ## as say (never silently dropped); blank input -> {channel:"", text:""} (caller sends nothing).

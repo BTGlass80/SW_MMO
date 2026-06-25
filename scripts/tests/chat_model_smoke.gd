@@ -54,6 +54,14 @@ func _init() -> void:
 	_assert_equal(_parsed("/foo bar"), ["say", "/foo bar"], "unknown command -> say verbatim")
 	_assert_equal(_parsed("/ooc"), ["ooc", ""], "command with no text -> channel + empty text")
 
+	# Command-bar parsing (GUI game commands, distinct from chat channels).
+	_assert_equal(_cmd("/raise dodge"), ["raise", "dodge"], "/raise <skill> -> raise command")
+	_assert_equal(_cmd("/travel tatooine.dune_sea"), ["travel", "tatooine.dune_sea"], "/travel <zone> -> travel command")
+	_assert_equal(_cmd("/heal"), ["heal", ""], "/heal -> heal command (no arg)")
+	_assert_equal(_cmd("/say hello"), ["", ""], "a chat channel is NOT a game command (falls through to chat)")
+	_assert_equal(_cmd("plain text"), ["", ""], "plain text is not a command")
+	_assert_equal(_cmd("/bogus x"), ["", ""], "an unknown slash word is not a game command")
+
 	if _failures.is_empty():
 		print("chat_model_smoke: OK")
 		quit(0)
@@ -65,6 +73,10 @@ func _init() -> void:
 func _parsed(raw: String) -> Array:
 	var r: Dictionary = ChatModel.parse_input(raw)
 	return [String(r.get("channel", "")), String(r.get("text", ""))]
+
+func _cmd(raw: String) -> Array:
+	var r: Dictionary = ChatModel.parse_command(raw)
+	return [String(r.get("cmd", "")), String(r.get("arg", ""))]
 
 func _assert_true(actual: bool, label: String) -> void:
 	if not actual:
