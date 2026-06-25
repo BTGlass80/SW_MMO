@@ -1086,13 +1086,22 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 	if zones != null:
 		snap["zone"] = zones.zone_summary(zone_id)
 	if territory != null and peer_id != 0:
-		var tsum := _territory_summary(String(_peer_orgs.get(peer_id, "")), zone_id)
+		var my_org := String(_peer_orgs.get(peer_id, ""))
+		var tsum := _territory_summary(my_org, zone_id)
 		# F34: surface the viewer's own faction RANK (territory authority — gates claim at
 		# RANK_CLAIM, found-a-city at RANK_CITY) so the org HUD can show it. Pure display of
 		# stored state; the thresholds ride along so the client needs no hardcoded numbers.
 		tsum["your_rank"] = int(_peer_ranks.get(peer_id, 0))
 		tsum["rank_claim"] = OrgModel.RANK_CLAIM
 		tsum["rank_city"] = OrgModel.RANK_CITY
+		# F53: how many of the viewer's org-mates are ONLINE (cross-zone) — coordination presence.
+		# Counted from the live per-peer org map (connected members only).
+		var members_online := 0
+		if my_org != "":
+			for pid in _peer_orgs:
+				if String(_peer_orgs[pid]) == my_org:
+					members_online += 1
+		tsum["org_members_online"] = members_online
 		snap["territory"] = tsum
 	snap["npcs"] = _ambient.get(zone_id, [])  # E27: ambient NPCs in the player's zone
 	snap["zone_list"] = _zone_list()  # DIV-0014: loaded zones for the client's travel picker (cached)
