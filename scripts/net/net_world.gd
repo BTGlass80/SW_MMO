@@ -78,6 +78,8 @@ var _raise_sent := false
 var _wallet_label: Label
 var _condition_label: Label
 var _last_condition := "healthy"   # so we log condition CHANGES only
+var _target_label: Label           # F47: at-a-glance target status (companion to the condition HUD)
+var _last_target := ""             # so we log target-status CHANGES only
 var _org_label: Label
 var _last_org_line := ""           # so we log org/territory CHANGES only
 var _boost_label: Label
@@ -618,6 +620,13 @@ func _build_hud() -> void:
 	_boost_label.modulate = Color(0.10, 0.10, 0.13)
 	layer.add_child(_boost_label)
 
+	_target_label = Label.new()  # F47: persistent target status (the combat log only shows it on a hit)
+	_target_label.position = Vector2(760, 120)
+	_target_label.text = ""
+	_target_label.add_theme_font_size_override("font_size", 14)
+	_target_label.modulate = Color(0.16, 0.09, 0.08)
+	layer.add_child(_target_label)
+
 	_org_label = Label.new()
 	_org_label.position = Vector2(760, 80)
 	_org_label.text = ""
@@ -722,6 +731,17 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 		_combat_lines.pop_front()
 	if _combat_log != null:
 		_combat_log.text = "Combat log:\n" + "\n".join(_combat_lines)
+	# F47: persistent at-a-glance TARGET status. The combat log only shows the target's wound on a
+	# HIT (a miss line hides it); this always reflects the shared target's current condition.
+	var tsev := int(envelope.get("target_wound_severity", 0))
+	var tname := String(envelope.get("target_name", "Target"))
+	var tcond := "Healthy" if tsev <= 0 else ("Disabled" if tsev >= 3 else _wound_label(tsev))
+	if _target_label != null:
+		_target_label.text = "Target: %s — %s" % [tname, tcond]
+	var tkey := "%s|%d" % [tname, tsev]
+	if tkey != _last_target:
+		_last_target = tkey
+		print("[target] %s %s" % [tname, tcond])
 
 # Update the player's own condition readout from the snapshot's "you" block. Reflects combat
 # damage, natural recovery (DIV-0012), and First Aid (DIV-0013) as the server changes the wound.
