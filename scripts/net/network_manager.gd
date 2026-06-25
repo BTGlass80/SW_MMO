@@ -269,6 +269,14 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 		print("[auth] peer %d denied for %s (%s)" % [sender, character_id, String(auth["reason"])])
 		auth_result.rpc_id(sender, {"ok": false, "reason": String(auth["reason"]), "account_id": character_id})
 		return
+	# Single-session lock: refuse to bind a character another connected peer already owns
+	# (two authorized sessions on one character would clobber it via last-writer-wins saves
+	# + a shared cached record).
+	for pid in _peer_characters.keys():
+		if pid != sender and String(_peer_characters[pid]) == character_id:
+			print("[auth] peer %d denied for %s (already_logged_in)" % [sender, character_id])
+			auth_result.rpc_id(sender, {"ok": false, "reason": "already_logged_in", "account_id": character_id})
+			return
 	_peer_characters[sender] = character_id
 	# Optional starting zone (carried on the build dict so the RPC signature is stable);
 	# only honored when it names a real loaded zone, else the peer keeps the default.
@@ -308,6 +316,9 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	if record.has("org") and typeof(record["org"]) == TYPE_DICTIONARY:
 		_peer_orgs[sender] = String((record["org"] as Dictionary).get("faction_id", ""))
 		_peer_axes[sender] = String((record["org"] as Dictionary).get("faction_axis", ""))
+	else:
+		_peer_orgs.erase(sender)  # clear stale org/axis on re-register to a no-org character
+		_peer_axes.erase(sender)
 	var pos := PersistenceStore.record_pos(record, WorldState.SPAWN_POINT)
 	var yaw := PersistenceStore.record_yaw(record, 0.0)
 	state.restore_player(sender, pos, yaw, chosen_name)
