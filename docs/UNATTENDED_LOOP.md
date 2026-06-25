@@ -60,15 +60,20 @@ next. It keeps developing without the owner prompting.
 Mechanism and guardrails:
 - **Queue:** `docs/UNATTENDED_BACKLOG.md`, worked strictly top-down, one slice per
   iteration.
-- **Safety net:** this project is now a git repo (baseline commit `54fa6b8` on
-  `master`). Every GREEN slice is committed; a RED slice is reverted with
-  `git checkout -- .` and the backlog item is marked `BLOCKED`. This is what makes
-  unattended code-writing safe.
+- **Safety net (SCOPED — a parallel Codex session shares this repo):** this project
+  is now a git repo (baseline `54fa6b8` on `master`). Commit ONLY the files this loop
+  changed (`git add <paths>`, NEVER `git add -A`). A RED slice reverts ONLY its own
+  files (`git checkout -- <your paths>`) — NEVER a blanket `git checkout -- .`,
+  `git reset --hard`, or `git clean`, which would destroy Codex's in-flight asset work.
+  Codex owns `tools/fetch_assets.py`, `tools/asset_sources.json`, `MMO_Assets/`,
+  `assets/`, `docs/ASSET_CATALOG.md`, `docs/asset_previews/` — never stage or revert those.
+- **Green bar:** the GDScript smokes + runtime launch + python tests (run them
+  directly). The full `check_project.ps1` `--import` step can fail on Codex's
+  half-curated assets — that is an asset-pipeline issue, NOT a code regression.
 - **Per-iteration contract:** pick the top unblocked, non-owner-decision backlog item
-  → implement → run `tools/check_project.ps1` (or targeted headless smokes during
-  development, the full gate before committing) → GREEN: `git add -A && git commit`,
+  → implement → run the green-bar checks → GREEN: `git add <your paths> && git commit`,
   mark the item DONE + hash, append a one-line note to `docs/NIGHTLY_HANDOFF.md` and
-  the backlog Log → RED: fix or revert and mark BLOCKED.
+  the backlog Log → RED: fix, or revert your own files and mark BLOCKED.
 - **Hard stops (leave a status in the backlog, then end the loop):** backlog is dry;
   the top unblocked item needs an owner decision (see the backlog Guardrails list);
   or three consecutive iterations make no progress.

@@ -12,11 +12,14 @@ extends Node
 ## Mode.NONE and does nothing.
 
 const WorldState := preload("res://scripts/net/world_state.gd")
+const CombatArena := preload("res://scripts/net/combat_arena.gd")
+const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 
 const DEFAULT_PORT := 24555
 const MAX_CLIENTS := 32
 const SERVER_TICK_HZ := 20
 const CLIENT_SEND_HZ := 20
+const COMBAT_WINDOW_SECONDS := 5.0
 
 enum Mode { NONE, SERVER, CLIENT }
 
@@ -26,14 +29,19 @@ signal client_failed()
 signal player_joined(peer_id: int)
 signal player_left(peer_id: int)
 signal snapshot_applied(snapshot: Dictionary)
+signal combat_envelope(envelope: Dictionary)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
+var arena: CombatArena = null         # server only
+var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var last_snapshot: Dictionary = {}    # client view of the world
 var connected: bool = false           # client: handshake complete
 
 var _server_accum := 0.0
 var _client_accum := 0.0
+var _combat_accum := 0.0
+var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
 var _local_jump := false
@@ -53,7 +61,9 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	mode = Mode.SERVER
 	state = WorldState.new()
-	print("[net] server listening on port %d" % port)
+	arena = CombatArena.new(D6Rules, _load_combat_data())
+	_server_rng.randomize()
+	print("[net] server listening on port %d (combat window %.1fs)" % [port, combat_window_seconds])
 	server_started.emit(port)
 	return OK
 
@@ -98,6 +108,8 @@ func _on_peer_connected(id: int) -> void:
 	if mode != Mode.SERVER:
 		return
 	state.add_player(id)
+	if arena != null:
+		arena.register_player(id)
 	print("[net] peer %d joined (players=%d)" % [id, state.player_count()])
 	player_joined.emit(id)
 
@@ -105,6 +117,8 @@ func _on_peer_disconnected(id: int) -> void:
 	if mode != Mode.SERVER:
 		return
 	state.remove_player(id)
+	if arena != null:
+		arena.remove_player(id)
 	print("[net] peer %d left (players=%d)" % [id, state.player_count()])
 	player_left.emit(id)
 
@@ -139,6 +153,24 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	last_snapshot = snapshot
 	snapshot_applied.emit(snapshot)
 
+# client -> server: a fire intent for the current combat window
+@rpc("any_peer", "call_remote", "reliable")
+func submit_fire_intent(intent: Dictionary) -> void:
+	if mode != Mode.SERVER or arena == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if arena.has_player(sender):
+		arena.submit_fire_intent(sender, intent)
+
+# server -> clients: a resolved WEG combat exchange envelope
+@rpc("authority", "call_remote", "reliable")
+func apply_combat_envelope(envelope: Dictionary) -> void:
+	combat_envelope.emit(envelope)
+
+func send_fire_intent(intent: Dictionary) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_fire_intent.rpc_id(1, intent)
+
 func _physics_process(delta: float) -> void:
 	match mode:
 		Mode.SERVER:
@@ -148,6 +180,10 @@ func _physics_process(delta: float) -> void:
 				state.tick(step)
 				_server_accum -= step
 			apply_snapshot.rpc(state.snapshot())
+			_combat_accum += delta
+			if _combat_accum >= combat_window_seconds:
+				_combat_accum = 0.0
+				_resolve_combat_window()
 		Mode.CLIENT:
 			if not connected:
 				return
@@ -156,3 +192,30 @@ func _physics_process(delta: float) -> void:
 			if _client_accum >= step:
 				_client_accum = 0.0
 				submit_input.rpc_id(1, _local_move, _local_yaw, _local_jump)
+
+func _load_combat_data() -> Dictionary:
+	if not FileAccess.file_exists(COMBATANT_DATA_PATH):
+		return {}
+	var file := FileAccess.open(COMBATANT_DATA_PATH, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return {}
+	return parsed
+
+func _resolve_combat_window() -> void:
+	if arena == null or arena.pending_intent_count() == 0:
+		return
+	var result := arena.resolve_window(_server_rng.randi())
+	var envelopes: Array = result.get("envelopes", [])
+	for envelope in envelopes:
+		apply_combat_envelope.rpc(envelope)
+	print("[combat] window %d resolved: %d shot(s), target severity %d" % [
+		int(result.get("window", 0)),
+		envelopes.size(),
+		int((result.get("target_state", {}) as Dictionary).get("wound_severity", 0)),
+	])
+	if bool(result.get("target_disabled", false)):
+		arena.reset_target()
+		print("[combat] target disabled — respawned")

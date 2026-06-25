@@ -6,6 +6,15 @@ iteration. Each slice must end at a green `tools/check_project.ps1` and a git co
 or be reverted. Mark items `DONE` / `BLOCKED` as you go; append the commit hash.
 
 ## Guardrails (every iteration)
+- **A parallel Codex session shares this repo** and owns the ART/ASSET pipeline:
+  `tools/fetch_assets.py`, `tools/asset_sources.json`, `MMO_Assets/`, `assets/`,
+  `docs/ASSET_CATALOG.md`, `docs/asset_previews/`. NEVER touch, stage, or revert those.
+  Commit ONLY the specific files this loop changed — `git add <paths>`, NEVER
+  `git add -A`. On red, revert ONLY your own files — `git checkout -- <your paths>` —
+  NEVER a blanket `git checkout -- .`, `git reset --hard`, or `git clean` (those would
+  destroy Codex's in-flight work). The loop's green bar is the GDScript smokes +
+  runtime launch + python tests (run them directly); the full `check_project.ps1`
+  `--import` step may fail on Codex's half-curated assets — that is NOT your regression.
 - `C:\SW_MUSH` is STRICTLY READ-ONLY. Never write under it.
 - Clone Wars era only. WEG R&E leads mechanics. Keep the pure/presentation split.
   The **server owns all RNG/seeds/dice**.
@@ -23,7 +32,7 @@ or be reverted. Mark items `DONE` / `BLOCKED` as you go; append the commit hash.
 
 ## Queue
 
-### 1. M1.3b — Combat netcode wiring  [STATUS: TODO]
+### 1. M1.3b — Combat netcode wiring  [STATUS: DONE]
 Wire the verified `scripts/net/combat_arena.gd` into live multiplayer.
 - `NetworkManager` (server): load `data/prototype_combatants.json`, hold a `CombatArena`,
   `register_player` on peer connect / `remove_player` on disconnect.
@@ -80,3 +89,4 @@ One-way extract era-appropriate vehicles/starships + droid models from read-only
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-24 M1.3b DONE — combat netcode wired (CombatArena on server, submit_fire_intent RPC, 5s window timer, apply_combat_envelope broadcast, client fire/aim + HUD combat log). Verified end-to-end: two-process autofire run shows client intent → server WEG resolution (own seed) → envelope → client playback. Smokes/launch/python all green. NOTE: full `check_project.ps1 --import` currently fails on Codex's half-curated Kenney asset (not our code).

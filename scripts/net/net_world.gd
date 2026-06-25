@@ -25,6 +25,11 @@ var _camera: Camera3D
 var _status: Label
 var _snapshots_logged := 0
 var _avatars: Dictionary = {}   # peer_id -> {"root": Node3D, "seen": bool}
+var _aim := 0
+var _autofire := false
+var _autofire_accum := 0.0
+var _combat_log: Label
+var _combat_lines: Array[String] = []
 
 func _ready() -> void:
 	_parse_args()
@@ -34,8 +39,12 @@ func _ready() -> void:
 	Net.snapshot_applied.connect(_on_snapshot)
 	Net.client_connected.connect(_on_client_connected)
 	Net.client_failed.connect(_on_client_failed)
+	Net.combat_envelope.connect(_on_combat_envelope)
 
 	if _is_server:
+		var combat_window := _arg_value("--combat-window")
+		if combat_window != "":
+			Net.combat_window_seconds = maxf(float(combat_window), 0.1)
 		Net.start_server()
 		return
 
@@ -51,19 +60,29 @@ func _ready() -> void:
 func _parse_args() -> void:
 	var args := OS.get_cmdline_user_args()
 	_is_server = args.has("--server")
+	_autofire = args.has("--autofire")
 
 func _resolve_host() -> String:
+	var host := _arg_value("--connect")
+	return host if host != "" else "127.0.0.1"
+
+func _arg_value(flag: String) -> String:
 	var args := OS.get_cmdline_user_args()
-	var idx := args.find("--connect")
+	var idx := args.find(flag)
 	if idx >= 0 and idx + 1 < args.size():
 		return args[idx + 1]
-	return "127.0.0.1"
+	return ""
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _is_server:
 		return
 	_send_local_input()
 	_update_camera()
+	if _autofire and Net.connected:
+		_autofire_accum += delta
+		if _autofire_accum >= 0.4:
+			_autofire_accum = 0.0
+			Net.send_fire_intent({"aim": 3, "cover": 0, "cp": 0, "fp": false})
 
 # --- input / camera (client only) ---
 func _send_local_input() -> void:
@@ -85,7 +104,14 @@ func _input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event is InputEventMouseButton and event.pressed:
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
+			_aim = mini(_aim + 1, 3)
+			_set_status("Aim +%dD — RMB adds, LMB fires" % _aim)
+		elif event.button_index == MOUSE_BUTTON_LEFT:
+			Net.send_fire_intent({"aim": _aim, "cover": 0, "cp": 0, "fp": false})
+			_aim = 0
 
 func _update_camera() -> void:
 	if _camera == null or _local_id == 0:
@@ -206,6 +232,59 @@ func _build_hud() -> void:
 	_status.modulate = Color(0.09, 0.08, 0.06)
 	layer.add_child(_status)
 
+	var controls := Label.new()
+	controls.position = Vector2(18, 40)
+	controls.text = "WASD move · mouse look · RMB aim · LMB fire · Esc release"
+	controls.add_theme_font_size_override("font_size", 14)
+	controls.modulate = Color(0.09, 0.08, 0.06)
+	layer.add_child(controls)
+
+	_combat_log = Label.new()
+	_combat_log.position = Vector2(18, 70)
+	_combat_log.size = Vector2(900, 220)
+	_combat_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_combat_log.text = "Combat log:"
+	_combat_log.add_theme_font_size_override("font_size", 14)
+	_combat_log.modulate = Color(0.12, 0.10, 0.07)
+	layer.add_child(_combat_log)
+
 func _set_status(text: String) -> void:
 	if _status != null:
 		_status.text = text
+
+func _on_combat_envelope(envelope: Dictionary) -> void:
+	var shooter := String(envelope.get("shooter_name", "Someone"))
+	var target := String(envelope.get("target_name", "the target"))
+	var hit := false
+	var wound := -1
+	var already := false
+	for ev in envelope.get("events", []):
+		var event_type := String((ev as Dictionary).get("type", ""))
+		if event_type == "player_attack":
+			hit = bool((ev as Dictionary).get("success", false))
+		elif event_type == "target_damage":
+			wound = int((ev as Dictionary).get("wound_severity", -1))
+		elif event_type == "target_already_disabled":
+			already = true
+	var line := ""
+	if already:
+		line = "%s: %s is already down" % [shooter, target]
+	elif hit:
+		line = "%s hit %s%s" % [shooter, target, (" → %s" % _wound_label(wound)) if wound >= 0 else ""]
+	else:
+		line = "%s missed %s" % [shooter, target]
+	print("[combat] %s" % line)
+	_combat_lines.append(line)
+	while _combat_lines.size() > 8:
+		_combat_lines.pop_front()
+	if _combat_log != null:
+		_combat_log.text = "Combat log:\n" + "\n".join(_combat_lines)
+
+func _wound_label(severity: int) -> String:
+	match severity:
+		0: return "no damage"
+		1: return "Stunned"
+		2: return "Wounded"
+		3: return "Incapacitated"
+		4: return "Mortally Wounded"
+		_: return "Killed"
