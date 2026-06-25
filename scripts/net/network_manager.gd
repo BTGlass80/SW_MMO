@@ -68,6 +68,7 @@ signal chat_received(message: Dictionary)
 signal auth_replied(result: Dictionary)
 signal heal_replied(result: Dictionary)
 signal zone_replied(result: Dictionary)
+signal sheet_updated(summary: Dictionary)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -360,6 +361,7 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 		arena.set_player_sheet(sender, record.get("sheet", {}))  # combat uses the character's own stats
 	print("[persist] peer %d -> %s (%s) loaded at (%.1f, %.1f, %.1f) [weapon=%s]" % [sender, character_id, chosen_name, pos.x, pos.y, pos.z,
 		String((record.get("sheet", {}) as Dictionary).get("equipment", {}).get("weapon", "?"))])
+	_push_sheet(sender, record)  # F24: send the character sheet to the client's sheet panel
 
 func send_register(account_id: String, display_name: String = "", build: Dictionary = {}) -> void:
 	if mode == Mode.CLIENT and connected:
@@ -465,6 +467,7 @@ func submit_skill_raise(skill: String) -> void:
 			arena.attacker_pool_text(sender) if arena != null else "?"])
 		skill_raise_result.rpc_id(sender, {"ok": true, "skill": skill, "new_bonus": result["new_skill_bonus"], "cost": result["cost"]})
 		apply_wallet.rpc_id(sender, result["wallet"])
+		_push_sheet(sender, record)  # F24: refresh the sheet panel after the raise
 	else:
 		print("[skillraise] peer %d %s rejected (%s, need %d)" % [sender, skill, String(result.get("reason", "")), int(result.get("cost", 0))])
 		skill_raise_result.rpc_id(sender, {"ok": false, "skill": skill, "reason": result.get("reason", ""), "cost": result.get("cost", 0)})
@@ -501,6 +504,7 @@ func submit_equip(slot: String, item_key: String) -> void:
 		print("[equip] peer %d %s -> %s (damage pool now %s)" % [
 			sender, slot, item_key, arena.damage_pool_text(sender) if arena != null else "?"])
 		equip_result.rpc_id(sender, {"ok": true, "slot": slot, "item_key": item_key})
+		_push_sheet(sender, record)  # F24: refresh the sheet panel after the swap
 	else:
 		print("[equip] peer %d %s %s rejected (%s)" % [sender, slot, item_key, String(result.get("reason", ""))])
 		equip_result.rpc_id(sender, {"ok": false, "slot": slot, "item_key": item_key, "reason": result.get("reason", "")})
@@ -808,6 +812,35 @@ func _territory_summary(org_id: String, zone_id: String) -> Dictionary:
 func apply_wallet(wallet: Dictionary) -> void:
 	last_wallet = wallet
 	wallet_updated.emit(wallet)
+
+# F24: a compact character-sheet summary for the client's sheet panel (species, the 6
+# attributes, NON-ZERO skill bonuses, equipped weapon/armor, CP wallet, force-sensitivity).
+func _sheet_summary(record: Dictionary) -> Dictionary:
+	var sheet: Dictionary = record.get("sheet", {})
+	var trained := {}
+	for k in (sheet.get("skills", {}) as Dictionary):
+		var v := String((sheet["skills"] as Dictionary)[k])
+		if v != "" and v != "0D":
+			trained[k] = v  # only skills above the attribute default — keep it compact
+	var equipment: Dictionary = sheet.get("equipment", {})
+	return {
+		"species": String(record.get("species", sheet.get("species", "human"))),
+		"attributes": sheet.get("attributes", {}),
+		"skills": trained,
+		"weapon": String(equipment.get("weapon", "")),
+		"armor": String(equipment.get("armor", "")),
+		"cp_wallet": sheet.get("cp_wallet", {}),
+		"force_sensitive": bool(sheet.get("force_sensitive", false)),
+	}
+
+func _push_sheet(peer: int, record: Dictionary) -> void:
+	if mode == Mode.SERVER:
+		apply_sheet.rpc_id(peer, _sheet_summary(record))
+
+# server -> client: the player's authoritative character-sheet summary (login + on change)
+@rpc("authority", "call_remote", "reliable")
+func apply_sheet(summary: Dictionary) -> void:
+	sheet_updated.emit(summary)
 
 # server -> client: result of a skill-raise attempt
 @rpc("authority", "call_remote", "reliable")

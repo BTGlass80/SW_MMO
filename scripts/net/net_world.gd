@@ -81,6 +81,7 @@ var _org_label: Label
 var _last_org_line := ""           # so we log org/territory CHANGES only
 var _boost_label: Label
 var _last_boost := ""              # so we log combat CP/FP CHANGES only
+var _sheet_panel: Label            # F24: character sheet (toggle with V); hidden by default
 var _combat_log: Label
 var _combat_lines: Array[String] = []
 var _zone_label: Label
@@ -106,6 +107,7 @@ func _ready() -> void:
 	Net.auth_replied.connect(_on_auth_replied)
 	Net.heal_replied.connect(_on_heal_replied)
 	Net.zone_replied.connect(_on_zone_replied)
+	Net.sheet_updated.connect(_on_sheet_updated)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -256,6 +258,9 @@ func _input(event: InputEvent) -> void:
 			_open_chat_input()  # open the chat box (type, Enter to send)
 		elif event.keycode == KEY_K:
 			Net.send_skill_raise("blaster")  # spend CP to raise Blaster a pip
+		elif event.keycode == KEY_V:
+			if _sheet_panel != null:  # toggle the character sheet
+				_sheet_panel.visible = not _sheet_panel.visible
 		elif event.keycode == KEY_H:
 			var other := _best_heal_target()  # First Aid the nearest WOUNDED ally
 			if other != 0:
@@ -537,7 +542,7 @@ func _build_hud() -> void:
 
 	var controls := Label.new()
 	controls.position = Vector2(18, 40)
-	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · T travel · Enter chat · Esc release"
+	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · T travel · V sheet · Enter chat · Esc release"
 	controls.add_theme_font_size_override("font_size", 14)
 	controls.modulate = Color(0.09, 0.08, 0.06)
 	layer.add_child(controls)
@@ -611,6 +616,14 @@ func _build_hud() -> void:
 	_chat_input.add_theme_font_size_override("font_size", 15)
 	_chat_input.text_submitted.connect(_on_chat_submitted)
 	layer.add_child(_chat_input)
+
+	_sheet_panel = Label.new()  # F24: character sheet, toggled with V (hidden until then)
+	_sheet_panel.position = Vector2(18, 90)
+	_sheet_panel.text = "Character Sheet (press V)…"
+	_sheet_panel.add_theme_font_size_override("font_size", 14)
+	_sheet_panel.modulate = Color(0.07, 0.09, 0.12)
+	_sheet_panel.visible = false
+	layer.add_child(_sheet_panel)
 
 func _set_status(text: String) -> void:
 	if _status != null:
@@ -795,6 +808,32 @@ func _on_heal_replied(result: Dictionary) -> void:
 	else:
 		print("[firstaid] heal failed (%s)" % String(result.get("reason", "")))
 		_set_status("First Aid failed (%s)." % String(result.get("reason", "")))
+
+func _on_sheet_updated(summary: Dictionary) -> void:
+	var attrs: Dictionary = summary.get("attributes", {})
+	var skills: Dictionary = summary.get("skills", {})
+	var lines: Array = ["— Character Sheet —"]
+	var force_note := "  (Force-sensitive)" if bool(summary.get("force_sensitive", false)) else ""
+	lines.append("Species: %s%s" % [String(summary.get("species", "?")), force_note])
+	var astr := ""
+	for a in ["dexterity", "knowledge", "mechanical", "perception", "strength", "technical"]:
+		if attrs.has(a):
+			astr += "%s %s   " % [String(a).substr(0, 3).to_upper(), String(attrs[a])]
+	lines.append(astr.strip_edges())
+	if not skills.is_empty():
+		var sstr := ""
+		for s in skills:
+			sstr += "%s %s   " % [String(s), String(skills[s])]
+		lines.append("Skills: " + sstr.strip_edges())
+	lines.append("Gear: weapon=%s · armor=%s" % [String(summary.get("weapon", "-")), String(summary.get("armor", "-"))])
+	var w: Dictionary = summary.get("cp_wallet", {})
+	lines.append("CP wallet: %d gameplay · %d prestige" % [int(w.get("gameplay_cp", 0)), int(w.get("rp_cp", 0))])
+	lines.append("(press V to hide)")
+	if _sheet_panel != null:
+		_sheet_panel.text = "\n".join(lines)
+	print("[sheet] species=%s dex=%s weapon=%s skills=%d" % [
+		String(summary.get("species", "?")), String(attrs.get("dexterity", "?")),
+		String(summary.get("weapon", "-")), skills.size()])
 
 func _on_zone_replied(result: Dictionary) -> void:
 	if bool(result.get("ok", false)):
