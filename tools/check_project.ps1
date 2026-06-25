@@ -143,4 +143,6 @@ Invoke-GodotStep "Zones smoke:" @("--headless", "--path", $projectRoot, "--scrip
 
 Invoke-GodotStep "Equip smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/equip_smoke.gd")
 
+Invoke-GodotStep "Chat model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/chat_model_smoke.gd")
+
 Write-Host "`nAll checks passed."

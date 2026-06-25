@@ -21,6 +21,7 @@ const Progression := preload("res://scripts/rules/progression_model.gd")
 const Equipment := preload("res://scripts/rules/equipment_model.gd")
 const OrgModel := preload("res://scripts/net/org_model.gd")
 const PendingInfluence := preload("res://scripts/net/pending_influence_model.gd")
+const ChatModel := preload("res://scripts/net/chat_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -53,6 +54,7 @@ signal wallet_updated(wallet: Dictionary)
 signal skill_raise_replied(result: Dictionary)
 signal equip_replied(result: Dictionary)
 signal claim_replied(result: Dictionary)
+signal chat_received(message: Dictionary)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -497,6 +499,33 @@ func send_release_claim(node_id: String) -> void:
 @rpc("authority", "call_remote", "reliable")
 func claim_result(result: Dictionary) -> void:
 	claim_replied.emit(result)
+
+# --- E25: chat / emote (first social channel on the wire) ---
+# client -> server: a chat line. Validated + normalized via the pure chat-model
+# (channel whitelist + control-char strip + length clamp) using the player's display
+# name as the speaker, then broadcast to every connected peer.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_chat(channel: String, text: String) -> void:
+	if mode != Mode.SERVER or state == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var speaker := String(state.get_player(sender).get("name", "Spacer-%d" % sender))
+	var result: Dictionary = ChatModel.normalize(channel, text, speaker)
+	if not bool(result["ok"]):
+		print("[chat] peer %d rejected (%s)" % [sender, String(result.get("reason", ""))])
+		return
+	var message: Dictionary = result["message"]
+	print("[chat] %s" % ChatModel.format_line(message))
+	apply_chat.rpc(message)  # broadcast to all peers (including the sender)
+
+func send_chat(channel: String, text: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_chat.rpc_id(1, channel, text)
+
+# server -> clients: a normalized chat message
+@rpc("authority", "call_remote", "reliable")
+func apply_chat(message: Dictionary) -> void:
+	chat_received.emit(message)
 
 # The persisted org membership dict for a peer (loads the record). {} when none.
 # JSON reload can widen ints to float, so coerce the numeric fields the org-model

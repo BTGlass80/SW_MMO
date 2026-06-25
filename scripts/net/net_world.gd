@@ -11,6 +11,7 @@ extends Node3D
 ## a minimal shared ground for the netcode milestone; the full shared Mos Eisley
 ## (extracted from main.gd into a reusable world_builder) is the next slice.
 
+const ChatModel := preload("res://scripts/net/chat_model.gd")
 const MOUSE_SENSITIVITY := 0.0025
 const EYE_HEIGHT := 1.55
 const WorldBuilder := preload("res://scripts/world/world_builder.gd")
@@ -45,6 +46,9 @@ var _territory_influence := ""
 var _claim := ""            # headless: node_id to claim once after connecting
 var _claim_sent := false
 var _claim_accum := 0.0
+var _chat := ""             # headless: "channel:text" to send once after connecting
+var _chat_sent := false
+var _chat_accum := 0.0
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
@@ -52,6 +56,8 @@ var _combat_log: Label
 var _combat_lines: Array[String] = []
 var _zone_label: Label
 var _news_label: Label
+var _chat_log: Label
+var _chat_lines: Array[String] = []
 var _last_news := ""
 
 func _ready() -> void:
@@ -67,6 +73,7 @@ func _ready() -> void:
 	Net.skill_raise_replied.connect(_on_skill_raise_replied)
 	Net.equip_replied.connect(_on_equip_replied)
 	Net.claim_replied.connect(_on_claim_replied)
+	Net.chat_received.connect(_on_chat_received)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -109,6 +116,7 @@ func _parse_args() -> void:
 	_faction_rank = _arg_value("--faction-rank")
 	_territory_influence = _arg_value("--territory-influence")
 	_claim = _arg_value("--claim")  # headless: node_id to claim once after connecting
+	_chat = _arg_value("--chat")  # headless: "channel:text" to send once after connecting
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -148,6 +156,13 @@ func _process(delta: float) -> void:
 		if _claim_accum >= 3.5:  # after register + org set, claim a node once (headless test)
 			_claim_sent = true
 			Net.send_claim_node(_claim)
+	if _chat != "" and not _chat_sent and Net.connected:
+		_chat_accum += delta
+		if _chat_accum >= 3.0:  # after register, say one line (headless test)
+			_chat_sent = true
+			var parts := _chat.split(":", true, 1)  # split on the FIRST colon only
+			if parts.size() == 2:
+				Net.send_chat(String(parts[0]), String(parts[1]))
 
 # --- input / camera (client only) ---
 func _send_local_input() -> void:
@@ -371,6 +386,15 @@ func _build_hud() -> void:
 	_news_label.modulate = Color(0.30, 0.16, 0.10)
 	layer.add_child(_news_label)
 
+	_chat_log = Label.new()
+	_chat_log.position = Vector2(18, 350)
+	_chat_log.size = Vector2(900, 150)
+	_chat_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_chat_log.text = "Chat:"
+	_chat_log.add_theme_font_size_override("font_size", 14)
+	_chat_log.modulate = Color(0.09, 0.10, 0.15)
+	layer.add_child(_chat_log)
+
 func _set_status(text: String) -> void:
 	if _status != null:
 		_status.text = text
@@ -430,6 +454,15 @@ func _on_equip_replied(result: Dictionary) -> void:
 		_set_status("Equipped %s." % String(result.get("item_key", "")))
 	else:
 		print("[equip] %s rejected (%s)" % [String(result.get("item_key", "")), String(result.get("reason", ""))])
+
+func _on_chat_received(message: Dictionary) -> void:
+	var line := ChatModel.format_line(message)
+	print("[chat] %s" % line)
+	_chat_lines.append(line)
+	while _chat_lines.size() > 6:
+		_chat_lines.pop_front()
+	if _chat_log != null:
+		_chat_log.text = "Chat:\n" + "\n".join(_chat_lines)
 
 func _on_claim_replied(result: Dictionary) -> void:
 	if bool(result.get("ok", false)):
