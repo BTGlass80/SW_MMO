@@ -40,6 +40,8 @@ var _wallet_label: Label
 var _combat_log: Label
 var _combat_lines: Array[String] = []
 var _zone_label: Label
+var _news_label: Label
+var _last_news := ""
 
 func _ready() -> void:
 	_parse_args()
@@ -57,6 +59,9 @@ func _ready() -> void:
 		var combat_window := _arg_value("--combat-window")
 		if combat_window != "":
 			Net.combat_window_seconds = maxf(float(combat_window), 0.1)
+		var director_tick := _arg_value("--director-tick")
+		if director_tick != "":
+			Net.director_tick_seconds = maxf(float(director_tick), 0.1)
 		Net.start_server()
 		return
 
@@ -219,6 +224,12 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 			String(zone.get("alert_level", "")),
 			String(zone.get("effective_security", "")),
 		]
+	var headline := String(zone.get("event", ""))
+	if _news_label != null:
+		_news_label.text = ("NEWS — " + headline) if headline != "" else ""
+	if headline != "" and headline != _last_news:
+		_last_news = headline
+		print("[news] %s" % headline)
 
 func _find_player(peer_id: int) -> Dictionary:
 	for entry in Net.last_snapshot.get("players", []):
@@ -306,6 +317,15 @@ func _build_hud() -> void:
 	_wallet_label.add_theme_font_size_override("font_size", 14)
 	_wallet_label.modulate = Color(0.10, 0.09, 0.07)
 	layer.add_child(_wallet_label)
+
+	_news_label = Label.new()
+	_news_label.position = Vector2(18, 300)
+	_news_label.size = Vector2(900, 40)
+	_news_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_news_label.text = ""
+	_news_label.add_theme_font_size_override("font_size", 14)
+	_news_label.modulate = Color(0.30, 0.16, 0.10)
+	layer.add_child(_news_label)
 
 func _set_status(text: String) -> void:
 	if _status != null:

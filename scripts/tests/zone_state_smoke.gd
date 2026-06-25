@@ -61,6 +61,28 @@ func _init() -> void:
 			d.director_tick()
 	_assert_equal(a.get_zone(ZONE).get("influence"), b.get_zone(ZONE).get("influence"), "director tick is deterministic")
 
+	# World events fire deterministically from the Director tick, from the fixed menu.
+	var ev_dir: ZoneState = ZoneState.new()
+	ev_dir.add_zone("evt.zone", "contested", {"republic": 40, "cis": 10, "hutt": 30, "independent": 20}, {"republic": 40, "cis": 10, "hutt": 30, "independent": 20})
+	var fired := {}
+	for i in range(40):
+		ev_dir.director_tick()
+		if String(ev_dir.zone_summary("evt.zone").get("event_type", "")) != "":
+			fired = ev_dir.zone_summary("evt.zone")
+			break
+	_assert_true(not fired.is_empty(), "the Director fires a world event within 40 ticks")
+	_assert_true(ZoneState.EVENT_HEADLINES.has(String(fired.get("event_type", ""))), "fired event type is from the fixed 12-event menu")
+	_assert_true(String(fired.get("event", "")) != "", "fired event has a player-facing headline")
+
+	# Event firing is deterministic (same ticks -> same event).
+	var ea: ZoneState = ZoneState.new()
+	var eb: ZoneState = ZoneState.new()
+	for dir2 in [ea, eb]:
+		dir2.add_zone("z", "contested", {"republic": 40, "cis": 10, "hutt": 30, "independent": 20}, {"republic": 40, "cis": 10, "hutt": 30, "independent": 20})
+		for i in range(15):
+			dir2.director_tick()
+	_assert_equal(ea.zone_summary("z").get("event_type"), eb.zone_summary("z").get("event_type"), "event firing is deterministic")
+
 	_finish()
 
 func _finish() -> void:

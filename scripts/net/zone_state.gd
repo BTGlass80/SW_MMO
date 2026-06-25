@@ -25,6 +25,25 @@ const LAX_MAX_INFLUENCE := 25
 # Security overlay rules (security_zone.schema.json defaults).
 const HUTT_SURGE_DOWNGRADE_AT := 80
 
+# World events: the Director fires one at a time per zone, DETERMINISTICALLY (no LLM),
+# from this fixed 12-event menu (faction_zone_state.schema.json), recast Clone Wars.
+const EVENT_CHANCE := 30    # % chance per slow tick to fire when no event is active
+const EVENT_DURATION := 4   # slow ticks an event lasts
+const EVENT_HEADLINES := {
+	"republic_crackdown": "Clone troopers lock down the district — papers out, no exceptions.",
+	"republic_checkpoint": "Republic checkpoints throttle traffic through the spaceport.",
+	"bounty_surge": "The Guild posts a fresh slate of bounties on local troublemakers.",
+	"merchant_arrival": "A spice-laden caravan rolls in; the market swells with traders.",
+	"sandstorm": "A wall of sand rolls off the Dune Sea, scouring the streets.",
+	"cantina_brawl": "A blaster brawl erupts in the cantina; the band keeps playing.",
+	"distress_signal": "A garbled distress signal pings from a downed freighter nearby.",
+	"pirate_surge": "Pirate raiders prowl the approach lanes, hunting easy cargo.",
+	"hutt_auction": "A Hutt kajidic opens a back-room auction for the discerning buyer.",
+	"krayt_sighting": "Spacers swap nervous tales of a krayt dragon stalking the wastes.",
+	"cis_propaganda": "Separatist sympathizers paper the walls with CIS broadsheets.",
+	"trade_boom": "Credits flow freely — a trade boom lifts every vendor on the row.",
+}
+
 var zones: Dictionary = {}   # zone_id -> zone dict
 var tick_index: int = 0
 
@@ -82,6 +101,11 @@ func director_tick() -> void:
 		for ev in zone.get("active_events", []):
 			if int((ev as Dictionary).get("expires_at_tick", 0)) > tick_index:
 				still_active.append(ev)
+		# Fire one new event (deterministic from tick + zone) when none is active.
+		if still_active.is_empty():
+			var roll := absi(hash("%d:%s" % [tick_index, zone_id])) % 100
+			if roll < EVENT_CHANCE:
+				still_active.append(_make_event(zone, zone_id, roll))
 		zone["active_events"] = still_active
 		zone["tick"] = tick_index
 		_recompute(zone)
@@ -105,7 +129,33 @@ func zone_summary(zone_id: String) -> Dictionary:
 		"effective_security": effective_security(zone_id),
 		"security_base": String(zone.get("security_base", "secured")),
 		"influence": (zone.get("influence", {}) as Dictionary).duplicate(),
+		"event": String(_latest_event(zone_id).get("headline", "")),
+		"event_type": String(_latest_event(zone_id).get("type", "")),
 		"tick": int(zone.get("tick", 0)),
+	}
+
+func _latest_event(zone_id: String) -> Dictionary:
+	var events: Array = (zones.get(zone_id, {}) as Dictionary).get("active_events", [])
+	return events[events.size() - 1] if not events.is_empty() else {}
+
+func _make_event(zone: Dictionary, zone_id: String, roll: int) -> Dictionary:
+	var inf: Dictionary = zone["influence"]
+	var type := ""
+	if int(inf.get("republic", 0)) >= 60:
+		type = ["republic_crackdown", "republic_checkpoint"][roll % 2]
+	elif int(inf.get("hutt", 0)) >= 50:
+		type = ["bounty_surge", "hutt_auction"][roll % 2]
+	elif int(inf.get("cis", 0)) >= 40:
+		type = ["cis_propaganda", "pirate_surge"][roll % 2]
+	else:
+		var neutral := ["merchant_arrival", "sandstorm", "cantina_brawl", "distress_signal", "krayt_sighting", "trade_boom"]
+		type = neutral[roll % neutral.size()]
+	return {
+		"event_id": "evt_%d_%s" % [tick_index, zone_id],
+		"type": type,
+		"headline": String(EVENT_HEADLINES.get(type, type)),
+		"started_at_tick": tick_index,
+		"expires_at_tick": tick_index + EVENT_DURATION,
 	}
 
 # --- pure derivation (static, no LLM) ---

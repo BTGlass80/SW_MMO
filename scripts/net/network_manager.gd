@@ -54,6 +54,7 @@ var store: PersistenceStore = null    # server only
 var zones: ZoneState = null           # server only (world-sim director)
 var territory: Territory = null       # server only (org claims + passive income)
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
+var director_tick_seconds: float = DIRECTOR_TICK_SECONDS
 
 var _species_data := {}               # server only (chargen species ranges)
 var _skill_attr := {}                 # server only (skill key -> governing attribute)
@@ -415,7 +416,7 @@ func _physics_process(delta: float) -> void:
 				for pid in _peer_characters.keys():
 					_save_peer(pid)
 			_director_accum += delta
-			if _director_accum >= DIRECTOR_TICK_SECONDS:
+			if _director_accum >= director_tick_seconds:
 				_director_accum = 0.0
 				if zones != null:
 					zones.director_tick()

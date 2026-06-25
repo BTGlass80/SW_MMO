@@ -107,6 +107,18 @@ Ground it in `docs/FACTION_TERRITORY_DESIGN.md`. (The full Drop-6D siege loop is
 and partly owner-gated — do NOT build siege durations/thresholds here.)
 - Acceptance: `territory_smoke` (claim precondition + income accrual) green; full gate green.
 
+### M2.2 — Director world events  [STATUS: DONE] (self-extended)
+The Director now fires deterministic, one-at-a-time world events per zone (no LLM —
+the LLM "flavor" layer stays owner-gated). `zone_state.gd` rolls `hash(tick:zone) % 100`
+against `EVENT_CHANCE` when no event is active, picks a type from a fixed 12-event menu
+keyed off the zone's dominant influence (republic crackdown/checkpoint, hutt bounty/
+auction, cis propaganda/pirate, else a neutral Tatooine list), and exposes the headline
+in `zone_summary` (`event` / `event_type`). The client renders a NEWS line in the HUD and
+logs `[news] <headline>` on change. A `--director-tick <secs>` server override speeds the
+slow tick for headless verification.
+- Acceptance: `zone_state_smoke` (event fires within 40 ticks, valid type, deterministic)
+  + full gate green; two-process check: a client receives `[news]` headlines over the wire.
+
 ### 6. P1 — Client polish  [STATUS: DEFERRED — awaits owner visual check]
 In `net_world`: smoother remote-avatar interpolation, a clean combat-log panel, and a
 target-state readout. Presentation only.
@@ -189,6 +201,7 @@ inventory/equipment-swap system so players can change loadout.
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-25 M2.2 DONE — Director world events (self-extended world-sim): `zone_state.gd` fires one deterministic event at a time per zone from a fixed 12-event menu (no LLM), `hash(tick:zone) % EVENT_CHANCE`, type chosen by dominant influence (republic/hutt/cis/neutral), exposed in `zone_summary` as `event`/`event_type`; client shows a NEWS HUD line + logs `[news] <headline>`. Added a `--director-tick` server override for fast headless verification. zone_state_smoke extended (fires <40 ticks, valid type, deterministic). Verified over the wire: a client received neutral Tatooine headlines (sandstorm/distress/krayt/trade-boom). Full gate green (37 smokes). Next self-extended: D3 inventory/equipment swap, or org/claim command layer + guard NPCs.
 - 2026-06-25 LOOP RESUMED — owner chose Wave D (combat uses the character sheet). Next: D1. Now driven by a recurring CronCreate timer (job, every ~10 min) instead of manual /loop; no owner questions.
 - 2026-06-25 D2 DONE — combat uses equipped gear: chargen sheets carry starter `equipment {weapon: blaster_pistol, armor: blast_vest}`; combat_arena takes weapon/armor catalogs and sets each player's damage_pool from the equipped weapon + player_armor from the equipped armor (defaults when absent); NetworkManager loads weapons_clone_wars.json + armor_clone_wars.json and passes them in. chargen_smoke + combat_arena_smoke extended (equipped heavy_blaster -> 5D damage; no-equipment -> default). Full gate green (37 smokes). Next self-extended: D3 inventory/equipment swap, or org/claim command layer.
 - 2026-06-25 D1 DONE — `combat_arena.gd` now builds each player's combat pools from their character sheet (attacker = DEX + blaster bonus, dodge = DEX + dodge bonus, soak = STR; damage = a default starter blaster until inventory exists; target side stays shared). `register_player`/`set_player_sheet` accept a sheet (no sheet = trainee fallback, backward-compatible). NetworkManager applies the sheet on login and re-applies on a skill raise (raise takes effect in combat immediately). `combat_arena_smoke` extended. Verified over the wire: a new quickstart char fought with attack pool DEX 3D and raising blaster grew it to 3D+1. Full gate green (37 smokes). KNOWN follow-up: damage uses a default weapon until an inventory/equipment system exists.
