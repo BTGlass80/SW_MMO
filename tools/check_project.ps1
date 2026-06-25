@@ -155,4 +155,6 @@ Invoke-GodotStep "Auth flow smoke:" @("--headless", "--path", $projectRoot, "--s
 
 Invoke-GodotStep "Heal flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/heal_flow_smoke.gd")
 
+Invoke-GodotStep "Zone flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/zone_flow_smoke.gd")
+
 Write-Host "`nAll checks passed."
