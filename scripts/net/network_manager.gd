@@ -26,6 +26,7 @@ const Auth := preload("res://scripts/net/account_auth_model.gd")
 const AmbientSim := preload("res://scripts/net/ambient_sim_model.gd")
 const Recovery := preload("res://scripts/rules/recovery_model.gd")
 const DerivedStats := preload("res://scripts/rules/derived_stats_model.gd")
+const WoundLadder := preload("res://scripts/rules/wound_ladder_model.gd")  # F46: surface the WEG action penalty
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -1100,8 +1101,10 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 	# presentation data surfaced from the live combat state — no new mechanic.
 	if arena != null and peer_id != 0 and arena.has_player(peer_id):
 		var ps: Dictionary = arena.player_state(peer_id)
+		var ws := PersistenceStore.wound_state_for_severity(int(ps.get("player_wound_severity", 0)))
 		snap["you"] = {
-			"wound": PersistenceStore.wound_state_for_severity(int(ps.get("player_wound_severity", 0))),
+			"wound": ws,
+			"wound_penalty": WoundLadder.penalty_dice_for_level(ws),  # F46: the WEG -ND action penalty for this wound
 			"cp": int(ps.get("player_character_points", 0)),  # in-combat Character Points (C key, F5)
 			"fp": int(ps.get("player_force_points", 0)),       # Force Points (F key, F5)
 		}

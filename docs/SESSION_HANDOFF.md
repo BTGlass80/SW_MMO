@@ -289,7 +289,7 @@ does NOT pre-decide any of these.)
   `skill_raise_result`, `equip_result`, `claim_result`, `apply_chat`, `auth_result`,
   `heal_result`, `zone_result`, `apply_sheet` (F24 character-sheet panel, re-pushed on
   register/skill-raise/equip/CP-award). The per-peer snapshot also carries `you` (own
-  wound + CP/FP boost, F9/F23), each player entry's `wound` (F17 nameplates) + `axis`
+  wound + wound_penalty (F9/F46) + CP/FP boost (F23)), each player entry's `wound` (F17 nameplates) + `axis`
   (F36 faction allegiance on nameplates/`/who`), `npcs` (F16),
   `zone_list` (F11), and `territory` (F12, with `claims_in_zone` tagged by `org_id` (F29)
   + the viewer's `your_rank`/`rank_claim`/`rank_city` territory authority, F34). The server

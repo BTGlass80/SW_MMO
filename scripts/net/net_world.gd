@@ -438,7 +438,7 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 		_last_news = headline
 		print("[news] %s" % headline)
 	var you: Dictionary = snapshot.get("you", {})
-	_update_condition(String(you.get("wound", "healthy")))
+	_update_condition(String(you.get("wound", "healthy")), int(you.get("wound_penalty", 0)))
 	_update_boost(int(you.get("cp", 0)), int(you.get("fp", 0)))
 	_update_org(snapshot.get("territory", {}))
 
@@ -725,14 +725,16 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 
 # Update the player's own condition readout from the snapshot's "you" block. Reflects combat
 # damage, natural recovery (DIV-0012), and First Aid (DIV-0013) as the server changes the wound.
-func _update_condition(wound: String) -> void:
+func _update_condition(wound: String, penalty: int = 0) -> void:
 	var label := _condition_pretty(wound)
+	if penalty > 0:
+		label += " (-%dD to actions)" % penalty  # F46: the WEG wound penalty — why a wounded character fights worse
 	if _condition_label != null:
 		_condition_label.text = "Condition: %s" % label
 		_condition_label.modulate = _condition_color(wound)
 	if wound != _last_condition:
 		_last_condition = wound
-		print("[condition] you=%s" % wound)
+		print("[condition] you=%s penalty=-%dD" % [wound, penalty])
 
 # Update the in-combat Character-Point / Force-Point pool readout (the resource the C/F keys
 # spend, F5) from the snapshot's "you" block, so a player can see how much they can spend
