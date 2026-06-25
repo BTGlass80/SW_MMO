@@ -936,6 +936,12 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 	if territory != null and peer_id != 0:
 		snap["territory"] = _territory_summary(String(_peer_orgs.get(peer_id, "")), zone_id)
 	snap["npcs"] = _ambient.get(zone_id, [])  # E27: ambient NPCs in the player's zone
+	# Per-peer "you" block: the player's OWN live wound condition (so the client can show a
+	# condition readout that reflects combat damage, natural recovery, and First Aid). Pure
+	# presentation data surfaced from the live combat state — no new mechanic.
+	if arena != null and peer_id != 0 and arena.has_player(peer_id):
+		var severity := int((arena.player_state(peer_id) as Dictionary).get("player_wound_severity", 0))
+		snap["you"] = {"wound": PersistenceStore.wound_state_for_severity(severity)}
 	return snap
 
 # Seed the server's zone roster from data/zones_clone_wars.json (the Director ticks

@@ -62,6 +62,8 @@ var _heal_accum := 0.0
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
+var _condition_label: Label
+var _last_condition := "healthy"   # so we log condition CHANGES only
 var _combat_log: Label
 var _combat_lines: Array[String] = []
 var _zone_label: Label
@@ -337,6 +339,7 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 	if headline != "" and headline != _last_news:
 		_last_news = headline
 		print("[news] %s" % headline)
+	_update_condition(String((snapshot.get("you", {}) as Dictionary).get("wound", "healthy")))
 
 func _find_player(peer_id: int) -> Dictionary:
 	for entry in Net.last_snapshot.get("players", []):
@@ -425,6 +428,13 @@ func _build_hud() -> void:
 	_wallet_label.modulate = Color(0.10, 0.09, 0.07)
 	layer.add_child(_wallet_label)
 
+	_condition_label = Label.new()
+	_condition_label.position = Vector2(760, 60)
+	_condition_label.text = "Condition: Healthy"
+	_condition_label.add_theme_font_size_override("font_size", 14)
+	_condition_label.modulate = _condition_color("healthy")
+	layer.add_child(_condition_label)
+
 	_news_label = Label.new()
 	_news_label.position = Vector2(18, 300)
 	_news_label.size = Vector2(900, 40)
@@ -494,6 +504,35 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 		_combat_lines.pop_front()
 	if _combat_log != null:
 		_combat_log.text = "Combat log:\n" + "\n".join(_combat_lines)
+
+# Update the player's own condition readout from the snapshot's "you" block. Reflects combat
+# damage, natural recovery (DIV-0012), and First Aid (DIV-0013) as the server changes the wound.
+func _update_condition(wound: String) -> void:
+	var label := _condition_pretty(wound)
+	if _condition_label != null:
+		_condition_label.text = "Condition: %s" % label
+		_condition_label.modulate = _condition_color(wound)
+	if wound != _last_condition:
+		_last_condition = wound
+		print("[condition] you=%s" % wound)
+
+func _condition_pretty(wound: String) -> String:
+	match wound:
+		"healthy": return "Healthy"
+		"stunned": return "Stunned"
+		"wounded": return "Wounded"
+		"wounded_twice": return "Wounded Twice"
+		"incapacitated": return "Incapacitated"
+		"mortally_wounded": return "Mortally Wounded"
+		"dead": return "Dead"
+		_: return wound
+
+func _condition_color(wound: String) -> Color:
+	match wound:
+		"healthy": return Color(0.30, 0.62, 0.30)
+		"stunned": return Color(0.62, 0.58, 0.20)
+		"wounded", "wounded_twice": return Color(0.70, 0.42, 0.16)
+		_: return Color(0.72, 0.20, 0.16)
 
 func _wound_label(severity: int) -> String:
 	match severity:
