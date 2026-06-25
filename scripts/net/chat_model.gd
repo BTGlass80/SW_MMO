@@ -4,7 +4,7 @@ extends RefCounted
 ## it and chat_model_smoke tests it. Strips control characters, clamps length, and
 ## whitelists the channel so untrusted client text can be safely broadcast.
 
-const CHANNELS := ["say", "emote", "ooc"]
+const CHANNELS := ["say", "emote", "ooc", "org"]
 const MAX_LENGTH := 256
 
 ## Remove control characters (code point < 32, e.g. newlines/tabs) and DEL (127),
@@ -35,7 +35,7 @@ static func normalize(channel: String, text: String, speaker: String) -> Diction
 	}
 
 ## Render a normalized message for a log/HUD line (say "Name: text", emote "* Name text",
-## ooc "[OOC] Name: text").
+## ooc "[OOC] Name: text", org "[Org] Name: text").
 static func format_line(message: Dictionary) -> String:
 	var channel := String(message.get("channel", "say"))
 	var speaker := String(message.get("speaker", "Someone"))
@@ -45,5 +45,7 @@ static func format_line(message: Dictionary) -> String:
 			return "* %s %s" % [speaker, text]
 		"ooc":
 			return "[OOC] %s: %s" % [speaker, text]
+		"org":
+			return "[Org] %s: %s" % [speaker, text]
 		_:
 			return "%s: %s" % [speaker, text]

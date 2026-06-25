@@ -15,9 +15,10 @@ func _init() -> void:
 	_assert_equal(String(msg["speaker"]), "Obi-Wan", "speaker preserved")
 	_assert_equal(String(msg["text"]), "Hello there", "text preserved")
 
-	# emote + ooc are whitelisted; an unknown channel is rejected.
+	# emote + ooc + org are whitelisted; an unknown channel is rejected.
 	_assert_true(bool(ChatModel.normalize("emote", "waves", "X")["ok"]), "emote accepted")
 	_assert_true(bool(ChatModel.normalize("ooc", "brb", "X")["ok"]), "ooc accepted")
+	_assert_true(bool(ChatModel.normalize("org", "regroup at bay 94", "X")["ok"]), "org accepted")
 	var bc: Dictionary = ChatModel.normalize("shout", "hi", "X")
 	_assert_true(not bool(bc["ok"]) and String(bc["reason"]) == "bad_channel", "non-whitelisted channel rejected")
 
@@ -42,6 +43,7 @@ func _init() -> void:
 	_assert_equal(ChatModel.format_line({"channel": "say", "speaker": "Mara", "text": "hey"}), "Mara: hey", "say format")
 	_assert_equal(ChatModel.format_line({"channel": "emote", "speaker": "Mara", "text": "grins"}), "* Mara grins", "emote format")
 	_assert_equal(ChatModel.format_line({"channel": "ooc", "speaker": "Mara", "text": "gtg"}), "[OOC] Mara: gtg", "ooc format")
+	_assert_equal(ChatModel.format_line({"channel": "org", "speaker": "Mara", "text": "regroup"}), "[Org] Mara: regroup", "org format")
 
 	if _failures.is_empty():
 		print("chat_model_smoke: OK")

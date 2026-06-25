@@ -715,10 +715,19 @@ func submit_chat(channel: String, text: String) -> void:
 		return
 	var message: Dictionary = result["message"]
 	print("[chat] %s" % ChatModel.format_line(message))
-	# ooc is galaxy-wide; say/emote are LOCAL to the speaker's current zone (standard MMO
-	# proximity chat). Local delivery iterates same-zone peers (incl. the sender).
+	# Delivery scope by channel: ooc = galaxy-wide; org = same-org members in ANY zone (cross-
+	# zone faction coordination); say/emote = LOCAL to the speaker's current zone (standard MMO
+	# proximity chat). Each iterates connected peers (incl. the sender, for the local echo).
 	if channel == "ooc":
 		apply_chat.rpc(message)  # global broadcast
+	elif channel == "org":
+		var my_org := String(_peer_orgs.get(sender, ""))
+		if my_org == "":
+			print("[chat] peer %d org-chat with no org — not delivered" % sender)
+			return
+		for pid in multiplayer.get_peers():
+			if String(_peer_orgs.get(pid, "")) == my_org:
+				apply_chat.rpc_id(pid, message)  # same-org members, any zone
 	else:
 		var speaker_zone := String(_peer_zones.get(sender, _default_zone))
 		for pid in multiplayer.get_peers():
