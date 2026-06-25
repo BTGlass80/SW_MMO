@@ -51,12 +51,20 @@ sim (20 Hz), and broadcasts snapshots. Combat resolves in ~5s WEG action windows
 `scripts/rules/combat_event_envelope_model.gd` envelopes. Solo `scenes/main.tscn` is
 unchanged; the net world is `scenes/net_world.tscn`.
 
-## Current milestone: M1 multiplayer foundation
-M1.1 (net core) is DONE and verified. Next: M1.2 shared Mos Eisley + replicated
-avatars, then M1.3 server-authoritative action-window combat, then M1.4 persistence.
-See `docs/MULTIPLAYER_FOUNDATION.md` (canonical architecture + roadmap). For the full
-running feature inventory and session continuation notes, see `docs/NIGHTLY_HANDOFF.md`
-(do not duplicate it here).
+## Current status & where to start
+**Starting a fresh/unattended session? Read `docs/SESSION_HANDOFF.md` FIRST** — it is the
+clean-session entry point (current state, the re-armable all-day loop contract, the
+parallelization playbook, guardrails, and the owner-gated park list).
+
+Done & verified: M1.1 net core → M1.2 shared Mos Eisley + replicated avatars → M1.3/M1.3b
+server-authoritative WEG action-window combat → M1.4 JSON persistence → M1.5 nameplates →
+M2.0–M2.2 zone/security Director + world events; **Wave C** (chargen + dual-track CP) and
+**Wave D** (combat uses the real sheet + equipped gear) COMPLETE. The full
+`tools/check_project.ps1` is the green bar (it passes today).
+
+Next work = `docs/UNATTENDED_BACKLOG.md` → **Wave E** (E1–E27). Canonical architecture/
+roadmap: `docs/MULTIPLAYER_FOUNDATION.md`. Full feature inventory + session notes:
+`docs/NIGHTLY_HANDOFF.md` (do not duplicate it here).
 
 ## Subagents available (.claude/agents/)
 - **d6-rules-engineer** (opus) — implement/verify WEG D6 mechanics in `scripts/rules/*`
