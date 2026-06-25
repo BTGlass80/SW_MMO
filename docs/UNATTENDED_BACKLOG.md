@@ -47,7 +47,7 @@ Wire the verified `scripts/net/combat_arena.gd` into live multiplayer.
   two-process headless run logs a client fire intent → server resolution → envelope
   received by the client (`[net]`/`[combat]` lines).
 
-### A0 — Adopt the asset pipeline & restore the full gate  [STATUS: TODO] (next)
+### A0 — Adopt the asset pipeline & restore the full gate  [STATUS: DONE]
 Claude now owns the asset pipeline (single-driver decision). Make it ours and green.
 - Diagnose why `check_project.ps1 --import` fails on the missing
   `assets/3d/kenney/nature-kit/Isometric/ground_pathCornerSmall_NW.png` (likely a stale
@@ -111,4 +111,5 @@ One-way extract era-appropriate vehicles/starships + droid models from read-only
 
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-24 A0 DONE — root-caused the broken `--import`: Kenney "GLB format" GLBs reference an external Textures/colormap.png that `curate` dropped (only kept .glb). Fixed `_curated_members` in fetch_assets.py to also extract GLB-format textures (drop FBX/OBJ dupes), re-curated all 11 packs (--force), reimported clean (0 errors). gitignored MMO_Assets/ (925M raw zips) + __pycache__; tracked curated assets/3d/ (41M). Full `check_project.ps1` GREEN again.
 - 2026-06-24 M1.3b DONE — combat netcode wired (CombatArena on server, submit_fire_intent RPC, 5s window timer, apply_combat_envelope broadcast, client fire/aim + HUD combat log). Verified end-to-end: two-process autofire run shows client intent → server WEG resolution (own seed) → envelope → client playback. Smokes/launch/python all green. NOTE: full `check_project.ps1 --import` currently fails on Codex's half-curated Kenney asset (not our code).

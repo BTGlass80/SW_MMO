@@ -4,3 +4,11 @@ export/
 *.tmp
 *.log
 
+# Raw asset archives: large (~900MB), re-fetchable via `python tools/fetch_assets.py kenney`.
+# The curated, Godot-ready subset under assets/3d/ IS tracked.
+MMO_Assets/
+
+# Python caches
+__pycache__/
+*.pyc
+

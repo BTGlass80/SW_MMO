@@ -1,0 +1,957 @@
+{
+	"generated_at": "2026-06-24T20:24:15",
+	"packs": [
+		{
+			"zip": "Alien Animated - April 2019-20260625T000915Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Alien Animated - April 2019",
+			"license": "CC0 1.0",
+			"size_mb": 7.1,
+			"model_count": 2,
+			"formats": [
+				"fbx",
+				"obj"
+			],
+			"godot_format": "fbx",
+			"texture_res": "?",
+			"preview": null,
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "maybe",
+			"theme_reason": "situational ('animated') - usable if it matches the house style",
+			"sample_models": [
+				"Alien",
+				"Alien_Helmet"
+			]
+		},
+		{
+			"zip": "Animated FPS Guns - Jun 2018-20260625T001021Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Animated FPS Guns - Jun 2018",
+			"license": "CC0 1.0 (assumed)",
+			"size_mb": 1.3,
+			"model_count": 6,
+			"formats": [
+				"fbx",
+				"obj"
+			],
+			"godot_format": "fbx",
+			"texture_res": "?",
+			"preview": null,
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "maybe",
+			"theme_reason": "situational ('animated') - usable if it matches the house style",
+			"sample_models": [
+				"P90",
+				"Pistol",
+				"Revolver",
+				"Rifle",
+				"Shotgun",
+				"SniperRifle"
+			]
+		},
+		{
+			"zip": "Animated Mech Pack - March 2021-20260625T000806Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Animated Mech Pack - March 2021",
+			"license": "CC0 1.0",
+			"size_mb": 79.9,
+			"model_count": 8,
+			"formats": [
+				"gltf",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "gltf",
+			"texture_res": "2048x2048",
+			"preview": "asset_previews/Quaternius_Animated-Mech-Pack---March-2021.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "keep",
+			"theme_reason": "on-theme ('mech')",
+			"sample_models": [
+				"George",
+				"Leela",
+				"Mike",
+				"Stan"
+			]
+		},
+		{
+			"zip": "Cyberpunk Game Kit - Quaternius-20260625T000711Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Cyberpunk Game Kit - Quaternius",
+			"license": "CC0 1.0",
+			"size_mb": 31.2,
+			"model_count": 71,
+			"formats": [
+				"gltf",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "gltf",
+			"texture_res": "1000x1000",
+			"preview": "asset_previews/Quaternius_Cyberpunk-Game-Kit---Quaternius.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "skip",
+			"theme_reason": "off-theme ('cyberpunk') for a desert spaceport",
+			"sample_models": [
+				"AC",
+				"AC_Side",
+				"AC_Stacked",
+				"Antenna_1",
+				"Antenna_2",
+				"Cable_Long",
+				"Cable_Small",
+				"Cable_Thick"
+			]
+		},
+		{
+			"zip": "kenney_animated-characters-protagonists.zip",
+			"vendor": "Kenney",
+			"pack": "animated-characters-protagonists",
+			"license": "CC0 1.0",
+			"size_mb": 0.6,
+			"model_count": 4,
+			"formats": [
+				"fbx"
+			],
+			"godot_format": "fbx",
+			"texture_res": "1024x1024",
+			"preview": "asset_previews/Kenney_animated-characters-protagonists.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "maybe",
+			"theme_reason": "situational ('character') - usable if it matches the house style",
+			"sample_models": [
+				"characterMedium",
+				"idle",
+				"jump",
+				"run"
+			]
+		},
+		{
+			"zip": "kenney_animated-characters-survivors.zip",
+			"vendor": "Kenney",
+			"pack": "animated-characters-survivors",
+			"license": "CC0 1.0",
+			"size_mb": 0.7,
+			"model_count": 4,
+			"formats": [
+				"fbx"
+			],
+			"godot_format": "fbx",
+			"texture_res": "1024x1024",
+			"preview": "asset_previews/Kenney_animated-characters-survivors.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "maybe",
+			"theme_reason": "situational ('character') - usable if it matches the house style",
+			"sample_models": [
+				"characterMedium",
+				"idle",
+				"jump",
+				"run"
+			]
+		},
+		{
+			"zip": "kenney_blaster-kit_2.1.zip",
+			"vendor": "Kenney",
+			"pack": "blaster-kit",
+			"license": "CC0 1.0",
+			"size_mb": 1.6,
+			"model_count": 40,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_blaster-kit.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('blaster')",
+			"sample_models": [
+				"blaster-a",
+				"blaster-b",
+				"blaster-c",
+				"blaster-d",
+				"blaster-e",
+				"blaster-f",
+				"blaster-g",
+				"blaster-h"
+			]
+		},
+		{
+			"zip": "kenney_blocky-characters_20.zip",
+			"vendor": "Kenney",
+			"pack": "blocky-characters",
+			"license": "CC0 1.0",
+			"size_mb": 2.0,
+			"model_count": 18,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "1024x1024",
+			"preview": "asset_previews/Kenney_blocky-characters.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "maybe",
+			"theme_reason": "situational ('character') - usable if it matches the house style",
+			"sample_models": [
+				"character-a",
+				"character-b",
+				"character-c",
+				"character-d",
+				"character-e",
+				"character-f",
+				"character-g",
+				"character-h"
+			]
+		},
+		{
+			"zip": "kenney_city-kit-industrial_1.0.zip",
+			"vendor": "Kenney",
+			"pack": "city-kit-industrial",
+			"license": "CC0 1.0",
+			"size_mb": 3.6,
+			"model_count": 25,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_city-kit-industrial.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('city')",
+			"sample_models": [
+				"building-a",
+				"building-b",
+				"building-c",
+				"building-d",
+				"building-e",
+				"building-f",
+				"building-g",
+				"building-h"
+			]
+		},
+		{
+			"zip": "kenney_cube-pets_1.0.zip",
+			"vendor": "Kenney",
+			"pack": "cube-pets",
+			"license": "CC0 1.0",
+			"size_mb": 2.7,
+			"model_count": 24,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_cube-pets.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "skip",
+			"theme_reason": "off-theme ('cube-pet') for a desert spaceport",
+			"sample_models": [
+				"animal-beaver",
+				"animal-bee",
+				"animal-bunny",
+				"animal-cat",
+				"animal-caterpillar",
+				"animal-chick",
+				"animal-cow",
+				"animal-crab"
+			]
+		},
+		{
+			"zip": "kenney_factory-kit_3.0.zip",
+			"vendor": "Kenney",
+			"pack": "factory-kit",
+			"license": "CC0 1.0",
+			"size_mb": 4.3,
+			"model_count": 143,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_factory-kit.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('factory')",
+			"sample_models": [
+				"arrow",
+				"arrow-basic",
+				"arrow-basic-rounded",
+				"arrow-rounded",
+				"box-large",
+				"box-long",
+				"box-small",
+				"box-wide"
+			]
+		},
+		{
+			"zip": "kenney_food-kit.zip",
+			"vendor": "Kenney",
+			"pack": "food-kit",
+			"license": "CC0 1.0",
+			"size_mb": 4.4,
+			"model_count": 200,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_food-kit.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('food')",
+			"sample_models": [
+				"advocado-half",
+				"apple",
+				"apple-half",
+				"avocado",
+				"bacon",
+				"bacon-raw",
+				"bag",
+				"bag-flat"
+			]
+		},
+		{
+			"zip": "kenney_mini-arcade.zip",
+			"vendor": "Kenney",
+			"pack": "mini-arcade",
+			"license": "CC0 1.0",
+			"size_mb": 1.3,
+			"model_count": 20,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_mini-arcade.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "skip",
+			"theme_reason": "off-theme ('arcade') for a desert spaceport",
+			"sample_models": [
+				"air-hockey",
+				"arcade-machine",
+				"basketball-game",
+				"cash-register",
+				"character-employee",
+				"character-gamer",
+				"claw-machine",
+				"column"
+			]
+		},
+		{
+			"zip": "kenney_mini-arena.zip",
+			"vendor": "Kenney",
+			"pack": "mini-arena",
+			"license": "CC0 1.0",
+			"size_mb": 0.7,
+			"model_count": 22,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_mini-arena.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "skip",
+			"theme_reason": "off-theme ('arena') for a desert spaceport",
+			"sample_models": [
+				"banner",
+				"block",
+				"border-corner",
+				"border-straight",
+				"bricks",
+				"character-soldier",
+				"column",
+				"column-damaged"
+			]
+		},
+		{
+			"zip": "kenney_mini-characters.zip",
+			"vendor": "Kenney",
+			"pack": "mini-characters",
+			"license": "CC0 1.0",
+			"size_mb": 2.3,
+			"model_count": 26,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_mini-characters.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "maybe",
+			"theme_reason": "situational ('character') - usable if it matches the house style",
+			"sample_models": [
+				"aid-cane",
+				"aid-cane-blind",
+				"aid-cane-low-vision",
+				"aid-crutch",
+				"aid-defibrillator-green",
+				"aid-defibrillator-red",
+				"aid-glasses",
+				"aid-mask"
+			]
+		},
+		{
+			"zip": "kenney_mini-market.zip",
+			"vendor": "Kenney",
+			"pack": "mini-market",
+			"license": "CC0 1.0",
+			"size_mb": 1.1,
+			"model_count": 20,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_mini-market.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('market')",
+			"sample_models": [
+				"bottle-return",
+				"cash-register",
+				"character-employee",
+				"column",
+				"display-bread",
+				"display-fruit",
+				"fence",
+				"fence-door-rotate"
+			]
+		},
+		{
+			"zip": "kenney_modular-buildings.zip",
+			"vendor": "Kenney",
+			"pack": "modular-buildings",
+			"license": "CC0 1.0",
+			"size_mb": 1.7,
+			"model_count": 108,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_modular-buildings.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('modular')",
+			"sample_models": [
+				"building-block",
+				"building-corner",
+				"building-corner-bottom",
+				"building-corner-top",
+				"building-corner-window",
+				"building-corner-window-middle",
+				"building-corner-window-narrow",
+				"building-corner-window-sill"
+			]
+		},
+		{
+			"zip": "kenney_modular-dungeon-kit_1.0.zip",
+			"vendor": "Kenney",
+			"pack": "modular-dungeon-kit",
+			"license": "CC0 1.0",
+			"size_mb": 6.6,
+			"model_count": 39,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_modular-dungeon-kit.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "skip",
+			"theme_reason": "off-theme ('dungeon') for a desert spaceport",
+			"sample_models": [
+				"corridor",
+				"corridor-corner",
+				"corridor-end",
+				"corridor-intersection",
+				"corridor-junction",
+				"corridor-transition",
+				"corridor-wide",
+				"corridor-wide-corner"
+			]
+		},
+		{
+			"zip": "kenney_modular-space-kit_1.0.zip",
+			"vendor": "Kenney",
+			"pack": "modular-space-kit",
+			"license": "CC0 1.0",
+			"size_mb": 6.6,
+			"model_count": 40,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_modular-space-kit.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('space')",
+			"sample_models": [
+				"cables",
+				"corridor",
+				"corridor-corner",
+				"corridor-end",
+				"corridor-intersection",
+				"corridor-junction",
+				"corridor-transition",
+				"corridor-wide"
+			]
+		},
+		{
+			"zip": "kenney_prototype-kit.zip",
+			"vendor": "Kenney",
+			"pack": "prototype-kit",
+			"license": "CC0 1.0",
+			"size_mb": 2.8,
+			"model_count": 145,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_prototype-kit.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('prototype')",
+			"sample_models": [
+				"animal-bison",
+				"animal-dog",
+				"animal-horse",
+				"button-floor-round",
+				"button-floor-round-small",
+				"button-floor-square",
+				"button-floor-square-small",
+				"coin"
+			]
+		},
+		{
+			"zip": "kenney_space-kit.zip",
+			"vendor": "Kenney",
+			"pack": "space-kit",
+			"license": "CC0 1.0",
+			"size_mb": 6.4,
+			"model_count": 153,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_space-kit.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('space')",
+			"sample_models": [
+				"alien",
+				"astronautA",
+				"astronautB",
+				"barrel",
+				"barrels",
+				"barrels_rail",
+				"bones",
+				"chimney"
+			]
+		},
+		{
+			"zip": "kenney_space-station-kit.zip",
+			"vendor": "Kenney",
+			"pack": "space-station-kit",
+			"license": "CC0 1.0",
+			"size_mb": 1.8,
+			"model_count": 97,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_space-station-kit.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('space')",
+			"sample_models": [
+				"balcony-floor",
+				"balcony-floor-center",
+				"balcony-floor-corner",
+				"balcony-rail",
+				"balcony-rail-center",
+				"balcony-rail-corner",
+				"bed-double",
+				"bed-double-cover"
+			]
+		},
+		{
+			"zip": "kenney_survival-kit.zip",
+			"vendor": "Kenney",
+			"pack": "survival-kit",
+			"license": "CC0 1.0",
+			"size_mb": 1.9,
+			"model_count": 80,
+			"formats": [
+				"glb",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "glb",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Kenney_survival-kit.png",
+			"style": "Ultra-low-poly, flat-shaded, single shared low-res texture atlas, bright minimalist palette, ~1-unit modular grid. Extremely self-consistent. GLB is self-contained (textures embedded).",
+			"theme": "keep",
+			"theme_reason": "on-theme ('survival')",
+			"sample_models": [
+				"barrel",
+				"barrel-open",
+				"bedroll",
+				"bedroll-frame",
+				"bedroll-packed",
+				"bottle",
+				"bottle-large",
+				"box"
+			]
+		},
+		{
+			"zip": "RPG Characters - Nov 2020-20260625T000833Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "RPG Characters - Nov 2020",
+			"license": "CC0 1.0",
+			"size_mb": 29.9,
+			"model_count": 18,
+			"formats": [
+				"gltf",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "gltf",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Quaternius_RPG-Characters---Nov-2020.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "skip",
+			"theme_reason": "off-theme ('rpg') for a desert spaceport",
+			"sample_models": [
+				"Cleric",
+				"Cleric_Staff",
+				"Monk",
+				"Ranger",
+				"Ranger_Arrow",
+				"Ranger_Bow",
+				"Rogue",
+				"Rogue_Dagger"
+			]
+		},
+		{
+			"zip": "Sci-Fi Essentials Kit[Standard].zip",
+			"vendor": "Quaternius",
+			"pack": "Sci-Fi Essentials Kit[Standard]",
+			"license": "CC0 1.0",
+			"size_mb": 159.2,
+			"model_count": 74,
+			"formats": [
+				"gltf",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "gltf",
+			"texture_res": "2048x2048",
+			"preview": "asset_previews/Quaternius_Sci-Fi-Essentials-Kit-Standard-.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "keep",
+			"theme_reason": "on-theme ('sci-fi')",
+			"sample_models": [
+				"Enemy_EyeDrone",
+				"Enemy_QuadShell",
+				"Enemy_Trilobite",
+				"Gun_Pistol",
+				"Gun_Revolver",
+				"Gun_Rifle",
+				"Gun_SMG_Ammo",
+				"Gun_Sniper"
+			]
+		},
+		{
+			"zip": "Spaceships by @Quaternius-20260625T000544Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Spaceships by @Quaternius",
+			"license": "CC0 1.0",
+			"size_mb": 0.9,
+			"model_count": 5,
+			"formats": [
+				"fbx",
+				"obj"
+			],
+			"godot_format": "fbx",
+			"texture_res": "?",
+			"preview": "asset_previews/Quaternius_Spaceships-by-Quaternius.png",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "keep",
+			"theme_reason": "on-theme ('space')",
+			"sample_models": [
+				"Spaceship",
+				"Spaceship2",
+				"Spaceship3",
+				"Spaceship4",
+				"Spaceship5"
+			]
+		},
+		{
+			"zip": "Ultimate Animated Character Pack - Nov 2019-20260625T000856Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Ultimate Animated Character Pack - Nov 2019",
+			"license": "CC0 1.0",
+			"size_mb": 73.0,
+			"model_count": 53,
+			"formats": [
+				"gltf",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "gltf",
+			"texture_res": "?",
+			"preview": "asset_previews/Quaternius_Ultimate-Animated-Character-Pack---Nov-2019.png",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "maybe",
+			"theme_reason": "situational ('character') - usable if it matches the house style",
+			"sample_models": [
+				"BaseCharacter",
+				"BlueSoldier_Female",
+				"BlueSoldier_Male",
+				"Casual2_Female",
+				"Casual2_Male",
+				"Casual3_Female",
+				"Casual3_Male",
+				"Casual_Bald"
+			]
+		},
+		{
+			"zip": "Ultimate Modular Men- Feb 2022-20260625T000436Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Ultimate Modular Men- Feb 2022",
+			"license": "CC0 1.0",
+			"size_mb": 52.0,
+			"model_count": 72,
+			"formats": [
+				"gltf",
+				"fbx"
+			],
+			"godot_format": "gltf",
+			"texture_res": "?",
+			"preview": "asset_previews/Quaternius_Ultimate-Modular-Men--Feb-2022.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "keep",
+			"theme_reason": "on-theme ('modular')",
+			"sample_models": [
+				"Adventurer",
+				"Adventurer_Backpack",
+				"Adventurer_Body",
+				"Adventurer_Feet",
+				"Adventurer_Head",
+				"Adventurer_Legs",
+				"Animations",
+				"Beach"
+			]
+		},
+		{
+			"zip": "Ultimate Modular Men- Feb 2022-20260625T000745Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Ultimate Modular Men- Feb 2022",
+			"license": "CC0 1.0",
+			"size_mb": 52.0,
+			"model_count": 72,
+			"formats": [
+				"gltf",
+				"fbx"
+			],
+			"godot_format": "gltf",
+			"texture_res": "?",
+			"preview": "asset_previews/Quaternius_Ultimate-Modular-Men--Feb-2022.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "keep",
+			"theme_reason": "on-theme ('modular')",
+			"sample_models": [
+				"Adventurer",
+				"Adventurer_Backpack",
+				"Adventurer_Body",
+				"Adventurer_Feet",
+				"Adventurer_Head",
+				"Adventurer_Legs",
+				"Animations",
+				"Beach"
+			]
+		},
+		{
+			"zip": "Ultimate Modular Sci-Fi - Feb 2021-20260625T000523Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Ultimate Modular Sci-Fi - Feb 2021",
+			"license": "CC0 1.0",
+			"size_mb": 10.5,
+			"model_count": 91,
+			"formats": [
+				"fbx",
+				"obj"
+			],
+			"godot_format": "fbx",
+			"texture_res": "?",
+			"preview": "asset_previews/Quaternius_Ultimate-Modular-Sci-Fi---Feb-2021.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "keep",
+			"theme_reason": "on-theme ('sci-fi')",
+			"sample_models": [
+				"Column_1",
+				"Column_2",
+				"Column_3",
+				"Column_Slim",
+				"Details_Arrow",
+				"Details_Arrow_2",
+				"Details_Basic_1",
+				"Details_Basic_2"
+			]
+		},
+		{
+			"zip": "Ultimate Modular Women - April 2022-20260625T000727Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Ultimate Modular Women - April 2022",
+			"license": "CC0 1.0",
+			"size_mb": 43.5,
+			"model_count": 66,
+			"formats": [
+				"gltf",
+				"fbx"
+			],
+			"godot_format": "gltf",
+			"texture_res": "?",
+			"preview": "asset_previews/Quaternius_Ultimate-Modular-Women---April-2022.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "keep",
+			"theme_reason": "on-theme ('modular')",
+			"sample_models": [
+				"Adventurer",
+				"Adventurer_Backpack",
+				"Adventurer_Body",
+				"Adventurer_Feet",
+				"Adventurer_Head",
+				"Adventurer_Legs",
+				"All together",
+				"Animations"
+			]
+		},
+		{
+			"zip": "Ultimate Monsters-20260625T000647Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Ultimate Monsters",
+			"license": "CC0 1.0",
+			"size_mb": 44.4,
+			"model_count": 50,
+			"formats": [
+				"gltf",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "gltf",
+			"texture_res": "1024x1024",
+			"preview": "asset_previews/Quaternius_Ultimate-Monsters.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "maybe",
+			"theme_reason": "situational ('monster') - usable if it matches the house style",
+			"sample_models": [
+				"Alien",
+				"Alpaking",
+				"Alpaking_Evolved",
+				"Armabee",
+				"Armabee_Evolved",
+				"Birb",
+				"BlueDemon",
+				"Bunny"
+			]
+		},
+		{
+			"zip": "Ultimate Space Kit - March 2023-20260625T000414Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Ultimate Space Kit - March 2023",
+			"license": "CC0 1.0",
+			"size_mb": 35.3,
+			"model_count": 92,
+			"formats": [
+				"gltf",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "gltf",
+			"texture_res": "512x512",
+			"preview": "asset_previews/Quaternius_Ultimate-Space-Kit---March-2023.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "keep",
+			"theme_reason": "on-theme ('space')",
+			"sample_models": [
+				"Astronaut_BarbaraTheBee",
+				"Astronaut_FernandoTheFlamingo",
+				"Astronaut_FinnTheFrog",
+				"Astronaut_RaeTheRedPanda",
+				"Base_Large",
+				"Building_L",
+				"Bush_1",
+				"Bush_2"
+			]
+		},
+		{
+			"zip": "Ultimate Spaceships - May 2021-20260625T000506Z-3-001.zip",
+			"vendor": "Quaternius",
+			"pack": "Ultimate Spaceships - May 2021",
+			"license": "CC0 1.0",
+			"size_mb": 250.7,
+			"model_count": 11,
+			"formats": [
+				"gltf",
+				"fbx",
+				"obj"
+			],
+			"godot_format": "gltf",
+			"texture_res": "2048x2048",
+			"preview": "asset_previews/Quaternius_Ultimate-Spaceships---May-2021.jpg",
+			"style": "Low-poly with smooth/gradient shading and baked ambient occlusion; a notch more detail than Kenney. Per-pack textures. Many packs include rigged & animated characters/creatures. Ships glTF (+.bin+Textures), FBX, .blend.",
+			"theme": "keep",
+			"theme_reason": "on-theme ('space')",
+			"sample_models": [
+				"Bob",
+				"Challenger",
+				"Dispatcher",
+				"Executioner",
+				"Imperial",
+				"Insurgent",
+				"Omen",
+				"Pancake"
+			]
+		}
+	]
+}
