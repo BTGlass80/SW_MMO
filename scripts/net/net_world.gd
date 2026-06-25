@@ -949,6 +949,13 @@ func _submit_chat_line(raw: String) -> void:
 	var channel := String(parsed.get("channel", ""))
 	var body := String(parsed.get("text", ""))
 	if channel != "" and body != "":
+		# F39: /org chat needs an org. The server already drops a no-org org-line, but silently —
+		# the player saw nothing. Pre-empt with feedback (most players have no org yet: faction-
+		# join is owner-gated). The viewer's org is in the snapshot territory block (F12).
+		if channel == "org" and String((Net.last_snapshot.get("territory", {}) as Dictionary).get("org_id", "")) == "":
+			print("[chat] /org unavailable — not in an org")
+			_set_status("You're not in an org — /org chat is unavailable.")
+			return
 		Net.send_chat(channel, body)
 
 func _dispatch_command(cmd: String, arg: String) -> void:
