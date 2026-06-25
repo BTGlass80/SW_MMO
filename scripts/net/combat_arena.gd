@@ -173,6 +173,11 @@ func target_disabled() -> bool:
 func submit_fire_intent(peer_id: int, intent: Dictionary) -> void:
 	if not _players.has(peer_id):
 		return
+	# WEG: an INCAPACITATED / mortally wounded / dead character is OUT and CANNOT act (the
+	# wound ladder models their penalty as 0D precisely because they don't act, so the
+	# penalty alone wouldn't stop them). Drop the intent — they can't fire until healed.
+	if int(((_players[peer_id] as Dictionary).get("state", {}) as Dictionary).get("player_wound_severity", 0)) >= DISABLED_SEVERITY:
+		return
 	_intents[peer_id] = {
 		"aim": clampi(int(intent.get("aim", 0)), 0, 3),
 		"cover": clampi(int(intent.get("cover", 0)), 0, 4),

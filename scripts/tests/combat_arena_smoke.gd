@@ -112,6 +112,17 @@ func _init() -> void:
 	_assert_equal(melee_arena.damage_pool_text(11), "5D", "melee vibroblade damage = STR 2D + 3D bonus")
 	_assert_equal(melee_arena.attacker_pool_text(11), "4D", "melee attack uses DEX 3D + melee_combat 1D (not blaster)")
 
+	# An INCAPACITATED (sev >= 3) shooter is out and cannot act: the fire intent is dropped.
+	var inc := CombatArena.new(_rules, data)
+	inc.register_player(12, "Downed")
+	inc.set_player_combat(12, {"player_wound_severity": 3})  # incapacitated
+	inc.submit_fire_intent(12, {"aim": 3})
+	_assert_equal(inc.pending_intent_count(), 0, "an incapacitated shooter's fire intent is dropped")
+	_assert_equal((inc.resolve_window(123).get("envelopes", []) as Array).size(), 0, "incapacitated shooter yields no envelope")
+	inc.set_player_combat(12, {"player_wound_severity": 2})  # wounded -> 'can still act'
+	inc.submit_fire_intent(12, {"aim": 3})
+	_assert_equal(inc.pending_intent_count(), 1, "a wounded (can-act) shooter's intent IS queued")
+
 	if _rules.has_method("free"):
 		_rules.free()
 	_finish()
