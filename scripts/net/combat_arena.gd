@@ -200,6 +200,7 @@ func submit_fire_intent(peer_id: int, intent: Dictionary) -> void:
 		"cover": clampi(int(intent.get("cover", 0)), 0, 4),
 		"cp": clampi(int(intent.get("cp", 0)), 0, 5),
 		"fp": bool(intent.get("fp", false)),
+		"full_dodge": bool(intent.get("full_dodge", false)),  # F51: defensive stance — forgo the attack, max dodge
 	}
 
 func pending_intent_count() -> int:
@@ -268,7 +269,8 @@ func _apply_intent(state: Dictionary, intent: Dictionary) -> Dictionary:
 	var next := state.duplicate(true)
 	next["aim_bonus_dice"] = clampi(int(intent.get("aim", 0)), 0, 3)
 	next["player_cover_level"] = clampi(int(intent.get("cover", 0)), 0, 4)
-	next["player_defense"] = GroundCombatModel.DEFENSE_NONE
+	# F51: a defensive stance routes to the full-dodge exchange (no attack, max dodge vs return fire).
+	next["player_defense"] = GroundCombatModel.DEFENSE_FULL_DODGE if bool(intent.get("full_dodge", false)) else GroundCombatModel.DEFENSE_NONE
 	next = _ground.queue_attack_cp(next, int(intent.get("cp", 0)))
 	if bool(intent.get("fp", false)):
 		next = _ground.activate_force_point(next)

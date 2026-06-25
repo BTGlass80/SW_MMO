@@ -39,6 +39,7 @@ var _fire_cp := 0           # headless: --fire-cp N stages CP on the autofire pa
 var _fire_fp := false       # headless: --fire-fp stages a Force Point on autofire
 var _fire_cover := 0        # headless: --fire-cover 1 takes 1/4 cover on the autofire path
 var _autofire := false
+var _autodefend := false     # headless: --autodefend submits a full-dodge defensive stance each window (F51)
 var _autowalk := false
 var _walk_accum := 0.0       # headless: throttles the [pos] readout while autowalking
 var _autofire_accum := 0.0
@@ -163,6 +164,7 @@ func _parse_args() -> void:
 	_secret = _arg_value("--secret")  # account ownership secret (binds the peer to the account)
 	_fire_cp = maxi(int(_arg_value("--fire-cp")), 0)  # headless: stage CP on autofire shots
 	_fire_cover = clampi(int(_arg_value("--fire-cover")), 0, 1)  # headless: take 1/4 cover on autofire shots (F50)
+	_autodefend = args.has("--autodefend")  # headless: full-dodge defensive stance each window (F51)
 	_fire_fp = args.has("--fire-fp")  # headless: stage a Force Point on autofire shots
 	_start_wound = _arg_value("--start-wound")  # headless DIV-0012: new char starts wounded
 	_heal_other = args.has("--heal-other")  # headless DIV-0013: First-Aid the first other player once
@@ -185,11 +187,14 @@ func _process(delta: float) -> void:
 		return
 	_send_local_input()
 	_update_camera()
-	if _autofire and Net.connected:
+	if (_autofire or _autodefend) and Net.connected:
 		_autofire_accum += delta
 		if _autofire_accum >= 0.4:
 			_autofire_accum = 0.0
-			Net.send_fire_intent({"aim": 3, "cover": _fire_cover, "cp": _fire_cp, "fp": _fire_fp})
+			if _autodefend:
+				Net.send_fire_intent({"full_dodge": true})  # F51: headless defensive-stance loop
+			else:
+				Net.send_fire_intent({"aim": 3, "cover": _fire_cover, "cp": _fire_cp, "fp": _fire_fp})
 	if _raise_skill != "" and not _raise_sent and Net.connected:
 		_raise_accum += delta
 		if _raise_accum >= 6.0:  # let some CP accrue first, then raise once (headless test)
@@ -300,6 +305,9 @@ func _input(event: InputEvent) -> void:
 		elif event.keycode == KEY_X:
 			_cover = 1 - _cover  # F50: toggle 1/4 cover for the next shot (reduces incoming return fire)
 			_announce_next_shot()
+		elif event.keycode == KEY_G:
+			Net.send_fire_intent({"full_dodge": true})  # F51: defensive stance — forgo the attack, full dodge
+			_set_status("Defensive stance — full dodge (no attack this window).")
 	elif event is InputEventMouseButton and event.pressed:
 		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -702,6 +710,7 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 	var fp_spent := false
 	var return_fire_hit := false  # F45: did the target shoot back and connect this window?
 	var return_fire_cover := 0    # F50: the player's cover applied against that return fire
+	var defended := false         # F51: the shooter took a defensive stance (full dodge) this window
 	for ev in envelope.get("events", []):
 		var event_type := String((ev as Dictionary).get("type", ""))
 		if event_type == "player_attack":
@@ -715,6 +724,8 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 		elif event_type == "remote_return_fire":
 			return_fire_hit = return_fire_hit or bool((ev as Dictionary).get("hit", false))
 			return_fire_cover = int((ev as Dictionary).get("cover_level", 0))
+		elif event_type == "player_full_dodge":
+			defended = true
 	# WEG in-play spend surfaced publicly on the shooter's line (both GUI + headless log).
 	var spend := ""
 	if cp_spent > 0:
@@ -722,7 +733,9 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 	if fp_spent:
 		spend += " [Force Point]"
 	var line := ""
-	if already:
+	if defended:
+		line = "%s takes a defensive stance (full dodge)" % shooter  # F51
+	elif already:
 		line = "%s: %s is already down" % [shooter, target]
 	elif hit:
 		line = "%s hit %s%s" % [shooter, target, (" → %s" % _wound_label(wound)) if wound >= 0 else ""]

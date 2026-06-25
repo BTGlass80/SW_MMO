@@ -183,6 +183,18 @@ func _init() -> void:
 		stun_max = maxi(stun_max, int(stun.player_state(2).get("player_wound_severity", 0)))
 	_assert_true(stun_max <= 1, "default (no stun_return_fire) return fire is pure WEG stun -- player never exceeds Stunned(1)")
 
+	# F51: a defensive stance (full_dodge) forgoes the attack -> the envelope carries a
+	# player_full_dodge event and the player does NOT damage the target.
+	var fd := CombatArena.new(_rules, data)
+	fd.register_player(30, "Defender", {"attributes": {"dexterity": "3D", "strength": "2D"}})
+	fd.submit_fire_intent(30, {"full_dodge": true})
+	var fdr: Dictionary = fd.resolve_window(4321)
+	var fde: Array = fdr.get("envelopes", [])
+	_assert_equal(fde.size(), 1, "a full-dodge intent still yields one envelope")
+	if fde.size() == 1:
+		_assert_true(((fde[0] as Dictionary).get("event_types", []) as Array).has("player_full_dodge"), "defensive stance emits a player_full_dodge event")
+	_assert_equal(int((fdr.get("target_state", {}) as Dictionary).get("wound_severity", -1)), 0, "a full-dodging player does NOT damage the target")
+
 	if _rules.has_method("free"):
 		_rules.free()
 	_finish()
