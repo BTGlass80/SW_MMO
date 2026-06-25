@@ -17,7 +17,7 @@ const COMMANDS := {
 }
 
 ## GUI game commands (distinct from chat channels) recognized by the command bar.
-const GAME_COMMANDS := ["raise", "travel", "heal"]
+const GAME_COMMANDS := ["raise", "travel", "heal", "claim", "release"]
 
 ## Recognize a GUI game command in a free-text line: "/raise dodge" -> {cmd:"raise",
 ## arg:"dodge"}; "/travel tatooine.dune_sea" -> {cmd:"travel", arg:"…"}; "/heal" ->

@@ -885,6 +885,14 @@ func _dispatch_command(cmd: String, arg: String) -> void:
 				_set_status("First Aid -> peer %d…" % t)
 			else:
 				_set_status("First Aid: no wounded ally nearby.")
+		"claim":
+			if arg != "":
+				Net.send_claim_node(arg)  # org claims a node in the current zone
+				_set_status("Claiming %s…" % arg)
+		"release":
+			if arg != "":
+				Net.send_release_claim(arg)
+				_set_status("Releasing %s…" % arg)
 
 func _on_chat_submitted(text: String) -> void:
 	_submit_chat_line(text)
