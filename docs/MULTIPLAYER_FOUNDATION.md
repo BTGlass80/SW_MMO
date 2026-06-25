@@ -1,14 +1,16 @@
 # Multiplayer Foundation (Milestone M1)
 
 Status as of 2026-06-25: **M1.1 → M1.5 complete and verified, plus M2.0–M2.2
-(zone/security Director + world events) and Waves C (chargen + dual-track CP) and
-D (combat uses the real sheet + equipped gear).** The single-player slice is now a
+(zone/security Director + world events), Waves C (chargen + dual-track CP),
+D (combat uses the real sheet + equipped gear), and E (E1–E27 persistent-world depth
++ hardening + F1/F2/F3) — all COMPLETE.** The single-player slice is now a
 server-authoritative shared world: clients send intents, the server owns
 `WorldState` truth + all RNG/seeds, ticks the sim (20 Hz) and a slow Director (~30s),
-resolves WEG action-window combat, and persists per-character JSON. Active work is
-`docs/UNATTENDED_BACKLOG.md` → **Wave E** (persistent-world depth). See "Direction"
-below for the owner-chosen priorities and `docs/SESSION_HANDOFF.md` for the
-clean-session entry point.
+resolves WEG action-window combat, routes per-player snapshots across multiple zones,
+and persists per-character JSON. **The unblocked, non-owner-gated backlog is now dry**
+(see the Wave E entry below + `docs/SESSION_HANDOFF.md` §0/§5); next depth is owner-gated.
+See "Direction" below for the owner-chosen priorities and `docs/SESSION_HANDOFF.md` for
+the clean-session entry point.
 
 ## Direction (owner decisions, 2026-06-24)
 
@@ -136,10 +138,25 @@ Notes:
   player's attack/dodge/soak/damage/armor pools from their persisted sheet + equipped
   weapon/armor (catalogs loaded by `NetworkManager`), with a trainee fallback when no
   sheet is set.
-- **Wave E — Persistent-world depth & faithfulness** — IN PROGRESS
-  (`docs/UNATTENDED_BACKLOG.md`): WEG wound ladder/recovery, derived stats, weapon range
-  bands, the player→world influence loop, org claim commands, ambient NPC sim, chat, and
-  account-auth hardening.
+- **Wave E — Persistent-world depth & faithfulness** — DONE (E1–E27 + hardening +
+  F1/F2/F3; `docs/UNATTENDED_BACKLOG.md` Log). Pure-model slices: WEG wound ladder
+  (`wound_ladder_model`) + recovery (`recovery_model`), derived stats
+  (`derived_stats_model`), per-weapon range bands, an off-by-default Force hook
+  (`force_skills_model`, owner-gated — DIV-0011), `security_gate`, `pending_influence_model`,
+  `org_model`, `creature_spawn_model`, `vendor_model`, `reputation_model`, `chat_model`,
+  `account_auth_model`, `ambient_sim_model`. [HOT] netcode: multi-zone per-player snapshot
+  routing, equipment-swap, org claim/release commands with treasury income, the player→
+  influence causal loop (F1 territory accrual from combat), zone-scoped chat/emote (F2) +
+  global OOC, account-auth + per-peer rate-limit + record cache, and a Director-paced
+  ambient NPC sim. RPC surface grew 8→16. Two MEDIUM `register_account` bugs found by
+  adversarial review and fixed. Gate at **55 GDScript smokes**, green at every commit.
+  Note: `creature_spawn_model`/`vendor_model`/`reputation_model` are modeled + smoke-tested
+  but **not yet wired into `net_world`** (live spawns/shops/rep-on-action need owner
+  economy/spawn-rate/value calls).
+- **Status:** the planned multiplayer foundation is feature-complete and hardened; the
+  unblocked, non-owner-gated backlog is **dry**. Further depth (siege durations/capture
+  thresholds, Force/Jedi access policy, PvP-consent, death penalties, CP rates, the
+  economy wiring above) is **owner-gated** — see `docs/SESSION_HANDOFF.md` §5.
 
 ## Constraints
 

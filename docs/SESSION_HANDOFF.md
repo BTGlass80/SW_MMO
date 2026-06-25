@@ -17,23 +17,35 @@ Log over this file.
   Eisley) Star Wars MMO**, grounded in **West End Games Star Wars D6 R&E**. Server-
   authoritative multiplayer; pure/presentation split; the **server owns all RNG/seeds/
   dice**. Charter + constraints live in `CLAUDE.md`.
-- **Built & verified:** M1.1 net core → M1.2 shared Mos Eisley + replicated avatars →
-  M1.3/M1.3b server-authoritative WEG action-window combat → M1.4 JSON persistence →
-  M1.5 nameplates → M2.0 zone/security Director → M2.1 territory-claim scaffold → M2.2
-  Director world events; **Wave C** (chargen + dual-track CP progression) and **Wave D**
-  (combat uses your real sheet + equipped gear) are COMPLETE.
-- **Green bar (current truth):** the **full** `tools/check_project.ps1` passes — 34
-  GDScript smokes + 7 python + import + launch. The A0 fix made `--import` green; the old
-  "import can fail on half-curated assets" caveat in some docs is **stale** (E1 reconciles it).
-- **The next work is `docs/UNATTENDED_BACKLOG.md` → "Wave E"** (E1–E27): a deep,
-  breadth-first queue built specifically so you can parallelize.
+- **Built & verified:** M1.1–M1.5 net core/persistence/nameplates → M2.0–M2.2 zone/
+  security Director + world events → **Wave C** (chargen + dual-track CP) → **Wave D**
+  (combat uses your sheet + equipped gear) → **Wave E (E1–E27) COMPLETE** — the full
+  persistent player-driven loop: WEG wound ladder/recovery, derived stats, per-weapon
+  range bands, off-by-default Force hook, security gate, pending-influence, org model,
+  creature-spawn, vendor, reputation, Director event effects, data-driven set-dressing,
+  test guards; then the [HOT] netcode — multiple zones with per-player snapshot routing,
+  equipment-swap, org claim/release commands with treasury income, the player→influence
+  causal loop, chat/emote, account-auth + rate-limit + record cache, and a Director-paced
+  ambient NPC sim. Plus a review-driven **hardening** pass (2 `register_account` fixes) and
+  follow-ups **F1** (territory influence earned from combat) / **F2** (zone-scoped say) /
+  **F3** (claim-flow gate guard). Every net slice was two-process headless verified.
+- **Green bar (current truth):** the **full** `tools/check_project.ps1` passes — **55
+  GDScript smokes** + 7 python + import + launch (green at every commit). DIV-0001..0011.
+- **STATUS: Wave E is DONE and the backlog is DRY of unblocked, non-owner-gated work.**
+  The prototype is feature-complete for the planned scope, hardened, with all core loops
+  playable + gate-guarded. **The next step needs an OWNER STEER** — pick a new wave, or
+  one of the parked owner-gated/visual forks (§5). The cleanly-non-owner-gated follow-ups
+  are exhausted (the remaining ones — vendor/economy + starting credits, presence/mission
+  influence timescale, reputation action→value mapping — are themselves owner balance
+  calls). Until an owner steer arrives, a fresh session should **confirm green and HOLD**,
+  not invent scope. (Full history: `docs/NIGHTLY_HANDOFF.md` + the `UNATTENDED_BACKLOG.md` Log.)
 
 ---
 
 ## 1. First actions (do these now, in order)
 
 1. **Orient:** read `CLAUDE.md`, this file, and `docs/UNATTENDED_BACKLOG.md` (the Wave E
-   queue + Guardrails). Skim `docs/DIVERGENCE_LEDGER.md` (DIV-0001..0007).
+   queue + Guardrails + Log). Skim `docs/DIVERGENCE_LEDGER.md` (DIV-0001..0011).
 2. **Confirm the baseline is green** before changing anything:
    ```powershell
    .\tools\check_project.ps1 -GodotConsole "C:\Godot 4\Godot_v4.6.3-stable_win64_console.exe"
@@ -44,12 +56,16 @@ Log over this file.
    **CronCreate** with the contract in **§2** (cron `6,16,26,36,46,56 * * * *` ≈ every
    10 min, idle-only, `recurring:true`, `durable:false`). Recurring crons auto-expire
    after 7 days — re-arm if this runs that long.
-4. **Don't wait for the first cron fire — start immediately.** Pick the top unblocked
-   Wave E batch and run it now (see §3). `E1` (docs reconcile) is a perfect zero-risk
-   opener; then batch the `[PAR]` pure-model slices.
-5. **Keep going all day.** Do not ask the owner questions. Do not stop at "one slice" —
-   when a slice lands green and is committed, take the next. Only stop for the
-   owner-gated forks in §5 (park them BLOCKED) or a real, persistent blocker.
+4. **Check the queue.** **Wave E (E1–E27) is COMPLETE** (see §0 + the backlog Log). If the
+   owner has added a NEW wave/items to `docs/UNATTENDED_BACKLOG.md`, take the top unblocked
+   batch and run it (the §3 playbook still applies: batch `[PAR]` pure-model+test slices via
+   the Workflow tool, do `[HOT]` slices one at a time, two-process-verify net slices). If the
+   backlog is still DRY of unblocked, non-owner-gated items, **do NOT invent scope** — go to 5.
+5. **Keep going while there is unblocked, non-owner-gated work; otherwise HOLD.** Don't ask
+   the owner questions. While the queue has unblocked items, ship one verified slice after
+   another. When the queue is dry (the current state), confirm green and hold for an owner
+   steer — do not fabricate owner-level decisions or churn on marginal additions. Park the
+   §5 owner-gated forks BLOCKED; report a real, persistent blocker.
 
 ---
 
@@ -200,19 +216,30 @@ Decided & usable (NOT parked): **DIV-0006** death-penalty shape, **DIV-0007** du
 - **Net layer** `scripts/net/*`: `world_state` (pure 20 Hz movement truth),
   `combat_arena` (pure ~5s WEG action-window resolution, server seed),
   `persistence_store` (JSON per character), `zone_state` (Director: influence/alert/
-  security/events), `territory_model` (org claims/income — no command layer yet),
-  `network_manager` + `net_world` (the two **HOT** files).
-- **RPC surface (8, all in `network_manager.gd`):** client→server `submit_input`,
-  `submit_fire_intent`, `register_account`, `submit_skill_raise`; server→client
-  `apply_snapshot`, `apply_combat_envelope`, `apply_wallet`, `skill_raise_result`.
+  security/events), `territory_model` (org claims/income + a `submit_claim_node`/
+  `submit_release_claim` command layer wired into `network_manager`), plus the Wave E pure
+  models `security_gate`, `pending_influence_model`, `org_model`, `chat_model`,
+  `account_auth_model`, `ambient_sim_model`; `network_manager` + `net_world` (the two **HOT** files).
+- **RPC surface (16, all in `network_manager.gd`):** client→server (`any_peer`)
+  `submit_input`, `submit_fire_intent`, `register_account`, `submit_skill_raise`,
+  `submit_equip`, `submit_claim_node`, `submit_release_claim`, `submit_chat`; server→client
+  (`authority`) `apply_snapshot`, `apply_combat_envelope`, `apply_wallet`,
+  `skill_raise_result`, `equip_result`, `claim_result`, `apply_chat`, `auth_result`.
 - **Tick model:** 20 Hz movement + snapshot; ~5s combat window (`--combat-window`);
-  ~30s Director tick (`--director-tick`); 30s autosave; 60s territory resource tick.
+  ~30s Director tick (`--director-tick`); 30s autosave; 60s territory resource tick
+  (`--resource-tick`); Director-paced ambient NPC sim. Per-peer maps in `network_manager`:
+  `_peer_characters`/`_peer_zones`/`_peer_orgs`/`_peer_axes`/`_peer_rpc_budget`, a
+  `_record_cache`, and the `_territory_influence`/`_pending_zone_influence`/`_ambient` state.
 - **World geometry:** `scripts/world/world_builder.gd` (shared, deterministic seed 1138;
   solo `main.tscn` + `net_world.tscn` build the same Mos Eisley).
 - **Data** `data/*.json`: species(9)/skills(76)/weapons(32)/armor(23) are consumed at
-  runtime; starships(6)/droids(3)/creatures(22) are curated but **orphaned** (only
-  `content_smoke` reads them — E10/E11 finally consume them). `data/schemas/*` define the
-  full persistence/zone/territory/siege contracts, many fields still latent.
+  runtime; `zones_clone_wars.json` + `mos_eisley_props.json` (Wave E) drive multi-zone
+  routing + set-dressing. `creatures(22)` now have a pure consumer (`creature_spawn_model`
+  + smoke) and `vendor_model`/`reputation_model` exist with smokes, but these three are
+  **modeled, not yet wired into `net_world`** (no live spawns/shops/rep-on-action — that
+  wiring needs owner economy/spawn-rate/value calls). `starships(6)`/`droids(3)` remain
+  curated-but-latent (only `content_smoke` reads them). `data/schemas/*` define the full
+  persistence/zone/territory/siege contracts, many fields still latent.
 - **Design canon** `docs/`: `MULTIPLAYER_FOUNDATION`, `WORLD_SIM_DESIGN`,
   `FACTION_TERRITORY_DESIGN`, `PERSISTENCE_DESIGN`, `DIVERGENCE_LEDGER`. Some are stale
   vs the code — **E1** reconciles them (good first tick).
