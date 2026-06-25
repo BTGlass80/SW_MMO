@@ -117,8 +117,47 @@ One-way extract era-appropriate vehicles/starships + droid models from read-only
 `C:\SW_MUSH` into new `data/*.json` with provenance; extend `content_smoke`.
 - Acceptance: `content_smoke` green; full gate green.
 
+## Wave C — Character Creation & Progression  (owner-chosen 2026-06-24; loop RESUMED)
+
+The owner picked this as the next wave. Mostly engineering, grounded in
+`C:\SW_MUSH\docs\design\Guide_02_Character_Creation.md` + `Guide_09_CP_Progression.md`,
+`data/species_clone_wars.json` + `data/weg_skill_catalog.json`, and the DIV-0007
+dual-track CP decision. WEG R&E leads the math. Owner-gated items NOT in this wave:
+Force/Jedi access (force_sensitive stays a data hook, default false).
+
+### C1 — Chargen rules model  [STATUS: TODO] (next)
+Pure `scripts/rules/chargen_model.gd`: validate a character build against WEG R&E +
+species data — attribute dice allocated within the species min/max and the species
+attribute-dice budget; starting skill dice budget; produce a starting sheet
+(attributes, skills, CP/FP, wound_state healthy) in the `data/schemas/player_persistence`
+`sheet` shape. Support the 7 WEG templates as quick-start presets if cheap. Pure +
+`chargen_smoke` (valid build accepted, over-budget/out-of-range rejected, sheet shape).
+- Acceptance: `chargen_smoke` + full gate green.
+
+### C2 — Server chargen flow  [STATUS: TODO]
+New characters run chargen on first login: extend the register/create path so a client
+with no saved record sends {species, attributes, skills, name} (validated by C1) and the
+server persists the resulting sheet via the M1.4 store; a quick-start default build if
+none provided. Existing characters load as today.
+- Acceptance: full gate green; two-process check: a new account creates a character that
+  persists and reloads with its sheet.
+
+### C3 — Progression model  [STATUS: TODO]
+Pure `scripts/rules/progression_model.gd`: WEG advancement costs (raise a skill: CP =
+the skill's current die code rounded; attributes per R&E), and the DIV-0007 DUAL-TRACK
+CP wallet (gameplay CP + slow RP-prestige CP), with spend-validation. Pure +
+`progression_smoke`.
+- Acceptance: `progression_smoke` + full gate green.
+
+### C4 — Wire CP earning + spending  [STATUS: TODO]
+Award gameplay CP for combat (disabling the shared target) on the dual track; an RPC to
+spend CP to raise a skill; persist via the store. Client shows CP wallet + a raise action.
+- Acceptance: full gate green; two-process check: defeating the target awards CP and a
+  spend raises a skill and persists.
+
 ## Log
 (iterations append here: `- <date> <ITEM> DONE <hash> — <note>` or `BLOCKED — <why>`)
+- 2026-06-24 LOOP RESUMED — owner chose Wave C (Character Creation & Progression). Next: C1.
 - 2026-06-24 Content drop 2 DONE — one-way extract from read-only SW_MUSH: `data/starships_clone_wars.json` (6 era-appropriate civilian craft; GCW/Imperial ships excluded — content_smoke asserts none leak), `data/droids_clone_wars.json` (3 commerce droids), `data/creatures_clone_wars.json` (22 wildlife). content_smoke extended; manifest updated. Full gate green.
 - 2026-06-24 **LOOP STOP** — backlog dry of unblocked, non-owner-decision, non-visual items. Remaining: A1b/P1 (DEFERRED, need owner visual check) and the owner-gated features (org/claim commands, guard NPCs, siege/Drop-6D, Force/Jedi, death penalty, LLM-Director-at-launch). Handed back to owner.
 - 2026-06-24 M2.1 DONE — pure `scripts/net/territory_model.gd`: an org claims a node in a contested/lawless zone (precondition: influence >= foothold floor; secured not claimable; one claim per node), deriving influence tier (foothold/dominant/control) + member effective-security (lawless->contested upgrade); passive income accrues to org treasuries on a 60s resource tick, scaled by tier x risk (lawless > contested). `territory_smoke`. NetworkManager holds the registry + resource tick (no-op until the future org/claim command layer). Siege/Drop-6D deliberately NOT built (owner-gated). Full gate green (35 smokes).
