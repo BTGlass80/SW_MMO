@@ -45,6 +45,15 @@ func _init() -> void:
 	_assert_equal(ChatModel.format_line({"channel": "ooc", "speaker": "Mara", "text": "gtg"}), "[OOC] Mara: gtg", "ooc format")
 	_assert_equal(ChatModel.format_line({"channel": "org", "speaker": "Mara", "text": "regroup"}), "[Org] Mara: regroup", "org format")
 
+	# Free-text input parsing (GUI LineEdit / --say): slash-commands + aliases + plain text.
+	_assert_equal(_parsed("/ooc brb"), ["ooc", "brb"], "/ooc -> ooc channel")
+	_assert_equal(_parsed("/g regroup at bay 94"), ["org", "regroup at bay 94"], "/g alias -> org")
+	_assert_equal(_parsed("/me waves"), ["emote", "waves"], "/me alias -> emote")
+	_assert_equal(_parsed("hello there"), ["say", "hello there"], "plain text -> say")
+	_assert_equal(_parsed("   "), ["", ""], "blank input -> empty (nothing sent)")
+	_assert_equal(_parsed("/foo bar"), ["say", "/foo bar"], "unknown command -> say verbatim")
+	_assert_equal(_parsed("/ooc"), ["ooc", ""], "command with no text -> channel + empty text")
+
 	if _failures.is_empty():
 		print("chat_model_smoke: OK")
 		quit(0)
@@ -52,6 +61,10 @@ func _init() -> void:
 		for failure in _failures:
 			printerr(failure)
 		quit(1)
+
+func _parsed(raw: String) -> Array:
+	var r: Dictionary = ChatModel.parse_input(raw)
+	return [String(r.get("channel", "")), String(r.get("text", ""))]
 
 func _assert_true(actual: bool, label: String) -> void:
 	if not actual:

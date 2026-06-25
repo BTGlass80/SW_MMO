@@ -7,6 +7,31 @@ extends RefCounted
 const CHANNELS := ["say", "emote", "ooc", "org"]
 const MAX_LENGTH := 256
 
+# Slash-command -> channel map for free-text chat input (the GUI LineEdit + the headless
+# --say affordance). Includes short aliases. Plain text (no leading "/") defaults to "say".
+const COMMANDS := {
+	"say": "say", "s": "say",
+	"ooc": "ooc", "o": "ooc",
+	"org": "org", "g": "org",
+	"emote": "emote", "em": "emote", "me": "emote", "e": "emote",
+}
+
+## Parse a free-text chat line into {channel, text}. "/ooc hi" -> {ooc, "hi"}; "/g regroup"
+## -> {org, "regroup"}; plain "hello" -> {say, "hello"}; an UNKNOWN "/cmd …" is kept verbatim
+## as say (never silently dropped); blank input -> {channel:"", text:""} (caller sends nothing).
+static func parse_input(raw: String) -> Dictionary:
+	var text := raw.strip_edges()
+	if text == "":
+		return {"channel": "", "text": ""}
+	if text.begins_with("/"):
+		var sp := text.find(" ")
+		var cmd := text.substr(1).to_lower() if sp < 0 else text.substr(1, sp - 1).to_lower()
+		var rest := "" if sp < 0 else text.substr(sp + 1)
+		if COMMANDS.has(cmd):
+			return {"channel": String(COMMANDS[cmd]), "text": rest.strip_edges()}
+		return {"channel": "say", "text": text}  # unknown command -> say it verbatim
+	return {"channel": "say", "text": text}
+
 ## Remove control characters (code point < 32, e.g. newlines/tabs) and DEL (127),
 ## leaving a clean single line, then trim the ends. Keeps all printable text.
 static func sanitize(text: String) -> String:

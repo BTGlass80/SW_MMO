@@ -56,6 +56,10 @@ var _claim_accum := 0.0
 var _chat := ""             # headless: "channel:text" to send once after connecting
 var _chat_sent := false
 var _chat_accum := 0.0
+var _say := ""              # headless: a free-text chat line ("/org regroup") via parse_input
+var _say_sent := false
+var _say_accum := 0.0
+var _chat_input: LineEdit   # GUI free-text chat entry (Enter to open, Enter to send)
 var _secret := ""           # account ownership secret (E26)
 var _start_wound := ""       # headless DIV-0012 test: start a new char at a recoverable wound tier
 var _heal_other := false     # headless DIV-0013 test: First-Aid the first other player once
@@ -149,6 +153,7 @@ func _parse_args() -> void:
 	_start_wound = _arg_value("--start-wound")  # headless DIV-0012: new char starts wounded
 	_heal_other = args.has("--heal-other")  # headless DIV-0013: First-Aid the first other player once
 	_travel = _arg_value("--travel")  # headless DIV-0014: travel to this zone_id once
+	_say = _arg_value("--say")  # headless: a free-text chat line through parse_input (F22)
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -207,9 +212,17 @@ func _process(delta: float) -> void:
 		if _travel_accum >= 3.0:  # after register, travel to the requested zone once
 			_travel_sent = true
 			Net.send_change_zone(_travel)
+	if _say != "" and not _say_sent and Net.connected:
+		_say_accum += delta
+		if _say_accum >= 3.0:  # after register, send one free-text chat line via parse_input
+			_say_sent = true
+			_submit_chat_line(_say)
 
 # --- input / camera (client only) ---
 func _send_local_input() -> void:
+	if _chat_input != null and _chat_input.has_focus():
+		Net.set_local_input(Vector2.ZERO, _yaw, false)  # typing in chat: don't move/jump
+		return
 	var move := Vector2.ZERO
 	move.y -= 1.0 if Input.is_key_pressed(KEY_W) else 0.0
 	move.y += 1.0 if Input.is_key_pressed(KEY_S) else 0.0
@@ -228,8 +241,17 @@ func _input(event: InputEvent) -> void:
 		_yaw -= event.relative.x * MOUSE_SENSITIVITY
 		_pitch = clampf(_pitch - event.relative.y * MOUSE_SENSITIVITY, -1.25, 0.8)
 	elif event is InputEventKey and event.pressed:
+		# While the chat box has focus, the LineEdit owns the keyboard — don't trigger game
+		# keys (the event still propagates to the LineEdit after this returns). Esc closes it;
+		# Enter submits via the LineEdit's text_submitted signal.
+		if _chat_input != null and _chat_input.has_focus():
+			if event.keycode == KEY_ESCAPE:
+				_close_chat_input()
+			return
 		if event.keycode == KEY_ESCAPE:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		elif event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER:
+			_open_chat_input()  # open the chat box (type, Enter to send)
 		elif event.keycode == KEY_K:
 			Net.send_skill_raise("blaster")  # spend CP to raise Blaster a pip
 		elif event.keycode == KEY_H:
@@ -511,7 +533,7 @@ func _build_hud() -> void:
 
 	var controls := Label.new()
 	controls.position = Vector2(18, 40)
-	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · T travel · Esc release"
+	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · T travel · Enter chat · Esc release"
 	controls.add_theme_font_size_override("font_size", 14)
 	controls.modulate = Color(0.09, 0.08, 0.06)
 	layer.add_child(controls)
@@ -570,6 +592,14 @@ func _build_hud() -> void:
 	_chat_log.add_theme_font_size_override("font_size", 14)
 	_chat_log.modulate = Color(0.09, 0.10, 0.15)
 	layer.add_child(_chat_log)
+
+	_chat_input = LineEdit.new()  # F22: GUI chat entry (Enter opens, type, Enter sends, Esc cancels)
+	_chat_input.placeholder_text = "Enter to chat — /say  /ooc  /org  /emote  (plain text = say)"
+	_chat_input.position = Vector2(18, 510)
+	_chat_input.size = Vector2(560, 30)
+	_chat_input.add_theme_font_size_override("font_size", 15)
+	_chat_input.text_submitted.connect(_on_chat_submitted)
+	layer.add_child(_chat_input)
 
 func _set_status(text: String) -> void:
 	if _status != null:
@@ -760,6 +790,32 @@ func _on_chat_received(message: Dictionary) -> void:
 		_chat_lines.pop_front()
 	if _chat_log != null:
 		_chat_log.text = "Chat:\n" + "\n".join(_chat_lines)
+
+# Parse a free-text chat line ("/org regroup" / plain text) and send it. Shared by the GUI
+# chat box and the headless --say affordance (F22). Empty channel/text -> nothing sent.
+func _submit_chat_line(raw: String) -> void:
+	var parsed: Dictionary = ChatModel.parse_input(raw)
+	var channel := String(parsed.get("channel", ""))
+	var body := String(parsed.get("text", ""))
+	if channel != "" and body != "":
+		Net.send_chat(channel, body)
+
+func _on_chat_submitted(text: String) -> void:
+	_submit_chat_line(text)
+	_close_chat_input()
+
+func _open_chat_input() -> void:
+	if _chat_input == null:
+		return
+	_chat_input.grab_focus()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE  # show the cursor so the player can type
+
+func _close_chat_input() -> void:
+	if _chat_input == null:
+		return
+	_chat_input.text = ""
+	_chat_input.release_focus()
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED  # resume first-person look + movement
 
 func _on_claim_replied(result: Dictionary) -> void:
 	if bool(result.get("ok", false)):
