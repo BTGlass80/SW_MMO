@@ -145,4 +145,6 @@ Invoke-GodotStep "Equip smoke:" @("--headless", "--path", $projectRoot, "--scrip
 
 Invoke-GodotStep "Chat model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/chat_model_smoke.gd")
 
+Invoke-GodotStep "Account auth smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/account_auth_smoke.gd")
+
 Write-Host "`nAll checks passed."

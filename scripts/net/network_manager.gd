@@ -22,6 +22,7 @@ const Equipment := preload("res://scripts/rules/equipment_model.gd")
 const OrgModel := preload("res://scripts/net/org_model.gd")
 const PendingInfluence := preload("res://scripts/net/pending_influence_model.gd")
 const ChatModel := preload("res://scripts/net/chat_model.gd")
+const Auth := preload("res://scripts/net/account_auth_model.gd")
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -55,6 +56,7 @@ signal skill_raise_replied(result: Dictionary)
 signal equip_replied(result: Dictionary)
 signal claim_replied(result: Dictionary)
 signal chat_received(message: Dictionary)
+signal auth_replied(result: Dictionary)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -89,6 +91,8 @@ var _peer_orgs := {}                  # peer_id -> org_id (server; for snapshot 
 var _peer_axes := {}                  # peer_id -> faction_axis (server; E24 influence)
 var _territory_influence := {}        # org_id -> {zone_id -> int} (server; territory infl)
 var _pending_zone_influence := []     # E8/E24: [{zone_id, axis, delta}] accrued from play
+var _record_cache := {}               # E26: character_id -> record (kills per-call JSON I/O)
+var _peer_rpc_budget := {}            # E26: peer_id -> {tokens, last_ms} reliable-RPC bucket
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
@@ -184,6 +188,7 @@ func _on_peer_disconnected(id: int) -> void:
 	_peer_zones.erase(id)
 	_peer_orgs.erase(id)
 	_peer_axes.erase(id)
+	_peer_rpc_budget.erase(id)
 	print("[net] peer %d left (players=%d)" % [id, state.player_count()])
 	player_left.emit(id)
 
@@ -224,6 +229,8 @@ func submit_fire_intent(intent: Dictionary) -> void:
 	if mode != Mode.SERVER or arena == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
 	if arena.has_player(sender):
 		arena.submit_fire_intent(sender, intent)
 
@@ -244,11 +251,22 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	if mode != Mode.SERVER or store == null or state == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
 	if not state.has_player(sender):
 		return
 	var character_id := account_id.strip_edges()
 	if character_id == "":
 		character_id = "peer_%d" % sender
+	# E26 ownership guard: present the matching account_secret (if the record has one)
+	# BEFORE loading/overwriting this character. An unsecured account is claimed by the
+	# provided secret; a wrong secret is rejected without touching the character.
+	var record := _cached_load(character_id)
+	var auth: Dictionary = Auth.check_secret(String(record.get("account_secret", "")), String(build.get("secret", "")))
+	if not bool(auth["ok"]):
+		print("[auth] peer %d denied for %s (%s)" % [sender, character_id, String(auth["reason"])])
+		auth_result.rpc_id(sender, {"ok": false, "reason": String(auth["reason"]), "account_id": character_id})
+		return
 	_peer_characters[sender] = character_id
 	# Optional starting zone (carried on the build dict so the RPC signature is stable);
 	# only honored when it names a real loaded zone, else the peer keeps the default.
@@ -257,7 +275,6 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 		_peer_zones[sender] = requested_zone
 		print("[net] peer %d assigned zone %s (%s)" % [sender, requested_zone, zones.effective_security(requested_zone)])
 	var existing := state.get_player(sender)
-	var record := store.load_record(character_id)
 	var chosen_name := display_name.strip_edges()
 	if chosen_name == "":
 		chosen_name = String(record.get("name", existing.get("name", "")))
@@ -265,6 +282,11 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 		record = _create_character(character_id, chosen_name, build)  # new char: run chargen
 	else:
 		record["name"] = chosen_name
+	# E26: bind/persist the account secret on the record (the first claim writes it).
+	var new_secret := String(auth["secret"])
+	if String(record.get("account_secret", "")) != new_secret:
+		record["account_secret"] = new_secret
+		_cached_save(character_id, record)
 	# Optional org membership (test affordance on the build dict): set the persisted
 	# record.org and seed the org's territory influence in the player's current zone
 	# (real influence accrual is a later slice). Always refresh _peer_orgs from the record.
@@ -277,7 +299,7 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 			"faction_rep": int(build_org.get("faction_rep", 0)),
 			"guild_ids": [],
 		}
-		store.save_record(character_id, record)
+		_cached_save(character_id, record)
 		var seed_infl := int(build_org.get("influence", 0))
 		if seed_infl > 0:
 			_set_territory_influence(String(build_org["faction_id"]), String(_peer_zones.get(sender, _default_zone)), seed_infl)
@@ -315,7 +337,7 @@ func _create_character(character_id: String, display_name: String, build: Dictio
 		sheet = Chargen.default_sheet(D6Rules, species)
 	record["sheet"] = sheet
 	record["species"] = species_key
-	store.save_record(character_id, record)
+	_cached_save(character_id, record)
 	print("[chargen] created %s species=%s dex=%s cp=%d" % [
 		character_id, species_key,
 		String((sheet.get("attributes", {}) as Dictionary).get("dexterity", "?")),
@@ -365,10 +387,12 @@ func submit_skill_raise(skill: String) -> void:
 	if mode != Mode.SERVER or store == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
 	var character_id := String(_peer_characters.get(sender, ""))
 	if character_id == "":
 		return
-	var record := store.load_record(character_id)
+	var record := _cached_load(character_id)
 	if record.is_empty():
 		return
 	var sheet: Dictionary = record.get("sheet", {})
@@ -383,7 +407,7 @@ func submit_skill_raise(skill: String) -> void:
 		sheet["skills"] = skills
 		sheet["cp_wallet"] = result["wallet"]
 		record["sheet"] = sheet
-		store.save_record(character_id, record)
+		_cached_save(character_id, record)
 		if arena != null:
 			arena.set_player_sheet(sender, sheet)  # the raise takes effect in combat immediately
 		print("[skillraise] peer %d %s %s -> %s (cost %d, attack pool now %s)" % [
@@ -408,10 +432,12 @@ func submit_equip(slot: String, item_key: String) -> void:
 	if mode != Mode.SERVER or store == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
 	var character_id := String(_peer_characters.get(sender, ""))
 	if character_id == "":
 		return
-	var record := store.load_record(character_id)
+	var record := _cached_load(character_id)
 	if record.is_empty():
 		return
 	var sheet: Dictionary = record.get("sheet", {})
@@ -419,7 +445,7 @@ func submit_equip(slot: String, item_key: String) -> void:
 	if bool(result.get("ok", false)):
 		var new_sheet: Dictionary = result["sheet"]
 		record["sheet"] = new_sheet
-		store.save_record(character_id, record)
+		_cached_save(character_id, record)
 		if arena != null:
 			arena.set_player_sheet(sender, new_sheet)  # swap takes effect in combat immediately
 		print("[equip] peer %d %s -> %s (damage pool now %s)" % [
@@ -448,6 +474,8 @@ func submit_claim_node(node_id: String) -> void:
 	if mode != Mode.SERVER or territory == null or store == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
 	var node := node_id.strip_edges()
 	var org := _org_for_peer(sender)
 	if org.is_empty():
@@ -477,6 +505,8 @@ func submit_release_claim(node_id: String) -> void:
 	if mode != Mode.SERVER or territory == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
 	var node := node_id.strip_edges()
 	var org_id := String(_org_for_peer(sender).get("faction_id", ""))
 	var claim_id := territory.claim_for_node(node)
@@ -509,6 +539,8 @@ func submit_chat(channel: String, text: String) -> void:
 	if mode != Mode.SERVER or state == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
 	var speaker := String(state.get_player(sender).get("name", "Spacer-%d" % sender))
 	var result: Dictionary = ChatModel.normalize(channel, text, speaker)
 	if not bool(result["ok"]):
@@ -527,6 +559,11 @@ func send_chat(channel: String, text: String) -> void:
 func apply_chat(message: Dictionary) -> void:
 	chat_received.emit(message)
 
+# server -> client: an auth / ownership rejection (e.g. a wrong account secret)
+@rpc("authority", "call_remote", "reliable")
+func auth_result(result: Dictionary) -> void:
+	auth_replied.emit(result)
+
 # The persisted org membership dict for a peer (loads the record). {} when none.
 # JSON reload can widen ints to float, so coerce the numeric fields the org-model
 # validates with a strict typeof == TYPE_INT check (faction_rank / faction_rep).
@@ -534,7 +571,7 @@ func _org_for_peer(peer_id: int) -> Dictionary:
 	var character_id := String(_peer_characters.get(peer_id, ""))
 	if character_id == "":
 		return {}
-	var record := store.load_record(character_id)
+	var record := _cached_load(character_id)
 	var org: Variant = record.get("org", {})
 	if typeof(org) != TYPE_DICTIONARY:
 		return {}
@@ -588,14 +625,14 @@ func _award_cp(peer_id: int, track: String, amount: int) -> void:
 	var character_id := String(_peer_characters.get(peer_id, ""))
 	if character_id == "":
 		return
-	var record := store.load_record(character_id)
+	var record := _cached_load(character_id)
 	if record.is_empty():
 		return
 	var sheet: Dictionary = record.get("sheet", {})
 	var wallet: Dictionary = Progression.award(sheet.get("cp_wallet", Progression.new_wallet()), track, amount)
 	sheet["cp_wallet"] = wallet
 	record["sheet"] = sheet
-	store.save_record(character_id, record)
+	_cached_save(character_id, record)
 	print("[cp] peer %d +%d %s (wallet g=%d r=%d)" % [peer_id, amount, track, int(wallet.get("gameplay_cp", 0)), int(wallet.get("rp_cp", 0))])
 	apply_wallet.rpc_id(peer_id, wallet)
 
@@ -635,6 +672,31 @@ func _fold_pending_influence() -> void:
 
 func _attribute_for_skill(skill: String) -> String:
 	return String(_skill_attr.get(skill, "dexterity"))
+
+# --- E26: record cache + reliable-RPC rate limiting ---
+# Read-through cache: the first load hits disk; subsequent reads (skill-raise, equip,
+# claim, CP award, org lookups) hit memory — killing the load+rewrite-per-call JSON I/O.
+func _cached_load(character_id: String) -> Dictionary:
+	if _record_cache.has(character_id):
+		return _record_cache[character_id]
+	var record := store.load_record(character_id)
+	if not record.is_empty():
+		_record_cache[character_id] = record
+	return record
+
+# Write-through: update the cache AND persist.
+func _cached_save(character_id: String, record: Dictionary) -> void:
+	_record_cache[character_id] = record
+	store.save_record(character_id, record)
+
+# Token-bucket reliable-RPC throttle. Returns false (drop) when a peer exceeds its budget.
+# Server-only; uses a real clock fed into the pure account_auth_model bucket.
+func _rate_ok(peer_id: int) -> bool:
+	var r: Dictionary = Auth.consume_token(_peer_rpc_budget.get(peer_id, {}), Time.get_ticks_msec())
+	_peer_rpc_budget[peer_id] = r["budget"]
+	if not bool(r["allowed"]):
+		print("[ratelimit] peer %d throttled" % peer_id)
+	return bool(r["allowed"])
 
 func _load_skill_attributes() -> Dictionary:
 	var out := {}
@@ -778,9 +840,11 @@ func _save_peer(peer_id: int) -> void:
 	var player := state.get_player(peer_id)
 	if player.is_empty():
 		return
-	var record := store.load_or_create(character_id, character_id, String(player.get("name", "")), WorldState.SPAWN_POINT)
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		record = store.default_record(character_id, character_id, String(player.get("name", "")), WorldState.SPAWN_POINT)
 	record = PersistenceStore.apply_position(record, player.get("pos", WorldState.SPAWN_POINT), float(player.get("yaw", 0.0)))
 	if arena != null:
 		record = PersistenceStore.apply_combat(record, arena.player_state(peer_id))
 	record["name"] = String(player.get("name", ""))
-	store.save_record(character_id, record)
+	_cached_save(character_id, record)

@@ -49,6 +49,7 @@ var _claim_accum := 0.0
 var _chat := ""             # headless: "channel:text" to send once after connecting
 var _chat_sent := false
 var _chat_accum := 0.0
+var _secret := ""           # account ownership secret (E26)
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
@@ -74,6 +75,7 @@ func _ready() -> void:
 	Net.equip_replied.connect(_on_equip_replied)
 	Net.claim_replied.connect(_on_claim_replied)
 	Net.chat_received.connect(_on_chat_received)
+	Net.auth_replied.connect(_on_auth_replied)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -117,6 +119,7 @@ func _parse_args() -> void:
 	_territory_influence = _arg_value("--territory-influence")
 	_claim = _arg_value("--claim")  # headless: node_id to claim once after connecting
 	_chat = _arg_value("--chat")  # headless: "channel:text" to send once after connecting
+	_secret = _arg_value("--secret")  # account ownership secret (binds the peer to the account)
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -223,6 +226,8 @@ func _on_client_connected() -> void:
 			"faction_rank": int(_faction_rank) if _faction_rank != "" else 1,
 			"influence": int(_territory_influence) if _territory_influence != "" else 0,
 		}
+	if _secret != "":
+		build["secret"] = _secret  # E26: bind/authorize this account
 	Net.send_register(_account, _name, build)
 	var who := _name if _name != "" else "account %s" % _account
 	_set_status("Connected as peer %d (%s)." % [_local_id, who])
@@ -454,6 +459,11 @@ func _on_equip_replied(result: Dictionary) -> void:
 		_set_status("Equipped %s." % String(result.get("item_key", "")))
 	else:
 		print("[equip] %s rejected (%s)" % [String(result.get("item_key", "")), String(result.get("reason", ""))])
+
+func _on_auth_replied(result: Dictionary) -> void:
+	if not bool(result.get("ok", false)):
+		print("[auth] login denied for %s (%s)" % [String(result.get("account_id", "")), String(result.get("reason", ""))])
+		_set_status("Login denied (%s)." % String(result.get("reason", "")))
 
 func _on_chat_received(message: Dictionary) -> void:
 	var line := ChatModel.format_line(message)
