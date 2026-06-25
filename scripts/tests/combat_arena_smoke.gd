@@ -85,6 +85,15 @@ func _init() -> void:
 		var de: Array = rd.get("envelopes", [])
 		_assert_true(de.size() == 1 and bool((de[0].get("flags", {}) as Dictionary).get("already_disabled", false)), "firing at a disabled target reports already-disabled")
 
+	# D1: combat pools come from the character sheet (attack = DEX + blaster bonus).
+	var arena := CombatArena.new(_rules, data)
+	arena.register_player(7, "Default")  # no sheet -> trainee fallback pools
+	_assert_equal(arena.attacker_pool_text(7), "4D+1", "no-sheet player uses the trainee blaster pool")
+	arena.register_player(8, "Ace", {"attributes": {"dexterity": "4D", "strength": "3D"}, "skills": {"blaster": "2D"}})
+	_assert_equal(arena.attacker_pool_text(8), "6D", "sheet attack pool = DEX 4D + blaster 2D")
+	arena.set_player_sheet(8, {"attributes": {"dexterity": "2D"}, "skills": {}})
+	_assert_equal(arena.attacker_pool_text(8), "2D", "set_player_sheet rebuilds the attack pool (DEX 2D, untrained)")
+
 	if _rules.has_method("free"):
 		_rules.free()
 	_finish()

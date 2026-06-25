@@ -21,7 +21,9 @@ var _rules: Object
 var _ground := GroundCombatModel.new()
 var _windows := ActionWindowModel.new()
 
-var _player_pools: Dictionary = {}    # shared matchup pools (player vs training target)
+var _target_pools: Dictionary = {}         # shared target side (from combat data)
+var _default_player_pools: Dictionary = {} # fallback player side (trainee), used when no sheet
+var _default_weapon_damage := "4D"         # starter blaster damage until an inventory exists
 var _target_profile: Dictionary = {}
 
 var _players: Dictionary = {}         # peer_id -> {state: Dictionary, name: String}
@@ -43,18 +45,23 @@ func _build_pools(combat_data: Dictionary, target_id: String) -> void:
 	var trainee_weapon: Dictionary = weapons.get(String(trainee.get("weapon", "")), {})
 	var target_weapon: Dictionary = weapons.get(String(target.get("weapon", "")), {})
 	_target_profile = target
-	_player_pools = {
+	_default_weapon_damage = String(trainee_weapon.get("damage", "4D"))
+	# Shared target side (every player fights the same training target for now).
+	_target_pools = {
+		"target_soak_pool": _rules.parse_pool(String(target.get("soak", "2D"))),
+		"target_attack_pool": _rules.parse_pool(String(target.get("blaster", "3D"))),
+		"target_damage_pool": _rules.parse_pool(String(target_weapon.get("damage", "3D"))),
+		"target_armor": {},
+		"target_scale": String(target.get("scale", "character")),
+	}
+	# Fallback player side (the trainee) used when a player has no character sheet.
+	_default_player_pools = {
 		"attacker_pool": _rules.parse_pool(String(trainee.get("blaster", "4D"))),
 		"damage_pool": _rules.parse_pool(String(trainee_weapon.get("damage", "4D"))),
 		"player_dodge_pool": _rules.parse_pool(String(trainee.get("dodge", "3D"))),
 		"player_soak_pool": _rules.parse_pool(String(trainee.get("soak", "3D"))),
 		"player_armor": armors.get(String(trainee.get("armor", "")), {}),
-		"target_soak_pool": _rules.parse_pool(String(target.get("soak", "2D"))),
-		"target_attack_pool": _rules.parse_pool(String(target.get("blaster", "3D"))),
-		"target_damage_pool": _rules.parse_pool(String(target_weapon.get("damage", "3D"))),
-		"target_armor": {},
 		"attacker_scale": String(trainee.get("scale", "character")),
-		"target_scale": String(target.get("scale", "character")),
 	}
 
 func reset_target() -> void:
@@ -65,11 +72,41 @@ func reset_target() -> void:
 	}
 	_window_index = 0
 
-func register_player(peer_id: int, display_name: String = "") -> void:
+func register_player(peer_id: int, display_name: String = "", sheet: Dictionary = {}) -> void:
 	_players[peer_id] = {
 		"state": _ground.initial_state(),
 		"name": display_name if display_name != "" else "Spacer-%d" % peer_id,
+		"pools": _pools_from_sheet(sheet) if not sheet.is_empty() else _default_player_pools.duplicate(true),
 	}
+
+## Rebuild a registered player's combat pools from their character sheet (WEG R&E:
+## attack = governing attribute + skill bonus; soak = Strength). Damage stays a default
+## starter weapon until an inventory/equipment system exists.
+func set_player_sheet(peer_id: int, sheet: Dictionary) -> void:
+	if not _players.has(peer_id) or sheet.is_empty():
+		return
+	(_players[peer_id] as Dictionary)["pools"] = _pools_from_sheet(sheet)
+
+func _pools_from_sheet(sheet: Dictionary) -> Dictionary:
+	var attrs: Dictionary = sheet.get("attributes", {})
+	var skills: Dictionary = sheet.get("skills", {})
+	var dex := String(attrs.get("dexterity", "2D"))
+	var strength := String(attrs.get("strength", "2D"))
+	var blaster_bonus := String(skills.get("blaster", "0D"))
+	var dodge_bonus := String(skills.get("dodge", "0D"))
+	return {
+		"attacker_pool": _rules.add_pools(_rules.parse_pool(dex), _rules.parse_pool(blaster_bonus)),
+		"damage_pool": _rules.parse_pool(_default_weapon_damage),
+		"player_dodge_pool": _rules.add_pools(_rules.parse_pool(dex), _rules.parse_pool(dodge_bonus)),
+		"player_soak_pool": _rules.parse_pool(strength),
+		"player_armor": {},
+		"attacker_scale": "character",
+	}
+
+## The player's current attack dice pool as a string (for tests / inspection).
+func attacker_pool_text(peer_id: int) -> String:
+	var pools: Dictionary = (_players.get(peer_id, {}) as Dictionary).get("pools", {})
+	return String(_rules.pool_to_string(pools.get("attacker_pool", {"dice": 0, "pips": 0})))
 
 func remove_player(peer_id: int) -> void:
 	_players.erase(peer_id)
@@ -138,11 +175,14 @@ func resolve_window(seed_base: int) -> Dictionary:
 		var window_for_shooter := window_state.duplicate(true)
 		window_for_shooter["active_ids"] = [str(peer_id)]
 		window_for_shooter["declaration_count"] = 1
+		# This shooter's own pools (from their sheet) + the shared target side.
+		var pools: Dictionary = (record.get("pools", _default_player_pools) as Dictionary).duplicate(true)
+		pools.merge(_target_pools)
 		var result: Dictionary = _ground.resolve_exchange_with_action_window(
 			_rules,
 			record["state"],
 			_target_state,
-			_player_pools,
+			pools,
 			float(_target_profile.get("distance", 12.0)),
 			int(_target_profile.get("cover_level", 0)),
 			window_for_shooter,

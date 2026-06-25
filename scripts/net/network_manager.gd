@@ -236,6 +236,7 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	if arena != null:
 		arena.set_player_combat(sender, PersistenceStore.combat_from_record(record))
 		arena.set_player_name(sender, chosen_name)
+		arena.set_player_sheet(sender, record.get("sheet", {}))  # combat uses the character's own stats
 	print("[persist] peer %d -> %s (%s) loaded at (%.1f, %.1f, %.1f)" % [sender, character_id, chosen_name, pos.x, pos.y, pos.z])
 
 func send_register(account_id: String, display_name: String = "", build: Dictionary = {}) -> void:
@@ -317,7 +318,11 @@ func submit_skill_raise(skill: String) -> void:
 		sheet["cp_wallet"] = result["wallet"]
 		record["sheet"] = sheet
 		store.save_record(character_id, record)
-		print("[skillraise] peer %d %s %s -> %s (cost %d)" % [sender, skill, bonus_code, String(result["new_skill_bonus"]), int(result["cost"])])
+		if arena != null:
+			arena.set_player_sheet(sender, sheet)  # the raise takes effect in combat immediately
+		print("[skillraise] peer %d %s %s -> %s (cost %d, attack pool now %s)" % [
+			sender, skill, bonus_code, String(result["new_skill_bonus"]), int(result["cost"]),
+			arena.attacker_pool_text(sender) if arena != null else "?"])
 		skill_raise_result.rpc_id(sender, {"ok": true, "skill": skill, "new_bonus": result["new_skill_bonus"], "cost": result["cost"]})
 		apply_wallet.rpc_id(sender, result["wallet"])
 	else:
