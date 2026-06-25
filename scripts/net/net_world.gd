@@ -70,6 +70,8 @@ var _raise_sent := false
 var _wallet_label: Label
 var _condition_label: Label
 var _last_condition := "healthy"   # so we log condition CHANGES only
+var _org_label: Label
+var _last_org_line := ""           # so we log org/territory CHANGES only
 var _combat_log: Label
 var _combat_lines: Array[String] = []
 var _zone_label: Label
@@ -364,6 +366,7 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 		_last_news = headline
 		print("[news] %s" % headline)
 	_update_condition(String((snapshot.get("you", {}) as Dictionary).get("wound", "healthy")))
+	_update_org(snapshot.get("territory", {}))
 
 func _find_player(peer_id: int) -> Dictionary:
 	for entry in Net.last_snapshot.get("players", []):
@@ -459,6 +462,13 @@ func _build_hud() -> void:
 	_condition_label.modulate = _condition_color("healthy")
 	layer.add_child(_condition_label)
 
+	_org_label = Label.new()
+	_org_label.position = Vector2(760, 80)
+	_org_label.text = ""
+	_org_label.add_theme_font_size_override("font_size", 14)
+	_org_label.modulate = Color(0.12, 0.10, 0.16)
+	layer.add_child(_org_label)
+
 	_news_label = Label.new()
 	_news_label.position = Vector2(18, 300)
 	_news_label.size = Vector2(900, 40)
@@ -539,6 +549,27 @@ func _update_condition(wound: String) -> void:
 	if wound != _last_condition:
 		_last_condition = wound
 		print("[condition] you=%s" % wound)
+
+# Update the org / territory readout from the snapshot's per-peer "territory" block (E23).
+# Shows the player's org, its treasury, and how many nodes it holds in the CURRENT zone
+# (so it updates as you travel, DIV-0014). Blank for a player with no org.
+func _update_org(territory: Dictionary) -> void:
+	var org_id := String(territory.get("org_id", ""))
+	var line := ""
+	if org_id != "":
+		var treasury := int(territory.get("treasury", 0))
+		var claims := (territory.get("claims_in_zone", []) as Array).size()
+		line = "Org: %s · %d cr · %d claim(s) here" % [_org_pretty(org_id), treasury, claims]
+	if _org_label != null:
+		_org_label.text = line
+	if line != _last_org_line:
+		_last_org_line = line
+		if line != "":
+			print("[org] %s treasury=%d claims_here=%d" % [org_id, int(territory.get("treasury", 0)), (territory.get("claims_in_zone", []) as Array).size()])
+
+func _org_pretty(org_id: String) -> String:
+	var s := org_id.trim_prefix("org_").replace("_", " ")
+	return s.capitalize() if s != "" else org_id
 
 func _condition_pretty(wound: String) -> String:
 	match wound:
