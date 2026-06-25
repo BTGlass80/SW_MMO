@@ -1,0 +1,34 @@
+{
+	"_comment": "Edit this file to control what fetch_assets.py pulls in. Keep every entry GENERIC sci-fi (no Star Wars trademarks: no 'X-Wing', 'landspeeder', 'moisture vaporator', 'astromech', 'Tatooine', etc). See docs/ASSET_PIPELINE.md.",
+
+	"kenney_packs": [
+		{ "slug": "modular-space-kit", "url": "https://kenney.nl/media/pages/assets/modular-space-kit/8261428a47-1771146076/kenney_modular-space-kit_1.0.zip", "note": "sci-fi station/hab modules -> domed spaceport buildings" },
+		{ "slug": "space-kit", "url": "https://kenney.nl/media/pages/assets/space-kit/20874c75ac-1677698978/kenney_space-kit.zip", "note": "ships, landing pads, rovers, antennae, dishes" },
+		{ "slug": "survival-kit", "url": "https://kenney.nl/media/pages/assets/survival-kit/4065a8185b-1712149243/kenney_survival-kit.zip", "note": "crates, barrels, fences, tents, cover clutter" },
+		{ "slug": "nature-kit", "url": "https://kenney.nl/media/pages/assets/nature-kit/37ac38a37b-1677698939/kenney_nature-kit.zip", "note": "rocks, cliffs, dry foliage for sand terrain" },
+		{ "slug": "blaster-kit", "url": "", "note": "generic sci-fi weapons/props (url resolved at runtime)" },
+		{ "slug": "factory-kit", "url": "", "note": "pipes, tanks, industrial props that read as refinery gear" },
+		{ "slug": "fantasy-town-kit", "url": "", "note": "market-stall / awning / barrel shapes for a bazaar" },
+		{ "slug": "pirate-kit", "url": "", "note": "barrels, crates, planks for stalls and cover" }
+	],
+
+	"polypizza_queries": [
+		{ "q": "barrel", "license": "cc0", "limit": 4 },
+		{ "q": "crate", "license": "cc0", "limit": 4 },
+		{ "q": "fence", "license": "cc0", "limit": 3 },
+		{ "q": "market stall", "license": "cc0", "limit": 3 },
+		{ "q": "robot", "license": "cc0", "limit": 4 },
+		{ "q": "hover car", "license": "cc0", "limit": 3 },
+		{ "q": "satellite dish", "license": "cc0", "limit": 3 },
+		{ "q": "rock", "license": "cc0", "limit": 3 }
+	],
+
+	"tripo_prompts": [
+		{ "name": "condenser_tower", "prompt": "low-poly tall cylindrical moisture condenser tower, weathered sand-colored metal, desert farm equipment, game asset, clean topology", "face_limit": 8000, "texture": true },
+		{ "name": "domed_dwelling", "prompt": "low-poly small domed desert dwelling, adobe and sandstone, flat roof, sci-fi frontier town building, game asset", "face_limit": 10000, "texture": true },
+		{ "name": "vendor_cart", "prompt": "low-poly desert market vendor cart with fabric awning, wooden frame, crates of goods, game asset", "face_limit": 8000, "texture": true },
+		{ "name": "utility_droid", "prompt": "low-poly small cylindrical utility maintenance droid on three legs, dome top, sci-fi robot, game asset, generic design", "face_limit": 9000, "texture": true },
+		{ "name": "hover_speeder", "prompt": "low-poly single-rider open-cockpit repulsor hovercraft, no wheels, worn metal, desert vehicle, game asset", "face_limit": 10000, "texture": true },
+		{ "name": "power_generator", "prompt": "low-poly squat industrial power generator with vents and cables, weathered metal, sci-fi prop, game asset", "face_limit": 8000, "texture": true }
+	]
+}

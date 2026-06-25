@@ -49,3 +49,30 @@ The default prompt tells a fresh unattended agent to:
 - complete one bounded slice
 - run `.\tools\check_project.ps1` in the foreground
 - stop after a clean checkpoint or a real blocker
+
+## Claude Code Self-Paced Loop (2026-06-24)
+
+A second, simpler unattended mode for **Claude Code** sessions. Instead of Codex's
+Windows Task Scheduler wrapper, it uses the Claude Code `/loop` skill in self-paced
+(dynamic) mode: the session does one slice, then schedules its own wake-up to do the
+next. It keeps developing without the owner prompting.
+
+Mechanism and guardrails:
+- **Queue:** `docs/UNATTENDED_BACKLOG.md`, worked strictly top-down, one slice per
+  iteration.
+- **Safety net:** this project is now a git repo (baseline commit `54fa6b8` on
+  `master`). Every GREEN slice is committed; a RED slice is reverted with
+  `git checkout -- .` and the backlog item is marked `BLOCKED`. This is what makes
+  unattended code-writing safe.
+- **Per-iteration contract:** pick the top unblocked, non-owner-decision backlog item
+  → implement → run `tools/check_project.ps1` (or targeted headless smokes during
+  development, the full gate before committing) → GREEN: `git add -A && git commit`,
+  mark the item DONE + hash, append a one-line note to `docs/NIGHTLY_HANDOFF.md` and
+  the backlog Log → RED: fix or revert and mark BLOCKED.
+- **Hard stops (leave a status in the backlog, then end the loop):** backlog is dry;
+  the top unblocked item needs an owner decision (see the backlog Guardrails list);
+  or three consecutive iterations make no progress.
+- **Limitation:** local Godot validation needs a live local session. The loop runs
+  while this Claude Code session is alive; closing the app stops it (resume by asking
+  Claude to continue the loop). The owner can interrupt at any time by sending a
+  message. `C:\SW_MUSH` stays read-only throughout.
