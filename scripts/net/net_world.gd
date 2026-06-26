@@ -1075,8 +1075,12 @@ func _dispatch_command(cmd: String, arg: String) -> void:
 			_show_who()  # client-local roster of same-zone players (from the snapshot)
 		"help":
 			var help := ChatModel.command_help()
-			_set_status(help)
+			# F54: /help also lists the KEYBINDS — none of these (H heal, K raise, X/Z/G defense,
+			# T travel, V sheet) are otherwise discoverable, so a new player can't find them.
+			var keys := "Keys: WASD move · Space jump · LMB fire · RMB aim · X cover · Z dodge · G full-dodge · C CP · F Force Point · H heal ally · K raise Blaster · V sheet · T travel · Enter chat"
+			_set_status(keys)
 			print("[help] %s" % help)
+			print("[help] %s" % keys)
 
 # F40: a command typed without its required argument gets a usage hint, not a silent no-op.
 func _usage(msg: String) -> void:
