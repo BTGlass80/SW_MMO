@@ -305,6 +305,17 @@ func _init() -> void:
 	var armored_target_soak: Dictionary = model.resolve_exchange(rules, model.initial_state(), {"wound_severity": 0}, armored_target_pools, 12.0, 0, 916)
 	_assert_equal(armored_target_soak["target_damage"]["soak_roll"]["pool"], "2D+1", "target armor energy protection adds to soak")
 
+	# F64: a bare-"+2" armor (WEG's natural pip-only form) applies its +2 soak END-TO-END through
+	# resolve_exchange. The armor smokes only ever used the parser-safe "0D+1" form, so the half-fix
+	# (armor_condition_model._pool_text_has_pips rejecting no-"D" tokens -> armor dropped from
+	# covered_locations -> armor_for_location {} -> 0 soak) shipped green. Target soak 2D + a "+2"
+	# energy armor -> 2D+2, NOT 2D (armor silently dropped).
+	var pip_armor_target_pools := _pools()
+	pip_armor_target_pools["attacker_pool"] = {"dice": 20, "pips": 0}  # reliably hit -> target soak rolled
+	pip_armor_target_pools["target_armor"] = {"protection_energy": "+2", "protection_physical": "+2"}
+	var pip_armor_target: Dictionary = model.resolve_exchange(rules, model.initial_state(), {"wound_severity": 0}, pip_armor_target_pools, 12.0, 0, 9164)
+	_assert_equal(pip_armor_target["target_damage"]["soak_roll"]["pool"], "2D+2", "F64: a bare-'+2' armor applies its +2 soak end-to-end (not 2D with the armor dropped)")
+
 	var covered_target_pools := _pools()
 	covered_target_pools["attacker_pool"] = {"dice": 20, "pips": 0}
 	covered_target_pools["target_armor"] = _torso_vest()

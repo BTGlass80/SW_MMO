@@ -30,6 +30,17 @@ func _init() -> void:
 	_assert_equal(ArmorConditionModel.covers_location(torso_vest, "left_arm"), false, "torso armor does not cover arms")
 	_assert_equal(ArmorConditionModel.armor_for_location(torso_vest, "torso").is_empty(), false, "covered location returns armor")
 	_assert_equal(ArmorConditionModel.armor_for_location(torso_vest, "left_arm").is_empty(), true, "uncovered location returns empty armor")
+	# F64: WEG's bare-"+2" armor protection (pip-only, no "D") must be recognized as protection. The
+	# old has_pips check rejected any token without "D", so a "+2" armor reported NO protection ->
+	# covered_locations [] -> armor_for_location {} -> ZERO soak applied in combat (undoing F60).
+	var pip_vest := {"protection_energy": "+2"}                        # bare pip-only; implicit full coverage
+	var pip_torso := {"protection_physical": "+2", "coverage": ["torso"]}
+	_assert_equal(ArmorConditionModel.has_soak_protection(pip_vest), true, "bare '+2' armor has soak protection")
+	_assert_equal(ArmorConditionModel.has_soak_protection({"protection_energy": "+0"}), false, "'+0' armor has no protection")
+	_assert_equal(ArmorConditionModel.covered_locations(pip_vest), ["full"], "bare '+2' armor covers (full by default)")
+	_assert_equal(ArmorConditionModel.armor_for_location(pip_vest, "torso").is_empty(), false, "bare '+2' armor is returned for a hit location")
+	_assert_equal(ArmorConditionModel.armor_for_location(pip_torso, "chest").is_empty(), false, "bare '+2' torso armor covers chest")
+	_assert_equal(ArmorConditionModel.degradation_pips_for_damage(pip_vest, {"margin": 2, "wound": {"severity": 1}}), 1, "bare '+2' armor degrades (protection is recognized)")
 	_assert_equal(ArmorConditionModel.hit_location_for_attack({"attack": {"total": 12}}), "torso", "attack total derives deterministic hit location")
 	_assert_equal(ArmorConditionModel.hit_location_for_attack({"attack": {"total": 12}}, "left hand"), "left_arm", "hit location override is normalized")
 	_assert_equal(ArmorConditionModel.degradation_pips_for_damage(vest, no_damage), 0, "no damage does not degrade armor")

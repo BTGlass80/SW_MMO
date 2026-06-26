@@ -117,8 +117,16 @@ static func degradation_text(label: String, before: int, after: int, degraded: i
 
 static func _pool_text_has_pips(pool_text: String) -> bool:
 	var cleaned := pool_text.strip_edges().to_upper().replace(" ", "")
-	if cleaned == "" or not cleaned.contains("D"):
+	if cleaned == "":
 		return false
+	# A pip-only token (no "D", e.g. WEG's bare "+2" armor protection) is +N pips, not nothing —
+	# mirror d6_rules.parse_pool_or_pips. Without this a "+2" armor reports no protection, drops out
+	# of covered_locations, and armor_for_location returns {}, so it's NEVER applied in combat —
+	# silently undoing F60's parse fix (the armor would grant ZERO soak instead of +2).
+	if not cleaned.contains("D"):
+		if cleaned.begins_with("+"):
+			cleaned = cleaned.substr(1)
+		return int(cleaned) > 0
 	var parts := cleaned.split("D", false)
 	var dice := int(parts[0]) if parts.size() > 0 and parts[0] != "" else 0
 	var pips := 0
