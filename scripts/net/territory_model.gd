@@ -87,6 +87,31 @@ func accrue_income() -> Dictionary:
 		claim["income"] = {"last_yield": payout}
 	return gained
 
+# --- F59: persistence (org claims + treasuries survive a server restart) ---
+## Serialize the org-claim state. The _node_claims index is DERIVED (one claim per node) and is
+## rebuilt from claims on restore, so it is not stored.
+func to_dict() -> Dictionary:
+	return {
+		"schema_version": SCHEMA_VERSION,
+		"claims": claims.duplicate(true),
+		"org_credits": org_credits.duplicate(true),
+	}
+
+## Restore the org-claim state produced by to_dict(); rebuilds the node->claim index.
+func apply_persisted(data: Dictionary) -> void:
+	if data.is_empty():
+		return
+	claims = (data.get("claims", {}) as Dictionary).duplicate(true)
+	var saved_credits: Dictionary = data.get("org_credits", {})
+	org_credits = {}
+	for org_id in saved_credits:
+		org_credits[org_id] = int(saved_credits[org_id])  # JSON numbers parse as float; keep credits int
+	_node_claims = {}
+	for claim_id in claims:
+		var node_id := String((claims[claim_id] as Dictionary).get("node_id", ""))
+		if node_id != "":
+			_node_claims[node_id] = claim_id
+
 # --- pure derivation (static) ---
 static func influence_tier(org_influence: int) -> String:
 	if org_influence >= CONTROL_AT:

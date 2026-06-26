@@ -60,6 +60,24 @@ func _init() -> void:
 	_assert_true(not t.has_claim("c1"), "released claim is gone")
 	_assert_equal(t.claim_for_node("n1"), "", "released node is free to claim again")
 
+	# --- F59: org claims + treasuries survive a server restart (to_dict / apply_persisted) ---
+	var live: Territory = Territory.new()
+	live.claim_node("pc1", "pn1", "tatooine.jundland", "org_hutt", "contested", 50)  # dominant
+	live.claim_node("pc2", "pn2", "tatooine.dune_sea", "org_cis", "lawless", 80)     # control
+	live.accrue_income()
+	var blob := live.to_dict()
+	var booted: Territory = Territory.new()
+	booted.apply_persisted(blob)
+	_assert_equal(booted.to_dict(), blob, "F59: apply_persisted reproduces the exact saved claim state")
+	_assert_equal(booted.claim_count(), 2, "F59: claims restored across restart")
+	_assert_equal(booted.get_org_credits("org_hutt"), live.get_org_credits("org_hutt"), "F59: org treasury restored")
+	_assert_equal(booted.claim_for_node("pn2"), "pc2", "F59: node->claim index rebuilt on restore")
+	# The rebuilt index still enforces one-claim-per-node after a restart.
+	_assert_true(booted.claim_node("pc2b", "pn2", "tatooine.dune_sea", "org_hutt", "lawless", 80).is_empty(), "F59: restored node index still rejects a double claim")
+	# Income keeps accruing post-restore (proves the claims are fully live, not just inert data).
+	booted.accrue_income()
+	_assert_equal(booted.get_org_credits("org_cis"), live.get_org_credits("org_cis") * 2, "F59: restored claims keep yielding income")
+
 	_finish()
 
 func _finish() -> void:

@@ -138,10 +138,12 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	store = PersistenceStore.new("user://persistence")
 	zones = ZoneState.new()
 	_load_zones()  # seed the multi-zone roster (the Director ticks them all)
-	_load_world_state()  # F58: restore persisted faction influence + pending over the seeded roster
 	territory = Territory.new()
 	_org_model = OrgModel.new()
 	_pending_model = PendingInfluence.new()
+	# F58/F59: restore the persisted world (faction influence + pending + org claims) over the
+	# seeded roster. AFTER territory/pending are created so their state can be restored too.
+	_load_world_state()
 	_derived = DerivedStats.new()
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
@@ -929,6 +931,8 @@ func _save_world_state() -> void:
 		return
 	var world := zones.to_dict()
 	world["pending_zone_influence"] = _pending_zone_influence
+	if territory != null:
+		world["territory"] = territory.to_dict()  # F59: org claims + treasuries
 	store.save_world(world)
 
 func _load_world_state() -> void:
@@ -939,7 +943,10 @@ func _load_world_state() -> void:
 		return
 	zones.apply_persisted(world)
 	_pending_zone_influence = world.get("pending_zone_influence", [])
-	print("[persist] world state restored (tick_index=%d, pending=%d)" % [zones.tick_index, _pending_zone_influence.size()])
+	if territory != null:
+		territory.apply_persisted(world.get("territory", {}))  # F59: restore org claims + treasuries
+	print("[persist] world state restored (tick_index=%d, pending=%d, claims=%d)" % [
+		zones.tick_index, _pending_zone_influence.size(), territory.claim_count() if territory != null else 0])
 
 # E27: advance each zone's ambient NPC roster (Director-paced, deterministic, hash-seeded
 # like zone_state). Folded into the per-peer snapshot as npcs[].
