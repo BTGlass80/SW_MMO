@@ -49,6 +49,7 @@ var _account := "guest"
 var _name := ""
 var _species := ""
 var _quickstart := false
+var _no_register := false   # headless test: connect but never authenticate (verifies unauth peers stay out of the world)
 var _raise_skill := ""
 var _zone := ""
 var _equip := ""            # headless: "slot:item_key" to equip once after connecting
@@ -154,6 +155,7 @@ func _parse_args() -> void:
 	_name = _arg_value("--name")
 	_species = _arg_value("--species")
 	_quickstart = args.has("--quickstart")
+	_no_register = args.has("--no-register")
 	_raise_skill = _arg_value("--raise-skill")
 	_zone = _arg_value("--zone")  # optional starting zone (server validates)
 	_equip = _arg_value("--equip")  # headless "slot:item_key" equip-swap test affordance
@@ -357,6 +359,12 @@ func _on_client_connected() -> void:
 		build["secret"] = _secret  # E26: bind/authorize this account
 	if _start_wound != "":
 		build["wound"] = _start_wound  # DIV-0012 test: seed a recoverable wound on a new char
+	if _no_register:
+		# Connected but deliberately un-authenticated: the server must NOT place this peer in the
+		# world (no avatar, no simulation). Used by the unauth-peer two-process check.
+		print("[unauth] peer %d connected WITHOUT registering" % _local_id)
+		_set_status("Connected as peer %d — not registering (unauth)." % _local_id)
+		return
 	Net.send_register(_account, _name, build)
 	var who := _name if _name != "" else "account %s" % _account
 	_set_status("Connected as peer %d (%s)." % [_local_id, who])

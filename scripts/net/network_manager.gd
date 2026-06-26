@@ -189,12 +189,10 @@ func set_local_input(move: Vector2, yaw: float, jump: bool = false) -> void:
 func _on_peer_connected(id: int) -> void:
 	if mode != Mode.SERVER:
 		return
-	state.add_player(id)
-	if arena != null:
-		arena.register_player(id)
-	_peer_zones[id] = _default_zone  # new peers start in the default zone
-	print("[net] peer %d joined (players=%d)" % [id, state.player_count()])
-	player_joined.emit(id)
+	# A peer enters the world (state/arena/zone) ONLY on a successful register_account auth — not on
+	# raw ENet connect — so an un-authenticated peer is never a simulated, snapshot-broadcast ghost
+	# avatar. Its gameplay RPCs are dropped too: they all gate on state.has_player (false until auth).
+	print("[net] peer %d connected (awaiting auth)" % id)
 
 func _on_peer_disconnected(id: int) -> void:
 	if mode != Mode.SERVER:
@@ -287,8 +285,8 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	var sender := multiplayer.get_remote_sender_id()
 	if not _rate_ok(sender):
 		return
-	if not state.has_player(sender):
-		return
+	# NOTE: do NOT require state.has_player here — a first-time auth is exactly the case where the
+	# peer is not yet in the world. World-entry happens below, only after auth+bind succeeds.
 	var character_id := account_id.strip_edges()
 	if character_id == "":
 		character_id = "peer_%d" % sender
@@ -310,6 +308,15 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 			auth_result.rpc_id(sender, {"ok": false, "reason": "already_logged_in", "account_id": character_id})
 			return
 	_peer_characters[sender] = character_id
+	# World-entry: an authenticated peer enters the simulation HERE (formerly on raw connect). First
+	# auth -> add to state/arena at the default zone; a re-register (already in state) skips this.
+	if not state.has_player(sender):
+		state.add_player(sender)
+		if arena != null:
+			arena.register_player(sender)
+		_peer_zones[sender] = _default_zone
+		print("[net] peer %d entered world via auth (players=%d)" % [sender, state.player_count()])
+		player_joined.emit(sender)
 	# Optional starting zone (carried on the build dict so the RPC signature is stable);
 	# only honored when it names a real loaded zone, else the peer keeps the default. With no
 	# explicit request, restore the last-traveled zone persisted on the record (DIV-0014).
