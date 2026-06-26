@@ -176,6 +176,39 @@ func zone_summary(zone_id: String) -> Dictionary:
 		"tick": int(zone.get("tick", 0)),
 	}
 
+## F58: serialize the MUTABLE world-sim state (player-driven influence, active events, per-zone tick)
+## so the persistent-world territory survives a SERVER RESTART. The seed-fixed fields (baseline,
+## security_base, display_name) are re-seeded by the zone loader on boot, so only runtime-mutated
+## state is persisted; the DERIVED alert/security are recomputed on restore, never trusted from disk.
+func to_dict() -> Dictionary:
+	var out := {}
+	for zone_id in zones:
+		var zone: Dictionary = zones[zone_id]
+		out[zone_id] = {
+			"influence": (zone.get("influence", {}) as Dictionary).duplicate(),
+			"active_events": (zone.get("active_events", []) as Array).duplicate(true),
+			"tick": int(zone.get("tick", 0)),
+		}
+	return {"schema_version": SCHEMA_VERSION, "tick_index": tick_index, "zones": out}
+
+## F58: restore the mutable state produced by to_dict() onto the ALREADY-SEEDED roster (call AFTER
+## the zones are added). Zones in the data but not in the roster are ignored; seeded zones absent
+## from the data keep their seed. Influence is re-normalized and alert/security are re-derived.
+func apply_persisted(data: Dictionary) -> void:
+	if data.is_empty():
+		return
+	tick_index = int(data.get("tick_index", tick_index))
+	var saved_zones: Dictionary = data.get("zones", {})
+	for zone_id in saved_zones:
+		if not zones.has(zone_id):
+			continue
+		var saved: Dictionary = saved_zones[zone_id]
+		var zone: Dictionary = zones[zone_id]
+		zone["influence"] = _normalize_influence(saved.get("influence", zone.get("influence", {})))
+		zone["active_events"] = (saved.get("active_events", []) as Array).duplicate(true)
+		zone["tick"] = int(saved.get("tick", zone.get("tick", 0)))
+		_recompute(zone)
+
 ## Bounded mechanical modifiers for an event type (E13). Returns a COPY of the
 ## NEUTRAL_EFFECTS shape (all 0) for an unknown/absent type. Owner-tunable.
 static func effects_for_event(event_type: String) -> Dictionary:

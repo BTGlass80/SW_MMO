@@ -138,6 +138,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	store = PersistenceStore.new("user://persistence")
 	zones = ZoneState.new()
 	_load_zones()  # seed the multi-zone roster (the Director ticks them all)
+	_load_world_state()  # F58: restore persisted faction influence + pending over the seeded roster
 	territory = Territory.new()
 	_org_model = OrgModel.new()
 	_pending_model = PendingInfluence.new()
@@ -919,6 +920,27 @@ func _fold_pending_influence() -> void:
 			String(zid), str(deltas), str(z.get("influence", {})),
 			String(z.get("alert_level", "")), zones.effective_security(String(zid))])
 
+# F58: persist/restore the server-global world record (faction-influence zone state + the
+# uncommitted pending influence). Previously the entire player-driven territory reset to its seed on
+# every reboot; now it survives a restart. Saved each Director tick; loaded once on boot after the
+# roster is seeded. (Org territory CLAIMS in the separate Territory model are a follow-up slice.)
+func _save_world_state() -> void:
+	if store == null or zones == null:
+		return
+	var world := zones.to_dict()
+	world["pending_zone_influence"] = _pending_zone_influence
+	store.save_world(world)
+
+func _load_world_state() -> void:
+	if store == null or zones == null:
+		return
+	var world := store.load_world()
+	if world.is_empty():
+		return
+	zones.apply_persisted(world)
+	_pending_zone_influence = world.get("pending_zone_influence", [])
+	print("[persist] world state restored (tick_index=%d, pending=%d)" % [zones.tick_index, _pending_zone_influence.size()])
+
 # E27: advance each zone's ambient NPC roster (Director-paced, deterministic, hash-seeded
 # like zone_state). Folded into the per-peer snapshot as npcs[].
 func _advance_ambient() -> void:
@@ -1050,6 +1072,7 @@ func _physics_process(delta: float) -> void:
 					_fold_pending_influence()  # E24: fold player activity into influence first
 					zones.director_tick()
 					_advance_ambient()  # E27: advance the ambient NPC roster per zone
+					_save_world_state()  # F58: persist the advanced territory so it survives a restart
 				_recover_wounds()  # DIV-0012: natural wound recovery for connected players
 			_resource_accum += delta
 			if _resource_accum >= resource_tick_seconds:

@@ -21,18 +21,26 @@ func _init(root_dir: String = "user://persistence") -> void:
 func record_path(character_id: String) -> String:
 	return "%s/%s.json" % [_root, _sanitize(character_id)]
 
+## F58: the single server-global world record (territory/zone influence etc.). The .dat extension
+## can never collide with a character's <id>.json, so no sanitized id can clobber it.
+func world_path() -> String:
+	return "%s/world_state.dat" % _root
+
 func has_record(character_id: String) -> bool:
 	# A surviving .tmp (a crash in save_record's rename window) still counts as a character so the
 	# server loads + recovers it rather than re-creating it from scratch.
 	return FileAccess.file_exists(record_path(character_id)) or FileAccess.file_exists(record_path(character_id) + ".tmp")
 
 func load_record(character_id: String) -> Dictionary:
-	var record := _read_json(record_path(character_id))
+	return _load_recovering(record_path(character_id))
+
+# Read a JSON file, falling back to a surviving .tmp if the live file is missing/corrupt (a crash
+# in save's rename window left the freshly-written copy under .tmp).
+func _load_recovering(path: String) -> Dictionary:
+	var record := _read_json(path)
 	if not record.is_empty():
 		return record
-	# Crash-recovery: if the live file is missing/corrupt but the freshly-written copy survived under
-	# .tmp (a crash in the rename window below), recover from it instead of losing the character.
-	return _read_json(record_path(character_id) + ".tmp")
+	return _read_json(path + ".tmp")
 
 func _read_json(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
@@ -52,13 +60,23 @@ func _read_json(path: String) -> Dictionary:
 	return parsed
 
 func save_record(character_id: String, record: Dictionary) -> bool:
+	return _atomic_write(record_path(character_id), record)
+
+## F58: persist the single server-global world record (territory/zone influence etc.), atomically.
+func save_world(record: Dictionary) -> bool:
+	return _atomic_write(world_path(), record)
+
+## F58: load the world record (territory/zone influence etc.); {} if none yet.
+func load_world() -> Dictionary:
+	return _load_recovering(world_path())
+
+# Atomic-ish write: stamp + serialize to a sibling .tmp, then rename it over the live file. A crash
+# mid-write can only ever truncate the .tmp — the live file is never left half-written (which would
+# make the loader return {} and the server silently re-create the record as brand-new, losing it).
+# The 30s autosave hits this window continuously.
+func _atomic_write(final_path: String, record: Dictionary) -> bool:
 	var to_write := record.duplicate(true)
 	to_write["last_saved_unix"] = Time.get_unix_time_from_system()
-	# Atomic-ish write: serialize to a sibling .tmp, then rename it over the live file. A crash
-	# mid-write can only ever truncate the .tmp — the live record is never left half-written (which
-	# would make load_record() return {} and the server silently re-create the character as
-	# brand-new, losing it). The 30s autosave hits this window continuously.
-	var final_path := record_path(character_id)
 	var tmp_path := final_path + ".tmp"
 	var file := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if file == null:

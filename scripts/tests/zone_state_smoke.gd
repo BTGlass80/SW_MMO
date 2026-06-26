@@ -125,6 +125,28 @@ func _init() -> void:
 			nd.director_tick()
 	_assert_equal(na.get_zone("z").get("influence"), nb.get_zone("z").get("influence"), "event nudge is deterministic")
 
+	# --- F58: world-sim state survives a SERVER RESTART (to_dict / apply_persisted roundtrip) ---
+	# Mutate a zone (player influence + a couple Director ticks), serialize, then restore onto a
+	# freshly re-seeded roster (as a rebooted server would) and confirm an exact reproduction.
+	var live: ZoneState = ZoneState.new()
+	live.add_zone("persist.zone", "contested", {"republic": 10, "hutt": 5}, {"republic": 10, "hutt": 5})
+	live.apply_influence_delta("persist.zone", "hutt", 80)  # hutt -> 85 (drives alert + security)
+	live.director_tick()
+	live.director_tick()
+	var blob := live.to_dict()
+	var booted: ZoneState = ZoneState.new()
+	booted.add_zone("persist.zone", "contested", {"republic": 10, "hutt": 5}, {"republic": 10, "hutt": 5})  # re-seed on boot
+	booted.apply_persisted(blob)
+	_assert_equal(booted.to_dict(), blob, "F58: re-seed + apply_persisted reproduces the exact saved world state")
+	_assert_equal(booted.tick_index, live.tick_index, "F58: tick_index restored across restart")
+	_assert_equal(booted.zone_summary("persist.zone"), live.zone_summary("persist.zone"), "F58: zone summary (influence + recomputed alert/security + events) matches after restore")
+	# Defensive: a blob zone absent from the roster is ignored; a seeded zone absent from the blob keeps its seed.
+	var partial: ZoneState = ZoneState.new()
+	partial.add_zone("other.zone", "secured", {"republic": 20})
+	partial.apply_persisted(blob)  # blob has persist.zone (not seeded here) -> ignored, no crash
+	_assert_equal(int(partial.get_zone("other.zone").get("influence", {}).get("republic", -1)), 20, "F58: a zone absent from the blob keeps its seed")
+	_assert_true(not partial.has_zone("persist.zone"), "F58: a blob zone absent from the roster is not added")
+
 	_finish()
 
 func _finish() -> void:

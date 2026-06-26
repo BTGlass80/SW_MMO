@@ -64,6 +64,19 @@ func _init() -> void:
 	_assert_true(not FileAccess.file_exists(store.record_path("char_recover") + ".tmp"), "re-save clears the recovery .tmp")
 	_assert_equal(String(store.load_record("char_recover").get("name", "")), "Recovered", "the repaired live file loads cleanly")
 
+	# F58: the server-global world record (territory/zone state) round-trips and is atomic.
+	_assert_true(store.load_world().is_empty(), "no world record yet -> empty")
+	var world := {"schema_version": 1, "tick_index": 7, "zones": {"z.a": {"influence": {"hutt": 85}, "active_events": [], "tick": 7}}}
+	_assert_true(store.save_world(world), "world record saves")
+	_assert_true(not FileAccess.file_exists(store.world_path() + ".tmp"), "no .tmp lingers after a world save")
+	var loaded_world := store.load_world()
+	_assert_equal(int(loaded_world.get("tick_index", -1)), 7, "world tick_index round-trips")
+	_assert_equal(int(((loaded_world.get("zones", {}) as Dictionary).get("z.a", {}) as Dictionary).get("influence", {}).get("hutt", -1)), 85, "world zone influence round-trips")
+	var world_store2: PersistenceStore = PersistenceStore.new(TEST_ROOT)
+	_assert_equal(int(world_store2.load_world().get("tick_index", -1)), 7, "a fresh store instance sees the saved world record (survives restart)")
+	# The world record uses a .dat path, so it can never collide with a character's <id>.json.
+	_assert_true(store.world_path().ends_with(".dat"), "world record path is collision-proof (.dat)")
+
 	# Wound-state mapping is a bijection over the ladder.
 	for severity in range(0, 6):
 		var state := PersistenceStore.wound_state_for_severity(severity)
