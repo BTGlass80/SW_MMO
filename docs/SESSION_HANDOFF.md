@@ -6,8 +6,8 @@ Read this top to bottom, then execute **§1 First actions**. You should not need
 the owner anything to begin — the work is queued and the guardrails are explicit.
 
 Written 2026-06-25 after a full 5-reader codebase audit; **reconciled through follow-up
-F32** (Wave E + F1–F32 complete, RPC surface 21, 59 smokes). If git HEAD has moved past the
-F32 commit, trust the code + `docs/UNATTENDED_BACKLOG.md` Log over this file.
+F65** (Wave E + F1–F65 complete, RPC surface 21, 59 smokes, DIV-0001..0016). If git HEAD has
+moved past the F65 commit, trust the code + `docs/UNATTENDED_BACKLOG.md` Log over this file.
 
 ---
 
@@ -27,7 +27,7 @@ F32 commit, trust the code + `docs/UNATTENDED_BACKLOG.md` Log over this file.
   equipment-swap, org claim/release commands with treasury income, the player→influence
   causal loop, chat/emote, account-auth + rate-limit + record cache, and a Director-paced
   ambient NPC sim. Plus a review-driven **hardening** pass (2 `register_account` fixes) and a
-  long **follow-up series F1–F32** (each gate-green + two-process verified) that grew the slice
+  long **follow-up series F1–F65** (each gate-green + two-process verified) that grew the slice
   into a genuinely playable MMO and then hardened it. Highlights:
   - **Wound/medical loop (F7–F10, F17, F19):** natural self-recovery (DIV-0012) + First Aid by a
     medic (DIV-0013, reaches incapacitated/mortally) + a colour-coded own-condition HUD + other
@@ -52,26 +52,49 @@ F32 commit, trust the code + `docs/UNATTENDED_BACKLOG.md` Log over this file.
     becomes reachable only when the owner-gated PvP / hostile-NPC / death path lands).
   - **Robustness/guards (F4–F6, F10, F14, F21):** record-cache eviction on disconnect; FIVE [HOT]
     composition guards (claims/auth/First Aid/zone/chat) locked into the gate.
+  - **Combat-depth + medical arc (F33–F54):** the owner-directed **non-lethal medical loop** (F44,
+    DIV-0016 — the B1 remote returns real fire capped at Wounded(2), so the wound→recovery→First-Aid
+    loop is reachable end-to-end) + a full WEG tactical layer — two-way return fire (F45), Perception
+    initiative (F48), cover / active-dodge / full-dodge stances (F50–F52), and target/condition HUDs
+    (F46/F47); plus faction legibility (rank authority + allegiance + online org count, F34–F37/F53)
+    and chat/`/help`+keybinds UX (F39–F42/F54).
+  - **WEG-fidelity + durability + hardening pass (F55–F65):** the **Force-Point DAMAGE-doubling fix**
+    (F55 — FP doubled attack/dodge/soak but not damage) and the **armor pip-only "+2" parse fixes**
+    (F60 + F64 — TWO parse sites: `d6_rules.parse_pool` read "+2" as 2D, and `armor_condition_model`
+    then dropped a "+2" armor entirely; both now treat a no-"D" token as +N pips, restoring WEG soak);
+    the **full restart-durable persistent world** — atomic character saves + crash recovery (F56),
+    and a single `world_state.dat` carrying faction-influence/Director/pending (F58), org claims +
+    treasuries (F59), and claim-gating territory-influence (F61); **auth hardening** — an
+    un-registered peer is barred from entering the world (F57) AND from chat (F62); earn-loop gate
+    coverage (F63, kills→claim threshold); and **combat-envelope zone-scoping** (F65 — combat was
+    broadcast galaxy-wide; now same-zone only, like chat). All gate-green + two-process verified.
 - **Green bar (current truth):** the **full** `tools/check_project.ps1` passes — **59
   GDScript smokes** + 7 python + import + launch (green at every commit). DIV-0001..0016.
-- **STATUS: Wave E + the F1–F32 follow-ups are DONE; the prototype is a playable, populated,
-  traversable multi-zone MMO** (chargen/progression → species-paced movement → combat (CP/FP) →
-  full visible medical loop → equip → travel/presence → org claims+treasury → say/ooc/org chat +
-  command bar w/ GUI input → character-sheet panel → news → rendered NPCs), all gate-guarded. **The
-  unblocked, non-owner-gated backlog is DRY** — the last five ticks (F28–F32) were correctness/
-  faithfulness audit fixes, not new features; the substantive remainders cluster behind the
-  **economy/vendor** (unlocks melee + the orphaned creature_spawn/vendor/reputation models) and the
-  parked owner forks (§5: siege, Force access, PvP-consent, **the death/damage loop that would make
-  F31/F32 reachable**, death-penalty numbers, CP rates, LLM-Director, visual A1b/P1). A fresh
-  session should **confirm green and HOLD for an owner steer**, not invent owner-gated scope. (Full
-  history: `docs/NIGHTLY_HANDOFF.md` + the `UNATTENDED_BACKLOG.md` Log — F1–F32.)
+- **STATUS: Wave E + the F1–F65 follow-ups are DONE; the prototype is a playable, populated,
+  traversable multi-zone MMO** (chargen/progression → species-paced movement → combat (CP/FP/cover/
+  dodge/initiative) → full visible non-lethal medical loop → equip → travel/presence → org
+  claims+treasury, restart-durable → say/ooc/org chat + command bar w/ GUI input → character-sheet
+  panel → news → rendered NPCs), all gate-guarded. **The unblocked, non-owner-gated backlog is DRY
+  and the frontier has been EXHAUSTIVELY audited** — beyond the F33–F54 depth arc, the F55–F65 pass
+  fixed two real WEG-fidelity combat bugs (the Force-Point damage doubling F55; the armor "+2"
+  misparse at BOTH parse sites F60+F64), made the player-driven world fully restart-durable
+  (F56/F58/F59/F61), hardened auth (F57/F62), and zone-scoped combat visibility (F65). The
+  remaining non-gated frontier is verified exhausted across **two survey Workflows + an exhaustive
+  space/presentation/core audit + direct RPC/RNG/data/broadcast audits** — every angle now clean or
+  fixed. The substantive remainders cluster behind the **economy/vendor SPEND side** (unlocks melee
+  + the orphaned creature_spawn/vendor/reputation models) and the parked owner forks (§5: siege,
+  Force access, PvP-consent, **the LETHAL death/damage loop that lifts the DIV-0016 sparring cap and
+  makes F31/F32 reachable**, death-penalty numbers, CP rates, the starting cp_wallet chargen-balance,
+  LLM-Director, visual A1b/P1). A fresh session should **confirm green and HOLD for an owner steer**,
+  not invent owner-gated scope. (Full history: `docs/NIGHTLY_HANDOFF.md` + the
+  `UNATTENDED_BACKLOG.md` Log — F1–F65.)
 
 ---
 
 ## 1. First actions (do these now, in order)
 
 1. **Orient:** read `CLAUDE.md`, this file, and `docs/UNATTENDED_BACKLOG.md` (the Wave E
-   queue + Guardrails + the F1–F44 Log). Skim `docs/DIVERGENCE_LEDGER.md` (DIV-0001..0016).
+   queue + Guardrails + the F1–F65 Log). Skim `docs/DIVERGENCE_LEDGER.md` (DIV-0001..0016).
 2. **Confirm the baseline is green** before changing anything:
    ```powershell
    .\tools\check_project.ps1 -GodotConsole "C:\Godot 4\Godot_v4.6.3-stable_win64_console.exe"
@@ -276,8 +299,11 @@ does NOT pre-decide any of these.)
   smoked but **orphaned** — wiring needs the owner-gated economy).
 - **Net layer** `scripts/net/*`: `world_state` (pure 20 Hz movement truth),
   `combat_arena` (pure ~5s WEG action-window resolution, server seed),
-  `persistence_store` (JSON per character), `zone_state` (Director: influence/alert/
-  security/events), `territory_model` (org claims/income + a `submit_claim_node`/
+  `persistence_store` (atomic `.tmp`→rename JSON per character + crash-recovery, F56; PLUS a single
+  server-global `world_state.dat` carrying the restart-durable Director/territory state — faction
+  influence + pending F58, org claims + treasuries F59, claim-gating territory-influence F61),
+  `zone_state` (Director: influence/alert/security/events; `to_dict`/`apply_persisted` for the
+  world record), `territory_model` (org claims/income + `to_dict`/`apply_persisted` + a `submit_claim_node`/
   `submit_release_claim` command layer wired into `network_manager`), plus the Wave E pure
   models `security_gate`, `pending_influence_model`, `org_model`, `chat_model`,
   `account_auth_model`, `ambient_sim_model`; `network_manager` + `net_world` (the two **HOT** files).
