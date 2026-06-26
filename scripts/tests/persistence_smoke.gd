@@ -42,6 +42,28 @@ func _init() -> void:
 	var store2: PersistenceStore = PersistenceStore.new(TEST_ROOT)
 	_assert_true(store2.has_record("char_a"), "a fresh store instance sees the saved record")
 
+	# F56: the atomic write (.tmp -> rename) leaves no .tmp behind after a successful save.
+	_assert_true(not FileAccess.file_exists(store.record_path("char_a") + ".tmp"), "no .tmp lingers after a successful save")
+
+	# F56: simulate a crash in the rename window — the live file is missing/corrupt but the
+	# freshly-written copy survived as .tmp. has_record + load_record must recover the character,
+	# not treat it as brand-new (which would silently overwrite it on the next save = data loss).
+	var recover := PersistenceStore.apply_combat(fresh, {"player_character_points": 3, "player_force_points": 1, "player_wound_severity": 0})
+	recover["name"] = "Recovered"
+	var tmp_f := FileAccess.open(store.record_path("char_recover") + ".tmp", FileAccess.WRITE)
+	tmp_f.store_string(JSON.stringify(recover, "\t"))
+	tmp_f.close()
+	var bad_f := FileAccess.open(store.record_path("char_recover"), FileAccess.WRITE)
+	bad_f.store_string("{ truncated half-writ")  # a half-written live file, as a crash would leave
+	bad_f.close()
+	_assert_true(store.has_record("char_recover"), "has_record sees a recoverable .tmp when the live file is corrupt")
+	var recovered := store.load_record("char_recover")
+	_assert_equal(String(recovered.get("name", "")), "Recovered", "load_record recovers the character from the surviving .tmp")
+	# A clean re-save then repairs the live file and clears the .tmp.
+	_assert_true(store.save_record("char_recover", recovered), "re-save after recovery succeeds")
+	_assert_true(not FileAccess.file_exists(store.record_path("char_recover") + ".tmp"), "re-save clears the recovery .tmp")
+	_assert_equal(String(store.load_record("char_recover").get("name", "")), "Recovered", "the repaired live file loads cleanly")
+
 	# Wound-state mapping is a bijection over the ladder.
 	for severity in range(0, 6):
 		var state := PersistenceStore.wound_state_for_severity(severity)

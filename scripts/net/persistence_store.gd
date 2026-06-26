@@ -22,15 +22,31 @@ func record_path(character_id: String) -> String:
 	return "%s/%s.json" % [_root, _sanitize(character_id)]
 
 func has_record(character_id: String) -> bool:
-	return FileAccess.file_exists(record_path(character_id))
+	# A surviving .tmp (a crash in save_record's rename window) still counts as a character so the
+	# server loads + recovers it rather than re-creating it from scratch.
+	return FileAccess.file_exists(record_path(character_id)) or FileAccess.file_exists(record_path(character_id) + ".tmp")
 
 func load_record(character_id: String) -> Dictionary:
-	if not has_record(character_id):
+	var record := _read_json(record_path(character_id))
+	if not record.is_empty():
+		return record
+	# Crash-recovery: if the live file is missing/corrupt but the freshly-written copy survived under
+	# .tmp (a crash in the rename window below), recover from it instead of losing the character.
+	return _read_json(record_path(character_id) + ".tmp")
+
+func _read_json(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
 		return {}
-	var file := FileAccess.open(record_path(character_id), FileAccess.READ)
+	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return {}
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	# Use the quiet instance parser (not JSON.parse_string) so a corrupt/half-written file — which
+	# the crash-recovery path deliberately encounters — returns {} silently instead of logging an
+	# engine parse error (which would be noise and could trip the smoke gate's error grep).
+	var json := JSON.new()
+	if json.parse(file.get_as_text()) != OK:
+		return {}
+	var parsed: Variant = json.data
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return {}
 	return parsed
@@ -38,12 +54,25 @@ func load_record(character_id: String) -> Dictionary:
 func save_record(character_id: String, record: Dictionary) -> bool:
 	var to_write := record.duplicate(true)
 	to_write["last_saved_unix"] = Time.get_unix_time_from_system()
-	var file := FileAccess.open(record_path(character_id), FileAccess.WRITE)
+	# Atomic-ish write: serialize to a sibling .tmp, then rename it over the live file. A crash
+	# mid-write can only ever truncate the .tmp — the live record is never left half-written (which
+	# would make load_record() return {} and the server silently re-create the character as
+	# brand-new, losing it). The 30s autosave hits this window continuously.
+	var final_path := record_path(character_id)
+	var tmp_path := final_path + ".tmp"
+	var file := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if file == null:
 		return false
 	file.store_string(JSON.stringify(to_write, "\t"))
 	file.close()
-	return true
+	var dir := DirAccess.open(_root)
+	if dir == null:
+		return false
+	var final_name := final_path.get_file()
+	var tmp_name := tmp_path.get_file()
+	if dir.file_exists(final_name) and dir.remove(final_name) != OK:
+		return false
+	return dir.rename(tmp_name, final_name) == OK
 
 func default_record(character_id: String, account_id: String, display_name: String, spawn: Vector3, yaw: float = 0.0) -> Dictionary:
 	return {
