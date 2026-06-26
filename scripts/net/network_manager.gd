@@ -735,6 +735,12 @@ func submit_chat(channel: String, text: String) -> void:
 	var sender := multiplayer.get_remote_sender_id()
 	if not _rate_ok(sender):
 		return
+	# F62: only authenticated, in-world players may chat. Without this, an un-registered peer (not in
+	# `state` since F57) could still inject chat under the "Spacer-N" default name — submit_chat was
+	# the one any_peer RPC missing the auth gate every other gameplay RPC (input/fire/skill/equip/
+	# heal/zone/claim) already enforces.
+	if not state.has_player(sender):
+		return
 	var speaker := String(state.get_player(sender).get("name", "Spacer-%d" % sender))
 	var result: Dictionary = ChatModel.normalize(channel, text, speaker)
 	if not bool(result["ok"]):
