@@ -34,7 +34,7 @@ const WEAPONS_DATA_PATH := "res://data/weapons_clone_wars.json"
 const ARMOR_DATA_PATH := "res://data/armor_clone_wars.json"
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 const DISABLE_INFLUENCE := 5  # Director zone-influence a disable feeds to the shooter's faction axis (owner-tunable)
-const KILL_TERRITORY_INFLUENCE := 2  # org territory-influence a kill-in-zone earns (FACTION_TERRITORY_DESIGN §2)
+const KILL_TERRITORY_INFLUENCE := Territory.KILL_TERRITORY_INFLUENCE  # F63: defined in territory_model (co-located with the claim floor)
 # DIV-0012: wound tiers a character recovers from naturally (own Strength vs Guide_19 §3
 # difficulty, one Director tick = one recovery interval). incapacitated/mortally_wounded/
 # dead are EXCLUDED — they need First Aid/Medicine by another, and the lethal tiers are

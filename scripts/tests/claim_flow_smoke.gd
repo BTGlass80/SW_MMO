@@ -56,6 +56,24 @@ func _init() -> void:
 	# A contested zone at the floor is also claimable.
 	_assert_true(bool(_claim_outcome(org_model, territory, rank3, "n5", "contested", floor_infl)["ok"]), "contested zone is claimable")
 
+	# F63: the EARN half of the loop (the tests above are the CLAIM half, given influence). A member's
+	# kill-in-zone accrues KILL_TERRITORY_INFLUENCE org territory-influence (network_manager
+	# _accrue_territory_influence: earned = max(0, current + gain), unbounded above), so a claim is
+	# earnable through PLAY. Mirror the accrual and lock the earn->floor->claim crossing.
+	var kill_gain := int(TerritoryModel.KILL_TERRITORY_INFLUENCE)
+	_assert_true(kill_gain > 0, "kill territory-influence gain is positive")
+	# Just below the floor -> a claim is rejected for influence (not yet earned).
+	_assert_equal(String(_claim_outcome(org_model, territory, rank3, "earn_node", "lawless", floor_infl - 1)["reason"]), "influence", "one short of the floor -> influence")
+	# Accrue from zero; the floor is crossed at exactly ceil(floor/gain) kills, not one fewer.
+	var kills_to_claim := int(ceil(float(floor_infl) / float(kill_gain)))
+	var earned := 0
+	for _k in range(kills_to_claim):
+		earned = maxi(earned + kill_gain, 0)
+	_assert_true(earned >= floor_infl, "%d kills reach the claim floor %d (earned %d)" % [kills_to_claim, floor_infl, earned])
+	_assert_true((kills_to_claim - 1) * kill_gain < floor_infl, "one fewer kill stays below the floor (crossing is at exactly %d kills)" % kills_to_claim)
+	# At the crossing the play-earned influence claims a fresh node end-to-end.
+	_assert_true(bool(_claim_outcome(org_model, territory, rank3, "earn_node", "lawless", earned)["ok"]), "%d kills' earned influence (%d) claims the node" % [kills_to_claim, earned])
+
 	if _failures.is_empty():
 		print("claim_flow_smoke: OK")
 		quit(0)

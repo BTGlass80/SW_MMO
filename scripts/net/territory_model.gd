@@ -20,6 +20,10 @@ const CLAIMABLE_BASES := ["contested", "lawless"]
 const CLAIM_MIN_INFLUENCE := 20   # foothold: minimum to claim at all
 const DOMINANT_AT := 40
 const CONTROL_AT := 70
+# Org territory-influence a member's kill-in-zone earns (FACTION_TERRITORY_DESIGN §2): play feeds
+# claim eligibility. Co-located with the claim floor so the earn->claim relationship is gate-testable;
+# network_manager re-exports it for the combat->territory wiring. Owner-tunable.
+const KILL_TERRITORY_INFLUENCE := 2
 
 var claims: Dictionary = {}        # claim_id -> claim dict
 var org_credits: Dictionary = {}   # org_id -> treasury credits (income accrues here)
