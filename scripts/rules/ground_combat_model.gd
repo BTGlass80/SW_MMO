@@ -131,7 +131,14 @@ func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary
 		)
 		target_soak_base = rules.apply_scale_to_soak_pool(target_soak_base, attacker_scale, target_scale)
 		var target_soak_pool: Dictionary = rules.apply_wound_penalty(target_soak_base, target_wound_penalty)
-		var damage_pool: Dictionary = rules.apply_scale_to_damage_pool(pools["damage_pool"], attacker_scale, target_scale)
+		# WEG (Guide_01): a Force Point doubles ALL your dice this round — damage included. This pool
+		# was the one FP-affected roll that previously did NOT double (attack/dodge/soak all do). A
+		# MELEE weapon doubles only the STR portion (not the weapon bonus), so the arena precomputes
+		# damage_pool_fp = 2*STR + bonus; a ranged weapon falls back to doubling its whole flat pool.
+		var base_damage: Dictionary = pools["damage_pool"]
+		if force_point_spent:
+			base_damage = pools.get("damage_pool_fp", rules.apply_force_point(pools["damage_pool"]))
+		var damage_pool: Dictionary = rules.apply_scale_to_damage_pool(base_damage, attacker_scale, target_scale)
 		target_damage = rules.resolve_damage(damage_pool, target_soak_pool, rng)
 		target_wound = target_damage["wound"]
 		target_severity = maxi(target_severity, int(target_wound["severity"]))

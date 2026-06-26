@@ -118,18 +118,26 @@ func _pools_from_sheet(sheet: Dictionary) -> Dictionary:
 	# Damage: a "STR+ND" melee weapon resolves as STR + the weapon bonus via the (now-wired)
 	# derived-stats melee model; a ranged weapon's damage is a flat pool. This fixes melee
 	# weapons dealing 0D — parse_pool can't read "STR+3D" (int("STR+3")==0).
+	var str_pool: Dictionary = _rules.parse_pool(String(attrs.get("strength", "2D")))
 	var damage_text := String(weapon.get("damage", _default_weapon_damage))
 	var damage_pool: Dictionary
+	# Force-Point doubling of the DAMAGE pool (WEG Guide_01): a ranged weapon doubles its whole flat
+	# pool; a MELEE weapon (STR + bonus) doubles only the STR portion (not the weapon bonus), i.e.
+	# 2*STR + bonus = damage_pool + STR. Precomputed here so the rules model can pick the right one.
+	var damage_pool_fp: Dictionary
 	if damage_text.to_upper().begins_with("STR"):
 		var bonus := damage_text.substr(3)
 		if bonus.begins_with("+"):
 			bonus = bonus.substr(1)
 		damage_pool = _derived.melee_damage_pool(_rules, sheet, bonus)
+		damage_pool_fp = _rules.add_pools(damage_pool, str_pool)  # double STR only
 	else:
 		damage_pool = _rules.parse_pool(damage_text)
+		damage_pool_fp = _rules.apply_force_point(damage_pool)     # double the flat ranged pool
 	return {
 		"attacker_pool": _rules.add_pools(_rules.parse_pool(dex), _rules.parse_pool(attack_bonus)),
 		"damage_pool": damage_pool,
+		"damage_pool_fp": damage_pool_fp,
 		"player_dodge_pool": _rules.add_pools(_rules.parse_pool(dex), _rules.parse_pool(dodge_bonus)),
 		"player_soak_pool": _rules.parse_pool(String(attrs.get("strength", "2D"))),
 		# WEG: combat initiative = a Perception roll, so the character's own Perception drives who
@@ -153,6 +161,11 @@ func damage_pool_text(peer_id: int) -> String:
 func perception_pool_text(peer_id: int) -> String:
 	var pools: Dictionary = (_players.get(peer_id, {}) as Dictionary).get("pools", {})
 	return String(_rules.pool_to_string(pools.get("perception_pool", {"dice": 0, "pips": 0})))
+
+## The player's Force-Point-doubled damage pool as a string (F55; for tests / inspection).
+func damage_pool_fp_text(peer_id: int) -> String:
+	var pools: Dictionary = (_players.get(peer_id, {}) as Dictionary).get("pools", {})
+	return String(_rules.pool_to_string(pools.get("damage_pool_fp", {"dice": 0, "pips": 0})))
 
 func remove_player(peer_id: int) -> void:
 	_players.erase(peer_id)

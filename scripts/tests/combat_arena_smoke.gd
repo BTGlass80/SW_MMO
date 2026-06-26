@@ -114,6 +114,7 @@ func _init() -> void:
 	var geared := CombatArena.new(_rules, data, "b1_training_silhouette", weapons, armors)
 	geared.register_player(9, "Gunner", {"attributes": {"dexterity": "3D"}, "equipment": {"weapon": "heavy_blaster", "armor": "blast_vest"}})
 	_assert_equal(geared.damage_pool_text(9), "5D", "equipped heavy blaster sets a 5D damage pool")
+	_assert_equal(geared.damage_pool_fp_text(9), "10D", "F55: a Force Point doubles the RANGED damage pool (5D -> 10D)")
 	geared.register_player(10, "Unarmed", {"attributes": {"dexterity": "3D"}})  # no equipment
 	_assert_equal(geared.damage_pool_text(10), "4D", "no equipment falls back to the default weapon damage")
 
@@ -124,6 +125,7 @@ func _init() -> void:
 	var melee_arena := CombatArena.new(_rules, data, "b1_training_silhouette", mweapons, armors)
 	melee_arena.register_player(11, "Blademaster", {"attributes": {"dexterity": "3D", "strength": "2D"}, "skills": {"melee_combat": "1D"}, "equipment": {"weapon": "vibroblade"}})
 	_assert_equal(melee_arena.damage_pool_text(11), "5D", "melee vibroblade damage = STR 2D + 3D bonus")
+	_assert_equal(melee_arena.damage_pool_fp_text(11), "7D", "F55: a Force Point doubles melee STR(2D) only, not the +3D bonus (5D -> 7D)")
 	_assert_equal(melee_arena.attacker_pool_text(11), "4D", "melee attack uses DEX 3D + melee_combat 1D (not blaster)")
 
 	# An INCAPACITATED (sev >= 3) shooter is out and cannot act: the fire intent is dropped.

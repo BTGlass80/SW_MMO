@@ -415,6 +415,25 @@ func _init() -> void:
 	var fp_armor_soak: Dictionary = model.resolve_exchange(rules, state, {"wound_severity": 0}, fp_armor_soak_pools, 12.0, 4, 918)
 	_assert_equal(fp_armor_soak["return_fire"]["damage"]["soak_roll"]["pool"], "6D+1", "force point doubles Strength but not armor soak")
 
+	# F55: a Force Point doubles the player's DAMAGE pool too (the one FP-affected roll that
+	# previously did NOT double — attack/dodge/soak all did). Point-blank (dist 5, cover 0) so the
+	# FP-boosted attack reliably connects and damage is rolled; a miss yields "MISS" (clear fail).
+	# RANGED: 4D -> 8D.
+	state = model.activate_force_point(model.initial_state())
+	var fp_dmg: Dictionary = model.resolve_exchange(rules, state, {"wound_severity": 0}, _pools(), 5.0, 0, 4242)
+	_assert_equal(_damage_pool_text(fp_dmg), "8D", "force point doubles the player's RANGED damage pool (4D -> 8D)")
+	# MELEE nuance (Guide_01): FP doubles STR but NOT the weapon bonus. The arena supplies
+	# damage_pool_fp = 2*STR + bonus; a 5D melee pool (STR 2D + 3D bonus) becomes 7D, not 10D.
+	state = model.activate_force_point(model.initial_state())
+	var melee_pools := _pools()
+	melee_pools["damage_pool"] = {"dice": 5, "pips": 0}
+	melee_pools["damage_pool_fp"] = {"dice": 7, "pips": 0}
+	var fp_melee: Dictionary = model.resolve_exchange(rules, state, {"wound_severity": 0}, melee_pools, 5.0, 0, 4243)
+	_assert_equal(_damage_pool_text(fp_melee), "7D", "force point doubles melee STR but not the weapon bonus (5D -> 7D, not 10D)")
+	# Regression: WITHOUT a force point the damage pool is unchanged (4D).
+	var no_fp_dmg: Dictionary = model.resolve_exchange(rules, model.initial_state(), {"wound_severity": 0}, _pools(), 5.0, 0, 4242)
+	_assert_equal(_damage_pool_text(no_fp_dmg), "4D", "no force point: ranged damage pool stays 4D")
+
 	var replay_a: Dictionary = model.resolve_exchange(rules, model.initial_state(), {"wound_severity": 0}, _pools(), 24.0, 2, 424242)
 	var replay_b: Dictionary = model.resolve_exchange(rules, model.initial_state(), {"wound_severity": 0}, _pools(), 24.0, 2, 424242)
 	_assert_equal(replay_a["events"], replay_b["events"], "same exchange seed replays identical event payloads")
@@ -468,6 +487,11 @@ func _event_by_type(events: Array, event_type: String) -> Dictionary:
 		if typeof(event) == TYPE_DICTIONARY and String(event.get("type", "")) == event_type:
 			return event
 	return {}
+
+# F55: the player's outgoing damage pool string from an exchange result ("MISS" if the attack
+# missed, so a stray miss is a clear assertion failure rather than a crash on an empty dict).
+func _damage_pool_text(result: Dictionary) -> String:
+	return String(((result.get("target_damage", {}) as Dictionary).get("damage_roll", {}) as Dictionary).get("pool", "MISS"))
 
 func _assert_equal(actual: Variant, expected: Variant, label: String) -> void:
 	if actual != expected:
