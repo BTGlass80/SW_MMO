@@ -341,18 +341,24 @@ does NOT pre-decide any of these.)
   curated-but-latent (only `content_smoke` reads them). `data/schemas/*` define the full
   persistence/zone/territory/siege contracts, many fields still latent.
 - **Design canon** `docs/`: `MULTIPLAYER_FOUNDATION`, `WORLD_SIM_DESIGN`,
-  `FACTION_TERRITORY_DESIGN`, `PERSISTENCE_DESIGN`, `DIVERGENCE_LEDGER`. Some are stale
-  vs the code — **E1** reconciles them (good first tick).
+  `FACTION_TERRITORY_DESIGN`, `PERSISTENCE_DESIGN`, `DIVERGENCE_LEDGER` — reconciled to the
+  shipped state by **E1** (no longer stale; see §8).
 
 ---
 
-## 8. Known doc staleness (fix via E1)
+## 8. Roadmap docs — reconciled (E1, done)
 
-`MULTIPLAYER_FOUNDATION.md` still says "M1.3 core complete, wiring next" (M1.3b/1.4/1.5
-are done; M2.x + Waves C/D aren't reflected). `NIGHTLY_HANDOFF.md` has a self-contradicted
-"loop STOPPED at Wave C" paragraph. `NEXT_DECISIONS.md` is a long-resolved early artifact.
-`UNATTENDED_LOOP.md` + the backlog Guardrails still carry the stale "`--import` can fail"
-caveat. None block development; E1 cleans them up.
+E1 reconciled the roadmap/reference docs to the shipped state, so they are CURRENT — do not
+re-reconcile them:
+- `MULTIPLAYER_FOUNDATION.md` — M1.1–M1.5 + M2.0–M2.2 + Waves C/D/E COMPLETE, with a
+  backlog-dry / owner-gated-next status.
+- `NIGHTLY_HANDOFF.md` — the full F1–F65 narrative; the old self-contradicted "loop STOPPED
+  at Wave C" line was removed.
+- `NEXT_DECISIONS.md` — archived early artifact (long resolved).
+- `UNATTENDED_LOOP.md` + the backlog Guardrails — the stale "`--import` can fail" caveat was
+  corrected (A0's colormap fix is live; the full `check_project.ps1` is the bar).
+
+For the LIVE state trust §0 above + the `UNATTENDED_BACKLOG.md` Log (newest entries first).
 
 ---
 
