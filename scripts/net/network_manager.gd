@@ -1228,7 +1228,13 @@ func _resolve_combat_window() -> void:
 	var result := arena.resolve_window(_server_rng.randi())
 	var envelopes: Array = result.get("envelopes", [])
 	for envelope in envelopes:
-		apply_combat_envelope.rpc(envelope)
+		# F65: scope each combat envelope to the SHOOTER's zone (like say/emote chat, F2/F62) — combat
+		# is local presence, not galaxy-wide. Previously apply_combat_envelope.rpc broadcast every shot
+		# to ALL peers, so a player saw cross-zone fights in their combat log + F47 target HUD.
+		var shooter_zone := String(_peer_zones.get(int(envelope.get("shooter_id", 0)), _default_zone))
+		for pid in multiplayer.get_peers():
+			if String(_peer_zones.get(pid, _default_zone)) == shooter_zone:
+				apply_combat_envelope.rpc_id(pid, envelope)
 	print("[combat] window %d resolved: %d shot(s), target severity %d" % [
 		int(result.get("window", 0)),
 		envelopes.size(),
