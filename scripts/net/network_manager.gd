@@ -931,6 +931,7 @@ func _save_world_state() -> void:
 		return
 	var world := zones.to_dict()
 	world["pending_zone_influence"] = _pending_zone_influence
+	world["territory_influence"] = _territory_influence  # F61: org influence that GATES claim eligibility
 	if territory != null:
 		world["territory"] = territory.to_dict()  # F59: org claims + treasuries
 	store.save_world(world)
@@ -943,10 +944,22 @@ func _load_world_state() -> void:
 		return
 	zones.apply_persisted(world)
 	_pending_zone_influence = world.get("pending_zone_influence", [])
+	# F61: restore the org territory-influence that gates claim eligibility (it earned the claims F59
+	# restores; without this it reset on every reboot). JSON parses numbers as float -> re-int the
+	# nested {org -> {zone -> int}} so the typed claim_node(org_influence:int) path stays clean.
+	var saved_ti: Dictionary = world.get("territory_influence", {})
+	_territory_influence = {}
+	for org_id in saved_ti:
+		var zmap: Dictionary = saved_ti[org_id]
+		var out := {}
+		for zone_id in zmap:
+			out[zone_id] = int(zmap[zone_id])
+		_territory_influence[org_id] = out
 	if territory != null:
 		territory.apply_persisted(world.get("territory", {}))  # F59: restore org claims + treasuries
-	print("[persist] world state restored (tick_index=%d, pending=%d, claims=%d)" % [
-		zones.tick_index, _pending_zone_influence.size(), territory.claim_count() if territory != null else 0])
+	print("[persist] world state restored (tick_index=%d, pending=%d, claims=%d, ti_orgs=%d)" % [
+		zones.tick_index, _pending_zone_influence.size(),
+		territory.claim_count() if territory != null else 0, _territory_influence.size()])
 
 # E27: advance each zone's ambient NPC roster (Director-paced, deterministic, hash-seeded
 # like zone_state). Folded into the per-peer snapshot as npcs[].
