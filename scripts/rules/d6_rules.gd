@@ -124,10 +124,24 @@ func apply_wound_penalty(pool: Dictionary, wound_dice: int) -> Dictionary:
 func apply_force_point(pool: Dictionary) -> Dictionary:
 	return normalize_pool(int(pool.get("dice", 0)) * 2, int(pool.get("pips", 0)) * 2)
 
+# Parse a pool string, treating a PIP-ONLY token (no "D", e.g. "+2" or "2") as pips rather than
+# dice. parse_pool() splits on "D" and reads the leading int as DICE, so it misreads "+2" as 2D
+# (a whole extra die). WEG writes pip-only armor protection / penalties in the bare "+2" form, so
+# the armor pipeline must use this. Mirrors the guard in derived_stats_model.melee_damage_pool.
+func parse_pool_or_pips(text: String) -> Dictionary:
+	var cleaned := text.strip_edges().to_upper().replace(" ", "")
+	if cleaned == "":
+		return {"dice": 0, "pips": 0}
+	if not cleaned.contains("D"):
+		if cleaned.begins_with("+"):
+			cleaned = cleaned.substr(1)
+		return normalize_pool(0, int(cleaned))
+	return parse_pool(cleaned)
+
 func armor_protection_pool(armor: Dictionary, damage_type: String = "energy", armor_quality_pips: int = 0) -> Dictionary:
 	var key := "protection_energy" if damage_type.strip_edges().to_lower() != "physical" else "protection_physical"
 	var fallback_key := "energy" if key == "protection_energy" else "physical"
-	var protection := parse_pool(String(armor.get(key, armor.get(fallback_key, "0D"))))
+	var protection := parse_pool_or_pips(String(armor.get(key, armor.get(fallback_key, "0D"))))
 	if armor_quality_pips != 0 and (int(protection["dice"]) > 0 or int(protection["pips"]) > 0):
 		protection = add_pips(protection, armor_quality_pips)
 	return protection
@@ -136,7 +150,7 @@ func armor_dexterity_penalty_pool(armor: Dictionary) -> Dictionary:
 	var penalty_text := String(armor.get("dexterity_penalty", armor.get("dex_penalty", "0D"))).strip_edges()
 	if penalty_text.begins_with("-"):
 		penalty_text = penalty_text.substr(1)
-	return parse_pool(penalty_text)
+	return parse_pool_or_pips(penalty_text)
 
 func apply_armor_dexterity_penalty(pool: Dictionary, armor: Dictionary) -> Dictionary:
 	return subtract_pools(pool, armor_dexterity_penalty_pool(armor))

@@ -36,6 +36,18 @@ func _init() -> void:
 	_assert_equal(rules.pool_to_string(rules.apply_armor_dexterity_penalty({"dice": 4, "pips": 1}, blast_vest)), "3D+1", "armor dex penalty reduces dex skill pool")
 	_assert_equal(rules.pool_to_string(rules.apply_armor_to_soak({"dice": 3, "pips": 0}, blast_vest, "energy")), "3D+1", "armor energy protection adds to soak")
 	_assert_equal(rules.pool_to_string(rules.apply_armor_to_soak({"dice": 3, "pips": 0}, blast_vest, "physical", 2)), "4D+2", "armor quality pips amplify armor protection")
+	# F60: WEG writes pip-only armor protection in the bare "+2" form (no "D"). parse_pool misreads
+	# "+2" as 2D (a whole extra die); parse_pool_or_pips treats it as +2 pips. Five catalog armors
+	# (koromondain_vest_mk45 / link_armor_supralink / camo_armor_creshaldyne / cis_field_armor energy;
+	# blast_vest_corondexx physical) ship this form, so this was a live +1D soak inflation in combat.
+	_assert_equal(rules.pool_to_string(rules.parse_pool_or_pips("+2")), "0D+2", "pip-only '+2' parses as +2 pips, not 2D")
+	_assert_equal(rules.pool_to_string(rules.parse_pool_or_pips("2")), "0D+2", "bare '2' parses as +2 pips")
+	_assert_equal(rules.pool_to_string(rules.parse_pool_or_pips("1D+2")), "1D+2", "a real dice token still parses normally")
+	_assert_equal(rules.pool_to_string(rules.parse_pool_or_pips("+1D")), "1D", "a signed dice token parses normally")
+	var pip_armor := {"protection_energy": "+2", "protection_physical": "+1D"}
+	_assert_equal(rules.pool_to_string(rules.armor_protection_pool(pip_armor, "energy")), "0D+2", "bare '+2' energy protection is +2 pips, not 2D")
+	_assert_equal(rules.pool_to_string(rules.apply_armor_to_soak({"dice": 3, "pips": 0}, pip_armor, "energy")), "3D+2", "pip-only armor adds +2 pips to soak (3D+2), NOT a full die (5D)")
+	_assert_equal(rules.pool_to_string(rules.armor_protection_pool(pip_armor, "physical")), "1D", "a '+1D' protection still parses as 1D")
 
 	var short_band: Dictionary = rules.range_band_for_distance(12.0)
 	_assert_equal(short_band["name"], "Short", "12m is short range")
