@@ -179,6 +179,33 @@ func _init() -> void:
 	var stun_damage: Dictionary = rules.resolve_damage({"dice": 8, "pips": 0}, {"dice": 1, "pips": 0}, high_stun_rng, true)
 	_assert_equal(stun_damage["wound"]["key"], "stunned_unconscious", "stun mode caps severe damage")
 
+	# --- Wild Die: the signature WEG mechanic; runs on EVERY combat roll via roll_pool, yet was
+	# previously unasserted. Seeds confirmed against the live Godot 4.6.3 binary (RNG output is
+	# engine-version-bound — re-probe if a Godot upgrade changes these).
+	# Complication: a wild '1' DROPS the highest normal die and contributes 0 to the total.
+	var wd_comp_rng := RandomNumberGenerator.new()
+	wd_comp_rng.seed = 0
+	var wd_comp: Dictionary = rules.roll_pool({"dice": 4, "pips": 0}, wd_comp_rng)
+	_assert_equal(wd_comp["complication"], true, "seed0 4D wild die is a complication")
+	_assert_equal(int(wd_comp["removed_die"]), 6, "complication removes the HIGHEST normal die (6)")
+	_assert_equal(str(wd_comp["normal_dice"]), "[3, 4]", "complication keeps the lower normal dice")
+	_assert_equal(int(wd_comp["total"]), 7, "complication total = kept dice only; wild '1' adds 0")
+	# Explosion: a wild '6' re-rolls and accumulates into the total.
+	var wd_exp_rng := RandomNumberGenerator.new()
+	wd_exp_rng.seed = 6
+	var wd_exp: Dictionary = rules.roll_pool({"dice": 4, "pips": 0}, wd_exp_rng)
+	_assert_equal(wd_exp["exploded"], true, "seed6 4D wild die explodes")
+	_assert_equal(wd_exp["complication"], false, "an exploding wild die is not a complication")
+	_assert_equal((wd_exp["wild_rolls"] as Array).size() >= 2, true, "exploding wild die accumulates extra rolls")
+	_assert_equal(int(wd_exp["total"]), 20, "exploding wild die accumulates into the total")
+	# Floor: a complication with no normal die to drop floors the rolled total at 1.
+	var wd_floor_rng := RandomNumberGenerator.new()
+	wd_floor_rng.seed = 3
+	var wd_floor: Dictionary = rules.roll_pool({"dice": 1, "pips": 0}, wd_floor_rng)
+	_assert_equal(wd_floor["complication"], true, "seed3 1D wild die is a complication")
+	_assert_equal(int(wd_floor["removed_die"]), 0, "no normal die exists to remove on a 1D complication")
+	_assert_equal(int(wd_floor["total"]), 1, "rolled pool total is floored to 1")
+
 	rules.free()
 	rules_script = null
 
