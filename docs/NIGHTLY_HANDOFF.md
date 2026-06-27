@@ -319,6 +319,15 @@ The non-gated backlog was dry (all of M1.x/M2.x, A0/A1, Waves C/D, Wave E E1–E
 
 Full gate GREEN after each (59 smokes + 7 python + import + launch). The audit otherwise confirmed the netcode RPC surface, determinism, persistence durability, and world-sim wiring are clean.
 
+## 2026-06-27 — Complementary audit pass (F70–F71)
+
+After F66–F69, instead of re-asserting "exhausted", ran a SECOND audit Workflow on the angles the first weighted less (client/presentation correctness, snapshot produce-vs-consume, the space slice, pure-model edge cases). 3 candidates → 2 shipped + 1 false-positive dropped:
+- **F70** (`be0accc`, HIGH): `SpaceMapOverlay._process` ran the live tactical-traffic sim (hostile movement + ready hostile FIRE that damages the player ship) even while the bridge/map was CLOSED — silent off-screen ship damage with no agency. Gated the live tick on `visible` (matching the `blaster_range` pause-when-modal pattern + the bridge-mode T=pause/;=step framing). Verified via the runtime-launch gate (the overlay depends on the D6Rules autoload, so it isn't unit-testable in the pure-model `--script` harness).
+- **F71** (`7c82df9`, tests): added `snapshot_enrichment_smoke` (60th smoke) covering `_build_snapshot`'s per-peer enrichment (player wound/axis + the territory block) — previously untested wire/presentation fields that the org HUD + nameplates render.
+- **Dropped** (false positive): a claimed uncapped-vs-capped wound divergence in the combat log — settled by reading combat_arena.gd:261-265, where the clamp mutates `result["state"]` in place (reference) before the envelope reads it, so the values agree. Its own correctness skeptic had already refuted it.
+
+Both audit passes' confirmed non-gated findings are now shipped; the remaining substantive frontier is owner-gated (death-penalty/economy-spend/Force/siege).
+
 ## Next Best Slices
 
 - Add richer moving-target and remote-fire encounter behavior beyond sine/patrol movement, cadence/phase firing, model-derived state summaries, peeking/tucked cycles, flanking holds, reload/weapon-cycle holds, covering-fire holds, morale hesitation, wounded fallback, and hit suppression.
