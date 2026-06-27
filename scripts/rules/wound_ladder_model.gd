@@ -52,9 +52,9 @@ static func penalty_dice_for_level(level: String) -> int:
 		"wounded_twice":
 			return 2
 		"incapacitated":
-			return 2
+			return 0  # (out) — cannot act; WEG penalty is moot (Guide_19 §1 / Guide_01 §7 L393)
 		"mortally_wounded":
-			return 2
+			return 0  # (bleeding) — cannot act; penalty moot
 		"dead":
 			return 0
 		_:
@@ -85,14 +85,16 @@ static func level_for_severity(severity: int) -> String:
 				return "healthy"
 			return "dead"
 
-# Penalty dice for a single-hit severity. THIS IS THE FIX: ground_combat's old
-# _wound_penalty_dice silently returned 0D for severity >= 3. Routing through the
-# ladder yields:
+# Penalty dice for a single-hit severity. The actable wound tiers route through the
+# ladder (wounded_twice now yields -2D via escalate(), where ground_combat's old
+# _wound_penalty_dice silently returned 0D). Per WEG canon (Guide_19 §1 / Guide_01 §7
+# L393) the "out" tiers carry NO penalty — a downed character takes no actions, so the
+# penalty is moot:
 #   sev 0 -> 0D  (healthy)        — UNCHANGED from old ground_combat
 #   sev 1 -> 1D  (stunned)        — UNCHANGED
 #   sev 2 -> 1D  (wounded)        — UNCHANGED
-#   sev 3 -> 2D  (incapacitated)  — FIX (old code returned 0D)
-#   sev 4 -> 2D  (mortally)       — FIX (old code returned 0D)
+#   sev 3 -> 0D  (incapacitated, out/moot — can't act)
+#   sev 4 -> 0D  (mortally, out/moot — can't act)
 #   sev 5 -> 0D  (dead, moot)
 static func penalty_dice_for_severity(severity: int) -> int:
 	return penalty_dice_for_level(level_for_severity(severity))

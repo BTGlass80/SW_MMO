@@ -21,18 +21,19 @@ func _init() -> void:
 	_assert_equal(WoundLadderModel.penalty_dice_for_level("stunned"), 1, "stunned penalty -1D")
 	_assert_equal(WoundLadderModel.penalty_dice_for_level("wounded"), 1, "wounded penalty -1D")
 	_assert_equal(WoundLadderModel.penalty_dice_for_level("wounded_twice"), 2, "wounded_twice penalty -2D")
-	_assert_equal(WoundLadderModel.penalty_dice_for_level("incapacitated"), 2, "incapacitated penalty -2D")
-	_assert_equal(WoundLadderModel.penalty_dice_for_level("mortally_wounded"), 2, "mortally_wounded penalty -2D")
+	# WEG canon (Guide_19 §1 / Guide_01 §7 L393): the "out" tiers can't act, so the penalty is moot (0D).
+	_assert_equal(WoundLadderModel.penalty_dice_for_level("incapacitated"), 0, "incapacitated penalty 0D (out, moot)")
+	_assert_equal(WoundLadderModel.penalty_dice_for_level("mortally_wounded"), 0, "mortally_wounded penalty 0D (out, moot)")
 	_assert_equal(WoundLadderModel.penalty_dice_for_level("dead"), 0, "dead penalty 0D (moot)")
 	_assert_equal(WoundLadderModel.penalty_dice_for_level("bogus"), 0, "unknown level penalty 0D")
 
-	# --- penalty_dice_for_severity: the FIX. ---
+	# --- penalty_dice_for_severity: actable tiers carry a penalty; "out" tiers are moot (0D). ---
 	_assert_equal(WoundLadderModel.penalty_dice_for_severity(0), 0, "severity 0 -> 0D")
 	_assert_equal(WoundLadderModel.penalty_dice_for_severity(1), 1, "severity 1 -> 1D")
 	_assert_equal(WoundLadderModel.penalty_dice_for_severity(2), 1, "severity 2 -> 1D")
-	# THE FIX: old ground_combat _wound_penalty_dice silently returned 0D here.
-	_assert_equal(WoundLadderModel.penalty_dice_for_severity(3), 2, "FIX: severity 3 -> 2D (was 0D)")
-	_assert_equal(WoundLadderModel.penalty_dice_for_severity(4), 2, "severity 4 -> 2D (was 0D)")
+	# The "out" tiers carry 0D per WEG canon (a downed character takes no actions).
+	_assert_equal(WoundLadderModel.penalty_dice_for_severity(3), 0, "severity 3 -> 0D (incapacitated, out/moot)")
+	_assert_equal(WoundLadderModel.penalty_dice_for_severity(4), 0, "severity 4 -> 0D (mortally, out/moot)")
 	_assert_equal(WoundLadderModel.penalty_dice_for_severity(5), 0, "severity 5 -> 0D (dead, moot)")
 
 	# --- level_for_severity for 0..5 ---
