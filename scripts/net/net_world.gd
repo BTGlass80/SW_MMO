@@ -132,6 +132,9 @@ func _ready() -> void:
 		var resource_tick := _arg_value("--resource-tick")
 		if resource_tick != "":
 			Net.resource_tick_seconds = maxf(float(resource_tick), 0.1)
+		# TEST-ONLY: enable the register_account build.org self-grant affordance (org identity/rank/
+		# influence over the wire). Off on a real server; the two-process harness opts in explicitly.
+		Net.allow_test_org = OS.get_cmdline_user_args().has("--allow-test-org")
 		Net.start_server()
 		return
 

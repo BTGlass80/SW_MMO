@@ -83,6 +83,12 @@ var _derived = null                   # server only (DerivedStats instance: DIV-
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var director_tick_seconds: float = DIRECTOR_TICK_SECONDS
 var resource_tick_seconds: float = RESOURCE_TICK_SECONDS
+# Security gate: the register_account `build.org` affordance lets a client self-assign org
+# identity/rank/territory-influence. That is a TEST-ONLY convenience and MUST stay off on a real
+# server (otherwise any peer self-grants a rank-99 faction + claim-floor influence over the wire,
+# bypassing the owner-gated faction-join and the earn-through-play territory loop). Off by default;
+# the headless two-process harness opts in with `--allow-test-org`.
+var allow_test_org := false
 
 var _species_data := {}               # server only (chargen species ranges)
 var _skill_attr := {}                 # server only (skill key -> governing attribute)
@@ -342,11 +348,14 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	if String(record.get("account_secret", "")) != new_secret:
 		record["account_secret"] = new_secret
 		_cached_save(character_id, record)
-	# Optional org membership (test affordance on the build dict): set the persisted
-	# record.org and seed the org's territory influence in the player's current zone
-	# (real influence accrual is a later slice). Always refresh _peer_orgs from the record.
+	# Optional org membership (TEST-ONLY affordance on the build dict, gated by allow_test_org):
+	# set the persisted record.org and seed the org's territory influence in the player's current
+	# zone. On a normal server this branch is OFF, so a client cannot self-assign faction/rank/
+	# influence over the wire — org membership originates server-side (the owner-gated faction-join)
+	# and territory influence accrues only through play (_accrue_territory_influence on kills).
+	# Always refresh _peer_orgs from the record (a server-granted org loaded from disk still applies).
 	var build_org: Dictionary = build.get("org", {})
-	if not build_org.is_empty() and String(build_org.get("faction_id", "")) != "":
+	if allow_test_org and not build_org.is_empty() and String(build_org.get("faction_id", "")) != "":
 		record["org"] = {
 			"faction_id": String(build_org.get("faction_id", "")),
 			"faction_axis": String(build_org.get("faction_axis", "independent")),

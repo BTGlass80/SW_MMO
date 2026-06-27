@@ -12,6 +12,24 @@ const TerritoryModel := preload("res://scripts/net/territory_model.gd")
 
 var _failures: Array[String] = []
 
+# Faithful mirror of register_account's build.org branch (network_manager.gd register_account,
+# gated by allow_test_org): returns the {org, seed_influence} the server would apply for a given
+# allow_test_org flag + client-supplied build.org. On a real server (flag off) a client cannot
+# self-assign org identity/rank/influence over the wire.
+func _apply_build_org(allow_test_org: bool, build_org: Dictionary) -> Dictionary:
+	if allow_test_org and not build_org.is_empty() and String(build_org.get("faction_id", "")) != "":
+		return {
+			"org": {
+				"faction_id": String(build_org.get("faction_id", "")),
+				"faction_axis": String(build_org.get("faction_axis", "independent")),
+				"faction_rank": int(build_org.get("faction_rank", 1)),
+				"faction_rep": int(build_org.get("faction_rep", 0)),
+				"guild_ids": [],
+			},
+			"seed_influence": maxi(int(build_org.get("influence", 0)), 0),
+		}
+	return {"org": {}, "seed_influence": 0}
+
 # Faithful mirror of submit_claim_node's validation chain (server-side).
 func _claim_outcome(org_model, territory, org: Dictionary, node_id: String, security_base: String, org_influence: int) -> Dictionary:
 	if org.is_empty():
@@ -73,6 +91,23 @@ func _init() -> void:
 	_assert_true((kills_to_claim - 1) * kill_gain < floor_infl, "one fewer kill stays below the floor (crossing is at exactly %d kills)" % kills_to_claim)
 	# At the crossing the play-earned influence claims a fresh node end-to-end.
 	_assert_true(bool(_claim_outcome(org_model, territory, rank3, "earn_node", "lawless", earned)["ok"]), "%d kills' earned influence (%d) claims the node" % [kills_to_claim, earned])
+
+	# SECURITY: the register_account build.org self-grant affordance is gated by allow_test_org.
+	# A malicious client tries to self-onboard a rank-99 Hutt with claim-floor+ influence over the wire.
+	var malicious := {"faction_id": "org_hutt_cartel", "faction_axis": "hutt", "faction_rank": 99, "faction_rep": 0, "influence": 1000}
+	# On a REAL server (flag off) the build.org is IGNORED -> no org, no seeded influence ...
+	var guard_off := _apply_build_org(false, malicious)
+	_assert_true((guard_off["org"] as Dictionary).is_empty(), "allow_test_org off -> client build.org grants no org")
+	_assert_equal(int(guard_off["seed_influence"]), 0, "allow_test_org off -> no seeded territory influence")
+	# ... so the self-granted org is unclaimable: the claim chain rejects at the no_org guard.
+	_assert_equal(String(_claim_outcome(org_model, territory, guard_off["org"], "spoof_node", "lawless", int(guard_off["seed_influence"]))["reason"]), "no_org", "self-granted org cannot claim on a real server (no_org)")
+	# In TEST mode (flag on, the two-process harness) the affordance still works as before.
+	var guard_on := _apply_build_org(true, malicious)
+	_assert_equal(int((guard_on["org"] as Dictionary).get("faction_rank", 0)), 99, "allow_test_org on -> build.org applied (test affordance preserved)")
+	_assert_equal(int(guard_on["seed_influence"]), 1000, "allow_test_org on -> influence seeded")
+	_assert_true(bool(_claim_outcome(org_model, territory, guard_on["org"], "spoof_node", "lawless", int(guard_on["seed_influence"]))["ok"]), "test-mode org can claim (affordance preserved)")
+	# An empty build.org is a no-op regardless of the flag.
+	_assert_true((_apply_build_org(true, {})["org"] as Dictionary).is_empty(), "empty build.org -> no org even in test mode")
 
 	if _failures.is_empty():
 		print("claim_flow_smoke: OK")
