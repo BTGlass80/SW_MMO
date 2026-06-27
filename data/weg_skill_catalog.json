@@ -220,7 +220,8 @@
         "key": "ground_vehicle_operation",
         "name": "Ground Vehicle Operation",
         "attribute": "mechanical",
-        "specializations": ["Landspeeder", "AT-ST"]
+        "specializations": ["Landspeeder", "TX-130 Saber-class tank"],
+        "era_note": "Original AT-ST specialization is Imperial-era (and a walker, already covered by Walker Operation); replaced with a Clone Wars-era ground vehicle."
       },
       {
         "key": "hover_vehicle_operation",

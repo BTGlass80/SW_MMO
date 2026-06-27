@@ -894,7 +894,7 @@
           "technical": "1D+2"
         },
         "skills": {
-          "melee combat": "4D",
+          "melee_combat": "4D",
           "brawling": "3D+2",
           "dodge": "3D+1",
           "firearms": "3D+1",
@@ -909,7 +909,7 @@
       },
       "natural_attack": {
         "name": "gaderffii",
-        "to_hit_skill": "melee combat",
+        "to_hit_skill": "melee_combat",
         "damage": "STR+1D"
       },
       "special": [
@@ -984,7 +984,7 @@
           "blaster": "3D+1",
           "brawling": "3D+2",
           "dodge": "3D",
-          "melee combat": "3D+1",
+          "melee_combat": "3D+1",
           "streetwise": "4D",
           "intimidation": "3D+1"
         },
