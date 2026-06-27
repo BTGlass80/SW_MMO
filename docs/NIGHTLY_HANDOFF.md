@@ -309,6 +309,16 @@ $env:Path = @($machinePath, $userPath) -join ';'
 
 Latest validation in this session passed all checks after improving maneuver action readouts so multi-hazard routes name the first crossed hazards in compact status text.
 
+## 2026-06-26 — Owner "Go go go" → audit Workflow → 5 non-gated fixes (F66–F69)
+
+The non-gated backlog was dry (all of M1.x/M2.x, A0/A1, Waves C/D, Wave E E1–E27, follow-ups F34–F65 DONE) and the loop was holding for an owner steer. Owner sent "Go go go", so a 6-dimension fresh-eyes audit Workflow (rules/netcode/persistence/world-sim/tests/data finders, each finding adversarially double-verified for real-vs-false + gated-vs-shippable) ran: **5 CONFIRMED non-gated findings, 0 gated, 0 dropped**, all shipped:
+- **F66** (`6a75fcc`, HIGH security): `register_account` trusted client `build.org` verbatim — any peer self-granted a rank-99 faction + 1000 territory influence over the wire (bypassing owner-gated faction-join + the earn-through-play loop) then could claim immediately. Gated behind a new `allow_test_org` server field (`--allow-test-org`); off on a real server. **Two-process PASSED** (no-flag → `no_org`; flag → claim succeeds).
+- **F67** (`e27a825`, rules fidelity): wound ladder returned −2D for incapacitated/mortally_wounded; WEG canon (Guide_19 §1 / Guide_01 §7 L393) + the file's own header say those "out" tiers can't act → 0D. Fixed (wounded_twice stays −2D); latent in live play, corrects the rule for future PvP/NPC paths.
+- **F68** (`ff53721`, tests): the Wild Die (complication/explosion/floor) ran on every combat roll with zero coverage — now three seeded cases in rules_smoke (seeds probed against the live binary).
+- **F69** (`73cf090`, data): recast GCW-era "AT-ST" skill spec → Clone Wars "TX-130 Saber-class tank" + era_note; fixed three creature `"melee combat"` keys → `"melee_combat"` (would silently resolve to 0D in combat).
+
+Full gate GREEN after each (59 smokes + 7 python + import + launch). The audit otherwise confirmed the netcode RPC surface, determinism, persistence durability, and world-sim wiring are clean.
+
 ## Next Best Slices
 
 - Add richer moving-target and remote-fire encounter behavior beyond sine/patrol movement, cadence/phase firing, model-derived state summaries, peeking/tucked cycles, flanking holds, reload/weapon-cycle holds, covering-fire holds, morale hesitation, wounded fallback, and hit suppression.
