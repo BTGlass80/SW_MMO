@@ -220,6 +220,13 @@ func submit_fire_intent(peer_id: int, intent: Dictionary) -> void:
 func pending_intent_count() -> int:
 	return _intents.size()
 
+## Drop a player's queued intent for the current window WITHOUT resolving it. Used when the player
+## leaves the zone mid-window: a WEG action window pins you in place, so leaving cancels the queued
+## shot rather than letting it resolve (and mis-credit its envelope + faction/territory influence)
+## in a zone the player traveled to. No-op if the player has no pending intent.
+func clear_intent(peer_id: int) -> void:
+	_intents.erase(peer_id)
+
 ## Resolve every queued intent for one action window, in WEG initiative order,
 ## against the shared target. Returns {window, envelopes:[...], target_state,
 ## target_disabled}. seed_base is the server-owned per-window seed.

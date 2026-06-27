@@ -641,6 +641,11 @@ func submit_change_zone(zone_id: String) -> void:
 	if String(_peer_zones.get(sender, _default_zone)) == zone_id:
 		zone_result.rpc_id(sender, {"ok": false, "reason": "already_here", "zone_id": zone_id})
 		return
+	# An open combat window pins you in place: leaving the zone CANCELS your queued shot so it can't
+	# resolve a few ticks later and mis-credit its zone-scoped envelope (F65) + faction/territory
+	# influence to the DESTINATION zone you never fought in. Mirrors the clear on disconnect/resolve.
+	if arena != null:
+		arena.clear_intent(sender)
 	_peer_zones[sender] = zone_id
 	var record := _cached_load(character_id)
 	if not record.is_empty():

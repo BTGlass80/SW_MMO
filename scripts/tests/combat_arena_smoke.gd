@@ -138,6 +138,13 @@ func _init() -> void:
 	inc.set_player_combat(12, {"player_wound_severity": 2})  # wounded -> 'can still act'
 	inc.submit_fire_intent(12, {"aim": 3})
 	_assert_equal(inc.pending_intent_count(), 1, "a wounded (can-act) shooter's intent IS queued")
+	# clear_intent cancels a queued shot WITHOUT resolving it (used on mid-window zone travel, so the
+	# shot can't resolve + mis-credit its envelope/influence to a zone the player left). No-op if none.
+	inc.clear_intent(12)
+	_assert_equal(inc.pending_intent_count(), 0, "clear_intent drops the queued shot")
+	_assert_equal((inc.resolve_window(124).get("envelopes", []) as Array).size(), 0, "a cleared intent yields no envelope on resolve")
+	inc.clear_intent(999)  # unknown peer -> no crash
+	_assert_equal(inc.pending_intent_count(), 0, "clear_intent on an unknown peer is a safe no-op")
 
 	# DIV-0016: NON-LETHAL SPARRING DAMAGE. A sparring target (stun_return_fire:false) returns fire as
 	# a REAL wound, but combat_arena clamps the player at SPARRING_MAX_SEVERITY=2 (Wounded) -- never
