@@ -133,6 +133,8 @@ Invoke-GodotStep "Snapshot merge smoke:" @("--headless", "--path", $projectRoot,
 
 Invoke-GodotStep "Wire roundtrip smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/wire_roundtrip_smoke.gd")
 
+Invoke-GodotStep "Snapshot enrichment smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/snapshot_enrichment_smoke.gd")
+
 Invoke-GodotStep "Skill attribute smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/skill_attribute_smoke.gd")
 
 Invoke-GodotStep "Character lifecycle smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/character_lifecycle_smoke.gd")
