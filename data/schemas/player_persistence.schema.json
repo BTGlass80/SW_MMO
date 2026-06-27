@@ -20,16 +20,18 @@
   "properties": {
     "schema_version": {"type": "integer", "const": 1},
     "character_id": {"type": "string", "description": "Stable character id (primary key)."},
-    "account_id": {"type": "string", "description": "Owning account. One account may own multiple characters; account auth lives in the accounts table, not here."},
+    "account_id": {"type": "string", "description": "Owning account. One account may own multiple characters. Account auth WILL live in a separate accounts table; until then the bound secret is stored here as account_secret (E26 deviation)."},
     "name": {"type": "string", "description": "Display name. Matches world_state.gd player['name'].", "examples": ["Spacer-12", "Vask Tann"]},
     "species": {"type": "string", "examples": ["Human", "Twi'lek", "Rodian"]},
+    "zone": {"type": "string", "description": "Live CURRENT zone (last-traveled). Updated by submit_change_zone and restored on login (DIV-0014); position.zone_id remains the chargen/default spawn zone. Distinct from position.zone_id until the planned accounts/zone refactor unifies them.", "examples": ["tatooine.dune_sea"]},
+    "account_secret": {"type": "string", "description": "E26 single-file-persistence deviation: the bound account secret (set on first claim, checked on re-auth). Properly belongs in the accounts table (see PERSISTENCE_DESIGN); stored on the character record until that table exists."},
     "position": {
       "type": "object",
       "description": "Last authoritative position. Server owns truth (world_state.gd never trusts client position). On login the server spawns the character here (or at a safe fallback if the zone is unavailable).",
       "required": ["zone_id", "pos", "yaw"],
       "additionalProperties": false,
       "properties": {
-        "zone_id": {"type": "string", "examples": ["tatooine.mos_eisley.spaceport"]},
+        "zone_id": {"type": "string", "description": "The chargen/default SPAWN zone (written once at default_record; not kept current as the character travels — the live zone is the top-level `zone` field).", "examples": ["tatooine.mos_eisley.spaceport"]},
         "pos": {
           "type": "object",
           "description": "World coordinates in the same units as world_state.gd (GROUND_Y=1.2, settlement bounds +/-58).",

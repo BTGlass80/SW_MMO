@@ -101,6 +101,8 @@ Invoke-GodotStep "Combat arena smoke:" @("--headless", "--path", $projectRoot, "
 
 Invoke-GodotStep "Persistence smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/persistence_smoke.gd")
 
+Invoke-GodotStep "Persistence schema smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/persistence_schema_smoke.gd")
+
 Invoke-GodotStep "Zone state smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/zone_state_smoke.gd")
 
 Invoke-GodotStep "Territory smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/territory_smoke.gd")
