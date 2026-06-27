@@ -328,6 +328,16 @@ After F66–F69, instead of re-asserting "exhausted", ran a SECOND audit Workflo
 
 Both audit passes' confirmed non-gated findings are now shipped; the remaining substantive frontier is owner-gated (death-penalty/economy-spend/Force/siege).
 
+## 2026-06-27 — Third-lens audit pass (F72–F75)
+
+A THIRD audit Workflow on new angles (server lifecycle & multi-actor races, solo ground scene, cross-cutting ledger/schema/doc-vs-code consistency, reference-aliasing/leak hygiene) → 4 confirmed non-gated, all shipped:
+- **F72** (`7994eab`, MEDIUM lifecycle): zone-travel mid combat-window left the queued fire intent in the arena, so it resolved in the DESTINATION zone — mis-scoping the F65 envelope and crediting faction/territory influence to a zone the player never fought in. Added `CombatArena.clear_intent`, called on travel (an open WEG window pins you in place).
+- **F73** (`31a91cb`, MEDIUM lifecycle): a same-peer character switch (A→B) never saved A, discarding ~30s of position/wound/CP. Added a `_save_peer` flush before re-pointing the slot.
+- **F74** (`172a406`, schema): the persistence schema didn't declare the live top-level `zone` + `account_secret` fields (additionalProperties:false violation). Reconciled + added `persistence_schema_smoke` (drift guard).
+- **F75** (`b322a21`, ledger): DIV-0006 presented unwired death/loot as live; reworded to DIRECTION-not-implemented.
+
+Three audit passes (F66–F75) now span ~14 dimensions. The remaining substantive frontier is owner-gated (death-penalty/economy-spend/Force/siege). Smoke count 61.
+
 ## Next Best Slices
 
 - Add richer moving-target and remote-fire encounter behavior beyond sine/patrol movement, cadence/phase firing, model-derived state summaries, peeking/tucked cycles, flanking holds, reload/weapon-cycle holds, covering-fire holds, morale hesitation, wounded fallback, and hit suppression.
