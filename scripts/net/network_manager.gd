@@ -316,6 +316,14 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 			print("[auth] peer %d denied for %s (already_logged_in)" % [sender, character_id])
 			auth_result.rpc_id(sender, {"ok": false, "reason": "already_logged_in", "account_id": character_id})
 			return
+	# Flush the OUTGOING character before re-pointing the live slot. A same-peer switch A->B leaves the
+	# peer in state/arena, so world-entry below is skipped and the slot is just re-pointed at B — but
+	# A's live position (WorldState) + combat (arena) are persisted ONLY by _save_peer, which keys on
+	# _peer_characters[sender]. Without this flush a same-peer character switch silently discards up to
+	# one autosave interval (~30s) of A's movement + in-window wound/CP. Safe here: on a re-register the
+	# peer is already in state and _peer_characters[sender] still holds A.
+	if _peer_characters.has(sender) and String(_peer_characters[sender]) != character_id:
+		_save_peer(sender)
 	_peer_characters[sender] = character_id
 	# World-entry: an authenticated peer enters the simulation HERE (formerly on raw connect). First
 	# auth -> add to state/arena at the default zone; a re-register (already in state) skips this.

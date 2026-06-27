@@ -35,6 +35,10 @@ func _register(st: Dictionary, sender: int, character_id: String, build: Diction
 	for pid in st["peer_characters"].keys():
 		if pid != sender and String(st["peer_characters"][pid]) == character_id:
 			return {"ok": false, "reason": "already_logged_in"}
+	# 3b. flush the OUTGOING character before re-pointing the live slot on a same-peer A->B switch
+	#     (else A's live position/combat, persisted only by _save_peer keyed on peer_characters, is lost).
+	if st["peer_characters"].has(sender) and String(st["peer_characters"][sender]) != character_id:
+		_save_peer(st, sender)
 	# 4. bind + persist secret.
 	st["peer_characters"][sender] = character_id
 	record["account_secret"] = String(auth["secret"])
@@ -57,7 +61,19 @@ func _register(st: Dictionary, sender: int, character_id: String, build: Diction
 	return {"ok": true, "reason": ""}
 
 func _fresh_state() -> Dictionary:
-	return {"peer_characters": {}, "peer_orgs": {}, "peer_axes": {}, "records": {}, "budgets": {}}
+	return {"peer_characters": {}, "peer_orgs": {}, "peer_axes": {}, "records": {}, "budgets": {}, "positions": {}}
+
+# Faithful mirror of _save_peer: flush a peer's LIVE position into the record of the character it is
+# currently bound to (keyed on peer_characters[sender], like the real one). Simplified to position
+# (the real one also flushes combat via apply_combat); the point under test is the save-before-reflip
+# ORDERING, not the persistence format.
+func _save_peer(st: Dictionary, sender: int) -> void:
+	var cid := String(st["peer_characters"].get(sender, ""))
+	if cid == "" or not st["positions"].has(sender):
+		return
+	var record: Dictionary = (st["records"].get(cid, {}) as Dictionary).duplicate(true)
+	record["position"] = st["positions"][sender]
+	st["records"][cid] = record
 
 func _init() -> void:
 	var hutt := {"faction_id": "org_hutt_cartel", "faction_axis": "hutt", "faction_rank": 3}
@@ -99,6 +115,20 @@ func _init() -> void:
 	# Re-registering back to an org char re-sets it.
 	_assert_true(bool(_register(st4, 40, "boss", {}, 0)["ok"]), "peer 40 returns to the persisted org char")
 	_assert_equal(String(st4["peer_orgs"].get(40, "")), "org_hutt_cartel", "persisted org re-sets _peer_orgs on return")
+
+	# --- Same-peer character SWITCH flushes the OUTGOING character first (F73) ---
+	var st6: Dictionary = _fresh_state()
+	_assert_true(bool(_register(st6, 60, "alpha", {}, 0)["ok"]), "peer 60 binds alpha")
+	(st6["positions"] as Dictionary)[60] = Vector3(5, 0, 5)  # alpha's live, not-yet-persisted movement
+	# Switching the SAME peer to a different character must SAVE alpha (with its advanced position) first.
+	_assert_true(bool(_register(st6, 60, "beta", {}, 0)["ok"]), "peer 60 switches to beta")
+	_assert_true((st6["records"] as Dictionary).has("alpha"), "switching away SAVED the outgoing char record")
+	_assert_equal((st6["records"]["alpha"] as Dictionary).get("position", null), Vector3(5, 0, 5), "alpha's advanced position was flushed before the switch")
+	# A plain re-bind to the SAME char does NOT trigger the switch-flush (guard requires a different char;
+	# autosave/disconnect still persist the current char) — so beta is not flushed here.
+	(st6["positions"] as Dictionary)[60] = Vector3(9, 0, 9)
+	_assert_true(bool(_register(st6, 60, "beta", {}, 0)["ok"]), "peer 60 re-binds the same char beta")
+	_assert_true(not (st6["records"].get("beta", {}) as Dictionary).has("position"), "same-char re-bind does not switch-flush")
 
 	# --- Rate-limit gates before auth/bind ---
 	var st5: Dictionary = _fresh_state()
