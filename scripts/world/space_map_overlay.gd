@@ -83,6 +83,14 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if visible and Input.mouse_mode != Input.MOUSE_MODE_VISIBLE:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	# Live traffic is BRIDGE-MODE presentation (T=pause / ;=step) — it must only advance while the
+	# bridge/map is open. When closed the overlay is a backgrounded modal_gameplay_overlay (the same
+	# stance blaster_range._process takes when a modal overlay is active), so a closed bridge neither
+	# advances hostiles nor lets ready hostile fire damage the player ship off-screen with no agency.
+	# The early return precedes any accumulator mutation, so reopening never unleashes catch-up ticks.
+	if not visible:
+		_update_traffic_label()
+		return
 	if not _live_traffic_enabled or _contacts.is_empty():
 		_update_traffic_label()
 		return
