@@ -9,6 +9,7 @@ extends SceneTree
 const PersistenceStore = preload("res://scripts/net/persistence_store.gd")
 const ChargenModel = preload("res://scripts/rules/chargen_model.gd")
 const EconomyModel = preload("res://scripts/rules/economy_model.gd")
+const DeathPenalty = preload("res://scripts/rules/death_penalty_model.gd")
 const SCHEMA_PATH := "res://data/schemas/player_persistence.schema.json"
 
 var _failures: Array[String] = []
@@ -69,6 +70,13 @@ func _init() -> void:
 	_assert_true(sheet_declared.has("inventory"), "schema sheet declares inventory (E22 + Wave F economy)")
 	_assert_true(sheet_declared.has("equipment"), "schema sheet declares equipment")
 	_assert_equal(int(chargen_sheet.get("credits", -1)), int(EconomyModel.STARTING_CREDITS), "chargen seeds STARTING_CREDITS (1000)")
+	# A post-DEATH sheet must also conform: apply_death adds item_durability + insurance (DIV-0006).
+	var insured_sheet: Dictionary = DeathPenalty.buy_insurance(chargen_sheet, true)["sheet"]
+	var dead_sheet: Dictionary = DeathPenalty.apply_death(insured_sheet, "lawless")["sheet"]
+	for key in dead_sheet:
+		_assert_true(sheet_declared.has(key), "post-death sheet key '%s' is declared in the schema sheet" % String(key))
+	_assert_true(sheet_declared.has("item_durability"), "schema declares item_durability (DIV-0006)")
+	_assert_true(sheet_declared.has("insurance"), "schema declares insurance (DIV-0006)")
 	d6.free()  # d6_rules extends Node — free it or the gate flags a leaked ObjectDB instance
 
 	_finish()
