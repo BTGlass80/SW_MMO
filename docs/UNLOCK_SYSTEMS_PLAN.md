@@ -1,0 +1,86 @@
+# Wave F — Owner-Unlocked Systems (Death · Economy · Force)
+
+On 2026-07-01 the owner resolved the long-gated forks (see `memory` / SESSION_HANDOFF §5).
+This is the design-grounded, dependency-ordered build plan produced by the
+`unlock-systems-design` Workflow (3 system designs + a sequencing pass). Build top-down;
+each slice ends at a green `tools/check_project.ps1` (+ a two-process check for `[HOT]`
+net slices) and a scoped commit. `[PAR]` = pure-model+test (batchable); `[HOT]` =
+`network_manager.gd`/`net_world.gd`, ONE AT A TIME.
+
+## Owner decisions (build to these; do NOT re-litigate)
+- **Death/respawn** = partial loss + insurance, **credits kept** (DIV-0006 shape, now with numbers).
+- **Economy** = **modest sink, WEG-anchored prices** (~1000 starting credits).
+- **Force access** = the **SWG "Village" solution** — a rare, multi-phase, earned unlock questline.
+- **Godot** = no real concern (4.6.3 verified healthy); keep building.
+- STILL gated (do NOT decide): PvP-consent; siege durations/threshold; LLM-Director-at-launch;
+  CP award-rate; visual A1b/P1.
+
+## The critical-path insight
+Nothing can kill a player today (combat_arena caps the shared `b1_training_silhouette` at
+`SPARRING_MAX_SEVERITY=2`, DIV-0016) and `creature_spawn_model.roll_spawn` is never called.
+So **both** lethal Death **and** creature loot-credits are blocked on the SAME missing piece:
+**wiring hostile creatures into live combat as a PvE lethal source** — which is NON-gated
+(PvP-consent stays gated; hostile PvE does not need it). That wiring (`hostile_npc_model` +
+a combat_arena lethal flag + a Director-tick spawner) is the shared root.
+
+## Concrete specs (tunable consts at the top of each model)
+
+### Economy (DIV-0018)
+- Each catalog `cost` in `weapons_clone_wars.json`/`armor_clone_wars.json` **IS** the WEG list
+  price and the BUY anchor (blaster_pistol 500, hold_out 275, heavy_blaster 750/800, vibroblade
+  250, blast_vest 300, blast_helmet 100, …). **No catalog rewrite.**
+- `BUY_MARKUP=1.0`; final buy = `round(list × BUY_MARKUP × director_mult × (1−bargain) × (1−rep))`,
+  floor 1, clamped never below 0.35 of list (`MAX_TOTAL_DISCOUNT=0.65`).
+- `SELL_RATE=0.40` (buy-back at 40% of list — the 60% spread is the churn sink).
+- `REP_DISCOUNT={friendly:0.05, allied:0.10}` (via `reputation_model.standing_tier`), stacks after bargain.
+- `STARTING_CREDITS=1000` (chargen + default_record parity).
+- Loot on a **disabled creature** (not the dummy): `LOOT_CREATURE=[15,45]`, `LOOT_CHARACTER=[40,90]`
+  × pack_size; `SALVAGE_CHANCE=0.25` → `SALVAGE_BUNDLE=[20,60]` credits. v1 = credits/salvage only
+  (no component-item drops — owner-tunable follow-up). Non-hostile (b1) disable = 0 credits (CP-only, unchanged).
+
+### Death / respawn (DIV-0006 live + DIV-0017 lethal source)
+- On the `dead` transition: **credits KEPT**; each equipped item loses `DURABILITY_LOSS_ON_DEATH=10`
+  (of 0..100; at 0 = "broken" → halved pools until repaired); `DROP_FRACTION_UNEQUIPPED=0.5` of
+  UNEQUIPPED inventory drops to a corpse manifest (equipped weapon+armor never drop).
+- **Insurance**: `INSURANCE_PREMIUM=500` → `INSURANCE_CHARGES=3` covered deaths (`sheet.insurance.charges`).
+  Covered death: no inventory drop + durability loss reduced to `DURABILITY_LOSS_INSURED=3`; consumes a charge.
+- **Respawn**: relocate to nearest secured bind point (Mos Eisley spaceport med bay, `WorldState.SPAWN_POINT`);
+  `RESPAWN_WOUND_STATE="wounded"` (sev 2) + the existing `recovery_model` post-death −1D `DEATH_DEBUFF`
+  (6 rounds); brief `RESPAWN_TIMER_SECONDS=10` blackout.
+- **Lethal gate**: hostile creatures deal REAL (uncapped) damage ONLY where `zones.effective_security=="lawless"`
+  (`LETHAL_SECURITY_TIERS=["lawless"]`, tunable to add "contested"). Every starter Mos Eisley zone stays safe;
+  death is confined to the Dune Sea + future lawless zones. Sparring behavior byte-identical when `_lethal=false`.
+
+### Force — SWG Village unlock (DIV-0011 access decided)
+- A hidden, multi-phase `force_awakening_model.gd` progress track on `sheet.force_unlock` (phase + signal flags),
+  fed by deterministic in-play signals (CP spent, skill pips, zone/tense participation, disables, heals given,
+  wound recoveries); a rare per-tick manifest chance (`MANIFEST_CHANCE_PER_TICK≈0.02`), a server-wide soft cap
+  (`AWAKEN_SERVER_SOFT_CAP≈8`), a final phase-4 awaken roll; on COMPLETE flips `sheet.force_sensitive=true` and
+  activates the existing `force_skills_model`. Faithful to Clone Wars scarcity (underground Force-sensitives, not the open Order).
+
+## Ordered slices (S0–S19)
+- **S0** `[PAR]` LEDGER-FIRST — UPDATE DIV-0006 (death penalty→LIVE) + DIV-0011 (Force→SWG-Village earned);
+  ADD DIV-0017 (hostile-PvE lethal source) + DIV-0018 (WEG-anchored economy). (resolves the drafted DIV-0017 collision)
+- **S1** `[PAR]` Economy pure model — `economy_model.gd` + smoke.
+- **S2** `[PAR]` Economy starting-credits (chargen+default_record → 1000) + schema: declare `sheet.inventory`, credits default 1000.
+- **S3** `[PAR]` Death pure penalty model — `death_penalty_model.gd` + smoke.
+- **S4** `[PAR]` Hostile-creature pure model — `hostile_npc_model.gd` + smoke (THE SHARED ROOT).
+- **S5** `[PAR]` Death schema — `item_durability`, `insurance`, `world_hooks.corpse`.
+- **S6** `[HOT]` combat_arena lethal flag (skip the sparring clamp for hostile NPCs; sparring byte-identical when off).
+- **S7** `[HOT]` network_manager: Economy preloads + `_award_credits` + `apply_credits` RPC.
+- **S8** `[HOT]` `submit_vendor_list` RPC (server-priced stock).
+- **S9** `[HOT]` `submit_buy` RPC (the primary credit SINK).
+- **S10** `[HOT]` `submit_sell` RPC (buy-back at 40%).
+- **S11** `[HOT]` Director-tick hostile-NPC spawner in lawless zones (ACTIVATES the lethal + loot source).
+- **S12** `[HOT]` Death sequence in `_resolve_combat_window` (dead → penalty → corpse → respawn → debuff; insurance debit STUBBED).
+- **S13** `[HOT]` Economy loot hook (credits on creature disable) + `submit_buy_insurance` (replaces the S12 stub).
+- **S14** `[PAR]` Force pure model — `force_awakening_model.gd` + smoke.
+- **S15** `[PAR]` Force schema + chargen seed (`sheet.force_unlock`).
+- **S16–S19** `[HOT]` Force wiring: signal feeds → Director-tick advancement → completion flip + subtle client notice.
+
+## Residual owner knobs (safe-defaulted, NOT blockers)
+- Are `contested` zones also lethal? (default lawless-only). Third-party corpse looting? (default owner-only; PvP-adjacent → gated).
+- Do creature loots ever drop the ITEM, not just credits? (v1 credits+salvage only). Ammo/repair recurring sink? (flavor in v1).
+- Force scarcity dials (manifest chance / soft cap / prereqs) — defaulted rare, tunable.
+
+_Source: the `unlock-systems-design` Workflow (2026-07-01). Update slice statuses here as they ship (Fnn +hash)._
