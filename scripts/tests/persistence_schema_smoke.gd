@@ -7,6 +7,8 @@ extends SceneTree
 ## default_record — keeping the persistence contract honest until the planned accounts/SQLite shape.
 
 const PersistenceStore = preload("res://scripts/net/persistence_store.gd")
+const ChargenModel = preload("res://scripts/rules/chargen_model.gd")
+const EconomyModel = preload("res://scripts/rules/economy_model.gd")
 const SCHEMA_PATH := "res://data/schemas/player_persistence.schema.json"
 
 var _failures: Array[String] = []
@@ -52,6 +54,22 @@ func _init() -> void:
 	var base: Dictionary = store.default_record("char_y", "acct_y", "Base", Vector3.ZERO)
 	for req in required:
 		_assert_true(base.has(req), "default_record produces the schema-required key '%s'" % String(req))
+
+	# --- SHEET-level drift: the schema's sheet is additionalProperties:false, so EVERY key a real
+	#     chargen sheet produces (equipment/inventory/force_skills/credits/...) must be declared. ---
+	var sheet_schema: Dictionary = (schema.get("properties", {}) as Dictionary).get("sheet", {})
+	_assert_equal(bool(sheet_schema.get("additionalProperties", true)), false, "schema sheet forbids undeclared props")
+	var sheet_declared := {}
+	for k in (sheet_schema.get("properties", {}) as Dictionary):
+		sheet_declared[k] = true
+	var d6 = load("res://scripts/rules/d6_rules.gd").new()
+	var chargen_sheet: Dictionary = ChargenModel.build_sheet(d6, {"dexterity": "3D", "knowledge": "2D", "mechanical": "2D", "perception": "3D", "strength": "2D", "technical": "2D"}, {"blaster": "4D"})
+	for key in chargen_sheet:
+		_assert_true(sheet_declared.has(key), "chargen sheet key '%s' is declared in the schema sheet" % String(key))
+	_assert_true(sheet_declared.has("inventory"), "schema sheet declares inventory (E22 + Wave F economy)")
+	_assert_true(sheet_declared.has("equipment"), "schema sheet declares equipment")
+	_assert_equal(int(chargen_sheet.get("credits", -1)), int(EconomyModel.STARTING_CREDITS), "chargen seeds STARTING_CREDITS (1000)")
+	d6.free()  # d6_rules extends Node — free it or the gate flags a leaked ObjectDB instance
 
 	_finish()
 

@@ -68,7 +68,10 @@
           "description": "WEG wound ladder. Death/loot PENALTY consequences (what happens at incapacitated/dead) are an OPEN OWNER DECISION - this field stores the state, not the penalty.",
           "enum": ["healthy", "stunned", "wounded", "wounded_twice", "incapacitated", "mortally_wounded", "dead"]
         },
-        "credits": {"type": "integer", "minimum": 0, "default": 0}
+        "credits": {"type": "integer", "minimum": 0, "default": 1000, "description": "Credits. WEG-anchored economy (DIV-0018): a fresh character starts with EconomyModel.STARTING_CREDITS = 1000."},
+        "equipment": {"type": "object", "description": "Equipped items by slot (slot -> catalog item key). E22 equip path.", "additionalProperties": {"type": "string"}, "examples": [{"weapon": "blaster_pistol", "armor": "blast_vest"}]},
+        "inventory": {"type": "array", "description": "Owned item keys (equip-swap candidates + purchases). Written by chargen + E22 equip + the Wave F buy/sell economy.", "items": {"type": "string"}},
+        "force_skills": {"type": "object", "description": "Off-by-default Force skill hook (control/sense/alter as dice codes, 0D until awakened). See force_skills_model + DIV-0011.", "additionalProperties": {"type": "string"}}
       }
     },
     "org": {

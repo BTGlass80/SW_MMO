@@ -49,7 +49,7 @@ func _init() -> void:
 	_assert_equal(sheet.get("force_points"),     1,          "default sheet FP == 1")
 	_assert_equal(sheet.get("wound_state"),      "healthy",  "default sheet wound_state == healthy")
 	_assert_equal(sheet.get("force_sensitive"),  false,      "default sheet force_sensitive == false")
-	_assert_equal(sheet.get("credits"),          0,          "default sheet credits == 0")
+	_assert_equal(sheet.get("credits"),          1000,       "default sheet credits == 1000 (Wave F WEG-anchored economy)")
 
 	# Equipment block (chargen_model.gd line 86 STARTER_WEAPON / STARTER_ARMOR)
 	var equip = sheet.get("equipment", {})
@@ -179,7 +179,7 @@ func _init() -> void:
 	_assert_equal(l_sheet.get("force_points"),     1,         "round-trip FP")
 	_assert_equal(l_sheet.get("wound_state"),      "healthy", "round-trip wound_state")
 	_assert_equal(l_sheet.get("force_sensitive"),  false,     "round-trip force_sensitive")
-	_assert_equal(l_sheet.get("credits"),          0,         "round-trip credits")
+	_assert_equal(l_sheet.get("credits"),          1000,      "round-trip credits (Wave F starting 1000)")
 
 	var l_equip = l_sheet.get("equipment", {})
 	_assert_equal(l_equip.get("weapon"), "blaster_pistol", "round-trip equipment.weapon")

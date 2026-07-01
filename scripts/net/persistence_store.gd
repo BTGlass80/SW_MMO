@@ -11,6 +11,7 @@ extends RefCounted
 
 const SCHEMA_VERSION := 1
 const DEFAULT_ZONE := "tatooine.mos_eisley.spaceport"
+const EconomyModel = preload("res://scripts/rules/economy_model.gd")  # single source for STARTING_CREDITS
 
 var _root: String
 
@@ -110,7 +111,7 @@ func default_record(character_id: String, account_id: String, display_name: Stri
 			"force_points": 1,
 			"force_sensitive": false,
 			"wound_state": "healthy",
-			"credits": 0,
+			"credits": EconomyModel.STARTING_CREDITS,
 		},
 		"created_unix": Time.get_unix_time_from_system(),
 		"extra": {},
