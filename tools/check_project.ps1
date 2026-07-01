@@ -121,6 +121,8 @@ Invoke-GodotStep "Vendor model smoke:" @("--headless", "--path", $projectRoot, "
 
 Invoke-GodotStep "Economy model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_model_smoke.gd")
 
+Invoke-GodotStep "Death penalty model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_penalty_model_smoke.gd")
+
 Invoke-GodotStep "Security gate smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/security_gate_smoke.gd")
 
 Invoke-GodotStep "Pending influence smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pending_influence_smoke.gd")
