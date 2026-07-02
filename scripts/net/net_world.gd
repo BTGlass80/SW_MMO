@@ -136,6 +136,7 @@ func _ready() -> void:
 	Net.sell_replied.connect(_on_sell_replied)
 	Net.died.connect(_on_died)
 	Net.insurance_replied.connect(_on_insurance_replied)
+	Net.force_awakened_replied.connect(_on_force_awakened)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -151,6 +152,7 @@ func _ready() -> void:
 		# influence over the wire). Off on a real server; the two-process harness opts in explicitly.
 		Net.allow_test_org = OS.get_cmdline_user_args().has("--allow-test-org")
 		Net.force_hostile_key = _arg_value("--force-hostile")  # TEST-ONLY: force a specific lethal creature to spawn
+		Net.force_awaken_now = OS.get_cmdline_user_args().has("--force-awaken")  # TEST-ONLY: force a Force awakening
 		Net.start_server()
 		return
 
@@ -1008,6 +1010,17 @@ func _on_died(notice: Dictionary) -> void:
 	var msg := "You were killed by %s in %s. Respawned at the spaceport — gear -%d%% durability, %d item(s) dropped%s. Credits kept." % [
 		killer, String(notice.get("zone", "")), dur, dropped.size(), insured]
 	print("[death] %s" % msg)
+	_set_status(msg)
+	_combat_lines.append("*** %s ***" % msg)
+	while _combat_lines.size() > 8:
+		_combat_lines.pop_front()
+	if _combat_log != null:
+		_combat_log.text = "Combat log:\n" + "\n".join(_combat_lines)
+
+# DIV-0011: your hidden Force sensitivity has awakened (the SWG-Village earned unlock).
+func _on_force_awakened(notice: Dictionary) -> void:
+	var msg := String(notice.get("message", "You feel the Force awaken within you."))
+	print("[force] %s" % msg)
 	_set_status(msg)
 	_combat_lines.append("*** %s ***" % msg)
 	while _combat_lines.size() > 8:

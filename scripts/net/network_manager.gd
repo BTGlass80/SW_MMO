@@ -33,6 +33,7 @@ const ReputationModel := preload("res://scripts/rules/reputation_model.gd") # st
 const HostileNpc := preload("res://scripts/rules/hostile_npc_model.gd")     # DIV-0017: creature -> lethal target pools
 const CreatureSpawn := preload("res://scripts/rules/creature_spawn_model.gd") # seeded hostile spawn rolls
 const DeathPenalty := preload("res://scripts/rules/death_penalty_model.gd")   # DIV-0006: death penalty + respawn
+const ForceAwaken := preload("res://scripts/rules/force_awakening_model.gd")   # DIV-0011: SWG-Village earned unlock
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -84,6 +85,7 @@ signal buy_replied(result: Dictionary)
 signal sell_replied(result: Dictionary)
 signal died(notice: Dictionary)             # DIV-0006: this client was killed + respawned
 signal insurance_replied(result: Dictionary) # DIV-0006: buy-insurance outcome
+signal force_awakened_replied(notice: Dictionary) # DIV-0011: this client's Force sensitivity awakened
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -100,6 +102,8 @@ var _buy_catalog := {}                # server only (merged {item_key -> {cost, 
 var _creature_spawn = null            # server only (CreatureSpawn instance: seeded hostile spawn rolls)
 var _creatures_data := {}             # server only (creatures container for the spawner)
 var force_hostile_key := ""           # TEST-ONLY: force this creature key to spawn in lethal zones (--force-hostile)
+var force_awaken_now := false         # TEST-ONLY: force a connected latent to awaken next Director tick (--force-awaken)
+var _visited_zones := {}              # DIV-0011: character_id -> {zone_id:true} for the distinct-zones awakening signal
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var director_tick_seconds: float = DIRECTOR_TICK_SECONDS
 var resource_tick_seconds: float = RESOURCE_TICK_SECONDS
@@ -244,6 +248,7 @@ func _on_peer_disconnected(id: int) -> void:
 	_peer_ranks.erase(id)  # F34: territory-authority rank
 	_peer_rpc_budget.erase(id)
 	_heal_treated.erase(id)  # DIV-0013: drop this peer's First-Aid retry gate (keyed by target peer)
+	if character_id != "": _visited_zones.erase(character_id)  # DIV-0011: drop the distinct-zones tracker
 	# Evict the record cache on disconnect: _save_peer just flushed final state to disk, the
 	# single-session lock means no other peer holds this character, and the next login does a
 	# fresh read-through. Bounds _record_cache to connected players (no unbounded session leak)
@@ -545,6 +550,7 @@ func submit_skill_raise(skill: String) -> void:
 		skill_raise_result.rpc_id(sender, {"ok": true, "skill": skill, "new_bonus": result["new_skill_bonus"], "cost": result["cost"]})
 		apply_wallet.rpc_id(sender, result["wallet"])
 		_push_sheet(sender, record)  # F24: refresh the sheet panel after the raise
+		_feed_force_signal(sender, "cp_spent", int(result["cost"]))  # DIV-0011: spending CP nudges the awakening track
 	else:
 		print("[skillraise] peer %d %s rejected (%s, need %d)" % [sender, skill, String(result.get("reason", "")), int(result.get("cost", 0))])
 		skill_raise_result.rpc_id(sender, {"ok": false, "skill": skill, "reason": result.get("reason", ""), "cost": result.get("cost", 0)})
@@ -649,6 +655,8 @@ func submit_heal(target_id: int) -> void:
 		t_sheet["wound_state"] = new_level
 		t_record["sheet"] = t_sheet
 		_cached_save(target_char, t_record)
+		_feed_force_signal(healer, "heals_given", 1)      # DIV-0011: saving an ally nudges the medic's track
+		_feed_force_signal(target_id, "recoveries", 1)    # DIV-0011: surviving a wound nudges the patient's track
 		if arena != null:
 			arena.set_player_combat(target_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(new_level)})
 		if new_level == "healthy":
@@ -699,6 +707,11 @@ func submit_change_zone(zone_id: String) -> void:
 		record["zone"] = zone_id  # persist so the next login restores this zone
 		_cached_save(character_id, record)
 	_refresh_peer_hostility(sender)  # DIV-0017: engage/disengage the destination zone's hostile immediately
+	if not _visited_zones.has(character_id):
+		_visited_zones[character_id] = {}
+	if not (_visited_zones[character_id] as Dictionary).has(zone_id):
+		(_visited_zones[character_id] as Dictionary)[zone_id] = true
+		_feed_force_signal(sender, "zones_visited", 1)  # DIV-0011: reaching a new zone nudges the track
 	print("[zone] peer %d traveled to %s (%s)" % [sender, zone_id, zones.effective_security(zone_id)])
 	zone_result.rpc_id(sender, {"ok": true, "zone_id": zone_id, "display_name": zones.zone_summary(zone_id).get("display_name", zone_id)})
 
@@ -1390,6 +1403,95 @@ func send_buy_insurance() -> void:
 	if mode == Mode.CLIENT and connected:
 		submit_buy_insurance.rpc_id(1)
 
+# --- DIV-0011: SWG-Village Force awakening (the hidden, rare, earned unlock) ---
+# Accrue a deterministic awakening signal onto a character's hidden force_unlock track. No-op once
+# COMPLETE (awakened). Persists the updated unlock. The signals map play -> latent progress.
+func _feed_force_signal(peer_id: int, signal_key: String, amount: int = 1) -> void:
+	if store == null or amount <= 0:
+		return
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var unlock: Dictionary = sheet.get("force_unlock", ForceAwaken.initial_unlock())
+	if ForceAwaken.is_complete(unlock):
+		return
+	sheet["force_unlock"] = ForceAwaken.record_signal(unlock, signal_key, amount)
+	record["sheet"] = sheet
+	_cached_save(character_id, record)
+
+# The server soft-cap denominator: connected characters that have begun awakening (phase >= 1).
+# v1 counts CONNECTED latents only (offline latents don't hold a slot); a server-global persisted
+# tally is a tracked follow-up.
+func _awakened_count() -> int:
+	var n := 0
+	for pid in _peer_characters.keys():
+		var cid := String(_peer_characters[pid])
+		if cid == "":
+			continue
+		var rec := _cached_load(cid)
+		if ForceAwaken.counts_toward_cap((rec.get("sheet", {}) as Dictionary).get("force_unlock", {})):
+			n += 1
+	return n
+
+# Each Director tick: feed the per-tick "tense_ticks" signal to every connected player standing in a
+# dangerous (lawless/contested/high-alert) zone — surviving tense places nudges the latent along.
+func _feed_tense_ticks() -> void:
+	if zones == null:
+		return
+	for peer_id in _peer_characters.keys():
+		var zone_id := String(_peer_zones.get(peer_id, _default_zone))
+		if _creature_spawn != null and _creature_spawn.is_dangerous_posture(String((zones.get_zone(zone_id) as Dictionary).get("alert_level", "standard")), zones.effective_security(zone_id)):
+			_feed_force_signal(int(peer_id), "tense_ticks", 1)
+
+# One Director-tick step of every connected latent's awakening track (manifest / advance / awaken).
+# On completion, flip force_sensitive (apply_completion) + push the sheet + notify the client. Rare
+# by design — the manifest/awaken rolls + soft cap live in the pure model's tunable dials.
+func _advance_force_awakenings() -> void:
+	if store == null:
+		return
+	var cap_count := _awakened_count()
+	for pid in _peer_characters.keys():
+		var character_id := String(_peer_characters[pid])
+		if character_id == "":
+			continue
+		var record := _cached_load(character_id)
+		if record.is_empty():
+			continue
+		var sheet: Dictionary = record.get("sheet", {})
+		var unlock: Dictionary = sheet.get("force_unlock", ForceAwaken.initial_unlock())
+		if ForceAwaken.is_complete(unlock):
+			continue
+		var result: Dictionary
+		if force_awaken_now:  # TEST-ONLY: jump straight to COMPLETE
+			result = {"unlock": {"phase": ForceAwaken.PHASE_COMPLETE, "signals": unlock.get("signals", {})}, "event": "awaken"}
+		else:
+			result = ForceAwaken.director_tick(_server_rng, unlock, cap_count)
+		var event := String(result.get("event", ""))
+		if event == "":
+			continue
+		sheet["force_unlock"] = result["unlock"]
+		var completed := ForceAwaken.is_complete(result["unlock"])
+		if completed:
+			sheet = ForceAwaken.apply_completion(sheet)  # flips force_sensitive + seeds the force-skill block
+		record["sheet"] = sheet
+		_cached_save(character_id, record)
+		if event == "manifest":
+			cap_count += 1  # a newly-manifested latent now holds a soft-cap slot
+		print("[force] peer %d %s -> phase %d%s" % [int(pid), event, int((sheet["force_unlock"] as Dictionary)["phase"]), " (AWAKENED)" if completed else ""])
+		if completed:
+			_push_sheet(int(pid), record)
+			if mode == Mode.SERVER:
+				force_awakened.rpc_id(int(pid), {"message": "You feel the Force awaken within you."})
+
+# server -> client: your Force sensitivity has awakened (DIV-0011)
+@rpc("authority", "call_remote", "reliable")
+func force_awakened(notice: Dictionary) -> void:
+	force_awakened_replied.emit(notice)
+
 # DIV-0012: natural wound recovery. Once per Director tick (= one recovery interval), each
 # CONNECTED character whose persisted wound is a "can still act" tier (stunned/wounded/
 # wounded_twice) makes a self-recovery heal_check with their OWN Strength vs the Guide_19 §3
@@ -1420,6 +1522,7 @@ func _recover_wounds() -> void:
 		record["sheet"] = sheet
 		_cached_save(character_id, record)
 		arena.set_player_combat(peer_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(new_level)})
+		_feed_force_signal(peer_id, "recoveries", 1)      # DIV-0011: recovering from a wound nudges the track
 		if new_level == "healthy":
 			_heal_treated.erase(peer_id)  # fully recovered -> reset the First-Aid retry gate (DIV-0013/F8)
 		print("[recovery] peer %d %s healed %s -> %s (Strength %s rolled %d vs %d)" % [
@@ -1512,6 +1615,8 @@ func _physics_process(delta: float) -> void:
 					_advance_hostiles()  # DIV-0017: (re)spawn + engage hostile creatures in lethal zones
 					_save_world_state()  # F58: persist the advanced territory so it survives a restart
 				_recover_wounds()  # DIV-0012: natural wound recovery for connected players
+				_feed_tense_ticks()  # DIV-0011: tense-zone participation feeds the awakening track
+				_advance_force_awakenings()  # DIV-0011: step every connected latent's hidden awakening
 			_resource_accum += delta
 			if _resource_accum >= resource_tick_seconds:
 				_resource_accum = 0.0
@@ -1664,6 +1769,7 @@ func _resolve_combat_window() -> void:
 			_award_cp(shooter, "gameplay", COMBAT_CP_REWARD)
 			_accrue_zone_influence(shooter, DISABLE_INFLUENCE)  # E24: play feeds faction influence
 			_accrue_territory_influence(shooter, KILL_TERRITORY_INFLUENCE)  # earn org territory influence
+			_feed_force_signal(shooter, "disables", 1)  # DIV-0011: a combat disable nudges the track
 			# DIV-0018: a disabled HOSTILE creature drops loot credits (the training dummy is CP-only). Despawn it.
 			if tkey != "" and not looted.has(tkey):
 				looted[tkey] = true
