@@ -27,6 +27,9 @@ const AmbientSim := preload("res://scripts/net/ambient_sim_model.gd")
 const Recovery := preload("res://scripts/rules/recovery_model.gd")
 const DerivedStats := preload("res://scripts/rules/derived_stats_model.gd")
 const WoundLadder := preload("res://scripts/rules/wound_ladder_model.gd")  # F46: surface the WEG action penalty
+const EconomyModel := preload("res://scripts/rules/economy_model.gd")      # Wave F: WEG-anchored buy/sell/loot (DIV-0018)
+const VendorModel := preload("res://scripts/rules/vendor_model.gd")        # vendor stock + Bargain/Director pricing
+const ReputationModel := preload("res://scripts/rules/reputation_model.gd") # standing-tier buy discount
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -70,6 +73,10 @@ signal auth_replied(result: Dictionary)
 signal heal_replied(result: Dictionary)
 signal zone_replied(result: Dictionary)
 signal sheet_updated(summary: Dictionary)
+signal credits_updated(credits: int)       # Wave F economy: the player's credit balance changed
+signal vendor_listed(payload: Dictionary)   # server-priced vendor stock
+signal buy_replied(result: Dictionary)
+signal sell_replied(result: Dictionary)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -80,6 +87,9 @@ var territory: Territory = null       # server only (org claims + passive income
 var _org_model = null                 # server only (OrgModel instance: claim validation)
 var _pending_model = null             # server only (PendingInfluence instance: E24 loop)
 var _derived = null                   # server only (DerivedStats instance: DIV-0015 species move)
+var _vendor = null                    # server only (VendorModel instance: buy pricing / stock)
+var _reputation = null                # server only (ReputationModel instance: standing-tier discount)
+var _buy_catalog := {}                # server only (merged {item_key -> {cost, vendor_stocked, name, kind}})
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var director_tick_seconds: float = DIRECTOR_TICK_SECONDS
 var resource_tick_seconds: float = RESOURCE_TICK_SECONDS
@@ -96,6 +106,7 @@ var _weapons_catalog := {}            # server only (weapon key -> stats; for eq
 var _armor_catalog := {}              # server only (armor key -> stats; for equip)
 var last_snapshot: Dictionary = {}    # client view of the world
 var last_wallet: Dictionary = {}      # client view of its own CP wallet
+var last_credits: int = 0             # client view of its own credit balance (Wave F economy)
 var connected: bool = false           # client: handshake complete
 
 var _server_accum := 0.0
@@ -151,6 +162,9 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	# seeded roster. AFTER territory/pending are created so their state can be restored too.
 	_load_world_state()
 	_derived = DerivedStats.new()
+	_vendor = VendorModel.new()
+	_reputation = ReputationModel.new()
+	_build_buy_catalog()  # merged priced catalog for buy/sell (Wave F economy)
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
@@ -400,6 +414,7 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	print("[persist] peer %d -> %s (%s) loaded at (%.1f, %.1f, %.1f) [weapon=%s]" % [sender, character_id, chosen_name, pos.x, pos.y, pos.z,
 		String((record.get("sheet", {}) as Dictionary).get("equipment", {}).get("weapon", "?"))])
 	_push_sheet(sender, record)  # F24: send the character sheet to the client's sheet panel
+	apply_credits.rpc_id(sender, int((record.get("sheet", {}) as Dictionary).get("credits", 0)))  # Wave F: show the wallet on login
 
 func send_register(account_id: String, display_name: String = "", build: Dictionary = {}) -> void:
 	if mode == Mode.CLIENT and connected:
@@ -881,6 +896,7 @@ func _sheet_summary(record: Dictionary) -> Dictionary:
 		"weapon": String(equipment.get("weapon", "")),
 		"armor": String(equipment.get("armor", "")),
 		"cp_wallet": sheet.get("cp_wallet", {}),
+		"credits": int(sheet.get("credits", 0)),  # Wave F economy: show the wallet balance on the sheet
 		"force_sensitive": bool(sheet.get("force_sensitive", false)),
 	}
 
@@ -892,6 +908,197 @@ func _push_sheet(peer: int, record: Dictionary) -> void:
 @rpc("authority", "call_remote", "reliable")
 func apply_sheet(summary: Dictionary) -> void:
 	sheet_updated.emit(summary)
+
+# --- Wave F: WEG-anchored credit economy (DIV-0018) ---
+# Merge the weapon + armor catalogs into a flat priced catalog {item_key -> {cost, vendor_stocked,
+# name, kind}} that EconomyModel.buy/can_buy/sell consult (they need `cost` + `vendor_stocked`).
+func _build_buy_catalog() -> void:
+	_buy_catalog = {}
+	for k in _weapons_catalog:
+		var w: Dictionary = _weapons_catalog[k]
+		_buy_catalog[String(k)] = {"cost": int(w.get("cost", 0)), "vendor_stocked": bool(w.get("vendor_stocked", false)), "name": String(w.get("name", k)), "kind": "weapon"}
+	for k in _armor_catalog:
+		var a: Dictionary = _armor_catalog[k]
+		_buy_catalog[String(k)] = {"cost": int(a.get("cost", 0)), "vendor_stocked": bool(a.get("vendor_stocked", false)), "name": String(a.get("name", k)), "kind": "armor"}
+
+# The Director price multiplier for a zone (trade_boom/merchant_arrival cheapen goods; via vendor_model).
+func _zone_price_multiplier(zone_id: String) -> float:
+	if zones == null or _vendor == null:
+		return 1.0
+	return _vendor.director_multiplier_for_event(String((zones.zone_summary(zone_id) as Dictionary).get("event_type", "")))
+
+# The player's buy-discount tier from their org standing (org.faction_rep 0..100 -> standing_tier).
+func _rep_tier_for(record: Dictionary) -> String:
+	if _reputation == null:
+		return "neutral"
+	var org: Variant = record.get("org", {})
+	if typeof(org) != TYPE_DICTIONARY:
+		return "neutral"
+	return _reputation.standing_tier(int((org as Dictionary).get("faction_rep", 0)))
+
+# The player's Bargain skill as a {dice, pips} pair (WEG: Bargain reduces vendor price, 3%/die).
+func _bargain_for(sheet: Dictionary) -> Dictionary:
+	var pool: Dictionary = D6Rules.parse_pool(String((sheet.get("skills", {}) as Dictionary).get("bargain", "0D")))
+	return {"dice": int(pool.get("dice", 0)), "pips": int(pool.get("pips", 0))}
+
+# The final per-player buy price for one catalog item in the player's current zone.
+func _buy_price_for(sender: int, record: Dictionary, list_cost: int) -> int:
+	var sheet: Dictionary = record.get("sheet", {})
+	var bargain := _bargain_for(sheet)
+	var zone_id := String(_peer_zones.get(sender, _default_zone))
+	return EconomyModel.buy_price(list_cost, _zone_price_multiplier(zone_id), int(bargain["dice"]), int(bargain["pips"]), _rep_tier_for(record), _vendor)
+
+# Credit the player's persisted wallet by `amount` (may be negative; floored at 0) and push the new
+# balance + sheet. The single credit mutation point — loot (S13), buy/sell, and future sinks route here.
+func _award_credits(peer_id: int, amount: int) -> void:
+	if store == null or amount == 0:
+		return
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var credits := maxi(int(sheet.get("credits", 0)) + amount, 0)
+	sheet["credits"] = credits
+	record["sheet"] = sheet
+	_cached_save(character_id, record)
+	if mode == Mode.SERVER:
+		apply_credits.rpc_id(peer_id, credits)
+		_push_sheet(peer_id, record)
+	print("[credits] peer %d %+d -> %d" % [peer_id, amount, credits])
+
+# server -> client: the player's authoritative credit balance
+@rpc("authority", "call_remote", "reliable")
+func apply_credits(credits: int) -> void:
+	last_credits = credits
+	credits_updated.emit(credits)
+
+# client -> server: request the vendor's server-priced stock (buy + 40% sell prices).
+@rpc("any_peer", "call_remote", "reliable")
+func submit_vendor_list() -> void:
+	if mode != Mode.SERVER or store == null or _vendor == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var zone_id := String(_peer_zones.get(sender, _default_zone))
+	var mult := _zone_price_multiplier(zone_id)
+	var rep_tier := _rep_tier_for(record)
+	var bargain := _bargain_for(sheet)
+	var stock: Array = []
+	for item in _vendor.list_stock({"weapons": _weapons_catalog}, {"armor": _armor_catalog}):
+		var list_cost := int((item as Dictionary).get("base_cost", 0))
+		stock.append({
+			"key": String((item as Dictionary)["key"]),
+			"kind": String((item as Dictionary)["kind"]),
+			"name": String((item as Dictionary)["name"]),
+			"buy": EconomyModel.buy_price(list_cost, mult, int(bargain["dice"]), int(bargain["pips"]), rep_tier, _vendor),
+			"sell": EconomyModel.sell_price(list_cost),
+		})
+	print("[vendor] peer %d listed %d items (zone %s mult %.2f rep %s)" % [sender, stock.size(), zone_id, mult, rep_tier])
+	vendor_result.rpc_id(sender, {"stock": stock, "credits": int(sheet.get("credits", 0)), "rep_tier": rep_tier, "price_mult": mult})
+
+# server -> client: the priced vendor stock
+@rpc("authority", "call_remote", "reliable")
+func vendor_result(payload: Dictionary) -> void:
+	vendor_listed.emit(payload)
+
+# client -> server: buy an item (the primary credit SINK). Server prices it, debits credits, and
+# appends it to the character's inventory (EconomyModel.buy validates stock + affordability).
+@rpc("any_peer", "call_remote", "reliable")
+func submit_buy(item_key: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var key := item_key.strip_edges()
+	if not _buy_catalog.has(key):
+		buy_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "unknown_item"})
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var price := _buy_price_for(sender, record, int((_buy_catalog[key] as Dictionary).get("cost", 0)))
+	var result: Dictionary = EconomyModel.buy(sheet, key, price, _buy_catalog)
+	if bool(result.get("ok", false)):
+		var new_sheet: Dictionary = result["sheet"]
+		record["sheet"] = new_sheet
+		_cached_save(character_id, record)
+		apply_credits.rpc_id(sender, int(new_sheet.get("credits", 0)))
+		_push_sheet(sender, record)
+		print("[buy] peer %d bought %s for %d (credits now %d)" % [sender, key, price, int(new_sheet.get("credits", 0))])
+		buy_result.rpc_id(sender, {"ok": true, "item_key": key, "price": price, "credits": int(new_sheet.get("credits", 0))})
+	else:
+		print("[buy] peer %d buy %s rejected (%s, price %d)" % [sender, key, String(result.get("reason", "")), price])
+		buy_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": String(result.get("reason", "")), "price": price})
+
+# client -> server: sell an OWNED, unequipped item back to a vendor at 40% of list (the churn spread).
+@rpc("any_peer", "call_remote", "reliable")
+func submit_sell(item_key: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var key := item_key.strip_edges()
+	if not _buy_catalog.has(key):
+		sell_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "unknown_item"})
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var price := EconomyModel.sell_price(int((_buy_catalog[key] as Dictionary).get("cost", 0)))
+	var result: Dictionary = EconomyModel.sell(sheet, key, price)
+	if bool(result.get("ok", false)):
+		var new_sheet: Dictionary = result["sheet"]
+		record["sheet"] = new_sheet
+		_cached_save(character_id, record)
+		apply_credits.rpc_id(sender, int(new_sheet.get("credits", 0)))
+		_push_sheet(sender, record)
+		print("[sell] peer %d sold %s for %d (credits now %d)" % [sender, key, price, int(new_sheet.get("credits", 0))])
+		sell_result.rpc_id(sender, {"ok": true, "item_key": key, "price": price, "credits": int(new_sheet.get("credits", 0))})
+	else:
+		print("[sell] peer %d sell %s rejected (%s)" % [sender, key, String(result.get("reason", ""))])
+		sell_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": String(result.get("reason", ""))})
+
+# server -> client: the outcome of a buy / sell
+@rpc("authority", "call_remote", "reliable")
+func buy_result(result: Dictionary) -> void:
+	buy_replied.emit(result)
+
+@rpc("authority", "call_remote", "reliable")
+func sell_result(result: Dictionary) -> void:
+	sell_replied.emit(result)
+
+func send_vendor_list() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_vendor_list.rpc_id(1)
+
+func send_buy(item_key: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_buy.rpc_id(1, item_key)
+
+func send_sell(item_key: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_sell.rpc_id(1, item_key)
 
 # server -> client: result of a skill-raise attempt
 @rpc("authority", "call_remote", "reliable")

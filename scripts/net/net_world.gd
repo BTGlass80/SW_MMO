@@ -84,6 +84,14 @@ var _last_player_count := -1 # log zone-presence (players-here) CHANGES only
 var _raise_accum := 0.0
 var _raise_sent := false
 var _wallet_label: Label
+var _credits_label: Label          # Wave F economy: the player's credit balance
+var _last_credits := -1
+var _buy := ""                     # headless: item_key to buy once after connecting
+var _buy_sent := false
+var _sell := ""                    # headless: item_key to sell once after connecting
+var _sell_sent := false
+var _vendor_list_req := false      # headless: --vendor-list requests the stock once
+var _econ_accum := 0.0
 var _condition_label: Label
 var _last_condition := "healthy"   # so we log condition CHANGES only
 var _target_label: Label           # F47: at-a-glance target status (companion to the condition HUD)
@@ -121,6 +129,10 @@ func _ready() -> void:
 	Net.heal_replied.connect(_on_heal_replied)
 	Net.zone_replied.connect(_on_zone_replied)
 	Net.sheet_updated.connect(_on_sheet_updated)
+	Net.credits_updated.connect(_on_credits_updated)
+	Net.vendor_listed.connect(_on_vendor_listed)
+	Net.buy_replied.connect(_on_buy_replied)
+	Net.sell_replied.connect(_on_sell_replied)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -178,6 +190,9 @@ func _parse_args() -> void:
 	_heal_other = args.has("--heal-other")  # headless DIV-0013: First-Aid the first other player once
 	_travel = _arg_value("--travel")  # headless DIV-0014: travel to this zone_id once
 	_say = _arg_value("--say")  # headless: a free-text chat line through parse_input (F22)
+	_buy = _arg_value("--buy")  # headless Wave F: buy this item_key once
+	_sell = _arg_value("--sell")  # headless Wave F: sell this item_key once
+	_vendor_list_req = args.has("--vendor-list")  # headless Wave F: request the vendor stock once
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -244,6 +259,19 @@ func _process(delta: float) -> void:
 		if _say_accum >= 3.0:  # after register, send one free-text chat line via parse_input
 			_say_sent = true
 			_submit_chat_line(_say)
+	# Wave F economy headless affordances: request stock / buy / sell once, after register settles.
+	if (_vendor_list_req or _buy != "" or _sell != "") and Net.connected:
+		_econ_accum += delta
+		if _econ_accum >= 3.5:
+			if _vendor_list_req:
+				_vendor_list_req = false
+				Net.send_vendor_list()
+			if _buy != "" and not _buy_sent:
+				_buy_sent = true
+				Net.send_buy(_buy)
+			if _sell != "" and not _sell_sent:
+				_sell_sent = true
+				Net.send_sell(_sell)
 	# headless net-movement readout: log the server-authoritative position while autowalking
 	if _autowalk and Net.connected:
 		_walk_accum += delta
@@ -304,6 +332,9 @@ func _input(event: InputEvent) -> void:
 				var z: Dictionary = _zone_list[_travel_idx]
 				Net.send_change_zone(String(z.get("id", "")))
 				_set_status("Traveling to %s…" % String(z.get("name", z.get("id", ""))))
+		elif event.keycode == KEY_B:
+			Net.send_vendor_list()  # Wave F economy: open the shop (server-priced stock -> combat/console log)
+			_set_status("Requesting vendor stock…")
 		elif event.keycode == KEY_C:
 			_spend_cp = (_spend_cp + 1) % 6  # cycle 0..5 CP staged for the next shot (WEG: +1D each)
 			_announce_next_shot()
@@ -613,7 +644,7 @@ func _build_hud() -> void:
 
 	var controls := Label.new()
 	controls.position = Vector2(18, 40)
-	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · T travel · V sheet · Enter chat · Esc release"
+	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · T travel · B shop · V sheet · Enter chat · Esc release"
 	controls.add_theme_font_size_override("font_size", 14)
 	controls.modulate = Color(0.09, 0.08, 0.06)
 	layer.add_child(controls)
@@ -640,6 +671,13 @@ func _build_hud() -> void:
 	_wallet_label.add_theme_font_size_override("font_size", 14)
 	_wallet_label.modulate = Color(0.10, 0.09, 0.07)
 	layer.add_child(_wallet_label)
+
+	_credits_label = Label.new()  # Wave F economy: credit balance (B: shop)
+	_credits_label.position = Vector2(760, 140)
+	_credits_label.text = "Credits: -   (B: shop)"
+	_credits_label.add_theme_font_size_override("font_size", 14)
+	_credits_label.modulate = Color(0.16, 0.14, 0.05)
+	layer.add_child(_credits_label)
 
 	_condition_label = Label.new()
 	_condition_label.position = Vector2(760, 60)
@@ -921,6 +959,38 @@ func _on_wallet_updated(wallet: Dictionary) -> void:
 			int(wallet.get("gameplay_cp", 0)), int(wallet.get("rp_cp", 0))]
 	print("[cp] wallet g=%d r=%d" % [int(wallet.get("gameplay_cp", 0)), int(wallet.get("rp_cp", 0))])
 
+# Wave F economy: the player's credit balance (pushed on login + every buy/sell/loot).
+func _on_credits_updated(credits: int) -> void:
+	if _credits_label != null:
+		_credits_label.text = "Credits: %d   (B: shop)" % credits
+	if credits != _last_credits:
+		_last_credits = credits
+		print("[credits] balance=%d" % credits)
+
+# Wave F economy: the vendor's priced stock. Logs it + shows a compact line on the status bar.
+func _on_vendor_listed(payload: Dictionary) -> void:
+	var stock: Array = payload.get("stock", [])
+	print("[vendor] %d items (credits %d, mult %.2f, rep %s):" % [stock.size(), int(payload.get("credits", 0)), float(payload.get("price_mult", 1.0)), String(payload.get("rep_tier", "neutral"))])
+	for item in stock:
+		print("[vendor]   %s (%s) buy %d / sell %d" % [String((item as Dictionary).get("key", "")), String((item as Dictionary).get("kind", "")), int((item as Dictionary).get("buy", 0)), int((item as Dictionary).get("sell", 0))])
+	_set_status("Shop: %d items — /buy <item> · /sell <item>" % stock.size())
+
+func _on_buy_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		print("[buy] bought %s for %d (credits %d)" % [String(result.get("item_key", "")), int(result.get("price", 0)), int(result.get("credits", 0))])
+		_set_status("Bought %s for %d cr." % [String(result.get("item_key", "")), int(result.get("price", 0))])
+	else:
+		print("[buy] %s rejected (%s)" % [String(result.get("item_key", "")), String(result.get("reason", ""))])
+		_set_status("Buy failed: %s (%s)." % [String(result.get("item_key", "")), String(result.get("reason", ""))])
+
+func _on_sell_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		print("[sell] sold %s for %d (credits %d)" % [String(result.get("item_key", "")), int(result.get("price", 0)), int(result.get("credits", 0))])
+		_set_status("Sold %s for %d cr." % [String(result.get("item_key", "")), int(result.get("price", 0))])
+	else:
+		print("[sell] %s rejected (%s)" % [String(result.get("item_key", "")), String(result.get("reason", ""))])
+		_set_status("Sell failed: %s (%s)." % [String(result.get("item_key", "")), String(result.get("reason", ""))])
+
 func _on_skill_raise_replied(result: Dictionary) -> void:
 	# F41: surface the result on the GUI status line too (print() only reaches the console; the
 	# player who typed /raise otherwise sees the optimistic "Raising…" forever). Parity w/ heal/zone.
@@ -999,6 +1069,7 @@ func _on_sheet_updated(summary: Dictionary) -> void:
 			sstr += "%s %s   " % [String(s), String(skills[s])]
 		lines.append("Skills: " + sstr.strip_edges())
 	lines.append("Gear: weapon=%s · armor=%s" % [String(summary.get("weapon", "-")), String(summary.get("armor", "-"))])
+	lines.append("Credits: %d" % int(summary.get("credits", 0)))
 	var w: Dictionary = summary.get("cp_wallet", {})
 	lines.append("CP wallet: %d gameplay · %d prestige" % [int(w.get("gameplay_cp", 0)), int(w.get("rp_cp", 0))])
 	lines.append("(press V to hide)")
@@ -1082,13 +1153,28 @@ func _dispatch_command(cmd: String, arg: String) -> void:
 				_set_status("Releasing %s…" % arg)
 			else:
 				_usage("/release <node>  (e.g. /release n1)")
+		"shop":
+			Net.send_vendor_list()  # Wave F economy: list the vendor's priced stock
+			_set_status("Requesting vendor stock…")
+		"buy":
+			if arg != "":
+				Net.send_buy(arg)
+				_set_status("Buying %s…" % arg)
+			else:
+				_usage("/buy <item>  (e.g. /buy heavy_blaster) — /shop lists items")
+		"sell":
+			if arg != "":
+				Net.send_sell(arg)
+				_set_status("Selling %s…" % arg)
+			else:
+				_usage("/sell <item>  (e.g. /sell hold_out_blaster)")
 		"who":
 			_show_who()  # client-local roster of same-zone players (from the snapshot)
 		"help":
 			var help := ChatModel.command_help()
 			# F54: /help also lists the KEYBINDS — none of these (H heal, K raise, X/Z/G defense,
 			# T travel, V sheet) are otherwise discoverable, so a new player can't find them.
-			var keys := "Keys: WASD move · Space jump · LMB fire · RMB aim · X cover · Z dodge · G full-dodge · C CP · F Force Point · H heal ally · K raise Blaster · V sheet · T travel · Enter chat"
+			var keys := "Keys: WASD move · Space jump · LMB fire · RMB aim · X cover · Z dodge · G full-dodge · C CP · F Force Point · H heal ally · K raise Blaster · V sheet · T travel · B shop · Enter chat"
 			_set_status(keys)
 			print("[help] %s" % help)
 			print("[help] %s" % keys)
