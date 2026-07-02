@@ -6,6 +6,7 @@ extends SceneTree
 ## a disabled target reports already-disabled. All dice are server-owned here.
 
 const CombatArena := preload("res://scripts/net/combat_arena.gd")
+const HostileNpc := preload("res://scripts/rules/hostile_npc_model.gd")
 
 var _failures: Array[String] = []
 var _rules: Object
@@ -224,6 +225,100 @@ func _init() -> void:
 					found_multi_action = true
 	_assert_true(found_dodge_defense, "an active-dodge attack defends the return fire with defense_type 'dodge'")
 	_assert_true(found_multi_action, "an active-dodge attack costs a -1D multi-action (player_attack action_count 2)")
+
+	# --- S6 / DIV-0017: per-player LETHAL flag + hostile targets ---
+	# A registered hostile creature (mapped through hostile_npc_model, the same path the live spawner
+	# uses) with the lethal flag set deals REAL, uncapped return fire: a weak-soak player is driven PAST
+	# the sparring ceiling into the 'out' band (>= DISABLED_SEVERITY) — proving the DIV-0016 cap is lifted.
+	var krayt_spawn := {
+		"hostile": true, "scale": "creature", "pack_size": 1,
+		"char_sheet": {"attributes": {"strength": "6D"}, "skills": {"melee_combat": "6D"}},
+		"natural_attack": {"to_hit_skill": "melee_combat", "damage": "STR+3D"},  # 9D vs a 1D-soak player
+	}
+	var krayt_pools: Dictionary = HostileNpc.attack_pools_from_creature(_rules, krayt_spawn)
+	var lethal_arena := CombatArena.new(_rules, data)
+	lethal_arena.register_hostile_target("krayt", krayt_pools, {"distance": 6.0, "cover_level": 0, "name": "Krayt Dragon"}, krayt_spawn)
+	_assert_true(lethal_arena.has_hostile_target("krayt"), "hostile target registered")
+	lethal_arena.register_player(40, "Prey", {"attributes": {"dexterity": "3D", "strength": "1D"}, "skills": {}})
+	lethal_arena.set_player_target(40, "krayt")
+	lethal_arena.set_player_lethal(40, true)
+	_assert_equal(lethal_arena.player_target_key(40), "krayt", "player is assigned to the hostile target")
+	var lethal_max := 0
+	for w in range(30):
+		lethal_arena.submit_fire_intent(40, {"aim": 0})
+		lethal_arena.resolve_window(6000 + w)
+		lethal_max = maxi(lethal_max, int(lethal_arena.player_state(40).get("player_wound_severity", 0)))
+	_assert_true(lethal_max >= CombatArena.DISABLED_SEVERITY, "a lethal hostile target drives the player PAST the sparring cap into the 'out' band")
+
+	# The clamp is gated on the LETHAL FLAG, not the target: the SAME hostile creature with lethal OFF
+	# keeps the player capped at Wounded(2). This isolates set_player_lethal as the load-bearing gate.
+	var capped_arena := CombatArena.new(_rules, data)
+	capped_arena.register_hostile_target("krayt", krayt_pools, {"distance": 6.0, "cover_level": 0, "name": "Krayt Dragon"}, krayt_spawn)
+	capped_arena.register_player(41, "Safe", {"attributes": {"dexterity": "3D", "strength": "1D"}, "skills": {}})
+	capped_arena.set_player_target(41, "krayt")  # note: lethal NOT set -> clamp still applies
+	var capped_max := 0
+	for w in range(30):
+		capped_arena.submit_fire_intent(41, {"aim": 0})
+		capped_arena.resolve_window(6500 + w)
+		capped_max = maxi(capped_max, int(capped_arena.player_state(41).get("player_wound_severity", 0)))
+	_assert_true(capped_max <= CombatArena.SPARRING_MAX_SEVERITY, "without the lethal flag even a hostile creature stays sparring-capped at 2")
+	_assert_true(capped_max >= 1, "the hostile creature still deals real (capped) damage — the path is live, not a no-op")
+
+	# A player kills a WEAK hostile target: hostile_target_disabled flips, and the shooter's envelope
+	# carries target_key / target_disabled / lethal so the network layer can award + loot + despawn.
+	var womp_spawn := {
+		"hostile": true, "scale": "creature", "pack_size": 3,
+		"char_sheet": {"attributes": {"strength": "1D"}, "skills": {"brawling": "2D"}},
+		"natural_attack": {"to_hit_skill": "brawling", "damage": "STR"},  # trivial 1D damage
+	}
+	var womp_pools: Dictionary = HostileNpc.attack_pools_from_creature(_rules, womp_spawn)
+	var hunt := CombatArena.new(_rules, data, "b1_training_silhouette", {"heavy_blaster": {"damage": "6D"}}, {})
+	hunt.register_hostile_target("womp", womp_pools, {"distance": 8.0, "cover_level": 0, "name": "Womp Rat"}, womp_spawn)
+	hunt.register_player(42, "Hunter", {"attributes": {"dexterity": "4D", "strength": "3D"}, "skills": {"blaster": "3D"}, "equipment": {"weapon": "heavy_blaster"}})
+	hunt.set_player_target(42, "womp")
+	hunt.set_player_lethal(42, true)
+	var killed := false
+	var saw_target_key := false
+	var saw_lethal := false
+	for w in range(80):
+		hunt.submit_fire_intent(42, {"aim": 3})
+		for env in hunt.resolve_window(6800 + w).get("envelopes", []):
+			var e: Dictionary = env
+			if String(e.get("target_key", "?")) == "womp":
+				saw_target_key = true
+			if bool(e.get("lethal", false)):
+				saw_lethal = true
+			if String(e.get("target_name", "")) == "Womp Rat" and bool(e.get("target_disabled", false)):
+				killed = true
+		if hunt.hostile_target_disabled("womp"):
+			killed = true
+			break
+	_assert_true(saw_target_key, "the envelope tags the hostile target_key")
+	_assert_true(saw_lethal, "the envelope flags a lethal encounter")
+	_assert_true(killed, "sustained fire disables the hostile creature")
+	_assert_true(hunt.hostile_target_disabled("womp"), "hostile_target_disabled reflects the kill")
+	_assert_equal(int(hunt.hostile_target_spawn("womp").get("pack_size", 0)), 3, "the creature spawn (loot source) is retained on the target")
+
+	# Despawn: removing a hostile target frees the player back to the shared training dummy (non-lethal).
+	hunt.remove_hostile_target("womp")
+	_assert_true(not hunt.has_hostile_target("womp"), "remove_hostile_target despawns it")
+	_assert_equal(hunt.player_target_key(42), "", "a player pointed at a despawned target falls back to the shared dummy")
+
+	# Regression: a player with NO hostile target and NO lethal flag is byte-identical sparring — the
+	# default resolve still caps at 2 and tags the envelope target_key "" / lethal false.
+	var plain := CombatArena.new(_rules, _sparring_data())
+	plain.register_player(43, "Recruit", {"attributes": {"dexterity": "2D", "strength": "1D"}})
+	var plain_env: Array = []
+	var plain_max := 0
+	for w in range(40):
+		plain.reset_target()
+		plain.submit_fire_intent(43, {"aim": 0})
+		plain_env = plain.resolve_window(6900 + w).get("envelopes", [])
+		plain_max = maxi(plain_max, int(plain.player_state(43).get("player_wound_severity", 0)))
+	_assert_true(plain_max <= CombatArena.SPARRING_MAX_SEVERITY, "default (no lethal flag) player stays sparring-capped")
+	if plain_env.size() == 1:
+		_assert_equal(String((plain_env[0] as Dictionary).get("target_key", "?")), "", "default envelope target_key is '' (shared dummy)")
+		_assert_equal(bool((plain_env[0] as Dictionary).get("lethal", true)), false, "default envelope is non-lethal")
 
 	if _rules.has_method("free"):
 		_rules.free()

@@ -38,6 +38,14 @@ var _players: Dictionary = {}         # peer_id -> {state: Dictionary, name: Str
 var _target_state: Dictionary = {}    # shared training target {wound_severity, armor_quality_pips, name}
 var _intents: Dictionary = {}         # peer_id -> normalized intent for the current window
 var _window_index := 0
+# S6 / DIV-0017: per-player LETHAL flag (skip the DIV-0016 sparring clamp so return fire deals REAL,
+# uncapped damage) + per-player HOSTILE TARGET assignment (which target this player fights instead of
+# the shared training dummy). Both default OFF/absent, so a player with neither set is byte-identical
+# to the pre-S6 sparring arena. The network layer sets these per ZONE (lawless/contested = lethal) and
+# per active spawn (creature = the hostile target).
+var _player_lethal: Dictionary = {}   # peer_id -> true: lift the sparring cap for this player
+var _player_target: Dictionary = {}   # peer_id -> hostile target_key ("" / absent = the shared dummy)
+var _hostile_targets: Dictionary = {} # target_key -> {state, pools(target_*), profile{distance,cover_level,name}, spawn}
 
 func _init(rules: Object, combat_data: Dictionary, target_id: String = "b1_training_silhouette", weapon_catalog: Dictionary = {}, armor_catalog: Dictionary = {}) -> void:
 	_rules = rules
@@ -170,6 +178,8 @@ func damage_pool_fp_text(peer_id: int) -> String:
 func remove_player(peer_id: int) -> void:
 	_players.erase(peer_id)
 	_intents.erase(peer_id)
+	_player_lethal.erase(peer_id)
+	_player_target.erase(peer_id)
 
 func has_player(peer_id: int) -> bool:
 	return _players.has(peer_id)
@@ -198,6 +208,63 @@ func target_state() -> Dictionary:
 
 func target_disabled() -> bool:
 	return int(_target_state.get("wound_severity", 0)) >= DISABLED_SEVERITY
+
+# --- S6 / DIV-0017: lethal flag + hostile targets ---
+## Lift (or restore) the DIV-0016 sparring clamp for one player. lethal=true => return fire deals REAL
+## uncapped damage (lawless/contested zones). Default false = the sparring cap holds.
+func set_player_lethal(peer_id: int, lethal: bool) -> void:
+	if lethal:
+		_player_lethal[peer_id] = true
+	else:
+		_player_lethal.erase(peer_id)
+
+func is_player_lethal(peer_id: int) -> bool:
+	return bool(_player_lethal.get(peer_id, false))
+
+## Register a hostile creature as a lethal target the arena can resolve against. `pools` is the
+## target_* pool shape (hostile_npc_model.attack_pools_from_creature); `profile` carries
+## {distance, cover_level, name}; `spawn` is the originating creature_spawn_model roll (kept for loot).
+func register_hostile_target(target_key: String, pools: Dictionary, profile: Dictionary, spawn: Dictionary = {}) -> void:
+	if target_key == "":
+		return
+	_hostile_targets[target_key] = {
+		"state": {"wound_severity": 0, "armor_quality_pips": 0, "name": String(profile.get("name", target_key))},
+		"pools": pools.duplicate(true),
+		"profile": profile.duplicate(true),
+		"spawn": spawn.duplicate(true),
+	}
+
+func has_hostile_target(target_key: String) -> bool:
+	return _hostile_targets.has(target_key)
+
+func hostile_target_keys() -> Array:
+	return _hostile_targets.keys()
+
+func hostile_target_state(target_key: String) -> Dictionary:
+	return ((_hostile_targets.get(target_key, {}) as Dictionary).get("state", {}) as Dictionary).duplicate(true)
+
+func hostile_target_spawn(target_key: String) -> Dictionary:
+	return ((_hostile_targets.get(target_key, {}) as Dictionary).get("spawn", {}) as Dictionary).duplicate(true)
+
+func hostile_target_disabled(target_key: String) -> bool:
+	return int(((_hostile_targets.get(target_key, {}) as Dictionary).get("state", {}) as Dictionary).get("wound_severity", 0)) >= DISABLED_SEVERITY
+
+## Despawn a hostile target; any player still pointed at it falls back to the shared training dummy.
+func remove_hostile_target(target_key: String) -> void:
+	_hostile_targets.erase(target_key)
+	for pid in _player_target.keys():
+		if String(_player_target[pid]) == target_key:
+			_player_target.erase(pid)
+
+## Point a player at a hostile target (must be registered) or, with "", back to the shared dummy.
+func set_player_target(peer_id: int, target_key: String) -> void:
+	if target_key != "" and _hostile_targets.has(target_key):
+		_player_target[peer_id] = target_key
+	else:
+		_player_target.erase(peer_id)
+
+func player_target_key(peer_id: int) -> String:
+	return String(_player_target.get(peer_id, ""))
 
 ## Record a player's fire intent for the current window. Clamped server-side.
 func submit_fire_intent(peer_id: int, intent: Dictionary) -> void:
@@ -248,32 +315,61 @@ func resolve_window(seed_base: int) -> Dictionary:
 		var window_for_shooter := window_state.duplicate(true)
 		window_for_shooter["active_ids"] = [str(peer_id)]
 		window_for_shooter["declaration_count"] = 1
-		# This shooter's own pools (from their sheet) + the shared target side.
+		# S6/DIV-0017: which target does THIS shooter fight? A registered hostile creature (assigned by
+		# the network layer per zone/spawn) if present, else the shared training dummy. `lethal` gates
+		# the DIV-0016 sparring clamp: true (lawless/contested) => REAL uncapped return fire.
+		var target_key := String(_player_target.get(peer_id, ""))
+		var use_hostile := target_key != "" and _hostile_targets.has(target_key)
+		var tstate: Dictionary
+		var tpools: Dictionary
+		var tprofile: Dictionary
+		if use_hostile:
+			var hrec: Dictionary = _hostile_targets[target_key]
+			tstate = hrec["state"]
+			tpools = hrec["pools"]
+			tprofile = hrec["profile"]
+		else:
+			tstate = _target_state
+			tpools = _target_pools
+			tprofile = _target_profile
+		var lethal := bool(_player_lethal.get(peer_id, false))
+		# This shooter's own pools (from their sheet) + the resolved target side.
 		var pools: Dictionary = (record.get("pools", _default_player_pools) as Dictionary).duplicate(true)
-		pools.merge(_target_pools)
+		pools.merge(tpools)
 		var result: Dictionary = _ground.resolve_exchange_with_action_window(
 			_rules,
 			record["state"],
-			_target_state,
+			tstate,
 			pools,
-			float(_target_profile.get("distance", 12.0)),
-			int(_target_profile.get("cover_level", 0)),
+			float(tprofile.get("distance", 12.0)),
+			int(tprofile.get("cover_level", 0)),
 			window_for_shooter,
 			exchange_seed
 		)
 		# DIV-0016: clamp the player's resulting wound to the non-lethal sparring ceiling at the SINGLE
-		# server-side chokepoint. record["state"] (player_state(peer)) is the sole accessor every
-		# downstream surface reads — snapshot you.wound (F9) + per-player nameplate wound (F17) +
-		# persistence. mini() can only LOWER a return-fire result to the ceiling, never heal a wound.
+		# server-side chokepoint — UNLESS this is a lethal encounter (DIV-0017: hostile PvE in a
+		# lawless/contested zone), where return fire deals real, uncapped damage up to 'dead'.
+		# record["state"] (player_state(peer)) is the sole accessor every downstream surface reads —
+		# snapshot you.wound (F9) + per-player nameplate wound (F17) + persistence.
 		var next_pstate: Dictionary = result.get("state", record["state"])
-		next_pstate["player_wound_severity"] = mini(int(next_pstate.get("player_wound_severity", 0)), SPARRING_MAX_SEVERITY)
+		if not lethal:
+			next_pstate["player_wound_severity"] = mini(int(next_pstate.get("player_wound_severity", 0)), SPARRING_MAX_SEVERITY)
 		record["state"] = next_pstate
-		_target_state = result.get("target_state", _target_state)
+		# Write the resolved target's new state back to the RIGHT target (the hostile record or the
+		# shared dummy), so each hostile encounter accumulates independently.
+		var new_tstate: Dictionary = result.get("target_state", tstate)
+		if use_hostile:
+			(_hostile_targets[target_key] as Dictionary)["state"] = new_tstate
+		else:
+			_target_state = new_tstate
 		var envelope: Dictionary = CombatEventEnvelopeModel.envelope_for_result(result, "ground_range", "local")
 		envelope["shooter_id"] = peer_id
 		envelope["shooter_name"] = String(record["name"])
-		envelope["target_name"] = String(_target_state.get("name", ""))
-		envelope["target_wound_severity"] = int(_target_state.get("wound_severity", 0))
+		envelope["target_name"] = String(new_tstate.get("name", ""))
+		envelope["target_wound_severity"] = int(new_tstate.get("wound_severity", 0))
+		envelope["target_key"] = target_key  # "" = the shared training dummy
+		envelope["target_disabled"] = int(new_tstate.get("wound_severity", 0)) >= DISABLED_SEVERITY
+		envelope["lethal"] = lethal
 		envelopes.append(envelope)
 		i += 1
 
