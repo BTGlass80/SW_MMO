@@ -78,8 +78,16 @@ a combat_arena lethal flag + a Director-tick spawner) is the shared root.
 - **S15** `[PAR]` Force schema + chargen seed (`sheet.force_unlock`).
 - **S16–S19** `[HOT]` Force wiring: signal feeds → Director-tick advancement → completion flip + subtle client notice.
 
-## Residual owner knobs (safe-defaulted, NOT blockers)
-- Are `contested` zones also lethal? (default lawless-only). Third-party corpse looting? (default owner-only; PvP-adjacent → gated).
+## 2026-07-02 owner rulings (fold these into the wiring)
+- **PvP = ZONE-BASED**: lawless = open PvP; secured/contested protected. NEW system beyond S0–S19 —
+  add a PvP sub-wave (pure target/consent model + tests, then HOT fire-intent gating to lawless) and a
+  **DIV-0019** ledger row before coding. Distinct from creature lethality: PvP-open = lawless ONLY.
+- **Corpse = FULL-LOOT in lawless**: other players may loot a dropped corpse in lawless (equipped + credits kept).
+  S12/S13 corpse handling allows third-party looting in lawless.
+- **Creature lethality = lawless + contested**: `hostile_npc_model.is_lethal_zone` default → `["lawless","contested"]`.
+- **Force rarity = rare by default, dials exposed** (soft cap ~8, ~2%/tick).
+
+## Remaining residual knobs (safe-defaulted, NOT blockers)
 - Do creature loots ever drop the ITEM, not just credits? (v1 credits+salvage only). Ammo/repair recurring sink? (flavor in v1).
 - Force scarcity dials (manifest chance / soft cap / prereqs) — defaulted rare, tunable.
 
