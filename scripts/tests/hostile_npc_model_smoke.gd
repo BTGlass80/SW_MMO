@@ -38,11 +38,12 @@ func _init() -> void:
 	_assert_equal(rules.pool_to_string(bare["target_attack_pool"]), "3D", "no listed skill -> 3D default")
 	_assert_equal(rules.pool_to_string(bare["target_damage_pool"]), "1D", "bare STR damage = Strength (1D)")
 
-	# --- lethality gate: lawless-only by default; tunable ---
+	# --- lethality gate: lawless + contested by default (owner ruling 2026-07-02); tunable ---
 	_assert_equal(HostileNpc.is_lethal_zone("lawless"), true, "lawless is lethal")
+	_assert_equal(HostileNpc.is_lethal_zone("contested"), true, "contested is lethal (2026-07-02 ruling)")
 	_assert_equal(HostileNpc.is_lethal_zone("secured"), false, "secured is NOT lethal (starter zones safe)")
-	_assert_equal(HostileNpc.is_lethal_zone("contested"), false, "contested is not lethal by default")
-	_assert_equal(HostileNpc.is_lethal_zone("contested", ["lawless", "contested"]), true, "contested lethal when configured")
+	_assert_equal(HostileNpc.is_lethal_zone("lawless", ["lawless"]), true, "lawless-only config still works")
+	_assert_equal(HostileNpc.is_lethal_zone("contested", ["lawless"]), false, "contested not lethal when config excludes it")
 
 	rules.free()  # d6_rules extends Node
 	_finish()

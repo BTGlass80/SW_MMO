@@ -40,7 +40,8 @@ static func _resolve_damage(rules: Object, damage_text: String, str_pool: Dictio
 		return rules.add_pools(str_pool, rules.parse_pool_or_pips(rest))
 	return rules.parse_pool(t)
 
-# DIV-0017: hostile creatures deal REAL (uncapped) damage ONLY in lawless zones (starter Mos Eisley
-# zones stay safe). Owner-tunable via lethal_tiers (e.g. add "contested").
-static func is_lethal_zone(security_tier: String, lethal_tiers: Array = ["lawless"]) -> bool:
+# DIV-0017: hostile creatures deal REAL (uncapped) damage in LAWLESS + CONTESTED zones (owner ruling
+# 2026-07-02; starter secured Mos Eisley zones stay safe). Distinct from open-PvP, which is lawless
+# ONLY (DIV-0019). Owner-tunable via lethal_tiers.
+static func is_lethal_zone(security_tier: String, lethal_tiers: Array = ["lawless", "contested"]) -> bool:
 	return lethal_tiers.has(security_tier)
