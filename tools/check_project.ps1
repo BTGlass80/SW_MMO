@@ -125,6 +125,8 @@ Invoke-GodotStep "Economy flow smoke:" @("--headless", "--path", $projectRoot, "
 
 Invoke-GodotStep "Death penalty model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_penalty_model_smoke.gd")
 
+Invoke-GodotStep "Death flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_flow_smoke.gd")
+
 Invoke-GodotStep "Hostile NPC model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/hostile_npc_model_smoke.gd")
 
 Invoke-GodotStep "Security gate smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/security_gate_smoke.gd")

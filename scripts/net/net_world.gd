@@ -91,6 +91,7 @@ var _buy_sent := false
 var _sell := ""                    # headless: item_key to sell once after connecting
 var _sell_sent := false
 var _vendor_list_req := false      # headless: --vendor-list requests the stock once
+var _buy_insurance_req := false    # headless: --buy-insurance buys a death-insurance policy once
 var _econ_accum := 0.0
 var _condition_label: Label
 var _last_condition := "healthy"   # so we log condition CHANGES only
@@ -133,6 +134,8 @@ func _ready() -> void:
 	Net.vendor_listed.connect(_on_vendor_listed)
 	Net.buy_replied.connect(_on_buy_replied)
 	Net.sell_replied.connect(_on_sell_replied)
+	Net.died.connect(_on_died)
+	Net.insurance_replied.connect(_on_insurance_replied)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -147,6 +150,7 @@ func _ready() -> void:
 		# TEST-ONLY: enable the register_account build.org self-grant affordance (org identity/rank/
 		# influence over the wire). Off on a real server; the two-process harness opts in explicitly.
 		Net.allow_test_org = OS.get_cmdline_user_args().has("--allow-test-org")
+		Net.force_hostile_key = _arg_value("--force-hostile")  # TEST-ONLY: force a specific lethal creature to spawn
 		Net.start_server()
 		return
 
@@ -193,6 +197,7 @@ func _parse_args() -> void:
 	_buy = _arg_value("--buy")  # headless Wave F: buy this item_key once
 	_sell = _arg_value("--sell")  # headless Wave F: sell this item_key once
 	_vendor_list_req = args.has("--vendor-list")  # headless Wave F: request the vendor stock once
+	_buy_insurance_req = args.has("--buy-insurance")  # headless Wave F: buy a death-insurance policy once
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -259,8 +264,8 @@ func _process(delta: float) -> void:
 		if _say_accum >= 3.0:  # after register, send one free-text chat line via parse_input
 			_say_sent = true
 			_submit_chat_line(_say)
-	# Wave F economy headless affordances: request stock / buy / sell once, after register settles.
-	if (_vendor_list_req or _buy != "" or _sell != "") and Net.connected:
+	# Wave F economy headless affordances: request stock / buy / sell / insure once, after register settles.
+	if (_vendor_list_req or _buy != "" or _sell != "" or _buy_insurance_req) and Net.connected:
 		_econ_accum += delta
 		if _econ_accum >= 3.5:
 			if _vendor_list_req:
@@ -272,6 +277,9 @@ func _process(delta: float) -> void:
 			if _sell != "" and not _sell_sent:
 				_sell_sent = true
 				Net.send_sell(_sell)
+			if _buy_insurance_req:
+				_buy_insurance_req = false
+				Net.send_buy_insurance()
 	# headless net-movement readout: log the server-authoritative position while autowalking
 	if _autowalk and Net.connected:
 		_walk_accum += delta
@@ -991,6 +999,31 @@ func _on_sell_replied(result: Dictionary) -> void:
 		print("[sell] %s rejected (%s)" % [String(result.get("item_key", "")), String(result.get("reason", ""))])
 		_set_status("Sell failed: %s (%s)." % [String(result.get("item_key", "")), String(result.get("reason", ""))])
 
+# DIV-0006: you were killed by a hostile and respawned at the secured spaceport med bay.
+func _on_died(notice: Dictionary) -> void:
+	var killer := String(notice.get("killer", "a hostile"))
+	var dur := int(notice.get("durability_loss", 0))
+	var dropped: Array = notice.get("dropped", [])
+	var insured := " (insured)" if bool(notice.get("insured", false)) else ""
+	var msg := "You were killed by %s in %s. Respawned at the spaceport — gear -%d%% durability, %d item(s) dropped%s. Credits kept." % [
+		killer, String(notice.get("zone", "")), dur, dropped.size(), insured]
+	print("[death] %s" % msg)
+	_set_status(msg)
+	_combat_lines.append("*** %s ***" % msg)
+	while _combat_lines.size() > 8:
+		_combat_lines.pop_front()
+	if _combat_log != null:
+		_combat_log.text = "Combat log:\n" + "\n".join(_combat_lines)
+
+# DIV-0006: buy-insurance outcome.
+func _on_insurance_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		print("[insurance] policy bought — %d charge(s), credits %d" % [int(result.get("charges", 0)), int(result.get("credits", 0))])
+		_set_status("Insurance: %d covered death(s). Credits %d." % [int(result.get("charges", 0)), int(result.get("credits", 0))])
+	else:
+		print("[insurance] rejected (%s)" % String(result.get("reason", "")))
+		_set_status("Insurance failed: %s (premium %d)." % [String(result.get("reason", "")), int(result.get("premium", 0))])
+
 func _on_skill_raise_replied(result: Dictionary) -> void:
 	# F41: surface the result on the GUI status line too (print() only reaches the console; the
 	# player who typed /raise otherwise sees the optimistic "Raising…" forever). Parity w/ heal/zone.
@@ -1168,6 +1201,9 @@ func _dispatch_command(cmd: String, arg: String) -> void:
 				_set_status("Selling %s…" % arg)
 			else:
 				_usage("/sell <item>  (e.g. /sell hold_out_blaster)")
+		"insure":
+			Net.send_buy_insurance()  # DIV-0006: buy a death-insurance policy (500cr / 3 covered deaths)
+			_set_status("Buying death insurance…")
 		"who":
 			_show_who()  # client-local roster of same-zone players (from the snapshot)
 		"help":

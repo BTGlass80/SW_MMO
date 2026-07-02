@@ -58,25 +58,20 @@ a combat_arena lethal flag + a Director-tick spawner) is the shared root.
   (`AWAKEN_SERVER_SOFT_CAP≈8`), a final phase-4 awaken roll; on COMPLETE flips `sheet.force_sensitive=true` and
   activates the existing `force_skills_model`. Faithful to Clone Wars scarcity (underground Force-sensitives, not the open Order).
 
-## Ordered slices (S0–S19)
-- **S0** `[PAR]` LEDGER-FIRST — UPDATE DIV-0006 (death penalty→LIVE) + DIV-0011 (Force→SWG-Village earned);
-  ADD DIV-0017 (hostile-PvE lethal source) + DIV-0018 (WEG-anchored economy). (resolves the drafted DIV-0017 collision)
-- **S1** `[PAR]` Economy pure model — `economy_model.gd` + smoke.
-- **S2** `[PAR]` Economy starting-credits (chargen+default_record → 1000) + schema: declare `sheet.inventory`, credits default 1000.
-- **S3** `[PAR]` Death pure penalty model — `death_penalty_model.gd` + smoke.
-- **S4** `[PAR]` Hostile-creature pure model — `hostile_npc_model.gd` + smoke (THE SHARED ROOT).
-- **S5** `[PAR]` Death schema — `item_durability`, `insurance`, `world_hooks.corpse`.
-- **S6** `[HOT]` combat_arena lethal flag (skip the sparring clamp for hostile NPCs; sparring byte-identical when off).
-- **S7** `[HOT]` network_manager: Economy preloads + `_award_credits` + `apply_credits` RPC.
-- **S8** `[HOT]` `submit_vendor_list` RPC (server-priced stock).
-- **S9** `[HOT]` `submit_buy` RPC (the primary credit SINK).
-- **S10** `[HOT]` `submit_sell` RPC (buy-back at 40%).
-- **S11** `[HOT]` Director-tick hostile-NPC spawner in lawless zones (ACTIVATES the lethal + loot source).
-- **S12** `[HOT]` Death sequence in `_resolve_combat_window` (dead → penalty → corpse → respawn → debuff; insurance debit STUBBED).
-- **S13** `[HOT]` Economy loot hook (credits on creature disable) + `submit_buy_insurance` (replaces the S12 stub).
-- **S14** `[PAR]` Force pure model — `force_awakening_model.gd` + smoke.
-- **S15** `[PAR]` Force schema + chargen seed (`sheet.force_unlock`).
-- **S16–S19** `[HOT]` Force wiring: signal feeds → Director-tick advancement → completion flip + subtle client notice.
+## Ordered slices (S0–S19) — status
+- **S0** ✅ DONE `304c015` — ledger rows + plan.
+- **S1** ✅ DONE `1cfe6bc` — `economy_model.gd` + smoke.
+- **S2** ✅ DONE `c48b16a` — starting-credits 1000 + schema drift close.
+- **S3** ✅ DONE `502894e` — `death_penalty_model.gd` + smoke.
+- **S4** ✅ DONE `5f6e853` (+ S4-fix `9972acd`: lethal tiers → lawless+contested) — `hostile_npc_model.gd` + smoke.
+- **S5** ✅ DONE `4238003` — death schema (`item_durability`/`insurance`/`world_hooks.corpse`).
+- **S6** ✅ DONE `f1e8660` — combat_arena per-player lethal flag + hostile targets (byte-identical sparring when off).
+- **S7-S10** ✅ DONE `04d39c6` — economy: `_award_credits`/`apply_credits` + `submit_vendor_list`/`submit_buy`/`submit_sell` + client HUD + `economy_flow_smoke`. Two-process verified.
+- **S11-S13** ✅ DONE (this slice) — Director-tick hostile spawner (`_advance_hostiles`, lawless+contested) + death/respawn (`_handle_player_death`) + loot on creature disable + `submit_buy_insurance`; `death_flow_smoke` + `--force-hostile` affordance. Two-process verified (death/loot/insurance).
+- **S14** ✅ DONE `ca34285` — `force_awakening_model.gd` + smoke.
+- **S15** ✅ DONE `2c4ebd8` — Force schema + chargen seed (`sheet.force_unlock`).
+- **S16–S19** `[HOT]` Force wiring: signal feeds → Director-tick advancement → completion flip + subtle client notice. **← NEXT**
+- **DIV-0019 PvP** (2026-07-02, NEW): pure `pvp_rules_model.gd` (lawless-only same-zone `can_fire`) + combat_arena `resolve_window(seed, pvp_gate)` + network_manager fire-target gating. Build spec ready.
 
 ## 2026-07-02 owner rulings (fold these into the wiring)
 - **PvP = ZONE-BASED**: lawless = open PvP; secured/contested protected. NEW system beyond S0–S19 —

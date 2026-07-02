@@ -30,11 +30,16 @@ const WoundLadder := preload("res://scripts/rules/wound_ladder_model.gd")  # F46
 const EconomyModel := preload("res://scripts/rules/economy_model.gd")      # Wave F: WEG-anchored buy/sell/loot (DIV-0018)
 const VendorModel := preload("res://scripts/rules/vendor_model.gd")        # vendor stock + Bargain/Director pricing
 const ReputationModel := preload("res://scripts/rules/reputation_model.gd") # standing-tier buy discount
+const HostileNpc := preload("res://scripts/rules/hostile_npc_model.gd")     # DIV-0017: creature -> lethal target pools
+const CreatureSpawn := preload("res://scripts/rules/creature_spawn_model.gd") # seeded hostile spawn rolls
+const DeathPenalty := preload("res://scripts/rules/death_penalty_model.gd")   # DIV-0006: death penalty + respawn
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
 const WEAPONS_DATA_PATH := "res://data/weapons_clone_wars.json"
 const ARMOR_DATA_PATH := "res://data/armor_clone_wars.json"
+const CREATURES_DATA_PATH := "res://data/creatures_clone_wars.json"
+const HOSTILE_DISTANCE := 10.0  # DIV-0017: nominal engagement range for a spawned hostile creature
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 const DISABLE_INFLUENCE := 5  # Director zone-influence a disable feeds to the shooter's faction axis (owner-tunable)
 const KILL_TERRITORY_INFLUENCE := Territory.KILL_TERRITORY_INFLUENCE  # F63: defined in territory_model (co-located with the claim floor)
@@ -77,6 +82,8 @@ signal credits_updated(credits: int)       # Wave F economy: the player's credit
 signal vendor_listed(payload: Dictionary)   # server-priced vendor stock
 signal buy_replied(result: Dictionary)
 signal sell_replied(result: Dictionary)
+signal died(notice: Dictionary)             # DIV-0006: this client was killed + respawned
+signal insurance_replied(result: Dictionary) # DIV-0006: buy-insurance outcome
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -90,6 +97,9 @@ var _derived = null                   # server only (DerivedStats instance: DIV-
 var _vendor = null                    # server only (VendorModel instance: buy pricing / stock)
 var _reputation = null                # server only (ReputationModel instance: standing-tier discount)
 var _buy_catalog := {}                # server only (merged {item_key -> {cost, vendor_stocked, name, kind}})
+var _creature_spawn = null            # server only (CreatureSpawn instance: seeded hostile spawn rolls)
+var _creatures_data := {}             # server only (creatures container for the spawner)
+var force_hostile_key := ""           # TEST-ONLY: force this creature key to spawn in lethal zones (--force-hostile)
 var combat_window_seconds: float = COMBAT_WINDOW_SECONDS
 var director_tick_seconds: float = DIRECTOR_TICK_SECONDS
 var resource_tick_seconds: float = RESOURCE_TICK_SECONDS
@@ -165,6 +175,8 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	_vendor = VendorModel.new()
 	_reputation = ReputationModel.new()
 	_build_buy_catalog()  # merged priced catalog for buy/sell (Wave F economy)
+	_creature_spawn = CreatureSpawn.new()
+	_creatures_data = _load_json_root(CREATURES_DATA_PATH)  # DIV-0017: hostile spawn source
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
@@ -472,6 +484,18 @@ func _load_json_container(path: String, key: String) -> Dictionary:
 		return {}
 	return (parsed as Dictionary).get(key, {})
 
+# Load a JSON file's full top-level object (creature_spawn_model.roll_spawn wants the {"creatures":{...}} root).
+func _load_json_root(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return {}
+	return parsed
+
 func _species_for(species_key: String) -> Dictionary:
 	var species: Dictionary = _species_data.get(species_key, {})
 	if species.is_empty():
@@ -674,6 +698,7 @@ func submit_change_zone(zone_id: String) -> void:
 	if not record.is_empty():
 		record["zone"] = zone_id  # persist so the next login restores this zone
 		_cached_save(character_id, record)
+	_refresh_peer_hostility(sender)  # DIV-0017: engage/disengage the destination zone's hostile immediately
 	print("[zone] peer %d traveled to %s (%s)" % [sender, zone_id, zones.effective_security(zone_id)])
 	zone_result.rpc_id(sender, {"ok": true, "zone_id": zone_id, "display_name": zones.zone_summary(zone_id).get("display_name", zone_id)})
 
@@ -1208,6 +1233,163 @@ func _advance_ambient() -> void:
 		counts[zone_id] = (_ambient[zone_id] as Array).size()
 	print("[ambient] tick %d npc counts %s" % [zones.tick_index, str(counts)])
 
+# --- DIV-0017: hostile-creature PvE (the shared lethal source) ---
+# Once per Director tick: keep each LETHAL (lawless/contested) zone that has players in it stocked
+# with one active hostile creature target, and despawn hostiles from zones that have calmed to safe.
+# Then re-point every player at their zone's hostile (lethal) or back at the shared training dummy.
+func _advance_hostiles() -> void:
+	if zones == null or arena == null or _creature_spawn == null:
+		return
+	for zone_id in zones.zones:
+		var tier := zones.effective_security(zone_id)
+		if not HostileNpc.is_lethal_zone(tier):
+			if arena.has_hostile_target(zone_id):
+				arena.remove_hostile_target(zone_id)  # zone calmed -> despawn any lingering hostile
+			continue
+		if not arena.has_hostile_target(zone_id) and _players_in_zone(zone_id) > 0:
+			var alert := String((zones.get_zone(zone_id) as Dictionary).get("alert_level", "standard"))
+			var spawn: Dictionary = _forced_spawn() if force_hostile_key != "" else _creature_spawn.roll_spawn(_creatures_data, alert, tier, _server_rng.randi())
+			if spawn.is_empty() or not bool(spawn.get("hostile", false)):
+				continue  # only HOSTILE creatures become lethal targets (retry next tick)
+			var pools: Dictionary = HostileNpc.attack_pools_from_creature(D6Rules, spawn)
+			arena.register_hostile_target(zone_id, pools, {"distance": HOSTILE_DISTANCE, "cover_level": 0, "name": String(spawn.get("name", "Creature"))}, spawn)
+			print("[hostile] %s spawned in %s (%s, pack %d)" % [String(spawn.get("name", "")), zone_id, tier, int(spawn.get("pack_size", 1))])
+	_refresh_all_hostility()
+
+# TEST-ONLY (--force-hostile): build a single-head spawn of a specific creature key, bypassing the
+# seeded random pick, so a two-process death check is deterministic. Empty when the key is unknown.
+func _forced_spawn() -> Dictionary:
+	var c: Dictionary = (_creatures_data.get("creatures", {}) as Dictionary).get(force_hostile_key, {})
+	if c.is_empty():
+		return {}
+	return {
+		"creature_key": force_hostile_key, "name": String(c.get("name", force_hostile_key)),
+		"scale": String(c.get("scale", "creature")), "hostile": bool(c.get("hostile", true)), "pack_size": 1,
+		"char_sheet": c.get("char_sheet", {}), "natural_attack": c.get("natural_attack", {}),
+	}
+
+func _players_in_zone(zone_id: String) -> int:
+	var n := 0
+	for pid in _peer_zones:
+		if String(_peer_zones[pid]) == zone_id:
+			n += 1
+	return n
+
+func _refresh_all_hostility() -> void:
+	for peer_id in _peer_characters.keys():
+		_refresh_peer_hostility(int(peer_id))
+
+# Point ONE player at their current zone's hostile creature (lethal) if there is one, else back at
+# the shared training dummy (non-lethal). Called on travel + each hostile tick so engagement follows
+# the player's zone. The lethal flag is what lifts the DIV-0016 sparring clamp (S6).
+func _refresh_peer_hostility(peer_id: int) -> void:
+	if arena == null or not arena.has_player(peer_id):
+		return
+	var zone_id := String(_peer_zones.get(peer_id, _default_zone))
+	var lethal_here := zones != null and HostileNpc.is_lethal_zone(zones.effective_security(zone_id))
+	if lethal_here and arena.has_hostile_target(zone_id):
+		arena.set_player_target(peer_id, zone_id)
+		arena.set_player_lethal(peer_id, true)
+	else:
+		arena.set_player_target(peer_id, "")
+		arena.set_player_lethal(peer_id, false)
+
+# DIV-0006: the death consequence. A player taken OUT (live wound >= DISABLED_SEVERITY) by a LETHAL
+# hostile is killed: apply the death penalty (durability loss + partial inventory drop + insurance),
+# write the corpse manifest, relocate to the secured spaceport med bay, respawn 'wounded' (credits
+# KEPT), and disengage from the hostile. v1 fires on incapacitation (a lone character taken out by a
+# hostile in a lawless/contested zone is killed) rather than modeling the mortally-wounded death-roll
+# grace; the survivable incapacitated/mortally band remains the non-lethal medical loop's domain.
+func _handle_player_death(peer_id: int, killer_name: String) -> void:
+	if store == null:
+		return
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var zone_id := String(_peer_zones.get(peer_id, _default_zone))
+	var tier := zones.effective_security(zone_id) if zones != null else "lawless"
+	var outcome: Dictionary = DeathPenalty.apply_death(sheet, tier)
+	var new_sheet: Dictionary = outcome["sheet"]  # wound_state=wounded, durability loss, drops removed, insurance consumed
+	var dropped: Array = outcome["dropped"]
+	# Corpse manifest -> record.world_hooks.corpse (full-loot by others in lawless is a tracked follow-up).
+	var world_hooks: Dictionary = record.get("world_hooks", {})
+	if not dropped.is_empty():
+		var dpos: Vector3 = state.get_player(peer_id).get("pos", WorldState.SPAWN_POINT) if state != null else WorldState.SPAWN_POINT
+		world_hooks["corpse"] = {"zone_id": zone_id, "pos": {"x": dpos.x, "y": dpos.y, "z": dpos.z}, "items": dropped, "decay_unix": 0.0}
+	else:
+		world_hooks["corpse"] = null
+	record["world_hooks"] = world_hooks
+	record["sheet"] = new_sheet
+	# Respawn at the secured spaceport med bay (WorldState.SPAWN_POINT), default zone.
+	_peer_zones[peer_id] = _default_zone
+	record["zone"] = _default_zone
+	_cached_save(character_id, record)
+	if state != null:
+		state.restore_player(peer_id, WorldState.SPAWN_POINT, 0.0)
+	if arena != null:
+		arena.set_player_sheet(peer_id, new_sheet)  # rebuild pools from the post-death sheet
+		arena.set_player_combat(peer_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(String(new_sheet.get("wound_state", "wounded")))})
+		arena.set_player_target(peer_id, "")   # disengage from the hostile
+		arena.set_player_lethal(peer_id, false)
+	_heal_treated.erase(peer_id)
+	print("[death] peer %d killed by %s in %s (%s): durability -%d%%, dropped %d, insured=%s -> respawn wounded @ spaceport (credits kept %d)" % [
+		peer_id, killer_name, zone_id, tier, int(outcome["durability_delta"]), dropped.size(), str(bool(outcome["insured"])), int(new_sheet.get("credits", 0))])
+	if mode == Mode.SERVER:
+		apply_credits.rpc_id(peer_id, int(new_sheet.get("credits", 0)))  # unchanged (credits kept) — refresh the client
+		_push_sheet(peer_id, record)
+		death_notice.rpc_id(peer_id, {
+			"killer": killer_name, "zone": zone_id, "security": tier,
+			"durability_loss": int(outcome["durability_delta"]), "dropped": dropped,
+			"insured": bool(outcome["insured"]), "respawn": "spaceport",
+		})
+
+# server -> client: you were killed and respawned (DIV-0006)
+@rpc("authority", "call_remote", "reliable")
+func death_notice(notice: Dictionary) -> void:
+	died.emit(notice)
+
+# client -> server: buy a death-insurance policy (DIV-0006): debit INSURANCE_PREMIUM, grant charges.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_buy_insurance() -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	if int(sheet.get("credits", 0)) < DeathPenalty.INSURANCE_PREMIUM:
+		insurance_result.rpc_id(sender, {"ok": false, "reason": "cannot_afford", "premium": DeathPenalty.INSURANCE_PREMIUM})
+		return
+	sheet["credits"] = int(sheet.get("credits", 0)) - DeathPenalty.INSURANCE_PREMIUM
+	var granted: Dictionary = DeathPenalty.buy_insurance(sheet, true)
+	var new_sheet: Dictionary = granted["sheet"]
+	record["sheet"] = new_sheet
+	_cached_save(character_id, record)
+	var charges := int((new_sheet.get("insurance", {}) as Dictionary).get("charges", 0))
+	apply_credits.rpc_id(sender, int(new_sheet.get("credits", 0)))
+	_push_sheet(sender, record)
+	print("[insurance] peer %d bought a policy for %d (charges now %d, credits %d)" % [sender, DeathPenalty.INSURANCE_PREMIUM, charges, int(new_sheet.get("credits", 0))])
+	insurance_result.rpc_id(sender, {"ok": true, "charges": charges, "premium": DeathPenalty.INSURANCE_PREMIUM, "credits": int(new_sheet.get("credits", 0))})
+
+# server -> client: buy-insurance outcome
+@rpc("authority", "call_remote", "reliable")
+func insurance_result(result: Dictionary) -> void:
+	insurance_replied.emit(result)
+
+func send_buy_insurance() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_buy_insurance.rpc_id(1)
+
 # DIV-0012: natural wound recovery. Once per Director tick (= one recovery interval), each
 # CONNECTED character whose persisted wound is a "can still act" tier (stunned/wounded/
 # wounded_twice) makes a self-recovery heal_check with their OWN Strength vs the Guide_19 §3
@@ -1327,6 +1509,7 @@ func _physics_process(delta: float) -> void:
 					_fold_pending_influence()  # E24: fold player activity into influence first
 					zones.director_tick()
 					_advance_ambient()  # E27: advance the ambient NPC roster per zone
+					_advance_hostiles()  # DIV-0017: (re)spawn + engage hostile creatures in lethal zones
 					_save_world_state()  # F58: persist the advanced territory so it survives a restart
 				_recover_wounds()  # DIV-0012: natural wound recovery for connected players
 			_resource_accum += delta
@@ -1464,19 +1647,41 @@ func _resolve_combat_window() -> void:
 		for pid in multiplayer.get_peers():
 			if String(_peer_zones.get(pid, _default_zone)) == shooter_zone:
 				apply_combat_envelope.rpc_id(pid, envelope)
-	print("[combat] window %d resolved: %d shot(s), target severity %d" % [
+	print("[combat] window %d resolved: %d shot(s), dummy severity %d" % [
 		int(result.get("window", 0)),
 		envelopes.size(),
 		int((result.get("target_state", {}) as Dictionary).get("wound_severity", 0)),
 	])
-	if bool(result.get("target_disabled", false)):
-		for envelope in envelopes:
-			var shooter := int(envelope.get("shooter_id", 0))
+	# Per-envelope consequences: kill credit (dummy OR hostile), creature LOOT + despawn (DIV-0018),
+	# and player DEATH from a lethal takedown (DIV-0006). The dummy stays CP-only.
+	var dummy_disabled := bool(result.get("target_disabled", false))
+	var looted := {}  # hostile keys already looted/despawned this window (one shooter credited)
+	for envelope in envelopes:
+		var shooter := int(envelope.get("shooter_id", 0))
+		var tkey := String(envelope.get("target_key", ""))
+		var target_down := (tkey == "" and dummy_disabled) or (tkey != "" and bool(envelope.get("target_disabled", false)))
+		if target_down:
 			_award_cp(shooter, "gameplay", COMBAT_CP_REWARD)
 			_accrue_zone_influence(shooter, DISABLE_INFLUENCE)  # E24: play feeds faction influence
 			_accrue_territory_influence(shooter, KILL_TERRITORY_INFLUENCE)  # earn org territory influence
+			# DIV-0018: a disabled HOSTILE creature drops loot credits (the training dummy is CP-only). Despawn it.
+			if tkey != "" and not looted.has(tkey):
+				looted[tkey] = true
+				var spawn: Dictionary = arena.hostile_target_spawn(tkey)
+				var loot: Dictionary = EconomyModel.roll_loot(spawn, _server_rng.randi())
+				var loot_credits := int(loot.get("credits", 0)) + int(loot.get("salvage_credits", 0))
+				if loot_credits > 0:
+					_award_credits(shooter, loot_credits)
+				print("[loot] peer %d looted %s: %d credits (%d + salvage %d)" % [
+					shooter, String(spawn.get("name", tkey)), loot_credits, int(loot.get("credits", 0)), int(loot.get("salvage_credits", 0))])
+				arena.remove_hostile_target(tkey)  # a fresh hostile may spawn next Director tick
+		# DIV-0006: a LETHAL hit that took the shooter OUT (>= DISABLED_SEVERITY) kills them.
+		if bool(envelope.get("lethal", false)) and arena.has_player(shooter):
+			if int((arena.player_state(shooter) as Dictionary).get("player_wound_severity", 0)) >= CombatArena.DISABLED_SEVERITY:
+				_handle_player_death(shooter, String(envelope.get("target_name", "a hostile")))
+	if dummy_disabled:
 		arena.reset_target()
-		print("[combat] target disabled — respawned")
+		print("[combat] training target disabled — respawned")
 
 func _save_peer(peer_id: int) -> void:
 	if store == null or state == null:
