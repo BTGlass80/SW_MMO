@@ -219,7 +219,9 @@ If a slice would require deciding any of these, stop it and mark it
 >   Only the siege *numbers* stay owner-tunable; the design itself is no longer gated.
 > - **PvP consent → DECIDED: all three layers** — zone-based open-PvP in lawless **+** opt-in duels (work in safe zones,
 >   default non-lethal) **+** bounty-as-consent. Unified design shipped: **`docs/PVP_CONSENT_DESIGN.md`** (deterministic
->   9-rule resolver + zone×duel×bounty truth table). Wiring queued for the main loop (**add DIV-0019 before coding**).
+>   resolver + zone×duel×bounty truth table). NOTE: the dev loop already shipped **Layer 1 (zone-based)** as
+>   `pvp_rules_model.gd` under **DIV-0019**; the remaining **duel + bounty** layers extend it and need a NEW row
+>   (suggest **DIV-0021**), queued for the main loop.
 > - **CP award-RATE → DECIDED: MEDIUM / keep current pace.** No longer gated; no code change needed.
 > - **LLM Director → DECIDED: DEFERRED** for the prototype — deterministic Director only, **no LLM/API in the live
 >   tick**; revisit post-slice.

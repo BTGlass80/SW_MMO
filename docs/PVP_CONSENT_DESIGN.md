@@ -23,6 +23,23 @@ for v1: three layers that compose into **one deterministic answer** to "may atta
 > No Imperial/Rebel framing. WEG R&E leads mechanics; SW_MUSH `Guide_11`/`Guide_10`
 > and `security_zones_design_v1` are reference, not a port target.
 
+> **⚠ RECONCILIATION (2026-07-02, post-authoring) — Layer 1 is ALREADY SHIPPED.**
+> While this design was being written, the main dev loop independently implemented and wired
+> **Layer 1 (zone-based open PvP)** as **`scripts/rules/pvp_rules_model.gd`** under **DIV-0019**
+> (`can_fire(shooter_zone, target_zone, shooter_tier, target_tier) → {allowed, reason}`; lawless-only;
+> player-vs-player targeting in `combat_arena`; kills routed through the DIV-0006 death loop + lawless
+> full-loot corpse). Therefore:
+> - **DIV-0019 is SPENT on the zone layer — do NOT reuse it.** §8 below is superseded: the **duel +
+>   bounty consent extension needs its OWN new ledger row** (suggest **DIV-0021**; DIV-0020 is reserved
+>   for siege — verify next-free at implementation).
+> - **Remaining work = Layers 2 (duels) + 3 (bounties)** plus a thin **composition gate** that calls the
+>   shipped `pvp_rules_model.can_fire` for the zone answer and layers duel/bounty/newbie precedence on top.
+>   Do NOT create a second model that re-implements the zone check — **EXTEND/compose `pvp_rules_model`**
+>   (fold the §1 `resolve()` into it, or wrap it).
+> - **Player-vs-player targeting in `combat_arena` (§9 slice 4) is already done** by the loop; the HOT
+>   slices reduce to duel targeting/KO-clamp, bounty escrow+collection, the composition gate, and snapshot fields.
+> Everything else here (duel lifecycle, bounty ledger, the §10 truth table, anti-grief guards) stands as-is.
+
 ---
 
 ## 0. Where this sits in the existing code
@@ -480,14 +497,16 @@ These are surfaced with a recommendation; none is baked as settled truth.
 
 ---
 
-## 8. Divergence — reserve **DIV-0019** (zone-based PvP + consent stack)
+## 8. Divergence — reserve a NEW row (suggest **DIV-0021**) for the duel + bounty consent extension
 
-> **Implementer:** add the `DIV-0019` row to `docs/DIVERGENCE_LEDGER.md` **BEFORE**
-> writing any code. (This design must not edit the ledger — deconflicted; another
-> session owns that file.) Suggested row content:
+> **SUPERSEDED (2026-07-02):** DIV-0019 is now SPENT on the shipped **zone** layer
+> (`pvp_rules_model.gd`, wired by the dev loop). The **duel + bounty consent extension**
+> designed here needs its OWN row — suggest **DIV-0021** (DIV-0020 is reserved for siege;
+> verify next-free at implementation). Add it to `docs/DIVERGENCE_LEDGER.md` **BEFORE**
+> writing code. (This design must not edit the ledger — another session owns it.) Suggested content:
 
-- **ID:** DIV-0019
-- **Area:** PvP consent / target eligibility (zone + duel + bounty)
+- **ID:** DIV-0021 (verify next-free)
+- **Area:** PvP consent extension — opt-in duels + bounty-as-consent (layered on the DIV-0019 zone gate)
 - **WEG Source:** R&E — PvP is GM-adjudicated; combat lethality at GM discretion; no
   formal consent/bounty rules (dice mechanics are era- and mode-agnostic).
 - **SW_MUSH Behavior:** `security_zones_design_v1` three-tier consensual-PvP gradient;
