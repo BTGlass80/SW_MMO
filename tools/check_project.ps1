@@ -137,6 +137,8 @@ Invoke-GodotStep "Recovery model smoke:" @("--headless", "--path", $projectRoot,
 
 Invoke-GodotStep "Force skills model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/force_skills_model_smoke.gd")
 
+Invoke-GodotStep "Force awakening model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/force_awakening_model_smoke.gd")
+
 Invoke-GodotStep "Snapshot merge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/snapshot_merge_smoke.gd")
 
 Invoke-GodotStep "Wire roundtrip smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/wire_roundtrip_smoke.gd")
