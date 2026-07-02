@@ -12,6 +12,7 @@ extends RefCounted
 ## autoload, or a fresh instance in tests), so this is headlessly unit-testable.
 
 const ForceSkillsModel = preload("res://scripts/rules/force_skills_model.gd")
+const ForceAwakeningModel = preload("res://scripts/rules/force_awakening_model.gd")  # DIV-0011 earned-unlock seed
 const EconomyModel = preload("res://scripts/rules/economy_model.gd")  # single source for STARTING_CREDITS
 
 const ATTRS := ["dexterity", "knowledge", "mechanical", "perception", "strength", "technical"]
@@ -86,6 +87,7 @@ static func build_sheet(rules: Object, attributes: Dictionary, skills: Dictionar
 		"force_points": START_FP,
 		"force_sensitive": false,
 		"force_skills": ForceSkillsModel.initial_force_skills(),
+		"force_unlock": ForceAwakeningModel.initial_unlock(),  # DIV-0011: dormant SWG-Village track
 		"wound_state": "healthy",
 		"credits": EconomyModel.STARTING_CREDITS,  # Wave F: WEG-anchored economy (DIV-0018)
 		"equipment": {"weapon": STARTER_WEAPON, "armor": STARTER_ARMOR},
