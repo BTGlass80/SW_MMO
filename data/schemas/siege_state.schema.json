@@ -2,16 +2,18 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sw-mmo-prototype/schemas/siege_state.schema.json",
   "title": "Siege / Hostile-Takeover Contest State",
-  "description": "Authoritative record of ONE org-vs-org hostile-takeover contest against a territory claim (or a player-city node). This is the concrete state machine for the MUSH's planned-but-undelivered 'Drop 6D' (Guide_11 §7): contest state machine, timer, rival-org no-consent PvP window, hostile takeover. The headline PvP loop. Server owns it; survives restart; the slow Director/territory tick advances its timers. See FACTION_TERRITORY_DESIGN for the full state diagram and rules.",
+  "description": "Authoritative record of ONE org-vs-org hostile-takeover contest against a territory claim (or a non-citizen-secured player-city node). This is the finalized DELIBERATE-TEMPO state machine for the MUSH's planned-but-undelivered 'Drop 6D' (Guide_11 §7): a multi-phase contest (declared -> mustering -> assault(1..N) -> resolution -> cooldown) decided by a server-owned CONTROL METER [0-100] with a HIGH capture threshold held for a duration. Rare, planned, telegraphed. Server owns it and ALL timers/scoring; resolution uses NO RNG; it survives a server restart (world_state.dat / sieges table) and resumes via a deterministic catch-up. See docs/SIEGE_DESIGN.md for the full state diagram, capture math, defaults, and rules. Supersedes the single-window attacker_fraction sketch in FACTION_TERRITORY_DESIGN §6.",
   "era": "20 BBY Clone Wars",
   "source": {
     "reference_paths": [
       "C:\\SW_MUSH\\docs\\design\\Guide_11_Territory_Control.md",
       "C:\\SW_MUSH\\docs\\design\\Guide_12_Player_Cities.md",
+      "C:\\SW_MUSH\\docs\\design\\Guide_10_Organizations_Factions.md",
       "C:\\SW_MUSH\\docs\\design\\security_zones_design_v1.md",
+      "docs/SIEGE_DESIGN.md",
       "docs/FACTION_TERRITORY_DESIGN.md"
     ],
-    "source_policy": "Original design for Drop 6D, which the MUSH specced as 'Planned' but never delivered. Grounded in Guide_11's claim/influence model and the security-zone consent model; numbers are starting points, owner-tunable. Clone Wars era. Server-authoritative: all RNG/timers owned by the server."
+    "source_policy": "Original design for Drop 6D, which the MUSH specced as 'Planned' but never delivered. Grounded in Guide_11's claim/influence model and the security-zone consent model; recast Clone Wars era and adapted to a server-authoritative Godot server. New mechanic => docs/DIVERGENCE_LEDGER.md row (reserve DIV-0020; implementer verifies next-free) BEFORE implementation. Numbers are deliberate-tempo starting points, owner-tunable, NOT flagged owner rulings."
   },
   "type": "object",
   "required": ["schema_version", "siege_id", "claim_id", "node_id", "zone_id", "defender_org_id", "attacker_org_id", "state", "phase_started_unix"],
@@ -20,48 +22,125 @@
     "schema_version": {"type": "integer", "const": 1},
     "siege_id": {"type": "string", "description": "Unique contest id."},
     "claim_id": {"type": "string", "description": "The territory_claim under contest. (For a city node, the city's claim id.)"},
-    "node_id": {"type": "string"},
-    "zone_id": {"type": "string", "description": "Must be contested or lawless. Sieges cannot be declared on secured zones or on city-upgraded-to-secured citizen rooms."},
-    "defender_org_id": {"type": "string", "description": "Current owning org."},
-    "attacker_org_id": {"type": "string", "description": "Challenging org. Must meet a min-influence-in-zone gate to declare (default Foothold/50)."},
+    "node_id": {"type": "string", "description": "The contested node. Must be a live claim or a non-citizen-secured city expansion node."},
+    "zone_id": {"type": "string", "description": "Zone the node belongs to. Base security must be contested or lawless. Sieges cannot be declared on secured zones or on city-upgraded-to-secured (citizen-secured) rooms (the citadel rule)."},
+    "defender_org_id": {"type": "string", "description": "Current owning org (the claim's org_id at declaration)."},
+    "attacker_org_id": {"type": "string", "description": "Challenging org. Must meet config.attacker_min_influence in the zone (default 40 / Dominant tier per territory_model.gd), config.rank_to_declare (default 4), and config.attacker_min_treasury to declare."},
+    "declared_by_char_id": {"type": "string", "description": "Attacker-org character who declared (rank-gated; default rank 4+)."},
     "state": {
       "type": "string",
-      "description": "Current state-machine state. Transitions and dwell-times are defined in FACTION_TERRITORY_DESIGN §Siege State Machine. Terminal states: captured, repelled, aborted.",
-      "enum": ["declared", "active", "lockout", "resolving", "captured", "repelled", "aborted"]
+      "description": "Current state-machine state. Deliberate-tempo spine: declared -> mustering -> assault(1..N) -> resolution -> cooldown, with an inter-assault 'lull'. Terminal archive states: captured, repelled, aborted. 'assault' is entered N times (config.assault_count), tracked by schedule.current_assault_index. Transitions and dwell-times are defined in docs/SIEGE_DESIGN.md §3. Advanced ONLY by the server slow tick / rank-gated intents; never by a client.",
+      "enum": ["declared", "mustering", "assault", "lull", "resolution", "cooldown", "captured", "repelled", "aborted"]
     },
     "phase_started_unix": {"type": "number", "description": "Wall-clock epoch seconds the current state was entered. Timer math is relative to this."},
-    "phase_deadline_unix": {"type": "number", "description": "Epoch seconds at which the current state auto-advances or auto-resolves if conditions are unmet."},
+    "phase_deadline_unix": {"type": "number", "description": "Epoch seconds at which the current state auto-advances (e.g. grace/mustering/lull/cooldown end) or the current assault window ends. For assault states this equals the current schedule.assault_windows[current_assault_index].end_unix."},
+    "declared_unix": {"type": "number", "description": "Epoch seconds the siege was declared."},
+    "war_chest_credits": {"type": "integer", "minimum": 0, "default": 0, "description": "Credits escrowed from the attacker treasury at declaration (config.declare_cost_credits). Refunded per config.withdraw_refund_fraction_grace on an in-grace withdrawal; forfeit once the siege presses past the grace window."},
     "config": {
       "type": "object",
-      "description": "Snapshot of the timing/threshold config this siege runs under (captured at declaration so a live siege is not disturbed by an admin retune). All values owner-tunable; defaults shown are starting points, NOT a flagged owner decision baked in.",
+      "description": "Snapshot of the timing/threshold/gate config this siege runs under, captured at declaration so a live siege is immune to an admin retune. ALL values owner-tunable; defaults shown are DELIBERATE-TEMPO starting points, NOT a flagged owner decision baked in. See docs/SIEGE_DESIGN.md §8 for the master defaults table and a compressed prototype/dev profile.",
       "additionalProperties": false,
       "properties": {
-        "warning_hours": {"type": "number", "default": 24, "description": "DECLARED dwell: defender-warning window before the contest window opens. The 'planned-but-watched' telegraph (mirrors Guide_12's 24h city-expansion telegraph philosophy)."},
-        "contest_window_hours": {"type": "number", "default": 48, "description": "ACTIVE dwell: the no-consent PvP + control-point capture window."},
-        "lockout_hours": {"type": "number", "default": 168, "description": "Cooldown after a resolved siege before the same node can be contested again (default 7 days)."},
-        "attacker_min_influence": {"type": "integer", "default": 50, "description": "Attacker's required org influence in the zone to declare (Foothold)."},
-        "control_threshold": {"type": "number", "default": 0.6, "description": "Fraction of accumulated contest score the attacker must hold at window close to capture. Below it = repelled."}
+        "declaration_grace_hours": {"type": "number", "default": 1, "description": "DECLARED dwell: cheap-withdraw grace + first defender notification before the mustering clock starts."},
+        "mustering_hours": {"type": "number", "default": 24, "description": "MUSTERING dwell: defender warning/prep window before assault #1; the only window in which allies may commit. No forced PvP yet."},
+        "assault_count": {"type": "integer", "minimum": 1, "default": 3, "description": "Number of scheduled assault windows (the N in assault(1..N))."},
+        "assault_window_hours": {"type": "number", "default": 2, "description": "ASSAULT dwell: duration of each no-consent PvP + control-capture window."},
+        "lull_hours": {"type": "number", "default": 6, "description": "LULL dwell: inter-assault regroup between windows; PvP off; control bleeds toward the defender."},
+        "cooldown_hours": {"type": "number", "default": 168, "description": "COOLDOWN dwell: node lockout after a resolved siege before it can be contested again (default 7 days)."},
+        "abort_cooldown_hours": {"type": "number", "default": 24, "description": "Shorter node lockout after an aborted declaration (anti spam-declare)."},
+        "control_min": {"type": "number", "default": 0, "description": "Control-meter lower bound (defender fully holds)."},
+        "control_max": {"type": "number", "default": 100, "description": "Control-meter upper bound (attacker fully controls)."},
+        "control_start": {"type": "number", "default": 0, "description": "Control-meter value at siege start."},
+        "capture_threshold": {"type": "number", "default": 75, "description": "Control the attacker must hold to capture (early or at final tally). HIGH by design (> 50): the attacker must clearly dominate; the defender holds on anything short of decisive control."},
+        "capture_hold_seconds": {"type": "number", "default": 900, "description": "Continuous seconds control must stay >= capture_threshold DURING an assault window to trigger an EARLY capture (short-circuit to resolution)."},
+        "control_bleed_per_hour": {"type": "number", "default": 10, "description": "Rate the control meter decays toward control_min OUTSIDE assault windows (mustering/lull/cooldown). Makes a lead perishable; the attacker must press every window."},
+        "control_per_pvp_kill": {"type": "number", "default": 8, "description": "Control swing per resolved PvP kill (killer's side; attacker up, defender down). Depends on the owner-gated PvP unlock (DIV-0019)."},
+        "control_per_guard_defeated": {"type": "number", "default": 12, "description": "Attacker control gain for defeating the defender's stationed guard NPC (PvE; works without PvP)."},
+        "control_per_hold_tick": {"type": "number", "default": 2, "description": "Per-slow-tick control swing toward whichever side has strictly more living members in scope during an assault (a tie does nothing)."},
+        "control_per_objective": {"type": "number", "default": 15, "description": "Control swing for an optional node objective (raise a banner / hold a console); either side."},
+        "control_per_sabotage": {"type": "number", "default": 6, "description": "Attacker control gain for an optional sabotage action against the node's defenses."},
+        "attacker_min_influence": {"type": "integer", "default": 40, "description": "Attacker's required org influence in the zone to declare (Dominant tier per territory_model.gd DOMINANT_AT=40). Supersedes the old stub default of 50, which came from the FACTION_TERRITORY_DESIGN 0-150 scale; anchor to the live 0-100 code tiers (claim 20 / dominant 40 / control 70). See docs/SIEGE_DESIGN.md §1."},
+        "rank_to_declare": {"type": "integer", "default": 4, "description": "Attacker org rank to declare / withdraw (above the rank-3 claim gate, below the rank-5 city gate)."},
+        "rank_to_negotiate": {"type": "integer", "default": 4, "description": "Rank to concede/negotiate (either principal)."},
+        "declare_cost_credits": {"type": "integer", "default": 10000, "description": "War-chest escrowed from the attacker treasury at declaration."},
+        "attacker_min_treasury": {"type": "integer", "default": 10000, "description": "Attacker treasury must hold at least this to declare (= declare_cost_credits)."},
+        "withdraw_refund_fraction_grace": {"type": "number", "default": 1.0, "minimum": 0, "maximum": 1, "description": "Fraction of the war-chest refunded if the attacker withdraws during the DECLARED grace window (0.0 after grace)."},
+        "max_active_sieges_per_node": {"type": "integer", "default": 1, "description": "Concurrent sieges allowed on one node."},
+        "max_concurrent_attacks_per_org": {"type": "integer", "default": 1, "description": "Outgoing (attacking) sieges an org may run at once. Defenses are unbounded."},
+        "intervention_mode": {"type": "string", "enum": ["none", "mustering_only", "open"], "default": "mustering_only", "description": "Third-party intervention policy. mustering_only (default): allies must commit during the mustering window so the combatant set is locked before assaults. none: strictly the two principals. open: allies may commit before the final assault (higher tempo; not recommended for deliberate tempo)."},
+        "max_allies_per_side": {"type": "integer", "default": 1, "description": "Third-party orgs allowed to commit per side."},
+        "ally_min_influence": {"type": "integer", "default": 20, "description": "Intervening org's required influence in the zone to commit (claim-floor presence)."},
+        "ally_rank_to_commit": {"type": "integer", "default": 4, "description": "Intervening org's leadership rank to commit an alliance."}
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "description": "The fixed assault schedule computed at the declared->mustering transition so BOTH orgs know exactly when the fights are (the 'planned/telegraphed' core). Assault windows are placed at config offsets from mustering end (docs/SIEGE_DESIGN.md §3.3). Persisted; on restart, windows whose start passed during downtime are handled by the deterministic catch-up rule.",
+      "additionalProperties": false,
+      "properties": {
+        "current_assault_index": {"type": "integer", "minimum": 0, "default": 0, "description": "0-based index of the current/next assault window (the i in assault(1..N))."},
+        "assault_windows": {
+          "type": "array",
+          "description": "The config.assault_count scheduled windows, in order.",
+          "items": {
+            "type": "object",
+            "required": ["index", "start_unix", "end_unix", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "index": {"type": "integer", "minimum": 0},
+              "start_unix": {"type": "number"},
+              "end_unix": {"type": "number"},
+              "status": {"type": "string", "enum": ["pending", "active", "complete"], "default": "pending"}
+            }
+          }
+        }
+      }
+    },
+    "control_meter": {
+      "type": "object",
+      "description": "The single scalar that decides the siege (server-owned; NO RNG). value in [config.control_min, config.control_max]. Moves ONLY from resolved scoring events + control-hold ticks during assault windows, and bleeds toward control_min outside them. Capture: value >= config.capture_threshold, either held for config.capture_hold_seconds during an assault (early capture) or read at the final resolution tally. See docs/SIEGE_DESIGN.md §4.",
+      "additionalProperties": false,
+      "properties": {
+        "value": {"type": "number", "default": 0, "description": "Current control (clamped to [control_min, control_max])."},
+        "updated_unix": {"type": "number", "description": "Wall-clock of the last meter update (drives bleed math on the next slow tick)."},
+        "hold_since_unix": {"type": ["number", "null"], "default": null, "description": "Epoch the meter first reached capture_threshold in the CURRENT assault; null when below threshold. Early capture fires when now - hold_since_unix >= capture_hold_seconds. Cleared the instant value drops below threshold or an assault window ends."},
+        "peak": {"type": "number", "default": 0, "description": "Highest value reached this siege (audit / news color)."}
       }
     },
     "pvp_consent": {
       "type": "object",
-      "description": "While state == active, members of attacker_org and defender_org are mutually flagged for NO-CONSENT PvP at the contested node and its adjacency, regardless of the zone's normal consent rules. This is the rival-org no-consent PvP window. Outside this window/scope, normal security-zone consent applies. Transient flag; the server re-derives it from state each tick and never trusts a client.",
+      "description": "TRANSIENT. While state == assault, members of attacker_org, defender_org, and any committed allies are mutually flagged for NO-CONSENT PvP at scope_node_ids, regardless of the zone's normal consent rules. This is the ONLY forced-PvP mechanism; it is tightly scoped (the contesting orgs, the contested node + adjacency, the assault window only). NOT persisted: the server RE-DERIVES active from state each slow tick (true iff state == assault) and never trusts a client. Depends on the owner-gated PvP unlock (DIV-0019).",
       "additionalProperties": false,
       "properties": {
-        "active": {"type": "boolean", "default": false},
+        "active": {"type": "boolean", "default": false, "description": "Re-derived: true iff state == assault."},
         "scope_node_ids": {"type": "array", "items": {"type": "string"}, "description": "Nodes where the no-consent window applies (the claim node plus declared adjacency)."}
+      }
+    },
+    "intervenors": {
+      "type": "array",
+      "description": "Third-party orgs that committed to a side (config.intervention_mode; default mustering_only, cap config.max_allies_per_side per side). Allies gain the pvp_consent flag and score for their side but cannot declare/withdraw/concede/negotiate, and do not receive the claim on capture (spoils-sharing is an RP/economy hook, not modeled here). See docs/SIEGE_DESIGN.md §6.",
+      "items": {
+        "type": "object",
+        "required": ["org_id", "side", "committed_unix"],
+        "additionalProperties": false,
+        "properties": {
+          "org_id": {"type": "string"},
+          "side": {"type": "string", "enum": ["attacker", "defender"]},
+          "committed_unix": {"type": "number"},
+          "committed_by_char_id": {"type": "string", "description": "Ally-org leader (rank >= config.ally_rank_to_commit) who committed."}
+        }
       }
     },
     "score": {
       "type": "object",
-      "description": "Accumulated contest score. The server owns all of this (server-authoritative; ties into action-window combat outcomes). Capture is decided by attacker_fraction vs config.control_threshold at window close.",
+      "description": "Cumulative audit totals + a replayable log of every scoring event. Distinct from control_meter: points are UNCLAMPED, never bled (they drive the 'who fought' record and any future CP reward, which is an OPEN OWNER DECISION - no rate baked in). The server owns all of this and consumes RESOLVED action-window outcomes, never raw client input.",
       "additionalProperties": false,
       "properties": {
-        "attacker_points": {"type": "number", "default": 0},
-        "defender_points": {"type": "number", "default": 0},
+        "attacker_points": {"type": "number", "default": 0, "description": "Cumulative unclamped attacker audit points."},
+        "defender_points": {"type": "number", "default": 0, "description": "Cumulative unclamped defender audit points."},
         "contributions": {
           "type": "array",
-          "description": "Audit log of scoring events that moved the contest (PvP kills in scope, control-point hold ticks, guard NPC defeats, sabotage objectives). Drives 'did you see what happened' social currency and post-siege news.",
+          "description": "Audit log of scoring events that moved the contest. Each row records the raw audit points AND the control_delta it applied to the meter, for a fully replayable history and the post-siege news feed ('did you see what happened').",
           "items": {
             "type": "object",
             "required": ["unix", "side", "kind", "points"],
@@ -70,8 +149,11 @@
               "unix": {"type": "number"},
               "side": {"type": "string", "enum": ["attacker", "defender"]},
               "kind": {"type": "string", "enum": ["pvp_kill", "control_hold_tick", "guard_defeated", "objective", "sabotage"]},
-              "char_id": {"type": "string"},
-              "points": {"type": "number"}
+              "char_id": {"type": "string", "description": "Contributing character (present for CP-reward attribution; absent for non-character events like a pure hold tick)."},
+              "org_id": {"type": "string", "description": "Contributing org (principal or committed ally)."},
+              "assault_index": {"type": "integer", "minimum": 0, "description": "Which assault window this occurred in."},
+              "points": {"type": "number", "description": "Raw audit points (unclamped)."},
+              "control_delta": {"type": "number", "description": "Signed amount this event applied to control_meter.value (attacker positive, defender negative), after clamping context."}
             }
           }
         }
@@ -79,43 +161,111 @@
     },
     "outcome": {
       "type": ["object", "null"],
-      "description": "Set when the siege reaches a terminal state. Captured => claim ownership transfers to attacker_org (income/guard reset, lockout begins). Repelled => defender keeps the claim, lockout begins. Aborted => declaration cancelled before ACTIVE (e.g. attacker influence fell below gate).",
+      "description": "Set at resolution (and finalized at cooldown->archive). captured => claim ownership transfers to attacker_org (guard dismissed, income band re-evaluated), node enters cooldown lockout. repelled => defender keeps the claim, node enters cooldown lockout. aborted => declaration cancelled before/at withdrawal; node gets abort_cooldown_hours lockout. Every terminal outcome emits a Director news headline.",
       "additionalProperties": false,
       "properties": {
         "result": {"type": "string", "enum": ["captured", "repelled", "aborted"]},
         "resolved_unix": {"type": "number"},
-        "attacker_fraction": {"type": "number"},
-        "news_headline": {"type": "string", "maxLength": 200, "description": "Player-facing news line (feeds the Director news bulletin)."},
-        "lockout_until_unix": {"type": "number"}
+        "final_control": {"type": "number", "description": "Control-meter value at the tally instant (or at early capture). Replaces the old attacker_fraction: capture iff final_control >= config.capture_threshold."},
+        "early_capture": {"type": "boolean", "default": false, "description": "True if capture fired via the hold-for-duration short-circuit rather than the final tally."},
+        "war_chest_disposition": {"type": "string", "enum": ["forfeit", "refunded_full", "refunded_partial"], "description": "What happened to the escrowed war-chest on resolution/abort."},
+        "news_headline": {"type": "string", "maxLength": 200, "description": "Player-facing news line (feeds the Director news bulletin / director_log)."},
+        "lockout_until_unix": {"type": "number", "description": "Epoch until which the node cannot be re-contested (cooldown_hours after a resolved siege, or abort_cooldown_hours after an abort)."}
       }
     },
-    "declared_unix": {"type": "number", "description": "Epoch seconds the siege was declared."},
-    "extra": {"type": "object", "description": "Forward-compat JSON blank.", "default": {}}
+    "extra": {"type": "object", "description": "Forward-compat JSON blank (per project convention).", "default": {}}
   },
   "examples": [
     {
       "schema_version": 1,
       "siege_id": "sg_0007",
       "claim_id": "clm_0042",
-      "node_id": "narshaddaa.undercity.room_1421",
-      "zone_id": "narshaddaa.undercity",
+      "node_id": "tatooine.jundland_wastes.cell_07",
+      "zone_id": "tatooine.jundland_wastes",
       "defender_org_id": "org_falleen_syndicate",
       "attacker_org_id": "org_black_sun_cell",
-      "state": "active",
+      "declared_by_char_id": "char_dren",
+      "state": "assault",
       "phase_started_unix": 1750100000.0,
-      "phase_deadline_unix": 1750272800.0,
-      "config": {"warning_hours": 24, "contest_window_hours": 48, "lockout_hours": 168, "attacker_min_influence": 50, "control_threshold": 0.6},
-      "pvp_consent": {"active": true, "scope_node_ids": ["narshaddaa.undercity.room_1421", "narshaddaa.undercity.room_1420"]},
+      "phase_deadline_unix": 1750107200.0,
+      "declared_unix": 1750010000.0,
+      "war_chest_credits": 10000,
+      "config": {
+        "declaration_grace_hours": 1, "mustering_hours": 24, "assault_count": 3,
+        "assault_window_hours": 2, "lull_hours": 6, "cooldown_hours": 168, "abort_cooldown_hours": 24,
+        "control_min": 0, "control_max": 100, "control_start": 0,
+        "capture_threshold": 75, "capture_hold_seconds": 900, "control_bleed_per_hour": 10,
+        "control_per_pvp_kill": 8, "control_per_guard_defeated": 12, "control_per_hold_tick": 2,
+        "control_per_objective": 15, "control_per_sabotage": 6,
+        "attacker_min_influence": 40, "rank_to_declare": 4, "rank_to_negotiate": 4,
+        "declare_cost_credits": 10000, "attacker_min_treasury": 10000, "withdraw_refund_fraction_grace": 1.0,
+        "max_active_sieges_per_node": 1, "max_concurrent_attacks_per_org": 1,
+        "intervention_mode": "mustering_only", "max_allies_per_side": 1,
+        "ally_min_influence": 20, "ally_rank_to_commit": 4
+      },
+      "schedule": {
+        "current_assault_index": 0,
+        "assault_windows": [
+          {"index": 0, "start_unix": 1750100000.0, "end_unix": 1750107200.0, "status": "active"},
+          {"index": 1, "start_unix": 1750128000.0, "end_unix": 1750135200.0, "status": "pending"},
+          {"index": 2, "start_unix": 1750156000.0, "end_unix": 1750163200.0, "status": "pending"}
+        ]
+      },
+      "control_meter": {"value": 58.0, "updated_unix": 1750104000.0, "hold_since_unix": null, "peak": 61.0},
+      "pvp_consent": {"active": true, "scope_node_ids": ["tatooine.jundland_wastes.cell_07", "tatooine.jundland_wastes.cell_06"]},
+      "intervenors": [
+        {"org_id": "org_desert_wind_mercs", "side": "defender", "committed_unix": 1750050000.0, "committed_by_char_id": "char_sela"}
+      ],
       "score": {
-        "attacker_points": 34.0,
-        "defender_points": 21.0,
+        "attacker_points": 32.0,
+        "defender_points": 18.0,
         "contributions": [
-          {"unix": 1750110000.0, "side": "attacker", "kind": "guard_defeated", "char_id": "char_dren", "points": 10.0},
-          {"unix": 1750120000.0, "side": "defender", "kind": "pvp_kill", "char_id": "char_vask", "points": 6.0}
+          {"unix": 1750101000.0, "side": "attacker", "kind": "guard_defeated", "char_id": "char_dren", "org_id": "org_black_sun_cell", "assault_index": 0, "points": 10.0, "control_delta": 12.0},
+          {"unix": 1750103000.0, "side": "defender", "kind": "control_hold_tick", "org_id": "org_falleen_syndicate", "assault_index": 0, "points": 2.0, "control_delta": -2.0}
         ]
       },
       "outcome": null,
-      "declared_unix": 1750013600.0,
+      "extra": {}
+    },
+    {
+      "schema_version": 1,
+      "siege_id": "sg_0006",
+      "claim_id": "clm_0031",
+      "node_id": "tatooine.mos_eisley.port_fringe.dock_9",
+      "zone_id": "tatooine.mos_eisley.port_fringe",
+      "defender_org_id": "org_falleen_syndicate",
+      "attacker_org_id": "org_black_sun_cell",
+      "declared_by_char_id": "char_dren",
+      "state": "cooldown",
+      "phase_started_unix": 1749800000.0,
+      "phase_deadline_unix": 1750404800.0,
+      "declared_unix": 1749650000.0,
+      "war_chest_credits": 0,
+      "config": {
+        "declaration_grace_hours": 1, "mustering_hours": 24, "assault_count": 3,
+        "assault_window_hours": 2, "lull_hours": 6, "cooldown_hours": 168, "abort_cooldown_hours": 24,
+        "control_min": 0, "control_max": 100, "control_start": 0,
+        "capture_threshold": 75, "capture_hold_seconds": 900, "control_bleed_per_hour": 10,
+        "control_per_pvp_kill": 8, "control_per_guard_defeated": 12, "control_per_hold_tick": 2,
+        "control_per_objective": 15, "control_per_sabotage": 6,
+        "attacker_min_influence": 40, "rank_to_declare": 4, "rank_to_negotiate": 4,
+        "declare_cost_credits": 10000, "attacker_min_treasury": 10000, "withdraw_refund_fraction_grace": 1.0,
+        "max_active_sieges_per_node": 1, "max_concurrent_attacks_per_org": 1,
+        "intervention_mode": "mustering_only", "max_allies_per_side": 1,
+        "ally_min_influence": 20, "ally_rank_to_commit": 4
+      },
+      "control_meter": {"value": 82.0, "updated_unix": 1749799000.0, "hold_since_unix": null, "peak": 82.0},
+      "pvp_consent": {"active": false, "scope_node_ids": ["tatooine.mos_eisley.port_fringe.dock_9"]},
+      "intervenors": [],
+      "outcome": {
+        "result": "captured",
+        "resolved_unix": 1749800000.0,
+        "final_control": 82.0,
+        "early_capture": false,
+        "war_chest_disposition": "forfeit",
+        "news_headline": "Black Sun storms the port fringe, wresting Dock 9 from the Falleen Syndicate.",
+        "lockout_until_unix": 1750404800.0
+      },
       "extra": {}
     }
   ]

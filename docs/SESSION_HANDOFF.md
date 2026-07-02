@@ -211,6 +211,23 @@ E21→E23/E27) — then land the `[HOT]` features one per tick.
 If a slice would require deciding any of these, stop it and mark it
 `BLOCKED: needs owner decision — <which>` in the backlog. Do **not** pick a number and proceed.
 
+> **UPDATE 2026-07-02 (owner, via a parallel design session) — four parked forks below are now RESOLVED:**
+> - **Siege → DESIGN APPROVED, deliberate tempo.** Full state-machine design + finalized schema shipped this session:
+>   **`docs/SIEGE_DESIGN.md`** + **`data/schemas/siege_state.schema.json`** (`declared→mustering→assault×3→resolution→
+>   cooldown`; ~43 h wall-clock, control-meter capture at ≥75 held 15 min, per-org concurrent cap 1, 7-day node
+>   cooldown — all numbers are tunable DEFAULTS). Wiring is queued for the main loop (**add DIV-0020 before coding**).
+>   Only the siege *numbers* stay owner-tunable; the design itself is no longer gated.
+> - **PvP consent → DECIDED: all three layers** — zone-based open-PvP in lawless **+** opt-in duels (work in safe zones,
+>   default non-lethal) **+** bounty-as-consent. Unified design shipped: **`docs/PVP_CONSENT_DESIGN.md`** (deterministic
+>   9-rule resolver + zone×duel×bounty truth table). Wiring queued for the main loop (**add DIV-0019 before coding**).
+> - **CP award-RATE → DECIDED: MEDIUM / keep current pace.** No longer gated; no code change needed.
+> - **LLM Director → DECIDED: DEFERRED** for the prototype — deterministic Director only, **no LLM/API in the live
+>   tick**; revisit post-slice.
+>
+> **Still genuinely gated (unchanged):** the owner-gated *visual* checks — A1b building-model swaps + scale tuning, P1
+> client polish, and the open two-client GUI visual check — they need a human at the GUI. The bullets below are kept
+> for history; the four rulings above SUPERSEDE their Siege / PvP-consent / LLM / CP-rate entries.
+
 - **Siege / Drop-6D** phase durations, capture threshold, third-party intervention,
   per-org siege cap (the `siege_state.schema.json` state machine — design only).
 - **Force / Jedi ACCESS & SCARCITY** policy (how one becomes force_sensitive, rarity,

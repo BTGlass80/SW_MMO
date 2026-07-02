@@ -58,13 +58,19 @@ parallelization playbook, guardrails, and the owner-gated park list).
 
 Done & verified: M1.1 net core → M1.2 shared Mos Eisley + replicated avatars → M1.3/M1.3b
 server-authoritative WEG action-window combat → M1.4 JSON persistence → M1.5 nameplates →
-M2.0–M2.2 zone/security Director + world events; **Wave C** (chargen + dual-track CP) and
-**Wave D** (combat uses the real sheet + equipped gear) COMPLETE. The full
-`tools/check_project.ps1` is the green bar (it passes today).
+M2.0–M2.2 zone/security Director + world events; **Wave C** (chargen + dual-track CP),
+**Wave D** (combat uses the real sheet + equipped gear), and **Wave E (E1–E27)** — the full
+persistent player-driven loop — COMPLETE, followed by a long **F1–F75** hardening/depth series.
+**Wave F is in progress**: the owner-unlocked systems (lethal death/respawn, WEG-anchored
+economy, SWG-"Village" Force unlock), per `docs/UNLOCK_SYSTEMS_PLAN.md`. The full
+`tools/check_project.ps1` is the green bar (green at every commit; ~66 GDScript smokes).
 
-Next work = `docs/UNATTENDED_BACKLOG.md` → **Wave E** (E1–E27). Canonical architecture/
-roadmap: `docs/MULTIPLAYER_FOUNDATION.md`. Full feature inventory + session notes:
-`docs/NIGHTLY_HANDOFF.md` (do not duplicate it here).
+Where to start: read `docs/SESSION_HANDOFF.md` (clean-session entry point) then
+`docs/WAVE_F_HANDOFF.md` (active wave). Canonical roadmap: `docs/MULTIPLAYER_FOUNDATION.md`;
+full feature inventory + session notes: `docs/NIGHTLY_HANDOFF.md`; divergences:
+`docs/DIVERGENCE_LEDGER.md` (DIV-0001..0018). Owner-gated forks + latest rulings live in
+`docs/SESSION_HANDOFF.md` §5. Newer design docs (owner-approved, awaiting wiring):
+`docs/SIEGE_DESIGN.md`, `docs/PVP_CONSENT_DESIGN.md`.
 
 ## Subagents available (.claude/agents/)
 - **d6-rules-engineer** (opus) — implement/verify WEG D6 mechanics in `scripts/rules/*`
