@@ -133,6 +133,8 @@ Invoke-GodotStep "Economy model edge smoke:" @("--headless", "--path", $projectR
 
 Invoke-GodotStep "Economy flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_flow_smoke.gd")
 
+Invoke-GodotStep "Vendor zone flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/vendor_zone_flow_smoke.gd")
+
 Invoke-GodotStep "Death penalty model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_penalty_model_smoke.gd")
 
 Invoke-GodotStep "Death penalty model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_penalty_model_edge_smoke.gd")
@@ -209,5 +211,9 @@ Invoke-GodotStep "NPC content smoke:" @("--headless", "--path", $projectRoot, "-
 
 Invoke-GodotStep "NPC builder smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/npc_builder_smoke.gd")
 Invoke-GodotStep "Dialogue model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/dialogue_model_smoke.gd")
+
+Invoke-GodotStep "Named NPC flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/named_npc_flow_smoke.gd")
+
+Invoke-GodotStep "Dialogue NPC smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/dialogue_npc_smoke.gd")
 
 Write-Host "`nAll checks passed."
