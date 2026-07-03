@@ -213,6 +213,13 @@ func validate_declaration(params: Dictionary, cfg: Dictionary = {}) -> Dictionar
 	# 2.7 attacker under its outgoing-attack concurrency cap
 	if _outgoing_attacks(String(params.get("attacker_org_id", ""))) >= int(c["max_concurrent_attacks_per_org"]):
 		return {"ok": false, "reason": "concurrency_cap"}
+	# 2.8 an explicitly-supplied siege_id must not collide with an existing record (bug found in
+	# hardening review: declare() used to blindly overwrite sieges[sid] on a collision, corrupting the
+	# clobbered siege's node AND leaving the derived _node_active_siege index pointing at a record whose
+	# node_id no longer matches — permanently soft-locking the original node).
+	var requested_id := String(params.get("siege_id", ""))
+	if requested_id != "" and sieges.has(requested_id):
+		return {"ok": false, "reason": "duplicate_siege_id"}
 	return {"ok": true, "reason": ""}
 
 ## Declare a siege. Validates §2; on success snapshots `config`, escrows the war-chest onto the
@@ -580,9 +587,12 @@ func validate_ally_commit(siege_id: String, params: Dictionary) -> Dictionary:
 		if st != "mustering":
 			return {"ok": false, "reason": "not_mustering"}
 	elif mode == "open":
-		# Allies may commit any time BEFORE the final assault begins.
+		# Allies may commit any time BEFORE the final assault begins (docs/SIEGE_DESIGN.md §6) — that
+		# includes the DECLARED grace window, which this condition previously omitted (a confirmed bug
+		# found in hardening review: the code did not match its own documented contract).
 		var last := int(cfg["assault_count"]) - 1
-		var ok_window := st == "mustering" or st == "lull" or (st == "assault" and int(s["schedule"]["current_assault_index"]) < last)
+		var ok_window := st == "declared" or st == "mustering" or st == "lull" \
+			or (st == "assault" and int(s["schedule"]["current_assault_index"]) < last)
 		if not ok_window:
 			return {"ok": false, "reason": "window_closed"}
 	var side := String(params.get("side", ""))

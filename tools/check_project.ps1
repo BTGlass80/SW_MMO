@@ -109,6 +109,8 @@ Invoke-GodotStep "Territory smoke:" @("--headless", "--path", $projectRoot, "--s
 
 Invoke-GodotStep "Siege smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/siege_smoke.gd")
 
+Invoke-GodotStep "Siege state model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/siege_state_model_edge_smoke.gd")
+
 Invoke-GodotStep "Chargen smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/chargen_smoke.gd")
 
 Invoke-GodotStep "Progression smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/progression_smoke.gd")
@@ -119,25 +121,37 @@ Invoke-GodotStep "Reputation model smoke:" @("--headless", "--path", $projectRoo
 
 Invoke-GodotStep "Quest model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/quest_model_smoke.gd")
 
+Invoke-GodotStep "Quest model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/quest_model_edge_smoke.gd")
+
 Invoke-GodotStep "Creature spawn model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_spawn_model_smoke.gd")
 
 Invoke-GodotStep "Vendor model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/vendor_model_smoke.gd")
 
 Invoke-GodotStep "Economy model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_model_smoke.gd")
 
+Invoke-GodotStep "Economy model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_model_edge_smoke.gd")
+
 Invoke-GodotStep "Economy flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_flow_smoke.gd")
 
 Invoke-GodotStep "Death penalty model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_penalty_model_smoke.gd")
+
+Invoke-GodotStep "Death penalty model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_penalty_model_edge_smoke.gd")
 
 Invoke-GodotStep "Death flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_flow_smoke.gd")
 
 Invoke-GodotStep "Hostile NPC model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/hostile_npc_model_smoke.gd")
 
+Invoke-GodotStep "Hostile NPC model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/hostile_npc_model_edge_smoke.gd")
+
 Invoke-GodotStep "PvP rules model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_rules_model_smoke.gd")
+
+Invoke-GodotStep "PvP rules model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_rules_model_edge_smoke.gd")
 
 Invoke-GodotStep "PvP flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_flow_smoke.gd")
 
 Invoke-GodotStep "PvP consent model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_consent_model_smoke.gd")
+
+Invoke-GodotStep "PvP consent model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_consent_model_edge_smoke.gd")
 
 Invoke-GodotStep "Security gate smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/security_gate_smoke.gd")
 
@@ -152,6 +166,8 @@ Invoke-GodotStep "Recovery model smoke:" @("--headless", "--path", $projectRoot,
 Invoke-GodotStep "Force skills model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/force_skills_model_smoke.gd")
 
 Invoke-GodotStep "Force awakening model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/force_awakening_model_smoke.gd")
+
+Invoke-GodotStep "Force awakening model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/force_awakening_model_edge_smoke.gd")
 
 Invoke-GodotStep "Force flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/force_flow_smoke.gd")
 

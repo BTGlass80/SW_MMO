@@ -156,12 +156,19 @@ static func challenge(state: Dictionary, a: Variant, b: Variant, zone_id: String
 	return {"ok": true, "state": next, "reason": ""}
 
 # accept(B): OFFERED -> ACTIVE; both flagged mutually attackable. Returns {ok, state, reason}.
+# Guards the SAME one-active-duel-per-player invariant challenge() enforces at offer time: a player
+# may hold several simultaneous OFFERED challenges (e.g. two different challengers), but accepting a
+# second one while already in an ACTIVE duel is rejected (bug found in hardening review — without this
+# guard two different challengers could each have their offer to the same player accepted, leaving that
+# player "active" in two duels at once).
 static func accept(state: Dictionary, a: Variant, b: Variant, now: float,
 		max_duration: float = DUEL_MAX_DURATION) -> Dictionary:
 	var key := pair_key(a, b)
 	var rec: Dictionary = (state.get("duels", {}) as Dictionary).get(key, {})
 	if rec.is_empty() or String(rec.get("state", "")) != "offered":
 		return {"ok": false, "state": state, "reason": "no_offer"}
+	if _in_active_duel(state, a) != "" or _in_active_duel(state, b) != "":
+		return {"ok": false, "state": state, "reason": "already_dueling"}
 	var next := state.duplicate(true)
 	var r: Dictionary = (next["duels"] as Dictionary)[key]
 	r["state"] = "active"
