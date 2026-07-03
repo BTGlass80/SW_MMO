@@ -339,8 +339,14 @@ inflow/outflow tally script over `events.jsonl` (the `character_id` join works);
 session log.
 
 ### Current execution order
-1. ~~G13~~ done + live-verified. **G14 + G15** (in flight, parallel worktrees → serial integration).
-2. **G16 + G17 + G18** as one docs/gate/CLAUDE.md slice (they share files).
+1. ~~G13~~ DONE + live-verified (`8cd9619`). ~~G16 + G17 + G18~~ **DONE `1983b34`** (gate prints
+   smoke/RPC counts; not-before-live invariant is mechanical — and found `siege_state_model.gd`
+   misfiled in `scripts/net` on day one, moved to `scripts/rules`; `tools/telemetry_tally.py` +
+   tests; CLAUDE.md/README/SESSION_HANDOFF de-drifted).
+2. **G14 + G15 — IN FLIGHT, CLAIMED by the attended 2026-07-03 session** (parallel worktrees →
+   serial integration on main). **Cron ticks: do NOT start new `[HOT]` work while this claim
+   stands** (G14 touches `combat_arena`/`network_manager`; one-HOT-at-a-time applies across
+   drivers). Small `[PAR]`-only work or nothing.
 3. **PT1 prep track (owner-approved 2026-07-03):** G8 auth/crypto bundle `[HOT]` (salted hash at rest —
    un-gated by the ruling; DTLS or a "dev transport" banner decision still sized separately), server
    watchdog, 20-bot headless soak, envelope replay tool. The **PT1 date remains owner-gated.**
