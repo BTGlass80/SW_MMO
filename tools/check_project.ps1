@@ -107,6 +107,8 @@ Invoke-GodotStep "Zone state smoke:" @("--headless", "--path", $projectRoot, "--
 
 Invoke-GodotStep "Territory smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/territory_smoke.gd")
 
+Invoke-GodotStep "Siege smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/siege_smoke.gd")
+
 Invoke-GodotStep "Chargen smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/chargen_smoke.gd")
 
 Invoke-GodotStep "Progression smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/progression_smoke.gd")
