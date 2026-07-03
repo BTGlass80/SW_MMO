@@ -15,6 +15,7 @@ const ChatModel := preload("res://scripts/net/chat_model.gd")
 const MOUSE_SENSITIVITY := 0.0025
 const EYE_HEIGHT := 1.55
 const WorldBuilder := preload("res://scripts/world/world_builder.gd")
+const MonsterBuilder := preload("res://scripts/world/monster_builder.gd")
 
 var _builder: WorldBuilder
 var _is_server := false
@@ -114,6 +115,22 @@ var _last_news := ""
 var _last_control := ""       # F35: log zone faction-control CHANGES only
 var _last_alert := ""         # F37: flag zone ALERT-level escalations (Director consequence)
 
+# --- Wave F visibility: combat-target mesh, shop panel, death card, toasts (all client-only) ---
+var _monster_builder: MonsterBuilder
+var _target_mesh: Node3D          # the currently-rendered combat target (monster / training remote)
+var _target_mesh_key := ""        # "kind|name" of what's shown, so we rebuild only on target CHANGE
+var _target_ttl := 0.0            # seconds until the idle target mesh despawns (refreshed each shot)
+var _pvp_marker: Node3D           # PvP: floating "TARGET" marker parented over the highlighted player
+var _pvp_marker_ttl := 0.0
+var _shop_open := false           # the shop overlay owns the cursor while open (like the chat box)
+var _shop_panel: Panel
+var _shop_title: Label
+var _shop_list: VBoxContainer
+var _death_overlay: ColorRect     # DIV-0006: brief full-screen "you were killed" card
+var _death_label: Label
+var _toast_label: Label           # transient HUD feedback (credits/loot/buy/sell/force-awaken)
+var _toast_tween: Tween
+
 func _ready() -> void:
 	_parse_args()
 
@@ -163,6 +180,7 @@ func _ready() -> void:
 	_builder.build_lighting(self)
 	_builder.build_ground(self)
 	_builder.build_settlement(self)
+	_monster_builder = MonsterBuilder.new()
 	_build_camera()
 	_build_hud()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -222,6 +240,7 @@ func _process(delta: float) -> void:
 		return
 	_send_local_input()
 	_update_camera()
+	_update_combat_target(delta)
 	if (_autofire or _autodefend) and Net.connected:
 		_autofire_accum += delta
 		if _autofire_accum >= 0.4:
@@ -300,8 +319,8 @@ func _process(delta: float) -> void:
 
 # --- input / camera (client only) ---
 func _send_local_input() -> void:
-	if _chat_input != null and _chat_input.has_focus():
-		Net.set_local_input(Vector2.ZERO, _yaw, false)  # typing in chat: don't move/jump
+	if _shop_open or (_chat_input != null and _chat_input.has_focus()):
+		Net.set_local_input(Vector2.ZERO, _yaw, false)  # shop open / typing in chat: don't move/jump
 		return
 	var move := Vector2.ZERO
 	move.y -= 1.0 if Input.is_key_pressed(KEY_W) else 0.0
@@ -316,6 +335,13 @@ func _send_local_input() -> void:
 
 func _input(event: InputEvent) -> void:
 	if _is_server:
+		return
+	# While the shop overlay is open it owns the cursor: only B/Esc (close) act; everything
+	# else is swallowed here so it never fires/recaptures the mouse. The Buy/Sell Buttons still
+	# receive their clicks via the normal GUI pass (we don't mark the event handled).
+	if _shop_open:
+		if event is InputEventKey and event.pressed and (event.keycode == KEY_B or event.keycode == KEY_ESCAPE):
+			_close_shop()
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		_yaw -= event.relative.x * MOUSE_SENSITIVITY
@@ -351,8 +377,7 @@ func _input(event: InputEvent) -> void:
 				Net.send_change_zone(String(z.get("id", "")))
 				_set_status("Traveling to %s…" % String(z.get("name", z.get("id", ""))))
 		elif event.keycode == KEY_B:
-			Net.send_vendor_list()  # Wave F economy: open the shop (server-priced stock -> combat/console log)
-			_set_status("Requesting vendor stock…")
+			_toggle_shop()  # Wave F economy: open/close the shop overlay (server-priced stock)
 		elif event.keycode == KEY_C:
 			_spend_cp = (_spend_cp + 1) % 6  # cycle 0..5 CP staged for the next shot (WEG: +1D each)
 			_announce_next_shot()
@@ -759,6 +784,80 @@ func _build_hud() -> void:
 	_sheet_panel.visible = false
 	layer.add_child(_sheet_panel)
 
+	_build_shop_panel(layer)     # Wave F economy: real shop overlay (B), replaces the console dump
+	_build_toast(layer)          # transient credit/loot/buy/sell/force-awaken feedback
+	_build_death_overlay(layer)  # DIV-0006: full-screen "you were killed" card
+
+# Wave F economy: a real, clickable shop overlay (hidden until B). Populated from the
+# server-priced vendor_listed payload; Buy/Sell buttons call Net.send_buy/Net.send_sell.
+func _build_shop_panel(layer: CanvasLayer) -> void:
+	_shop_panel = Panel.new()
+	_shop_panel.name = "ShopPanel"
+	_shop_panel.position = Vector2(360, 96)
+	_shop_panel.size = Vector2(600, 430)
+	_shop_panel.visible = false
+	layer.add_child(_shop_panel)
+
+	var vbox := VBoxContainer.new()
+	vbox.position = Vector2(16, 12)
+	vbox.size = Vector2(568, 406)
+	vbox.add_theme_constant_override("separation", 6)
+	_shop_panel.add_child(vbox)
+
+	_shop_title = Label.new()
+	_shop_title.text = "Vendor"
+	_shop_title.add_theme_font_size_override("font_size", 19)
+	vbox.add_child(_shop_title)
+
+	var hint := Label.new()
+	hint.text = "Click Buy / Sell — B or Esc to close"
+	hint.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(hint)
+
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(568, 356)
+	vbox.add_child(scroll)
+
+	_shop_list = VBoxContainer.new()
+	_shop_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_shop_list.add_theme_constant_override("separation", 4)
+	scroll.add_child(_shop_list)
+
+# Transient HUD toast (fades out): loot/credit gains, buy/sell, Force-awakening.
+func _build_toast(layer: CanvasLayer) -> void:
+	_toast_label = Label.new()
+	_toast_label.name = "Toast"
+	_toast_label.position = Vector2(18, 264)
+	_toast_label.add_theme_font_size_override("font_size", 21)
+	_toast_label.add_theme_color_override("font_color", Color(0.98, 0.95, 0.82))
+	_toast_label.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.02))
+	_toast_label.add_theme_constant_override("outline_size", 6)
+	_toast_label.modulate = Color(1, 1, 1, 0)
+	_toast_label.text = ""
+	layer.add_child(_toast_label)
+
+# DIV-0006: a full-screen death card that fades in, holds, and fades out.
+func _build_death_overlay(layer: CanvasLayer) -> void:
+	_death_overlay = ColorRect.new()
+	_death_overlay.name = "DeathOverlay"
+	_death_overlay.color = Color(0.32, 0.03, 0.03, 0.0)
+	_death_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_death_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE  # never intercept shop/chat clicks
+	_death_overlay.visible = false
+	layer.add_child(_death_overlay)
+
+	_death_label = Label.new()
+	_death_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_death_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_death_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_death_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_death_label.add_theme_font_size_override("font_size", 30)
+	_death_label.add_theme_color_override("font_color", Color(0.98, 0.92, 0.88))
+	_death_label.add_theme_color_override("font_outline_color", Color(0.10, 0.0, 0.0))
+	_death_label.add_theme_constant_override("outline_size", 10)
+	_death_label.text = ""
+	_death_overlay.add_child(_death_label)
+
 func _set_status(text: String) -> void:
 	if _status != null:
 		_status.text = text
@@ -849,6 +948,9 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 	if tkey != _last_target:
 		_last_target = tkey
 		print("[target] %s %s" % [tname, tcond])
+	# Task 1/4: show the thing being fought as a low-poly mesh in front of the player, plus
+	# muzzle-flash / hit-spark / floating-damage feedback driven by this envelope's events.
+	_render_combat_target(envelope, hit, wound)
 
 # Update the player's own condition readout from the snapshot's "you" block. Reflects combat
 # damage, natural recovery (DIV-0012), and First Aid (DIV-0013) as the server changes the wound.
@@ -982,8 +1084,13 @@ func _on_credits_updated(credits: int) -> void:
 	if _credits_label != null:
 		_credits_label.text = "Credits: %d   (B: shop)" % credits
 	if credits != _last_credits:
+		# Toast a GAIN (loot/sale) — but not the initial login sync (_last_credits == -1).
+		if _last_credits >= 0 and credits > _last_credits:
+			_toast("+%d credits" % (credits - _last_credits), Color(0.55, 0.90, 0.48))
 		_last_credits = credits
 		print("[credits] balance=%d" % credits)
+	if _shop_open and _shop_title != null:  # keep the open shop's credit line live
+		_shop_title.text = "Vendor — Credits: %d" % credits
 
 # Wave F economy: the vendor's priced stock. Logs it + shows a compact line on the status bar.
 func _on_vendor_listed(payload: Dictionary) -> void:
@@ -991,23 +1098,105 @@ func _on_vendor_listed(payload: Dictionary) -> void:
 	print("[vendor] %d items (credits %d, mult %.2f, rep %s):" % [stock.size(), int(payload.get("credits", 0)), float(payload.get("price_mult", 1.0)), String(payload.get("rep_tier", "neutral"))])
 	for item in stock:
 		print("[vendor]   %s (%s) buy %d / sell %d" % [String((item as Dictionary).get("key", "")), String((item as Dictionary).get("kind", "")), int((item as Dictionary).get("buy", 0)), int((item as Dictionary).get("sell", 0))])
-	_set_status("Shop: %d items — /buy <item> · /sell <item>" % stock.size())
+	_populate_shop(payload)  # Task 2: render the priced stock into the clickable shop overlay
+	_set_status("Shop: %d items — click Buy/Sell (B closes)." % stock.size())
+
+# Task 2: fill the shop overlay from the server-priced vendor payload. One row per item:
+# name · buy/sell price · Buy button · Sell button (Net.send_buy / Net.send_sell).
+func _populate_shop(payload: Dictionary) -> void:
+	if _shop_list == null or _shop_title == null:
+		return
+	for child in _shop_list.get_children():
+		child.queue_free()
+	var credits := int(payload.get("credits", 0))
+	var rep := String(payload.get("rep_tier", "neutral"))
+	var mult := float(payload.get("price_mult", 1.0))
+	_shop_title.text = "Vendor — Credits: %d   (rep: %s · prices x%.2f)" % [credits, rep, mult]
+	for item in payload.get("stock", []):
+		var it: Dictionary = item
+		var key := String(it.get("key", ""))
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+
+		var nm := Label.new()
+		nm.text = String(it.get("name", key))
+		nm.custom_minimum_size = Vector2(250, 0)
+		nm.add_theme_font_size_override("font_size", 14)
+		row.add_child(nm)
+
+		var price := Label.new()
+		price.text = "buy %d · sell %d" % [int(it.get("buy", 0)), int(it.get("sell", 0))]
+		price.custom_minimum_size = Vector2(150, 0)
+		price.add_theme_font_size_override("font_size", 13)
+		row.add_child(price)
+
+		var buy_btn := Button.new()
+		buy_btn.text = "Buy"
+		buy_btn.pressed.connect(_on_shop_buy.bind(key))
+		row.add_child(buy_btn)
+
+		var sell_btn := Button.new()
+		sell_btn.text = "Sell"
+		sell_btn.pressed.connect(_on_shop_sell.bind(key))
+		row.add_child(sell_btn)
+
+		_shop_list.add_child(row)
+
+func _on_shop_buy(item_key: String) -> void:
+	Net.send_buy(item_key)
+	_set_status("Buying %s…" % item_key)
+
+func _on_shop_sell(item_key: String) -> void:
+	Net.send_sell(item_key)
+	_set_status("Selling %s…" % item_key)
+
+func _open_shop() -> void:
+	_shop_open = true
+	if _shop_panel != null:
+		_shop_panel.visible = true
+	Net.send_vendor_list()  # request fresh, server-priced stock
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE  # release the cursor so Buy/Sell are clickable
+	_set_status("Shop open — click Buy/Sell · B or Esc to close.")
+
+func _close_shop() -> void:
+	_shop_open = false
+	if _shop_panel != null:
+		_shop_panel.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED  # resume first-person look + movement
+
+func _toggle_shop() -> void:
+	if _shop_open:
+		_close_shop()
+	else:
+		_open_shop()
 
 func _on_buy_replied(result: Dictionary) -> void:
+	var item := String(result.get("item_key", ""))
 	if bool(result.get("ok", false)):
-		print("[buy] bought %s for %d (credits %d)" % [String(result.get("item_key", "")), int(result.get("price", 0)), int(result.get("credits", 0))])
-		_set_status("Bought %s for %d cr." % [String(result.get("item_key", "")), int(result.get("price", 0))])
+		var price := int(result.get("price", 0))
+		print("[buy] bought %s for %d (credits %d)" % [item, price, int(result.get("credits", 0))])
+		_set_status("Bought %s for %d cr." % [item, price])
+		_toast("Bought %s  (-%d cr)" % [item, price], Color(0.92, 0.72, 0.40))
+		if _shop_open:
+			Net.send_vendor_list()  # refresh prices/credits in the open panel
 	else:
-		print("[buy] %s rejected (%s)" % [String(result.get("item_key", "")), String(result.get("reason", ""))])
-		_set_status("Buy failed: %s (%s)." % [String(result.get("item_key", "")), String(result.get("reason", ""))])
+		print("[buy] %s rejected (%s)" % [item, String(result.get("reason", ""))])
+		_set_status("Buy failed: %s (%s)." % [item, String(result.get("reason", ""))])
+		_toast("Buy failed: %s" % String(result.get("reason", "")), Color(0.92, 0.42, 0.35))
 
 func _on_sell_replied(result: Dictionary) -> void:
+	var item := String(result.get("item_key", ""))
 	if bool(result.get("ok", false)):
-		print("[sell] sold %s for %d (credits %d)" % [String(result.get("item_key", "")), int(result.get("price", 0)), int(result.get("credits", 0))])
-		_set_status("Sold %s for %d cr." % [String(result.get("item_key", "")), int(result.get("price", 0))])
+		var price := int(result.get("price", 0))
+		print("[sell] sold %s for %d (credits %d)" % [item, price, int(result.get("credits", 0))])
+		_set_status("Sold %s for %d cr." % [item, price])
+		_toast("Sold %s  (+%d cr)" % [item, price], Color(0.55, 0.90, 0.48))
+		if _shop_open:
+			Net.send_vendor_list()  # refresh prices/credits in the open panel
 	else:
-		print("[sell] %s rejected (%s)" % [String(result.get("item_key", "")), String(result.get("reason", ""))])
-		_set_status("Sell failed: %s (%s)." % [String(result.get("item_key", "")), String(result.get("reason", ""))])
+		print("[sell] %s rejected (%s)" % [item, String(result.get("reason", ""))])
+		_set_status("Sell failed: %s (%s)." % [item, String(result.get("reason", ""))])
+		_toast("Sell failed: %s" % String(result.get("reason", "")), Color(0.92, 0.42, 0.35))
 
 # DIV-0006: you were killed by a hostile and respawned at the secured spaceport med bay.
 func _on_died(notice: Dictionary) -> void:
@@ -1024,6 +1213,11 @@ func _on_died(notice: Dictionary) -> void:
 		_combat_lines.pop_front()
 	if _combat_log != null:
 		_combat_log.text = "Combat log:\n" + "\n".join(_combat_lines)
+	# Task 3: a brief full-screen death card. Any target mesh is now stale — drop it.
+	_despawn_target()
+	_show_death_card("YOU WERE KILLED",
+		"%s — gear -%d%% durability, %d item(s) dropped%s\nRespawning at the spaceport med bay… (credits kept)" % [
+			killer, dur, dropped.size(), insured])
 
 # DIV-0011: your hidden Force sensitivity has awakened (the SWG-Village earned unlock).
 func _on_force_awakened(notice: Dictionary) -> void:
@@ -1035,6 +1229,8 @@ func _on_force_awakened(notice: Dictionary) -> void:
 		_combat_lines.pop_front()
 	if _combat_log != null:
 		_combat_log.text = "Combat log:\n" + "\n".join(_combat_lines)
+	# Task 3: a prominent (longer, blue) toast for the earned Force unlock.
+	_toast(msg, Color(0.62, 0.82, 1.0), 4.5)
 
 # DIV-0019: a PvP fire intent was refused (fired outside a lawless zone / at a protected target).
 func _on_fire_rejected(result: Dictionary) -> void:
@@ -1310,3 +1506,213 @@ func _on_claim_replied(result: Dictionary) -> void:
 		var verb := "release" if bool(result.get("released", false)) else "claim"
 		print("[territory] %s %s rejected (%s)" % [verb, node_id, String(result.get("reason", ""))])
 		_set_status("%s of %s rejected: %s." % [verb.capitalize(), node_id, String(result.get("reason", ""))])
+
+# =====================================================================================
+# Wave F visibility: combat-target rendering, hit feedback, death card, toasts.
+# Pure presentation — everything below reads only signals/snapshots the client already
+# receives (no new server or snapshot fields).
+# =====================================================================================
+
+# Task 1: render/refresh the low-poly mesh of the thing being fought, in front of the
+# player, and fire off the Task-4 feedback (muzzle flash / hit spark / damage number).
+func _render_combat_target(envelope: Dictionary, hit: bool, wound: int) -> void:
+	if _camera == null or _monster_builder == null:
+		return
+	var only_local := int(envelope.get("shooter_id", 0)) == _local_id
+	# PvP (dormant until the netcode adds `pvp`/`target_peer_id`): highlight the target
+	# PLAYER's avatar instead of spawning a creature mesh.
+	if bool(envelope.get("pvp", false)):
+		_highlight_pvp_target(int(envelope.get("target_peer_id", 0)))
+		if only_local:
+			_spawn_muzzle_flash()
+		return
+	var tname := String(envelope.get("target_name", "Target"))
+	var tkey := String(envelope.get("target_key", ""))  # "" = the shared training dummy
+	var disabled := bool(envelope.get("target_disabled", false))
+	var kind := "remote" if tkey == "" else "monster"
+	var key := "%s|%s" % [kind, tname]
+	if _target_mesh == null or key != _target_mesh_key:
+		if disabled:
+			return  # a fresh but already-down target — don't pop a corpse into view
+		_despawn_target()
+		_target_mesh = _monster_builder.build_target(kind, tname)
+		add_child(_target_mesh)
+		_target_mesh.global_position = _target_spawn_pos()
+		_target_mesh_key = key
+	# A disabled target lingers only briefly (show the kill), otherwise persists between shots.
+	_target_ttl = 1.4 if disabled else 6.0
+	if only_local:
+		_spawn_muzzle_flash()
+	if _target_mesh != null:
+		var fx_pos := _target_mesh.global_position + Vector3(0.0, 1.2, 0.0)
+		if hit:
+			_spawn_hit_spark(fx_pos)
+			if wound >= 0:
+				_spawn_damage_number(fx_pos, _wound_label(wound), _severity_color(wound))
+		if disabled:
+			_spawn_damage_number(fx_pos + Vector3(0.0, 0.35, 0.0), "DOWN", Color(0.88, 0.20, 0.15))
+
+# Per-frame: keep the target in front of the player (facing them) and expire it when the
+# fight goes quiet. Also expires the dormant PvP marker.
+func _update_combat_target(delta: float) -> void:
+	if _target_mesh != null and is_instance_valid(_target_mesh):
+		_target_ttl -= delta
+		if _target_ttl <= 0.0:
+			_despawn_target()
+		else:
+			_position_target_in_front()
+	if _pvp_marker != null and is_instance_valid(_pvp_marker):
+		_pvp_marker_ttl -= delta
+		if _pvp_marker_ttl <= 0.0:
+			_pvp_marker.queue_free()
+			_pvp_marker = null
+
+func _target_spawn_pos() -> Vector3:
+	var me := _my_position()
+	var fwd := -_camera.global_transform.basis.z
+	fwd.y = 0.0
+	if fwd.length() < 0.01:
+		fwd = Vector3(0.0, 0.0, -1.0)
+	fwd = fwd.normalized()
+	var p := me + fwd * 6.0
+	p.y = 0.0
+	return p
+
+func _position_target_in_front() -> void:
+	if _target_mesh == null or _camera == null:
+		return
+	var want := _target_spawn_pos()
+	_target_mesh.global_position = _target_mesh.global_position.lerp(want, 0.12)
+	# Face the player (the meshes are built head-first along -Z, so look_at points the head at them).
+	var me := _my_position()
+	var flat := Vector3(me.x, _target_mesh.global_position.y, me.z)
+	if _target_mesh.global_position.distance_to(flat) > 0.25:
+		_target_mesh.look_at(flat, Vector3.UP)
+
+func _despawn_target() -> void:
+	if _target_mesh != null and is_instance_valid(_target_mesh):
+		_target_mesh.queue_free()
+	_target_mesh = null
+	_target_mesh_key = ""
+	_target_ttl = 0.0
+
+# PvP: a floating marker over the target player's avatar (dormant until the netcode
+# tags envelopes with pvp/target_peer_id — then this lights the right avatar up).
+func _highlight_pvp_target(peer_id: int) -> void:
+	if peer_id == 0 or not _avatars.has(peer_id):
+		return
+	if _pvp_marker != null and is_instance_valid(_pvp_marker):
+		_pvp_marker.queue_free()
+	var root := _avatars[peer_id]["root"] as Node3D
+	var marker := Label3D.new()
+	marker.text = "▼ TARGET ▼"
+	marker.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	marker.font_size = 28
+	marker.modulate = Color(0.90, 0.20, 0.15)
+	marker.outline_size = 6
+	marker.no_depth_test = true
+	marker.position.y = 2.5
+	root.add_child(marker)
+	_pvp_marker = marker
+	_pvp_marker_ttl = 4.0
+
+# Task 4: a brief bright muzzle flash near the local player's weapon when THEY fire.
+func _spawn_muzzle_flash() -> void:
+	if _camera == null:
+		return
+	var flash := MeshInstance3D.new()
+	var sph := SphereMesh.new()
+	sph.radius = 0.12
+	sph.height = 0.24
+	flash.mesh = sph
+	flash.material_override = _fx_material(Color(1.0, 0.85, 0.35, 0.9))
+	add_child(flash)
+	var basis := _camera.global_transform.basis
+	flash.global_position = _camera.global_position - basis.z * 0.9 - basis.y * 0.25 + basis.x * 0.2
+	var tw := create_tween()
+	tw.tween_property(flash, "scale", Vector3.ONE * 2.2, 0.12)
+	tw.parallel().tween_property(flash.material_override, "albedo_color:a", 0.0, 0.12)
+	tw.tween_callback(flash.queue_free)
+
+# Task 4: a hit spark that pops and fades at the target.
+func _spawn_hit_spark(world_pos: Vector3) -> void:
+	var spark := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(0.25, 0.25, 0.25)
+	spark.mesh = bm
+	spark.material_override = _fx_material(Color(1.0, 0.55, 0.15, 0.95))
+	add_child(spark)
+	spark.global_position = world_pos
+	var tw := create_tween()
+	tw.tween_property(spark, "scale", Vector3.ONE * 2.6, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(spark.material_override, "albedo_color:a", 0.0, 0.22)
+	tw.tween_callback(spark.queue_free)
+
+# Task 4: a floating damage/wound label that rises and fades over the target.
+func _spawn_damage_number(world_pos: Vector3, text: String, color: Color) -> void:
+	var label := Label3D.new()
+	label.text = text
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.font_size = 40
+	label.modulate = color
+	label.outline_size = 8
+	label.outline_modulate = Color(0.03, 0.02, 0.02, 0.9)
+	label.no_depth_test = true
+	add_child(label)
+	label.global_position = world_pos
+	var tw := create_tween()
+	tw.tween_property(label, "position:y", label.position.y + 1.4, 0.9).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(label, "modulate:a", 0.0, 0.9)
+	tw.tween_callback(label.queue_free)
+
+func _fx_material(color: Color) -> StandardMaterial3D:
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.emission_enabled = true
+	mat.emission = Color(color.r, color.g, color.b)
+	mat.emission_energy_multiplier = 3.5
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	return mat
+
+func _severity_color(severity: int) -> Color:
+	match severity:
+		0: return Color(0.72, 0.72, 0.72)
+		1: return Color(0.85, 0.80, 0.25)
+		2: return Color(0.90, 0.55, 0.18)
+		3: return Color(0.90, 0.30, 0.15)
+		_: return Color(0.85, 0.12, 0.12)
+
+# Task 3: a transient HUD toast that fades out. Kills any in-flight fade first so rapid
+# toasts don't fight over the label's alpha.
+func _toast(text: String, color: Color = Color(0.98, 0.95, 0.82), hold: float = 2.4) -> void:
+	if _toast_label == null:
+		return
+	if _toast_tween != null and _toast_tween.is_valid():
+		_toast_tween.kill()
+	_toast_label.text = text
+	_toast_label.add_theme_color_override("font_color", color)
+	_toast_label.modulate = Color(1, 1, 1, 1)
+	_toast_tween = create_tween()
+	_toast_tween.tween_interval(hold)
+	_toast_tween.tween_property(_toast_label, "modulate:a", 0.0, 0.6)
+
+# Task 3: fade the full-screen death card in, hold, then fade out.
+func _show_death_card(title: String, subtitle: String) -> void:
+	if _death_overlay == null or _death_label == null:
+		return
+	_death_label.text = "%s\n\n%s" % [title, subtitle]
+	_death_overlay.visible = true
+	_death_overlay.color = Color(0.32, 0.03, 0.03, 0.0)
+	_death_label.modulate = Color(1, 1, 1, 0)
+	var tw := create_tween()
+	tw.tween_property(_death_overlay, "color:a", 0.55, 0.25)
+	tw.parallel().tween_property(_death_label, "modulate:a", 1.0, 0.25)
+	tw.tween_interval(2.6)
+	tw.tween_property(_death_overlay, "color:a", 0.0, 1.0)
+	tw.parallel().tween_property(_death_label, "modulate:a", 0.0, 1.0)
+	tw.tween_callback(_hide_death_overlay)
+
+func _hide_death_overlay() -> void:
+	if _death_overlay != null:
+		_death_overlay.visible = false

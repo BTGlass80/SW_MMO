@@ -181,4 +181,6 @@ Invoke-GodotStep "Zone flow smoke:" @("--headless", "--path", $projectRoot, "--s
 
 Invoke-GodotStep "Chat flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/chat_flow_smoke.gd")
 
+Invoke-GodotStep "Monster builder smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/monster_builder_smoke.gd")
+
 Write-Host "`nAll checks passed."
