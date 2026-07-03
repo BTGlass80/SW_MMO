@@ -15,7 +15,10 @@ const RESPAWN_ZONE := "tatooine.mos_eisley.spaceport"
 
 var _failures: Array[String] = []
 
-# mirror of _resolve_combat_window's per-envelope death trigger
+# mirror of _resolve_combat_window's per-envelope TAKEOUT collection predicate. A lethal hit that leaves
+# the shooter at sev>=DISABLED is COLLECTED as a takeout; DIV-0027 then TIERS it in the net layer (sev 5 =
+# death via _handle_player_death; sev 3-4 = downed via _handle_player_downed). This mirror covers only
+# the collection gate; downed_model_smoke / pvp_flow_smoke cover the tiering split.
 func _death_triggers(envelope: Dictionary, wound_severity: int) -> bool:
 	return bool(envelope.get("lethal", false)) and wound_severity >= DISABLED_SEVERITY
 
@@ -52,11 +55,11 @@ func _new_record(credits: int) -> Dictionary:
 	}, "world_hooks": {}}
 
 func _init() -> void:
-	# --- death TRIGGER: lethal + out(>=3) fires; anything else does not ---
-	_assert_equal(_death_triggers({"lethal": true}, 3), true, "lethal takedown to incapacitated fires death")
-	_assert_equal(_death_triggers({"lethal": true}, 5), true, "lethal killing blow fires death")
-	_assert_equal(_death_triggers({"lethal": true}, 2), false, "lethal but only Wounded(2) does NOT fire death")
-	_assert_equal(_death_triggers({"lethal": false}, 5), false, "a NON-lethal (sparring) hit never fires death, even at high severity")
+	# --- takeout COLLECTION: lethal + out(>=3) is collected (net layer then TIERS it per DIV-0027) ---
+	_assert_equal(_death_triggers({"lethal": true}, 3), true, "lethal takedown to incapacitated is collected (DIV-0027 routes sev 3 -> DOWNED, not death)")
+	_assert_equal(_death_triggers({"lethal": true}, 5), true, "lethal killing blow is collected (DIV-0027 routes sev 5 -> death)")
+	_assert_equal(_death_triggers({"lethal": true}, 2), false, "lethal but only Wounded(2) is NOT a takeout")
+	_assert_equal(_death_triggers({"lethal": false}, 5), false, "a NON-lethal (sparring) hit is never a takeout, even at high severity")
 
 	# --- uninsured lawless death: wounded respawn, 10% durability, partial drop, credits KEPT, corpse ---
 	var rec := _new_record(1000)

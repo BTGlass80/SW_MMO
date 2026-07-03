@@ -50,6 +50,14 @@ func _heal(st: Dictionary, healer: int, target: int, heal_pool: Dictionary) -> D
 func _rewound(st: Dictionary, target_char: String, wound: String) -> void:
 	(st["records"][target_char] as Dictionary)["sheet"] = {"wound_state": wound}
 
+# Test affordance: the target is DOWNED again by fresh combat damage (sev >= 3). Mirrors
+# _handle_player_downed CLEARING the First-Aid retry gate (DIV-0027 verify: revive-persist): a fresh
+# down is new damage, so a medic must be able to re-treat even at a level they treated earlier this
+# session (e.g. revived incap->wounded_twice, then knocked back to incap).
+func _redown(st: Dictionary, target_peer: int, target_char: String, wound: String) -> void:
+	(st["records"][target_char] as Dictionary)["sheet"] = {"wound_state": wound}
+	st["heal_treated"].erase(target_peer)  # the down resets the gate
+
 func _fresh() -> Dictionary:
 	return {"peer_characters": {}, "peer_zones": {}, "records": {}, "heal_treated": {}}
 
@@ -112,6 +120,25 @@ func _init() -> void:
 	var reheal: Dictionary = _heal(st4, 40, 41, BIG)
 	_assert_true(bool(reheal["ok"]), "a re-wound to the same level is heal-able (gate was reset on full heal)")
 	_assert_eq(String(reheal["to"]), "healthy", "the re-wound stun heals normally")
+
+	# --- DIV-0027 (verify: revive-persist): the PARTIAL-revive-then-re-DOWN case the downed tier exists
+	#     for. A medic revives a downed ally one step (incap->wounded_twice) — the gate stays at the
+	#     pre-heal level ('incapacitated'), NOT reset (the ally is not fully healthy). Fresh combat then
+	#     knocks the ally back to incapacitated. Without _handle_player_downed clearing the gate, the medic
+	#     is refused ('already_treated') and the revive path — the ONLY non-lethal escape from downed — is
+	#     dead; the re-down MUST reset the gate. ---
+	var st5: Dictionary = _fresh()
+	_register(st5, 50, "medic5", "spaceport", "healthy")
+	_register(st5, 51, "ally5", "spaceport", "incapacitated")   # downed (sev 3)
+	var d1: Dictionary = _heal(st5, 50, 51, BIG)                # partial revive, one step up the ladder
+	_assert_true(bool(d1["ok"]), "a downed (incap) ally is First-Aidable")
+	_assert_true(String(d1["to"]) != "healthy", "the revive is PARTIAL (not straight to healthy), so the gate is NOT auto-reset")
+	_assert_eq(String(st5["heal_treated"].get(51, "")), "incapacitated", "the retry gate is left at the pre-heal 'incapacitated' level")
+	# fresh combat re-DOWNS the ally to the very level it was treated at
+	_redown(st5, 51, "ally5", "incapacitated")
+	var d2: Dictionary = _heal(st5, 50, 51, BIG)
+	_assert_true(d2.get("reason", "") != "already_treated", "a re-downed ally is NOT stale-blocked from First Aid (the down reset the gate)")
+	_assert_true(bool(d2["ok"]), "the medic can revive the re-downed ally again (revive path preserved)")
 
 	if _failures.is_empty():
 		print("heal_flow_smoke: OK")

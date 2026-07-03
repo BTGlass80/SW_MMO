@@ -7,6 +7,7 @@ extends SceneTree
 
 const CombatArena := preload("res://scripts/net/combat_arena.gd")
 const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")
+const DownedModel := preload("res://scripts/rules/downed_model.gd")  # DIV-0027: tier the emitted casualty
 
 var _failures: Array[String] = []
 var _rules: Object
@@ -59,6 +60,29 @@ func _init() -> void:
 	var victim_level := String(a.player_state(3).get("player_wound_level", ""))
 	_assert_true(victim_level in ["incapacitated", "mortally_wounded", "dead"],
 		"a downed PvP victim carries a disabled-tier wound LEVEL from escalate() (got '%s')" % victim_level)
+
+	# DIV-0027 tiering band: the emitted casualty severity routes through the SHIPPED classifier — a
+	# disabled-but-not-dead casualty is DOWNED (net layer -> _handle_player_downed), a sev-5 is a KILL
+	# (-> _handle_player_death). classify() and is_kill() must agree on the emitted int.
+	_assert_true(casualty_sev >= CombatArena.DISABLED_SEVERITY, "the emitted casualty is at/above the DISABLED floor")
+	_assert_true(DownedModel.classify(casualty_sev) in ["downed", "kill"], "the emitted casualty severity classifies as downed or kill")
+	_assert_equal(PvpRules.is_kill(casualty_sev), DownedModel.classify(casualty_sev) == "kill", "is_kill agrees with classify on the emitted casualty severity")
+
+	# Deterministic band proof via the arena's live state (set_player_combat is the same seam the net
+	# layer reads): a sev-3 victim is DOWNED (still present, real disabled-tier level, NOT respawned by
+	# the arena — respawn is a net-layer decision the classifier gates); a sev-5 victim is a KILL.
+	var t := _arena()
+	t.register_player(3, "Victim", VICTIM)
+	t.set_player_combat(3, {"player_wound_severity": 3, "player_wound_level": "incapacitated"})
+	var s3 := int(t.player_state(3).get("player_wound_severity", 0))
+	_assert_equal(DownedModel.classify(s3), "downed", "sev-3 live state classifies as DOWNED")
+	_assert_equal(PvpRules.is_kill(s3), false, "sev-3 does NOT route to death (no respawn)")
+	_assert_true(t.has_player(3), "a downed victim is still present in the arena (frozen in field)")
+	_assert_equal(String(t.player_state(3).get("player_wound_level", "")), "incapacitated", "a downed victim carries a real disabled-tier level string")
+	t.set_player_combat(3, {"player_wound_severity": 5, "player_wound_level": "dead"})
+	var s5 := int(t.player_state(3).get("player_wound_severity", 0))
+	_assert_equal(DownedModel.classify(s5), "kill", "sev-5 live state classifies as KILL")
+	_assert_equal(PvpRules.is_kill(s5), true, "sev-5 routes to death (_handle_player_death)")
 
 	# 19: resolve-time gate DROPS an unauthorized shot — B is untouched AND it does NOT fall through to the dummy.
 	var g := _arena()

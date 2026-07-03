@@ -34,10 +34,12 @@ func _init() -> void:
 	_assert_equal(Pvp.defender_target_state({"player_wound_severity": 4, "player_armor_quality_pips": 1}, "B"),
 		{"wound_severity": 4, "armor_quality_pips": 1, "name": "B"}, "defender live state -> target_state shape")
 
-	# --- kill threshold + full-loot tier ---
-	_assert_equal(Pvp.is_kill(5), true, "sev 5 is a kill")
-	_assert_equal(Pvp.is_kill(4), false, "sev 4 (mortally) is 'out', not dead")
-	_assert_equal(Pvp.is_kill(3), false, "sev 3 (incapacitated) is 'out', not dead")
+	# --- kill threshold + full-loot tier (DIV-0027: is_kill is THE routing predicate) ---
+	# sev 5 -> _handle_player_death (full DIV-0006 penalty + respawn); sev 3-4 -> _handle_player_downed
+	# (downed-in-field: NOT respawned, no penalty, escape hatches). is_kill(3/4)==false now means DOWNED.
+	_assert_equal(Pvp.is_kill(5), true, "sev 5 routes to death (respawn)")
+	_assert_equal(Pvp.is_kill(4), false, "sev 4 (mortally) is DOWNED, not dead (bleeds out via death_roll)")
+	_assert_equal(Pvp.is_kill(3), false, "sev 3 (incapacitated) is DOWNED, not dead (yield / deteriorate)")
 	_assert_equal(Pvp.is_full_loot("lawless"), true, "lawless corpse is full-loot")
 	_assert_equal(Pvp.is_full_loot("contested"), false, "contested corpse is not full-loot")
 	_assert_equal(Pvp.is_full_loot("secured"), false, "secured corpse is not full-loot")

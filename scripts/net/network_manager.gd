@@ -35,6 +35,7 @@ const CreatureSpawn := preload("res://scripts/rules/creature_spawn_model.gd") # 
 const DeathPenalty := preload("res://scripts/rules/death_penalty_model.gd")   # DIV-0006: death penalty + respawn
 const ForceAwaken := preload("res://scripts/rules/force_awakening_model.gd")   # DIV-0011: SWG-Village earned unlock
 const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")            # DIV-0019: zone-based PvP consent gate
+const DOWNED := preload("res://scripts/rules/downed_model.gd")                 # DIV-0027: death tiering + downed escape hatch
 const QuestModel := preload("res://scripts/rules/quest_model.gd")              # DIV-0020: accepted quests + progress + reward
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
@@ -89,6 +90,8 @@ signal vendor_listed(payload: Dictionary)   # server-priced vendor stock
 signal buy_replied(result: Dictionary)
 signal sell_replied(result: Dictionary)
 signal died(notice: Dictionary)             # DIV-0006: this client was killed + respawned
+signal downed(notice: Dictionary)           # DIV-0027: this client was downed-in-field (sev 3-4, not dead)
+signal revived(notice: Dictionary)          # DIV-0027: this client was First-Aided back above the downed floor
 signal insurance_replied(result: Dictionary) # DIV-0006: buy-insurance outcome
 signal force_awakened_replied(notice: Dictionary) # DIV-0011: this client's Force sensitivity awakened
 signal fire_rejected(result: Dictionary)    # DIV-0019: a PvP fire intent was refused (zone/consent)
@@ -154,6 +157,7 @@ var _record_cache := {}               # E26: character_id -> record (kills per-c
 var _peer_rpc_budget := {}            # E26: peer_id -> {tokens, last_ms} reliable-RPC bucket
 var _ambient := {}                    # E27: zone_id -> ambient NPC roster (Director-advanced)
 var _heal_treated := {}               # DIV-0013: target_peer -> wound level last First-Aided (retry gate)
+var _downed := {}                     # DIV-0027: peer -> {severity:int, killer:int, name:String, rounds:int} — server-only downed-in-field state (rebuilt on login from persisted wound_state)
 var _zone_list_cache: Array = []      # DIV-0014: cached [{id, name}] travel list (zones are static)
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
@@ -265,6 +269,7 @@ func _on_peer_disconnected(id: int) -> void:
 	_peer_ranks.erase(id)  # F34: territory-authority rank
 	_peer_rpc_budget.erase(id)
 	_heal_treated.erase(id)  # DIV-0013: drop this peer's First-Aid retry gate (keyed by target peer)
+	_downed.erase(id)  # DIV-0027: no orphan downed-tick against an absent peer (persisted wound_state carries it to relogin)
 	if character_id != "": _visited_zones.erase(character_id)  # DIV-0011: drop the distinct-zones tracker
 	# Evict the record cache on disconnect: _save_peer just flushed final state to disk, the
 	# single-session lock means no other peer holds this character, and the next login does a
@@ -490,6 +495,15 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 		arena.set_player_combat(sender, PersistenceStore.combat_from_record(record))
 		arena.set_player_name(sender, chosen_name)
 		arena.set_player_sheet(sender, record.get("sheet", {}))  # combat uses the character's own stats
+	# DIV-0027: MANDATORY anti-softlock. Combat damage IS persisted (apply_combat flushes the live wound
+	# to sheet.wound_state), so a player who logged out DOWNED (incapacitated/mortally_wounded) reloads
+	# frozen by the arena DISABLED guard. Reconstruct _downed + re-send the downed_notice so BOTH escape
+	# hatches (the bleed-out tick + the yield command) are restored — a logout-while-downed is not a softlock.
+	var restored_sev := PersistenceStore.severity_for_wound_state(String((record.get("sheet", {}) as Dictionary).get("wound_state", "healthy")))
+	if DOWNED.is_downed_severity(restored_sev):
+		_downed[sender] = {"severity": restored_sev, "killer": 0, "name": "your wounds", "rounds": 0}
+		if mode == Mode.SERVER:
+			downed_notice.rpc_id(sender, {"severity": restored_sev, "killer": "your wounds", "can_yield": true, "bleeding": (restored_sev >= 4)})
 	print("[persist] peer %d -> %s (%s) loaded at (%.1f, %.1f, %.1f) [weapon=%s]" % [sender, character_id, chosen_name, pos.x, pos.y, pos.z,
 		String((record.get("sheet", {}) as Dictionary).get("equipment", {}).get("weapon", "?"))])
 	_push_sheet(sender, record)  # F24: send the character sheet to the client's sheet panel
@@ -765,7 +779,20 @@ func submit_heal(target_id: int) -> void:
 		_feed_force_signal(healer, "heals_given", 1)      # DIV-0011: saving an ally nudges the medic's track
 		_feed_force_signal(target_id, "recoveries", 1)    # DIV-0011: surviving a wound nudges the patient's track
 		if arena != null:
-			arena.set_player_combat(target_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(new_level)})
+			# G2: pass the wound LEVEL string too (the severity int collapses wounded_twice->wounded).
+			arena.set_player_combat(target_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(new_level), "player_wound_level": new_level})
+		# DIV-0027: First Aid is the REVIVE path. A heal that drops the live severity below the downed
+		# floor clears _downed immediately (dismisses the victim's card, stops the bleed-out tick); a
+		# partial mortally->incap heal keeps them downed but updates the tracked severity so the sev-4
+		# bleed-out stops calling death_roll.
+		if _downed.has(target_id):
+			var healed_sev := PersistenceStore.severity_for_wound_state(new_level)
+			if healed_sev < CombatArena.DISABLED_SEVERITY:
+				_clear_downed(target_id)
+				if mode == Mode.SERVER:
+					revived_notice.rpc_id(target_id, {"healer": healer, "to": new_level})
+			else:
+				(_downed[target_id] as Dictionary)["severity"] = healed_sev
 		if new_level == "healthy":
 			_heal_treated.erase(target_id)  # fully healed -> reset the retry gate (a future wound is fresh)
 	print("[firstaid] peer %d -> peer %d (%s): %s -> %s (First Aid %s rolled %d vs %d)" % [
@@ -1549,9 +1576,12 @@ func _refresh_peer_hostility(peer_id: int) -> void:
 # KEPT), and disengage from the hostile. v1 fires on incapacitation (a lone character taken out by a
 # hostile in a lawless/contested zone is killed) rather than modeling the mortally-wounded death-roll
 # grace; the survivable incapacitated/mortally band remains the non-lethal medical loop's domain.
-func _handle_player_death(peer_id: int, killer_name: String, killer_peer: int = 0) -> void:
+func _handle_player_death(peer_id: int, killer_name: String, killer_peer: int = 0, credit_killer: bool = true) -> void:
 	if store == null:
 		return
+	# DIV-0027: the single choke point where the downed set is cleared — a sev-5 finish, a bleed-out, or
+	# a yield all pass through here, so no orphan _downed entry keeps ticking after a death (idempotent).
+	_downed.erase(peer_id)
 	var character_id := String(_peer_characters.get(peer_id, ""))
 	if character_id == "":
 		return
@@ -1587,12 +1617,11 @@ func _handle_player_death(peer_id: int, killer_name: String, killer_peer: int = 
 		arena.set_player_lethal(peer_id, false)
 		arena.clear_intents_targeting(peer_id) # cancel shots aimed at the (now-respawned) victim
 	_heal_treated.erase(peer_id)
-	# DIV-0019: a PvP kill credits the killer (same rewards as a PvE disable) + feeds their awakening.
-	if killer_peer > 0 and arena != null and arena.has_player(killer_peer):
-		_award_cp(killer_peer, "gameplay", COMBAT_CP_REWARD)
-		_accrue_zone_influence(killer_peer, DISABLE_INFLUENCE)
-		_accrue_territory_influence(killer_peer, KILL_TERRITORY_INFLUENCE)
-		_feed_force_signal(killer_peer, "disables", 1)
+	# DIV-0019/DIV-0027: credit the killer ONCE per takeout. A fresh instant-kill (sev 5) credits here;
+	# every downed-origin death (bleed-out, yield, or a finishing hit on an already-downed victim) passes
+	# credit_killer=false because the attacker was already credited at the DOWN — no double reward.
+	if credit_killer:
+		_credit_takedown(killer_peer)
 	print("[death] peer %d killed by %s in %s (%s): durability -%d%%, dropped %d, insured=%s -> respawn wounded @ spaceport (credits kept %d)" % [
 		peer_id, killer_name, zone_id, tier, int(outcome["durability_delta"]), dropped.size(), str(bool(outcome["insured"])), int(new_sheet.get("credits", 0))])
 	if mode == Mode.SERVER:
@@ -1608,6 +1637,117 @@ func _handle_player_death(peer_id: int, killer_name: String, killer_peer: int = 
 @rpc("authority", "call_remote", "reliable")
 func death_notice(notice: Dictionary) -> void:
 	died.emit(notice)
+
+# DIV-0019/DIV-0027: the killer-reward block, extracted from _handle_player_death so a DOWN and a KILL
+# credit the attacker identically, and every downed->death re-uses it exactly ZERO more times. Guards
+# arena.has_player so a disconnected killer never strands the reward.
+func _credit_takedown(killer_peer: int) -> void:
+	if killer_peer > 0 and arena != null and arena.has_player(killer_peer):
+		_award_cp(killer_peer, "gameplay", COMBAT_CP_REWARD)
+		_accrue_zone_influence(killer_peer, DISABLE_INFLUENCE)
+		_accrue_territory_influence(killer_peer, KILL_TERRITORY_INFLUENCE)
+		_feed_force_signal(killer_peer, "disables", 1)
+
+# DIV-0027: the tiered NON-lethal outcome for sev 3-4. NO DeathPenalty, NO respawn, NO zone move — the
+# player stays where they fell (the arena DISABLED guard already freezes them from acting). Records the
+# server-side downed state, credits the attacker ONCE (at the down), and notifies the victim with the
+# yield affordance. A finishing hit on an already-downed victim does NOT re-credit or reset rounds.
+func _handle_player_downed(peer_id: int, killer_peer: int, severity: int, killer_name: String) -> void:
+	if store == null:
+		return
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return
+	var already := _downed.has(peer_id)
+	var rounds := int((_downed.get(peer_id, {}) as Dictionary).get("rounds", 0)) if already else 0
+	_downed[peer_id] = {"severity": severity, "killer": killer_peer, "name": killer_name, "rounds": rounds}
+	# DIV-0013/DIV-0027 (verify: revive-persist): a fresh down is new combat damage, so reset the
+	# First-Aid retry gate — otherwise a player re-downed to a wound level a medic ALREADY treated this
+	# session (e.g. revived incap->wounded, then knocked back to incap) is permanently refused First Aid,
+	# defeating the revive path and forcing a lethal exit. The gate's "one First Aid per level until it
+	# changes" intent still holds: a damage-driven return to a treated level IS a change.
+	_heal_treated.erase(peer_id)
+	if not already:
+		_credit_takedown(killer_peer)  # one reward per takeout — credited at the DOWN, never again on bleed-out/yield
+	print("[downed] peer %d downed by %s (sev %d, bleeding=%s) — no penalty, frozen in field%s" % [
+		peer_id, killer_name, severity, str(severity >= 4), " (already down)" if already else ""])
+	if mode == Mode.SERVER:
+		downed_notice.rpc_id(peer_id, {"severity": severity, "killer": killer_name, "can_yield": true, "bleeding": (severity >= 4)})
+
+# DIV-0027: the single funnel from downed -> full death (bleed-out OR yield). killer_peer 0 +
+# credit_killer=false: the attacker was already credited at the down, so no re-reward.
+func _resolve_downed_to_death(peer_id: int, cause: String) -> void:
+	var kname := String((_downed.get(peer_id, {}) as Dictionary).get("name", "your wounds"))
+	print("[downed] peer %d -> death (%s)" % [peer_id, cause])
+	_handle_player_death(peer_id, kname, 0, false)
+
+func _clear_downed(peer_id: int) -> void:
+	_downed.erase(peer_id)
+
+# DIV-0027: escape hatch (a). Runs every COMBAT WINDOW (5s) — NOT inside _resolve_combat_window (which
+# early-returns on zero intents, so a lone downed player with no shooters must still tick). Re-syncs the
+# live severity each tick (a mid-tick First Aid 4->3 correctly stops the bleed), then advances the pure
+# downed decision: mortally_wounded bleeds out (recovery_model.death_roll, certain by round 13); an
+# untreated incapacitated deteriorates to mortally_wounded after INCAP_DETERIORATE_WINDOWS. Guaranteed-
+# terminating with ZERO player input.
+func _tick_downed() -> void:
+	if _downed.is_empty():
+		return
+	for peer in _downed.keys().duplicate():  # duplicate: the loop mutates _downed via death/revive
+		var e: Dictionary = _downed[peer]
+		var live := int(e.get("severity", DOWNED.DISABLED_SEVERITY))
+		if arena != null and arena.has_player(peer):
+			live = int((arena.player_state(peer) as Dictionary).get("player_wound_severity", live))
+		e["severity"] = live
+		var res: Dictionary = DOWNED.downed_tick(e, _server_rng)
+		match String(res.get("action", "hold")):
+			"revived":
+				_clear_downed(peer)
+				if mode == Mode.SERVER:
+					revived_notice.rpc_id(peer, {"healer": 0, "to": PersistenceStore.wound_state_for_severity(live)})
+			"die":
+				_resolve_downed_to_death(peer, "bled_out")
+			"deteriorate":
+				e["severity"] = 4
+				e["rounds"] = 0
+				_downed[peer] = e
+				if arena != null and arena.has_player(peer):
+					arena.set_player_combat(peer, {"player_wound_severity": 4, "player_wound_level": "mortally_wounded"})
+				print("[downed] peer %d deteriorated incapacitated -> mortally_wounded (safety net)" % peer)
+				if mode == Mode.SERVER:
+					downed_notice.rpc_id(peer, {"severity": 4, "killer": String(e.get("name", "your wounds")), "can_yield": true, "bleeding": true})
+			_:  # "hold"
+				e["rounds"] = int(res.get("rounds", int(e.get("rounds", 0))))
+				_downed[peer] = e
+
+# server -> client: you are DOWNED-in-field (sev 3-4). Distinct from death; carries the yield affordance.
+@rpc("authority", "call_remote", "reliable")
+func downed_notice(notice: Dictionary) -> void:
+	downed.emit(notice)
+
+# server -> client: a medic First-Aided you back above the downed floor (DIV-0013 revive).
+@rpc("authority", "call_remote", "reliable")
+func revived_notice(notice: Dictionary) -> void:
+	revived.emit(notice)
+
+# client -> server: a downed player voluntarily yields (accepts death + respawn). DIV-0027 escape hatch
+# (b) — the universal always-available out. Server re-validates _downed membership so a non-downed client
+# can't self-respawn. Routes to the full death path (yield == accept death); killer 0 (already credited).
+@rpc("any_peer", "call_remote", "reliable")
+func submit_yield() -> void:
+	if mode != Mode.SERVER:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	if not _downed.has(sender):
+		return  # nothing to yield — reject
+	_resolve_downed_to_death(sender, "yield")
+
+# client -> server helper: yield while downed.
+func send_yield() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_yield.rpc_id(1)
 
 # client -> server: buy a death-insurance policy (DIV-0006): debit INSURANCE_PREMIUM, grant charges.
 @rpc("any_peer", "call_remote", "reliable")
@@ -1844,6 +1984,7 @@ func _physics_process(delta: float) -> void:
 			if _combat_accum >= combat_window_seconds:
 				_combat_accum = 0.0
 				_resolve_combat_window()
+				_tick_downed()  # DIV-0027: bleed-out / deterioration for downed players (SEPARATE call — _resolve_combat_window early-returns on zero intents; a lone downed player must still tick)
 			_autosave_accum += delta
 			if _autosave_accum >= AUTOSAVE_SECONDS:
 				_autosave_accum = 0.0
@@ -2008,7 +2149,10 @@ func _resolve_combat_window() -> void:
 	# a casualty (hit by an attack) and a return-fire shooter-death in the same window.
 	var dummy_disabled := bool(result.get("target_disabled", false))
 	var looted := {}  # hostile keys already looted/despawned this window (one shooter credited)
-	var deaths := {}  # victim_peer -> {killer: peer(0=creature/dummy), name: String}
+	# DIV-0027: victim_peer -> {killer, name, severity}. Carries SEVERITY so the net layer can TIER the
+	# takeout (sev 5 = death; sev 3-4 = downed). Dedup keeps the MAX severity per victim so a finishing
+	# sev-5 is never downgraded by a prior sev-3 write in the same window.
+	var takedowns := {}
 	for envelope in envelopes:
 		var shooter := int(envelope.get("shooter_id", 0))
 		var tkey := String(envelope.get("target_key", ""))
@@ -2031,21 +2175,38 @@ func _resolve_combat_window() -> void:
 				# DIV-0020: a disabled HOSTILE creature advances disable objectives (creature_key narrows the targeted ones).
 				_feed_quest_event(shooter, {"type": "disable", "creature_key": String(spawn.get("creature_key", ""))})
 				arena.remove_hostile_target(tkey)  # a fresh hostile may spawn next Director tick
-		# A LETHAL hit that took the SHOOTER out (creature or PvP return fire) is a death.
+		# A LETHAL hit that took the SHOOTER out (creature or PvP return fire) is a takeout.
 		if bool(envelope.get("lethal", false)) and arena.has_player(shooter):
-			if int((arena.player_state(shooter) as Dictionary).get("player_wound_severity", 0)) >= CombatArena.DISABLED_SEVERITY:
+			var sev := int((arena.player_state(shooter) as Dictionary).get("player_wound_severity", 0))
+			if sev >= CombatArena.DISABLED_SEVERITY:
 				var rf_killer := int(envelope.get("target_peer_id", 0)) if bool(envelope.get("pvp", false)) else 0
-				deaths[shooter] = {"killer": rf_killer, "name": String(envelope.get("target_name", "a hostile"))}
+				if not takedowns.has(shooter) or sev > int((takedowns[shooter] as Dictionary).get("severity", 0)):
+					takedowns[shooter] = {"killer": rf_killer, "name": String(envelope.get("target_name", "a hostile")), "severity": sev}
 	# DIV-0019: a PvP victim taken OUT by an incoming attack (the TARGET side of an authorized shot).
 	for c in result.get("casualties", []):
 		var vic := int((c as Dictionary).get("peer", 0))
 		var kp := int((c as Dictionary).get("killer", 0))
+		var csev := int((c as Dictionary).get("severity", CombatArena.DISABLED_SEVERITY))
 		var kname := String(state.get_player(kp).get("name", "another spacer")) if (state != null and state.has_player(kp)) else "another spacer"
-		deaths[vic] = {"killer": kp, "name": kname}
-	# Apply each death exactly once (DIV-0006 penalty + respawn; killer credited for a PvP kill).
-	for victim in deaths:
+		var prior_sev := int((takedowns.get(vic, {}) as Dictionary).get("severity", 0))
+		var prior_killer := int((takedowns.get(vic, {}) as Dictionary).get("killer", 0))
+		# DIV-0027 (verify: casualty-routing): keep the MAX-severity entry for the tier/name, but break an
+		# EQUAL-severity tie toward a REAL attacker (kp>0) over a creature/self takeout (killer 0) — so a
+		# PvP aggressor who co-disabled the victim at the same final severity still earns the takeout credit
+		# (CP / zone / territory / Force signal) instead of it being lost to killer 0.
+		if not takedowns.has(vic) or csev > prior_sev or (csev == prior_sev and kp > 0 and prior_killer == 0):
+			takedowns[vic] = {"killer": kp, "name": kname, "severity": csev}
+	# DIV-0027: TIER each takeout exactly once. sev 5 -> full death (DIV-0006, UNCHANGED); sev 3-4 -> downed
+	# (no penalty, frozen in field, escape hatches). credit_killer = not already-downed so a finishing hit
+	# on an already-credited downed victim does not re-reward the attacker.
+	for victim in takedowns:
 		if state != null and state.has_player(int(victim)):
-			_handle_player_death(int(victim), String((deaths[victim] as Dictionary)["name"]), int((deaths[victim] as Dictionary)["killer"]))
+			var td: Dictionary = takedowns[victim]
+			var s := int(td.get("severity", CombatArena.DISABLED_SEVERITY))
+			if PvpRules.is_kill(s):
+				_handle_player_death(int(victim), String(td["name"]), int(td["killer"]), not _downed.has(int(victim)))
+			else:
+				_handle_player_downed(int(victim), int(td["killer"]), s, String(td["name"]))
 	if dummy_disabled:
 		arena.reset_target()
 		print("[combat] training target disabled — respawned")

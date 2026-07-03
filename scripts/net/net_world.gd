@@ -144,6 +144,9 @@ var _shop_title: Label
 var _shop_list: VBoxContainer
 var _death_overlay: ColorRect     # DIV-0006: brief full-screen "you were killed" card
 var _death_label: Label
+var _downed_panel: Label          # DIV-0027: persistent amber "you are DOWN — press Y to yield" panel
+var _is_downed := false           # DIV-0027: client is downed-in-field (gates the Y yield key)
+var _yield_on_down := false       # headless DIV-0027: auto-yield when downed (two-process test hook)
 var _toast_label: Label           # transient HUD feedback (credits/loot/buy/sell/force-awaken)
 var _toast_tween: Tween
 
@@ -170,6 +173,8 @@ func _ready() -> void:
 	Net.buy_replied.connect(_on_buy_replied)
 	Net.sell_replied.connect(_on_sell_replied)
 	Net.died.connect(_on_died)
+	Net.downed.connect(_on_downed)      # DIV-0027: downed-in-field (distinct from death)
+	Net.revived.connect(_on_revived)    # DIV-0027: a medic First-Aided you back up
 	Net.insurance_replied.connect(_on_insurance_replied)
 	Net.force_awakened_replied.connect(_on_force_awakened)
 	Net.fire_rejected.connect(_on_fire_rejected)
@@ -248,6 +253,7 @@ func _parse_args() -> void:
 	_talk_probe = args.has("--talk")  # headless: talk to the first named NPC once (verifies dialogue)
 	_accept_quest = _arg_value("--accept-quest")  # headless DIV-0020: accept a quest once after connecting
 	_claim_quest = _arg_value("--claim-quest")    # headless DIV-0020: claim a quest once, late
+	_yield_on_down = args.has("--yield")          # headless DIV-0027: auto-yield when downed (two-process test hook)
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -266,6 +272,8 @@ func _process(delta: float) -> void:
 	_send_local_input()
 	_update_camera()
 	_update_combat_target(delta)
+	if _yield_on_down and _is_downed and Net.connected:
+		Net.send_yield()  # headless DIV-0027: auto-yield when downed (two-process test hook; server is idempotent + rate-limited)
 	if (_autofire or _autodefend) and Net.connected:
 		_autofire_accum += delta
 		if _autofire_accum >= 0.4:
@@ -401,6 +409,9 @@ func _input(event: InputEvent) -> void:
 			return
 		if event.keycode == KEY_ESCAPE:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		elif event.keycode == KEY_Y and _is_downed:
+			Net.send_yield()  # DIV-0027: a downed player yields -> accept death + respawn
+			_set_status("Yielding…")
 		elif event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER:
 			_open_chat_input()  # open the chat box (type, Enter to send)
 		elif event.keycode == KEY_K:
@@ -861,6 +872,7 @@ func _build_hud() -> void:
 	_build_shop_panel(layer)     # Wave F economy: real shop overlay (B), replaces the console dump
 	_build_toast(layer)          # transient credit/loot/buy/sell/force-awaken feedback
 	_build_death_overlay(layer)  # DIV-0006: full-screen "you were killed" card
+	_build_downed_panel(layer)   # DIV-0027: persistent amber "you are DOWN — press Y" panel
 
 # Wave F economy: a real, clickable shop overlay (hidden until B). Populated from the
 # server-priced vendor_listed payload; Buy/Sell buttons call Net.send_buy/Net.send_sell.
@@ -931,6 +943,26 @@ func _build_death_overlay(layer: CanvasLayer) -> void:
 	_death_label.add_theme_constant_override("outline_size", 10)
 	_death_label.text = ""
 	_death_overlay.add_child(_death_label)
+
+# DIV-0027: a persistent AMBER banner shown while downed-in-field (distinct from the red death card —
+# amber = recoverable). Stays up until a medic revives you or you yield.
+func _build_downed_panel(layer: CanvasLayer) -> void:
+	_downed_panel = Label.new()
+	_downed_panel.name = "DownedPanel"
+	_downed_panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_downed_panel.anchor_left = 0.5
+	_downed_panel.anchor_right = 0.5
+	_downed_panel.position = Vector2(-260, 96)
+	_downed_panel.custom_minimum_size = Vector2(520, 0)
+	_downed_panel.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_downed_panel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_downed_panel.add_theme_font_size_override("font_size", 22)
+	_downed_panel.add_theme_color_override("font_color", Color(0.98, 0.74, 0.28))
+	_downed_panel.add_theme_color_override("font_outline_color", Color(0.10, 0.05, 0.0))
+	_downed_panel.add_theme_constant_override("outline_size", 8)
+	_downed_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_downed_panel.visible = false
+	layer.add_child(_downed_panel)
 
 func _set_status(text: String) -> void:
 	if _status != null:
@@ -1300,6 +1332,11 @@ func _on_died(notice: Dictionary) -> void:
 	var msg := "You were killed by %s in %s. Respawned at the spaceport — gear -%d%% durability, %d item(s) dropped%s. Credits kept." % [
 		killer, String(notice.get("zone", "")), dur, dropped.size(), insured]
 	print("[death] %s" % msg)
+	# DIV-0027: a downed->dead transition — clear the amber downed banner FIRST so the red kill card
+	# doesn't stack under it.
+	_is_downed = false
+	if _downed_panel != null:
+		_downed_panel.visible = false
 	_set_status(msg)
 	_combat_lines.append("*** %s ***" % msg)
 	while _combat_lines.size() > 8:
@@ -1311,6 +1348,31 @@ func _on_died(notice: Dictionary) -> void:
 	_show_death_card("YOU WERE KILLED",
 		"%s — gear -%d%% durability, %d item(s) dropped%s\nRespawning at the spaceport med bay… (credits kept)" % [
 			killer, dur, dropped.size(), insured])
+
+# DIV-0027: you were DOWNED-in-field (sev 3-4) — not dead. Distinct amber HUD state + the yield
+# affordance. Bleeding (sev 4) means the bleed-out death roll is now ticking against you.
+func _on_downed(notice: Dictionary) -> void:
+	var sev := int(notice.get("severity", 3))
+	var killer := String(notice.get("killer", "your wounds"))
+	var bleeding := bool(notice.get("bleeding", sev >= 4))
+	_is_downed = true
+	var msg := "You are DOWN — press Y to yield & respawn, or wait for a medic"
+	if bleeding:
+		msg += " (bleeding out)"
+	if _downed_panel != null:
+		_downed_panel.text = msg
+		_downed_panel.visible = true
+	_set_status("Downed by %s (sev %d). %s" % [killer, sev, "Bleeding out — press Y to yield." if bleeding else "Press Y to yield or await First Aid."])
+	print("[downed] %s" % msg)
+
+# DIV-0027: a medic First-Aided you back above the downed floor — clear the downed state.
+func _on_revived(notice: Dictionary) -> void:
+	_is_downed = false
+	if _downed_panel != null:
+		_downed_panel.visible = false
+	_set_status("A medic revived you.")
+	_toast("A medic revived you.", Color(0.55, 0.92, 0.55))
+	print("[downed] revived -> %s" % String(notice.get("to", "up")))
 
 # DIV-0011: your hidden Force sensitivity has awakened (the SWG-Village earned unlock).
 func _on_force_awakened(notice: Dictionary) -> void:

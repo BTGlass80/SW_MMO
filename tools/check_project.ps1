@@ -169,6 +169,10 @@ Invoke-GodotStep "PvP rules model edge smoke:" @("--headless", "--path", $projec
 
 Invoke-GodotStep "PvP flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_flow_smoke.gd")
 
+Invoke-GodotStep "Downed model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/downed_model_smoke.gd")
+
+Invoke-GodotStep "Downed softlock guard smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/downed_softlock_smoke.gd")
+
 Invoke-GodotStep "PvP consent model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_consent_model_smoke.gd")
 
 Invoke-GodotStep "PvP consent model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_consent_model_edge_smoke.gd")
