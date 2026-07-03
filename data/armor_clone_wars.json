@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source_policy": "Derived READ-ONLY from C:\\SW_MUSH\\data\\weapons.yaml (armor rows) and C:\\SW_MUSH\\docs\\design\\Guide_01_WEG_D6_Core_Mechanics.md. SW_MUSH is strictly read-only reference; this file is the authoritative project-owned copy. Data flows one way: out of SW_MUSH into data/.",
-  "source_note": "Ported 2026-06-24 from sw_mush weapons.yaml armor-type rows. Curated subset: Clone Wars-era (20 BBY) only. Protection values follow the XD/XD+y WEG pool string convention (prefix + for bonus above base Strength soak, as in prototype_combatants.json). dexterity_penalty is a negative pool string or empty string for no penalty. coverage is a list of body regions. Faction-issued armors (republic_light_armor, improved_armor, cis_field_armor, etc.) are included with vendor_stocked:false. Stormtrooper armor is excluded (Imperial-era framing). Non-protection identifier garments (republic_uniform, padawan_robes, jedi_robes, officers_uniform_republic) are included with zero protection values as-is — they matter for NPC recognition and faction systems.",
+  "source_note": "Ported 2026-06-24 from sw_mush weapons.yaml armor-type rows. Curated subset: Clone Wars-era (20 BBY) only. Protection values follow the XD/XD+y WEG pool string convention (prefix + for bonus above base Strength soak, as in prototype_combatants.json). dexterity_penalty is a negative pool string or empty string for no penalty. coverage is a list of body regions. Faction-issued armors (republic_light_armor, improved_armor, cis_field_armor, etc.) are included with vendor_stocked:false. Stormtrooper armor is excluded (Imperial-era framing). Non-protection identifier garments (republic_uniform, padawan_robes, jedi_robes, officers_uniform_republic) are included with zero protection values as-is — they matter for NPC recognition and faction systems. GEAR EXPANSION (2026-07-03): added 8 more Clone Wars-era armors adapted from C:\\SW_MUSH\\docs\\design\\gundarks_personal_gear_extraction_v1.md §3.1 (the WEG40158 'Gundark's Fantastic Technology: Personal Gear' armor-catalog extraction, already era-translated per that doc's §8 cheat-sheet — no Imperial/GCW framing survives) — concussion_helmet_ct3, corellian_611, corellian_huntsuit, dura_armor, reflec_body_glove (contraband), stalker_armor_salus, gladiator_armor_mindal (contraband), arelik_armor (contraband). None of these appear as armor rows anywhere in weapons.yaml, so nothing here duplicates the earlier 2026-06-24 port. Integrated weapon mounts/sensors on a few of the source stat blocks are noted as lore-only until an armor-mount system exists; protection/coverage/cost values are fully modeled, matching this file's existing vendor_stocked:false convention for all non-core-book (i.e. non-Blast-Vest/Helmet) armor. Data flowed one-way out of the read-only C:\\SW_MUSH; nothing there was modified.",
   "armor": {
     "blast_vest": {
       "name": "Blast Vest",
@@ -234,6 +234,89 @@
       "cost": 0,
       "vendor_stocked": false,
       "notes": "Pressed Republic Navy dress uniform. No combat protection — identifier/rank garment only. Faction-issued only."
+    },
+    "concussion_helmet_ct3": {
+      "name": "Concussion Helmet",
+      "protection_energy": "",
+      "protection_physical": "+2",
+      "dexterity_penalty": "",
+      "coverage": ["head"],
+      "cost": 375,
+      "vendor_stocked": false,
+      "notes": "Core World Arms CT3 — a cheap antique pattern, physical protection only (crash and fall damage included). Pairs with the Concussion Vest (CV14-B)."
+    },
+    "corellian_611": {
+      "name": "Corellian 611",
+      "protection_energy": "+1D",
+      "protection_physical": "+2D",
+      "dexterity_penalty": "",
+      "coverage": ["head", "torso"],
+      "cost": 5000,
+      "vendor_stocked": false,
+      "notes": "Licensed Corellian pattern, no Dexterity penalty despite full head/torso coverage. Book: +1D swim difficulty while worn — lore until a swim mechanic exists."
+    },
+    "corellian_huntsuit": {
+      "name": "Corellian HuntSuit",
+      "protection_energy": "+1D",
+      "protection_physical": "+2D",
+      "dexterity_penalty": "-1D",
+      "coverage": ["head", "torso", "arms", "legs"],
+      "cost": 2900,
+      "vendor_stocked": false,
+      "notes": "Full-body hunting suit. Book: +1D lift, integral sensor +1D to Search within 50 m — lore until those mechanics exist."
+    },
+    "dura_armor": {
+      "name": "Dura-Armor",
+      "protection_energy": "+2D",
+      "protection_physical": "+2D",
+      "dexterity_penalty": "-2D",
+      "coverage": ["head", "torso", "arms", "legs"],
+      "cost": 8000,
+      "vendor_stocked": false,
+      "notes": "Core World Arms — an Old-Republic vehicle-crew pattern that survived into the Clone Wars as prized antique plate. Book also applies a Perception penalty alongside the Dexterity penalty; only the Dexterity penalty is modeled until a Perception-soak interaction exists."
+    },
+    "reflec_body_glove": {
+      "name": "Reflec Body Glove",
+      "protection_energy": "+1D",
+      "protection_physical": "",
+      "dexterity_penalty": "",
+      "coverage": ["head", "torso", "arms", "legs"],
+      "cost": 4000,
+      "contraband": true,
+      "vendor_stocked": false,
+      "notes": "Syncronics ENVC-370 — reflective full-body wrap, good for roughly 5 blaster hits before it's spent. Book: the +1D bonus only applies at medium/long range and the suit is single-use disposable — both stay lore until a charge/range-gated protection mechanic exists."
+    },
+    "stalker_armor_salus": {
+      "name": "Stalker Armor",
+      "protection_energy": "+2D",
+      "protection_physical": "+2D",
+      "dexterity_penalty": "-2D",
+      "coverage": ["head", "torso", "arms", "legs"],
+      "cost": 8000,
+      "vendor_stocked": false,
+      "notes": "Salus Corp armored hardsuit. Book integrates a tangier gun, duo-flechette launcher, forearm blade, and +1D sensors into the suit — those mounts are lore until an armor-weapon-mount system exists; protection values are fully modeled."
+    },
+    "gladiator_armor_mindal": {
+      "name": "Gladiator Armor",
+      "protection_energy": "+1D",
+      "protection_physical": "+2D",
+      "dexterity_penalty": "",
+      "coverage": ["head", "torso", "arms"],
+      "cost": 0,
+      "contraband": true,
+      "vendor_stocked": false,
+      "notes": "Min-Dal JX4 prototype — the pattern surfaces in Geonosian arena pits (Petranaki-style bouts) and off-world gladiator rings. Book integrates a net gun, vibro-shiv, and a short jet pack into the suit — those mounts are lore until an armor-weapon-mount system exists. Prototype; not for open sale."
+    },
+    "arelik_armor": {
+      "name": "Arelik Armor",
+      "protection_energy": "+1D",
+      "protection_physical": "+2D",
+      "dexterity_penalty": "-1D",
+      "coverage": ["head", "torso", "arms"],
+      "cost": 0,
+      "contraband": true,
+      "vendor_stocked": false,
+      "notes": "A stock bounty-hunter pattern with integrated sensor, IR, and enviro-filter systems (lore until those mechanics exist). Rare black-market plate; not for open sale."
     }
   }
 }
