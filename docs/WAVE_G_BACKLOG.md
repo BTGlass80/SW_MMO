@@ -426,6 +426,10 @@ Tick 6 results (2026-07-03 evening):
 - ~~soak-bot economy mix~~ **DONE `4373c4c`** (buy power_pack / buy-insurance / vendor-list /
   sell hold_out_blaster on modulo bots; flags+keys grep-proven; live validation next soak).
 
+**CLAIM (tick 7, in flight): live validation soak (economy mix + duel/bounty paths) then the
+A6 first-login onboarding overlay [HOT net_world.gd] on main. Cron ticks: take NOTHING until
+this line clears.**
+
 Remaining for the loop:
 - Weekly `mush_sync_manifest.py diff` (next due ~2026-07-10; re-port slice on drift — MERGE
   around prototype fields per docs/MUSH_SYNC.md).
