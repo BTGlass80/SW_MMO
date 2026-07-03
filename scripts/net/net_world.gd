@@ -152,6 +152,16 @@ var _death_label: Label
 var _downed_panel: Label          # DIV-0027: persistent amber "you are DOWN — press Y to yield" panel
 var _is_downed := false           # DIV-0027: client is downed-in-field (gates the Y yield key)
 var _yield_on_down := false       # headless DIV-0027: auto-yield when downed (two-process test hook)
+# DIV-0022 headless PvP-consent affordances (two-process test hooks)
+var _duel := ""              # --duel <name>: challenge the named player once after connecting
+var _duel_sent := false
+var _duel_accept := false    # --duel-accept: accept the single pending challenge
+var _duel_accept_sent := false
+var _yield_duel := false     # --yield-duel: concede an active duel once
+var _yield_duel_sent := false
+var _place_bounty := ""      # --place-bounty <name>:<amount>: place a bounty once after connecting
+var _place_bounty_sent := false
+var _consent_accum := 0.0
 var _toast_label: Label           # transient HUD feedback (credits/loot/buy/sell/force-awaken)
 var _toast_tween: Tween
 
@@ -185,6 +195,10 @@ func _ready() -> void:
 	Net.fire_rejected.connect(_on_fire_rejected)
 	Net.quests_updated.connect(_on_quests_updated)          # DIV-0020: live quest progress
 	Net.quest_catalog_received.connect(_on_quest_catalog)   # DIV-0020: notice-board catalog
+	Net.duel_replied.connect(_on_duel_replied)              # DIV-0022: duel command outcome
+	Net.duel_notified.connect(_on_duel_notified)            # DIV-0022: duel state change involving me
+	Net.bounty_replied.connect(_on_bounty_replied)          # DIV-0022: bounty command outcome
+	Net.bounty_notified.connect(_on_bounty_notified)        # DIV-0022: bounty placed on me / collected
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -259,6 +273,10 @@ func _parse_args() -> void:
 	_accept_quest = _arg_value("--accept-quest")  # headless DIV-0020: accept a quest once after connecting
 	_claim_quest = _arg_value("--claim-quest")    # headless DIV-0020: claim a quest once, late
 	_yield_on_down = args.has("--yield")          # headless DIV-0027: auto-yield when downed (two-process test hook)
+	_duel = _arg_value("--duel")                  # headless DIV-0022: challenge the named player to a duel
+	_duel_accept = args.has("--duel-accept")      # headless DIV-0022: accept the single pending duel offer
+	_yield_duel = args.has("--yield-duel")        # headless DIV-0022: concede an active duel
+	_place_bounty = _arg_value("--place-bounty")  # headless DIV-0022: "name:amount" bounty placement
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -279,6 +297,32 @@ func _process(delta: float) -> void:
 	_update_combat_target(delta)
 	if _yield_on_down and _is_downed and Net.connected:
 		Net.send_yield()  # headless DIV-0027: auto-yield when downed (two-process test hook; server is idempotent + rate-limited)
+	# DIV-0022 headless PvP-consent: challenge / accept / place-bounty / yield-duel, staggered so both
+	# peers have registered and the challenge has propagated before the accept fires.
+	if (_duel != "" or _duel_accept or _place_bounty != "" or _yield_duel) and Net.connected:
+		_consent_accum += delta
+		if _duel != "" and not _duel_sent and _consent_accum >= 3.5:
+			var tgt := _peer_by_name(_duel)
+			if tgt != 0:
+				_duel_sent = true
+				Net.send_duel_challenge(tgt, false)
+				print("[duel] client challenging %s (peer %d)" % [_duel, tgt])
+		if _duel_accept and not _duel_accept_sent and _consent_accum >= 5.0:
+			_duel_accept_sent = true
+			Net.send_duel_accept(0)  # accept the single pending offer
+			print("[duel] client accepting pending challenge")
+		if _place_bounty != "" and not _place_bounty_sent and _consent_accum >= 2.5:
+			var parts := _place_bounty.split(":", true, 1)
+			if parts.size() == 2:
+				var bp := _peer_by_name(String(parts[0]))
+				if bp != 0:
+					_place_bounty_sent = true
+					Net.send_place_bounty(bp, int(String(parts[1])))
+					print("[bounty] client placing %s on %s (peer %d)" % [String(parts[1]), String(parts[0]), bp])
+		if _yield_duel and not _yield_duel_sent and _consent_accum >= 6.0:
+			_yield_duel_sent = true
+			Net.send_duel_yield()
+			print("[duel] client yielding")
 	if (_autofire or _autodefend) and Net.connected:
 		_autofire_accum += delta
 		if _autofire_accum >= 0.4:
@@ -1474,9 +1518,11 @@ func _on_force_awakened(notice: Dictionary) -> void:
 func _on_fire_rejected(result: Dictionary) -> void:
 	var reason := String(result.get("reason", "rejected"))
 	var messages := {
-		"protected_zone": "You can't attack players here — this zone is protected. (Open PvP is lawless-only.)",
+		"protected_zone": "You can't attack players here — this zone is protected. (Open PvP is lawless-only; /duel or a bounty opens a target.)",
 		"protected_target": "That player is in a protected zone.",
 		"different_zone": "That player isn't in your zone.",
+		"not_colocated": "That player isn't in your zone.",           # DIV-0022 consent reason
+		"newbie_protected": "One of you is under new-player protection — no attack. (Duel with /duel, or /pvp on to opt out.)",  # DIV-0022
 		"out_of_ammo": "Out of ammo — buy a power pack from a vendor (B: shop) to reload.",  # DIV-0029
 	}
 	var msg := String(messages.get(reason, "PvP fire refused (%s)." % reason))
@@ -1560,6 +1606,91 @@ func _first_other_player() -> int:
 		if id != 0 and id != _local_id:
 			return id
 	return 0
+
+# DIV-0022: resolve a display name (case-insensitive) to a same-zone peer id (0 if none). The snapshot is
+# zone-scoped, so /duel /bounty naturally target only co-located players.
+func _peer_by_name(display_name: String) -> int:
+	var want := display_name.strip_edges().to_lower()
+	if want == "":
+		return 0
+	for entry in Net.last_snapshot.get("players", []):
+		var e: Dictionary = entry
+		if int(e.get("id", 0)) == _local_id:
+			continue
+		if String(e.get("name", "")).strip_edges().to_lower() == want:
+			return int(e.get("id", 0))
+	return 0
+
+# DIV-0022: outcome of a /duel /accept /decline /yield command (combat-log line + status).
+func _on_duel_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		var action := String(result.get("action", "duel"))
+		print("[duel] %s (target peer %d)" % [action, int(result.get("target_peer", 0))])
+		_push_combat_line("Duel: %s." % action)
+		_set_status("Duel %s." % action)
+	else:
+		print("[duel] rejected (%s)" % String(result.get("reason", "")))
+		_set_status("Duel failed: %s." % String(result.get("reason", "")))
+
+# DIV-0022: a duel state change involving me (offered/active/declined/ended/ko). Combat-log + status.
+func _on_duel_notified(notice: Dictionary) -> void:
+	var kind := String(notice.get("kind", ""))
+	var line := ""
+	match kind:
+		"offered":
+			line = "%s challenged you to a %s duel — /accept or /decline." % [String(notice.get("from", "Someone")), "lethal" if bool(notice.get("lethal", false)) else "friendly"]
+		"active":
+			line = "Duel with %s is ON (%s). Fire away!" % [String(notice.get("with", "your opponent")), "lethal" if bool(notice.get("lethal", false)) else "non-lethal"]
+		"declined":
+			line = "%s declined your duel." % String(notice.get("by", "They"))
+		"ended":
+			var outcome := String(notice.get("outcome", "ended"))
+			if bool(notice.get("you_won", false)):
+				line = "You WON the duel (%s) vs %s." % [outcome, String(notice.get("loser", "your opponent"))]
+			else:
+				line = "Duel over (%s) — %s wins." % [outcome, String(notice.get("winner", "your opponent"))]
+		_:
+			line = "Duel update: %s" % kind
+	print("[duel] %s" % line)
+	_push_combat_line(line)
+	_set_status(line)
+
+# DIV-0022: outcome of a /bounty /payoff /bounties command.
+func _on_bounty_replied(result: Dictionary) -> void:
+	if not bool(result.get("ok", false)):
+		print("[bounty] rejected (%s)" % String(result.get("reason", "")))
+		_set_status("Bounty failed: %s." % String(result.get("reason", "")))
+		return
+	var action := String(result.get("action", ""))
+	match action:
+		"placed":
+			var msg := "Bounty on %s now %d cr (fee %d)." % [String(result.get("target", "target")), int(result.get("pot", 0)), int(result.get("fee", 0))]
+			print("[bounty] %s" % msg)
+			_push_combat_line(msg)
+			_set_status(msg)
+		"paid_off":
+			_set_status("Paid off your bounty for %d cr." % int(result.get("cost", 0)))
+			print("[bounty] paid off for %d" % int(result.get("cost", 0)))
+		"list":
+			var board: Array = result.get("board", [])
+			print("[bounty] board: %d contract(s)" % board.size())
+			for b in board:
+				print("[bounty]   %s: %d cr" % [String((b as Dictionary).get("target", "")), int((b as Dictionary).get("pot", 0))])
+			_set_status("Bounty board: %d active contract(s)." % board.size())
+
+# DIV-0022: a bounty was placed on me / I collected one on a kill.
+func _on_bounty_notified(notice: Dictionary) -> void:
+	var kind := String(notice.get("kind", ""))
+	if kind == "placed_on_you":
+		var msg := "A bounty of %d cr has been placed on your head." % int(notice.get("pot", 0))
+		print("[bounty] %s" % msg)
+		_push_combat_line("*** %s ***" % msg)
+		_toast(msg, Color(0.92, 0.55, 0.25), 4.0)
+	elif kind == "collected":
+		var msg := "Bounty collected: +%d cr for taking out %s." % [int(notice.get("payout", 0)), String(notice.get("target", "your quarry"))]
+		print("[bounty] %s" % msg)
+		_push_combat_line("*** %s ***" % msg)
+		_toast(msg, Color(0.55, 0.90, 0.48), 4.0)
 
 # Talk to the nearest named NPC within interact range (E key). Rotating line via dialogue_model.
 func _talk_to_nearest_npc() -> void:
@@ -1722,6 +1853,53 @@ func _dispatch_command(cmd: String, arg: String) -> void:
 		"insure":
 			Net.send_buy_insurance()  # DIV-0006: buy a death-insurance policy (500cr / 3 covered deaths)
 			_set_status("Buying death insurance…")
+		"duel":
+			# DIV-0022: challenge a co-located player to an opt-in (default non-lethal) duel.
+			if arg != "":
+				var tgt := _peer_by_name(arg)
+				if tgt != 0:
+					Net.send_duel_challenge(tgt, false)
+					_set_status("Challenged %s to a duel…" % arg)
+				else:
+					_set_status("No one named '%s' here to duel." % arg)
+			else:
+				_usage("/duel <name>  (challenge a player here to a duel)")
+		"accept":
+			var acc := _peer_by_name(arg) if arg != "" else 0
+			Net.send_duel_accept(acc)  # 0 = the single pending offer
+			_set_status("Accepting duel…")
+		"decline":
+			var dec := _peer_by_name(arg) if arg != "" else 0
+			Net.send_duel_decline(dec)
+			_set_status("Declining duel…")
+		"yield":
+			Net.send_duel_yield()  # DIV-0022: concede an active duel (distinct from Y = accept death when downed)
+			_set_status("Yielding the duel…")
+		"bounty":
+			# DIV-0022: /bounty <name> <amount> — place a credit-funded bounty on a player.
+			var bparts := arg.split(" ", false)
+			if bparts.size() >= 2:
+				var bt := _peer_by_name(String(bparts[0]))
+				if bt != 0:
+					Net.send_place_bounty(bt, int(String(bparts[1])))
+					_set_status("Placing %s cr bounty on %s…" % [String(bparts[1]), String(bparts[0])])
+				else:
+					_set_status("No one named '%s' here to bounty." % String(bparts[0]))
+			else:
+				_usage("/bounty <name> <amount>  (e.g. /bounty Vask 500)")
+		"payoff":
+			Net.send_pay_off_bounty()  # settle your own bounty
+			_set_status("Paying off your bounty…")
+		"bounties":
+			Net.send_list_bounties()  # request the active bounty board
+			_set_status("Requesting the bounty board…")
+		"pvp":
+			# DIV-0022: /pvp on opts out of newbie protection (one-way).
+			if arg.strip_edges().to_lower() == "on":
+				Net.send_pvp_optout()
+				_set_status("PvP protection dropped — you can now be attacked in dangerous zones.")
+			else:
+				_usage("/pvp on  (drop newbie protection — one-way)")
 		"who":
 			_show_who()  # client-local roster of same-zone players (from the snapshot)
 		"help":

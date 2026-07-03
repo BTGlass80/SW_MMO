@@ -49,6 +49,27 @@ class TelemetryTallyTests(unittest.TestCase):
         self.assertEqual(counts["window_resolve"], 1)
         self.assertFalse(unknown)
 
+    def test_bounty_events_counted_not_flagged(self):
+        # DIV-0022: place (escrow+fee OUTFLOW) + collect (payout INFLOW) + refund (INFLOW) + payoff
+        # (sink OUTFLOW) must all be counted, never warned as unknown credit-bearing types.
+        events = [
+            {"type": "bounty_place", "character_id": "char_placer", "credits": 550, "escrow": 500, "fee": 50, "ts": 100},
+            {"type": "bounty_collect", "character_id": "char_hunter", "payout": 500, "credits": 500, "ts": 200},
+            {"type": "bounty_payoff", "character_id": "char_target", "cost": 750, "ts": 300},
+            {"type": "bounty_refund", "character_id": "char_placer", "refund": 500, "ts": 310},
+        ]
+        path = _write_jsonl([json.dumps(event) for event in events])
+        try:
+            per_char, unknown, _ = telemetry_tally.tally(
+                telemetry_tally.read_events(path))
+        finally:
+            os.unlink(path)
+        self.assertEqual(per_char["char_placer"]["outflow"], 550)   # escrow + posting fee debited
+        self.assertEqual(per_char["char_placer"]["inflow"], 500)    # pay-off refund returned the escrow
+        self.assertEqual(per_char["char_hunter"]["inflow"], 500)    # payout collected
+        self.assertEqual(per_char["char_target"]["outflow"], 750)   # pay-off settlement sink
+        self.assertFalse(unknown)  # none flagged as unknown credit-bearing types
+
     def test_unknown_credit_bearing_type_is_reported_not_ignored(self):
         # A future faucet (e.g. quest rewards) must surface in the tally the day it
         # ships — the faucets-and-sinks rule depends on this being loud.

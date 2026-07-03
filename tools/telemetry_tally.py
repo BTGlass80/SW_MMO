@@ -27,11 +27,19 @@ from collections import Counter, defaultdict
 INFLOW = {
     "sell": lambda e: int(e.get("price", 0)),
     "loot": lambda e: int(e.get("loot_credits", 0)),  # loot_credits = credits + salvage total
+    # DIV-0022 (PvP bounties): a hunter's payout, and an escrow refund on pay-off / expiry.
+    "bounty_collect": lambda e: int(e.get("payout", 0)),
+    "bounty_refund": lambda e: int(e.get("refund", 0)),
 }
 # OUTFLOW = credits leaving a character's wallet (sinks).
 OUTFLOW = {
     "buy": lambda e: int(e.get("price", 0)),
     "repair": lambda e: int(e.get("cost", 0)),
+    # DIV-0022 (PvP bounties): placement debits escrow + a non-refundable posting fee; pay-off is a sink.
+    # NOTE: only the fee is a NET sink (escrow returns as a bounty_collect/bounty_refund inflow), so
+    # place+collect net to the fee — exactly the faucets-and-sinks intent.
+    "bounty_place": lambda e: int(e.get("credits", 0)),
+    "bounty_payoff": lambda e: int(e.get("cost", 0)),
 }
 # Known types that carry no wallet delta (death keeps credits per DIV-0006).
 NEUTRAL = {"death", "travel", "window_resolve"}

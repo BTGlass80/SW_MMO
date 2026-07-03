@@ -377,3 +377,64 @@ static func _contributor_refunds(rec: Dictionary) -> Dictionary:
 		var pid: Variant = (c as Dictionary).get("placer_id")
 		out[pid] = int(out.get(pid, 0)) + int((c as Dictionary).get("amount", 0))
 	return out
+
+# =====================================================================================================
+# SECTION E — HOT-wiring helpers (B7): duel queries the RPC layer needs + bounty-book persistence.
+# All pure/static; keep the netcode layer free of consent bookkeeping. The bounty book is the ONLY
+# persisted consent state (duels are in-memory per DIV-0022), so only it round-trips to world_state.dat.
+# =====================================================================================================
+
+# Challenger ids of every OPEN offer aimed AT `who` (the challenged side, rec.b == who). "" if none.
+# The RPC layer uses this to resolve a bare "/accept" (no name) to its single pending challenger.
+static func offers_to(state: Dictionary, who: Variant) -> Array:
+	var out := []
+	for key in state.get("duels", {}):
+		var rec: Dictionary = (state["duels"] as Dictionary)[key]
+		if String(rec.get("state", "")) == "offered" and rec.get("b") == who:
+			out.append(rec.get("a"))
+	return out
+
+# The opponent id in `who`'s ACTIVE duel (or null if none) + whether it is lethal — for the snapshot
+# "you" block. Returns {opponent, opponent_is_a, lethal} or {} if `who` is not in an active duel.
+static func active_duel_of(state: Dictionary, who: Variant) -> Dictionary:
+	var key := _in_active_duel(state, who)
+	if key == "":
+		return {}
+	var rec: Dictionary = (state["duels"] as Dictionary)[key]
+	var opp: Variant = rec["b"] if rec["a"] == who else rec["a"]
+	return {"opponent": opp, "lethal": bool(rec.get("lethal", false))}
+
+# Drop ENDED duel records so the in-memory book does not grow without bound across a long session
+# (a fresh challenge for a pair already ignores an ENDED record, so pruning changes no behavior).
+static func prune_ended_duels(state: Dictionary) -> Dictionary:
+	var next := state.duplicate(true)
+	var duels: Dictionary = next["duels"]
+	for key in duels.keys():
+		if String((duels[key] as Dictionary).get("state", "")) == "ended":
+			duels.erase(key)
+	return next
+
+# The persisted bounty book (a plain, JSON-safe copy of state.bounties). Duels are NEVER persisted.
+static func bounties_to_dict(state: Dictionary) -> Dictionary:
+	return (state.get("bounties", {}) as Dictionary).duplicate(true)
+
+# Restore a bounty book produced by bounties_to_dict, re-int'ing the numeric fields JSON widened to
+# float (pot/fee/amount) and re-floating the timestamps — mirrors territory_model.apply_persisted.
+static func apply_persisted_bounties(state: Dictionary, saved: Dictionary) -> Dictionary:
+	var next := state.duplicate(true)
+	var book := {}
+	for key in saved:
+		var rec: Dictionary = (saved[key] as Dictionary).duplicate(true)
+		rec["pot_credits"] = int(rec.get("pot_credits", 0))
+		rec["posting_fee_paid"] = int(rec.get("posting_fee_paid", 0))
+		rec["expires_at"] = float(rec.get("expires_at", 0.0))
+		var contribs := []
+		for c in rec.get("contributors", []):
+			var cc: Dictionary = (c as Dictionary).duplicate(true)
+			cc["amount"] = int(cc.get("amount", 0))
+			cc["placed_at"] = float(cc.get("placed_at", 0.0))
+			contribs.append(cc)
+		rec["contributors"] = contribs
+		book[String(key)] = rec
+	next["bounties"] = book
+	return next

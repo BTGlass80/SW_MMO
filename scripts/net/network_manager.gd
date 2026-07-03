@@ -36,6 +36,7 @@ const CreatureSpecialAttack := preload("res://scripts/rules/creature_special_att
 const DeathPenalty := preload("res://scripts/rules/death_penalty_model.gd")   # DIV-0006: death penalty + respawn
 const ForceAwaken := preload("res://scripts/rules/force_awakening_model.gd")   # DIV-0011: SWG-Village earned unlock
 const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")            # DIV-0019: zone-based PvP consent gate
+const PvpConsent := preload("res://scripts/rules/pvp_consent_model.gd")        # DIV-0022: duel + bounty consent layer atop DIV-0019
 const DOWNED := preload("res://scripts/rules/downed_model.gd")                 # DIV-0027: death tiering + downed escape hatch
 const QuestModel := preload("res://scripts/rules/quest_model.gd")              # DIV-0020: accepted quests + progress + reward
 const HarvestModel := preload("res://scripts/rules/harvest_model.gd")          # DIV-0023: a disabled creature -> a sellable field-dressed good
@@ -104,6 +105,10 @@ signal revived(notice: Dictionary)          # DIV-0027: this client was First-Ai
 signal insurance_replied(result: Dictionary) # DIV-0006: buy-insurance outcome
 signal force_awakened_replied(notice: Dictionary) # DIV-0011: this client's Force sensitivity awakened
 signal fire_rejected(result: Dictionary)    # DIV-0019: a PvP fire intent was refused (zone/consent)
+signal duel_replied(result: Dictionary)     # DIV-0022: outcome of a /duel /accept /decline /yield command
+signal duel_notified(notice: Dictionary)    # DIV-0022: a duel state change involving you (offered/accepted/ended/ko)
+signal bounty_replied(result: Dictionary)   # DIV-0022: outcome of a /bounty /payoff /bounties command
+signal bounty_notified(notice: Dictionary)  # DIV-0022: a bounty was placed on you / collected on your kill
 signal quests_updated(quests: Dictionary)   # DIV-0020: this client's live quest progress changed
 signal quest_catalog_received(defs: Dictionary) # DIV-0020: the available-quest catalog (notice board)
 signal harvested(notice: Dictionary)        # DIV-0023: this client field-dressed a disabled creature into a sellable good
@@ -171,6 +176,8 @@ var _ambient := {}                    # E27: zone_id -> ambient NPC roster (Dire
 var _heal_treated := {}               # DIV-0013: target_peer -> wound level last First-Aided (retry gate)
 var _downed := {}                     # DIV-0027: peer -> {severity:int, killer:int, name:String, rounds:int} — server-only downed-in-field state (rebuilt on login from persisted wound_state)
 var _corpses := {}                    # DIV-0025: character_id -> {zone_id, pos:{x,y,z}, decay_unix:float, security_tier:String} — server-only corpse index (rebuilt from records on boot)
+var _consent := {}                    # DIV-0022: server-only PvP-consent state {duels(peer-int pairs, in-memory), bounties(character-id book, PERSISTED)}
+var _bounty_cooldown := {}            # DIV-0022: placer character_id -> last-placement unix (in-memory place-spam guard)
 var _zone_list_cache: Array = []      # DIV-0014: cached [{id, name}] travel list (zones are static)
 var _server_rng := RandomNumberGenerator.new()
 var _telemetry: TelemetryLog = null   # server only (Wave G/Seam 5: structured-telemetry JSONL writer; null in client/solo)
@@ -208,6 +215,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	territory = Territory.new()
 	_org_model = OrgModel.new()
 	_pending_model = PendingInfluence.new()
+	_consent = PvpConsent.new_state()  # DIV-0022: init BEFORE _load_world_state so the persisted bounty book restores onto it
 	# F58/F59: restore the persisted world (faction influence + pending + org claims) over the
 	# seeded roster. AFTER territory/pending are created so their state can be restored too.
 	_load_world_state()
@@ -296,6 +304,12 @@ func _on_peer_disconnected(id: int) -> void:
 	_peer_rpc_budget.erase(id)
 	_heal_treated.erase(id)  # DIV-0013: drop this peer's First-Aid retry gate (keyed by target peer)
 	_downed.erase(id)  # DIV-0027: no orphan downed-tick against an absent peer (persisted wound_state carries it to relogin)
+	# DIV-0022: abort every live (offered/active) duel this peer was in — a disconnected duelist must not
+	# stay attackable, mirroring clear_intents_targeting. Bounties (persisted contracts) survive the logout.
+	if not _consent.is_empty():
+		var _ab: Dictionary = PvpConsent.abort(_consent, id)
+		if bool(_ab.get("ok", false)):
+			_consent = _ab["state"]
 	if character_id != "": _visited_zones.erase(character_id)  # DIV-0011: drop the distinct-zones tracker
 	# Evict the record cache on disconnect: _save_peer just flushed final state to disk, the
 	# single-session lock means no other peer holds this character, and the next login does a
@@ -361,9 +375,11 @@ func submit_fire_intent(intent: Dictionary) -> void:
 	if target != 0:
 		if target == sender or not arena.has_player(target) or zones == null:
 			return  # no self-fire / phantom target
-		var sz := String(_peer_zones.get(sender, _default_zone))
-		var tz := String(_peer_zones.get(target, _default_zone))
-		var gate: Dictionary = PvpRules.can_fire(sz, tz, zones.effective_security(sz), zones.effective_security(tz))
+		# DIV-0022: route the player-target intent through the consent stack (siege>duel>newbie>bounty>
+		# zone-open>protected). This COMPOSES on the shipped DIV-0019 zone gate — rule 8 delegates the
+		# zone-open answer to pvp_rules_model.can_fire, so lawless-open still fires and secured/contested
+		# stay protected unless a duel/bounty/newbie path applies. Re-validated at resolution (_build_pvp_gate).
+		var gate: Dictionary = _resolve_pvp(sender, target)
 		if not bool(gate.get("allowed", false)):
 			print("[pvp] peer %d fire on %d refused (%s)" % [sender, target, String(gate.get("reason", ""))])
 			fire_result.rpc_id(sender, {"ok": false, "reason": String(gate.get("reason", "rejected")), "target_peer": target})
@@ -420,9 +436,11 @@ func _peer_can_fire_ammo(peer_id: int) -> bool:
 func fire_result(result: Dictionary) -> void:
 	fire_rejected.emit(result)
 
-# DIV-0019: the authoritative RESOLVE-TIME PvP re-gate. Re-checks every queued player-target pair
-# against live zone/security (closing a Director mid-window tier-flip) into a {shooter: true} map the
-# zone-agnostic arena consumes. Only same-zone lawless pairs are authorized.
+# DIV-0019/DIV-0022: the authoritative RESOLVE-TIME PvP re-gate. Re-runs the FULL consent stack for
+# every queued player-target pair against live zone/duel/bounty/newbie state (closing a Director mid-window
+# tier-flip, a mid-window yield, or a bounty just collected), producing the arena's per-shooter auth map.
+# The value carries the CLAMP MODE: a non-lethal duel -> {lethal:false, cap:DUEL_KO_SEVERITY}; every lethal
+# path (lawless-open / bounty / lethal duel) -> {lethal:true, cap:PVP_NO_CLAMP}. A rejected pair is omitted.
 func _build_pvp_gate() -> Dictionary:
 	var gate := {}
 	if arena == null or zones == null:
@@ -432,11 +450,470 @@ func _build_pvp_gate() -> Dictionary:
 		var target := int(pending[shooter])
 		if target == int(shooter) or not arena.has_player(target):
 			continue
-		var sz := String(_peer_zones.get(int(shooter), _default_zone))
-		var tz := String(_peer_zones.get(target, _default_zone))
-		if bool(PvpRules.can_fire(sz, tz, zones.effective_security(sz), zones.effective_security(tz)).get("allowed", false)):
-			gate[int(shooter)] = true
+		var r: Dictionary = _resolve_pvp(int(shooter), target)
+		if not bool(r.get("allowed", false)):
+			continue
+		if String(r.get("reason", "")) == "duel" and not bool(r.get("lethal", false)):
+			gate[int(shooter)] = {"lethal": false, "cap": CombatArena.DUEL_KO_SEVERITY, "reason": "duel"}
+		else:
+			gate[int(shooter)] = {"lethal": true, "cap": CombatArena.PVP_NO_CLAMP, "reason": String(r.get("reason", ""))}
 	return gate
+
+# DIV-0022: resolve one attacker->target PvP question through the pure consent model with a SERVER-built
+# ctx. Duels key on PEER ints (in-memory pairs); bounties key on CHARACTER ids (the persisted book);
+# newbie is the per-record flag. Co-location + precedence live in the pure model. -> {allowed, reason, lethal}.
+func _resolve_pvp(shooter: int, target: int) -> Dictionary:
+	var sz := String(_peer_zones.get(shooter, _default_zone))
+	var tz := String(_peer_zones.get(target, _default_zone))
+	var shooter_cid := String(_peer_characters.get(shooter, ""))
+	var target_cid := String(_peer_characters.get(target, ""))
+	var zone_tier := zones.effective_security(sz) if zones != null else "lawless"
+	var attacker := {"id": shooter, "is_player": true, "node_id": sz, "newbie_protected": _is_newbie(shooter_cid)}
+	var target_d := {"id": target, "is_player": true, "node_id": tz, "newbie_protected": _is_newbie(target_cid)}
+	# Bounty eligibility is the pure pre-resolver AND the guild gate (org membership, which only the net
+	# layer knows). Default board is open (hunters_guild_only=false), so the guild gate is a pass-through.
+	var bounty_ok := PvpConsent.bounty_eligible(_consent, shooter_cid, target_cid, zone_tier) and _bounty_guild_ok(target_cid, shooter)
+	var ctx := {
+		"zone_tier": zone_tier,
+		"duel_active": PvpConsent.duel_active(_consent, shooter, target),
+		"duel_lethal": PvpConsent.duel_lethal(_consent, shooter, target),
+		"bounty_eligible": bounty_ok,
+		"siege_forced": false,  # owner-gated siege scope (FACTION_TERRITORY_DESIGN §6) — off here
+	}
+	return PvpConsent.resolve(attacker, target_d, ctx)
+
+# DIV-0022: whether a bounty on target_cid may be COLLECTED by `shooter` given the record's guild gate.
+# Default (hunters_guild_only=false) -> any eligible hunter; a guild-gated bounty requires BHG membership.
+func _bounty_guild_ok(target_cid: String, shooter: int) -> bool:
+	var rec: Dictionary = (_consent.get("bounties", {}) as Dictionary).get(target_cid, {})
+	if not bool(rec.get("hunters_guild_only", false)):
+		return true
+	return String(_peer_orgs.get(shooter, "")) == "org_bounty_hunters_guild"
+
+# DIV-0022: the persisted newbie-protection flag (design §6.1 — playtime/opt-in, NOT CP-based). Default
+# true at chargen, cleared ONE-WAY on first non-secured-zone entry or a manual /pvp on. A LEGACY record
+# with no flag reads as NOT protected (so no pre-existing character is retroactively re-shielded).
+func _is_newbie(character_id: String) -> bool:
+	if character_id == "":
+		return false
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return false
+	return bool((record.get("world_hooks", {}) as Dictionary).get("newbie_protected", false))
+
+# DIV-0022: clear a character's newbie protection (one-way; persisted). No-op if already cleared/absent.
+func _clear_newbie(character_id: String, reason: String) -> void:
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var wh: Dictionary = record.get("world_hooks", {})
+	if not bool(wh.get("newbie_protected", false)):
+		return
+	wh["newbie_protected"] = false
+	record["world_hooks"] = wh
+	_cached_save(character_id, record)
+	print("[pvp] %s newbie protection cleared (%s)" % [character_id, reason])
+
+# =====================================================================================================
+# DIV-0022 — PvP consent: duel (opt-in, in-memory) + bounty (persisted contract) RPC surface + helpers.
+# Mirrors the submit_heal / submit_claim_node conventions: any_peer submit_* with a rate-limit budget +
+# an authority *_result reply, plus authority *_notice broadcasts to the affected peer(s). The SERVER owns
+# every clock/RNG/credit; client fields are re-validated here. Duels key on PEER ints; bounties on
+# CHARACTER ids (the persisted book).
+# =====================================================================================================
+
+func _peer_name(peer_id: int) -> String:
+	if state != null and state.has_player(peer_id):
+		return String((state.get_player(peer_id) as Dictionary).get("name", "Spacer-%d" % peer_id))
+	return "Spacer-%d" % peer_id
+
+# client -> server: challenge another CO-LOCATED player to a duel (default NON-lethal). An accepted duel
+# makes exactly this pair mutually attackable in ANY zone (even secured) — a duel outranks zone + newbie.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_duel_challenge(target_peer: int, lethal: bool = false) -> void:
+	if mode != Mode.SERVER or state == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender) or not state.has_player(sender):
+		return
+	if target_peer == sender or not state.has_player(target_peer):
+		duel_result.rpc_id(sender, {"ok": false, "reason": "no_target", "target_peer": target_peer})
+		return
+	var zone_id := String(_peer_zones.get(sender, _default_zone))
+	if zone_id != String(_peer_zones.get(target_peer, _default_zone)):
+		duel_result.rpc_id(sender, {"ok": false, "reason": "not_colocated", "target_peer": target_peer})
+		return
+	var res: Dictionary = PvpConsent.challenge(_consent, sender, target_peer, zone_id, Time.get_unix_time_from_system(), lethal)
+	if not bool(res.get("ok", false)):
+		duel_result.rpc_id(sender, {"ok": false, "reason": String(res.get("reason", "rejected")), "target_peer": target_peer})
+		return
+	_consent = res["state"]
+	print("[duel] peer %d challenged %d (%s)" % [sender, target_peer, "lethal" if lethal else "non-lethal"])
+	duel_result.rpc_id(sender, {"ok": true, "action": "challenged", "target_peer": target_peer, "lethal": lethal})
+	duel_notice.rpc_id(target_peer, {"kind": "offered", "from_peer": sender, "from": _peer_name(sender), "lethal": lethal})
+
+# client -> server: accept a pending challenge. challenger_peer 0 = accept the single pending offer to me.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_duel_accept(challenger_peer: int = 0) -> void:
+	if mode != Mode.SERVER or state == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender) or not state.has_player(sender):
+		return
+	var challenger := challenger_peer
+	if challenger == 0:
+		var offers: Array = PvpConsent.offers_to(_consent, sender)
+		if offers.size() == 1:
+			challenger = int(offers[0])
+		elif offers.is_empty():
+			duel_result.rpc_id(sender, {"ok": false, "reason": "no_offer"})
+			return
+		else:
+			duel_result.rpc_id(sender, {"ok": false, "reason": "ambiguous_offer"})
+			return
+	var res: Dictionary = PvpConsent.accept(_consent, challenger, sender, Time.get_unix_time_from_system())
+	if not bool(res.get("ok", false)):
+		duel_result.rpc_id(sender, {"ok": false, "reason": String(res.get("reason", "rejected")), "target_peer": challenger})
+		return
+	_consent = res["state"]
+	var lethal := PvpConsent.duel_lethal(_consent, challenger, sender)
+	print("[duel] peer %d accepted %d's challenge (active, %s)" % [sender, challenger, "lethal" if lethal else "non-lethal"])
+	duel_result.rpc_id(sender, {"ok": true, "action": "accepted", "target_peer": challenger, "lethal": lethal})
+	duel_notice.rpc_id(sender, {"kind": "active", "with_peer": challenger, "with": _peer_name(challenger), "lethal": lethal})
+	duel_notice.rpc_id(challenger, {"kind": "active", "with_peer": sender, "with": _peer_name(sender), "lethal": lethal})
+
+# client -> server: decline a pending challenge (challenger_peer 0 = the single pending offer to me).
+@rpc("any_peer", "call_remote", "reliable")
+func submit_duel_decline(challenger_peer: int = 0) -> void:
+	if mode != Mode.SERVER or state == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender) or not state.has_player(sender):
+		return
+	var challenger := challenger_peer
+	if challenger == 0:
+		var offers: Array = PvpConsent.offers_to(_consent, sender)
+		if offers.size() != 1:
+			duel_result.rpc_id(sender, {"ok": false, "reason": "no_offer" if offers.is_empty() else "ambiguous_offer"})
+			return
+		challenger = int(offers[0])
+	var res: Dictionary = PvpConsent.decline(_consent, challenger, sender)
+	if not bool(res.get("ok", false)):
+		duel_result.rpc_id(sender, {"ok": false, "reason": String(res.get("reason", "rejected"))})
+		return
+	_consent = res["state"]
+	print("[duel] peer %d declined %d's challenge" % [sender, challenger])
+	duel_result.rpc_id(sender, {"ok": true, "action": "declined", "target_peer": challenger})
+	duel_notice.rpc_id(challenger, {"kind": "declined", "by_peer": sender, "by": _peer_name(sender)})
+
+# client -> server: yield (concede) my active duel — the opponent wins, combat stops, NO death penalty.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_duel_yield() -> void:
+	if mode != Mode.SERVER or state == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender) or not state.has_player(sender):
+		return
+	var opp: Dictionary = PvpConsent.active_duel_of(_consent, sender)
+	if opp.is_empty():
+		duel_result.rpc_id(sender, {"ok": false, "reason": "no_active_duel"})
+		return
+	var winner := int(opp.get("opponent", 0))
+	var res: Dictionary = PvpConsent.yield_duel(_consent, sender)
+	if not bool(res.get("ok", false)):
+		duel_result.rpc_id(sender, {"ok": false, "reason": String(res.get("reason", "rejected"))})
+		return
+	_consent = res["state"]
+	# Cancel any queued shots between the pair so a resolving window can't still land a KO after the yield.
+	if arena != null:
+		arena.clear_intents_targeting(sender)
+		arena.clear_intents_targeting(winner)
+	print("[duel] peer %d YIELDED to %d" % [sender, winner])
+	duel_result.rpc_id(sender, {"ok": true, "action": "yielded", "target_peer": winner})
+	duel_notice.rpc_id(sender, {"kind": "ended", "outcome": "yield", "winner_peer": winner, "you_won": false})
+	duel_notice.rpc_id(winner, {"kind": "ended", "outcome": "yield", "winner_peer": winner, "you_won": true, "loser": _peer_name(sender)})
+
+# server -> client: outcome of a duel command
+@rpc("authority", "call_remote", "reliable")
+func duel_result(result: Dictionary) -> void:
+	duel_replied.emit(result)
+
+# server -> client: a duel state change involving you (offered/active/declined/ended/ko)
+@rpc("authority", "call_remote", "reliable")
+func duel_notice(notice: Dictionary) -> void:
+	duel_notified.emit(notice)
+
+func send_duel_challenge(target_peer: int, lethal: bool = false) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_duel_challenge.rpc_id(1, target_peer, lethal)
+
+func send_duel_accept(challenger_peer: int = 0) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_duel_accept.rpc_id(1, challenger_peer)
+
+func send_duel_decline(challenger_peer: int = 0) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_duel_decline.rpc_id(1, challenger_peer)
+
+func send_duel_yield() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_duel_yield.rpc_id(1)
+
+# client -> server: opt out of newbie protection (design §6.1 manual clear; one-way).
+@rpc("any_peer", "call_remote", "reliable")
+func submit_pvp_optout() -> void:
+	if mode != Mode.SERVER:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	_clear_newbie(String(_peer_characters.get(sender, "")), "manual /pvp on")
+
+func send_pvp_optout() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_pvp_optout.rpc_id(1)
+
+# --- DIV-0022 Layer 3: bounties (persisted world contract, credit escrow via DIV-0018 wallet) ---
+
+# client -> server: place/add a credit-funded bounty on another player. Escrow (amount) + posting fee are
+# debited from the placer; the pot ACCUMULATES per target and persists in world_state.dat. No self-bounty.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_place_bounty(target_peer: int, amount: int) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender) or not state.has_player(sender):
+		return
+	var placer_cid := String(_peer_characters.get(sender, ""))
+	var target_cid := String(_peer_characters.get(target_peer, ""))
+	if placer_cid == "" or target_cid == "":
+		bounty_result.rpc_id(sender, {"ok": false, "reason": "no_target"})
+		return
+	if placer_cid == target_cid:
+		bounty_result.rpc_id(sender, {"ok": false, "reason": "self_bounty"})
+		return
+	if amount < PvpConsent.MIN_BOUNTY:
+		bounty_result.rpc_id(sender, {"ok": false, "reason": "below_minimum", "min": PvpConsent.MIN_BOUNTY})
+		return
+	# In-memory per-placer cooldown (design §5.6). A restart resets it — acceptable for a standing contract.
+	var now := Time.get_unix_time_from_system()
+	if now - float(_bounty_cooldown.get(placer_cid, -PvpConsent.BOUNTY_PLACE_COOLDOWN)) < PvpConsent.BOUNTY_PLACE_COOLDOWN:
+		bounty_result.rpc_id(sender, {"ok": false, "reason": "cooldown"})
+		return
+	var fee := PvpConsent.posting_fee_for(amount)
+	var record := _cached_load(placer_cid)
+	var have := int((record.get("sheet", {}) as Dictionary).get("credits", 0))
+	if have < amount + fee:
+		bounty_result.rpc_id(sender, {"ok": false, "reason": "cannot_afford", "need": amount + fee, "have": have})
+		return
+	var old_pot := PvpConsent.bounty_pot(_consent, target_cid)
+	var res: Dictionary = PvpConsent.place_bounty(_consent, placer_cid, target_cid, amount, now)
+	if not bool(res.get("ok", false)):
+		bounty_result.rpc_id(sender, {"ok": false, "reason": String(res.get("reason", "rejected"))})
+		return
+	_consent = res["state"]
+	var new_pot := int(res.get("pot", old_pot))
+	var escrowed := new_pot - old_pot
+	var debit := escrowed + fee  # escrow (refundable) + the non-refundable posting-fee SINK
+	_award_credits(sender, -debit)
+	_bounty_cooldown[placer_cid] = now
+	_set_active_bounty_flag(target_cid, true)
+	_save_world_state()  # persist the standing contract immediately
+	if _telemetry != null:  # DIV-0022 telemetry: escrow debit + fee SINK (tools/telemetry_tally.py OUTFLOW)
+		_telemetry.log_event("bounty_place", {
+			"ts": now, "character_id": placer_cid, "target_id": target_cid,
+			"credits": debit, "escrow": escrowed, "fee": fee, "pot": new_pot,
+		})
+	print("[bounty] %s placed %d on %s (pot %d, fee %d)" % [placer_cid, escrowed, target_cid, new_pot, fee])
+	bounty_result.rpc_id(sender, {"ok": true, "action": "placed", "target": _peer_name(target_peer), "pot": new_pot, "fee": fee})
+	bounty_notice.rpc_id(target_peer, {"kind": "placed_on_you", "pot": new_pot})
+
+# client -> server: settle (pay off) MY OWN bounty at pot x PAYOFF_MULTIPLIER (a sink); escrow refunds to
+# the contributors and the contract is removed.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_pay_off_bounty() -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender) or not state.has_player(sender):
+		return
+	var cid := String(_peer_characters.get(sender, ""))
+	if cid == "" or not PvpConsent.has_bounty(_consent, cid):
+		bounty_result.rpc_id(sender, {"ok": false, "reason": "no_bounty"})
+		return
+	var preview: Dictionary = PvpConsent.pay_off_bounty(_consent, cid)  # non-mutating: gives cost + refunds
+	var cost := int(preview.get("cost", 0))
+	var have := int((_cached_load(cid).get("sheet", {}) as Dictionary).get("credits", 0))
+	if have < cost:
+		bounty_result.rpc_id(sender, {"ok": false, "reason": "cannot_afford", "need": cost, "have": have})
+		return
+	_consent = preview["state"]
+	_award_credits(sender, -cost)  # the settlement SINK
+	var refunds: Dictionary = preview.get("refunds", {})
+	for placer_cid in refunds:
+		_award_credits_to_character(String(placer_cid), int(refunds[placer_cid]), "bounty_refund")
+	_set_active_bounty_flag(cid, false)
+	_save_world_state()
+	if _telemetry != null:
+		_telemetry.log_event("bounty_payoff", {"ts": Time.get_unix_time_from_system(), "character_id": cid, "cost": cost})
+	print("[bounty] %s paid off their own bounty for %d" % [cid, cost])
+	bounty_result.rpc_id(sender, {"ok": true, "action": "paid_off", "cost": cost})
+
+# client -> server: list the active bounty board (target names + pots) so the client can render it.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_list_bounties() -> void:
+	if mode != Mode.SERVER:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var board: Array = []
+	for tcid in _consent.get("bounties", {}):
+		var rec: Dictionary = (_consent["bounties"] as Dictionary)[tcid]
+		board.append({"target": String(tcid), "pot": int(rec.get("pot_credits", 0)), "tiers": rec.get("min_tiers", [])})
+	bounty_result.rpc_id(sender, {"ok": true, "action": "list", "board": board})
+
+# server -> client: outcome of a bounty command
+@rpc("authority", "call_remote", "reliable")
+func bounty_result(result: Dictionary) -> void:
+	bounty_replied.emit(result)
+
+# server -> client: a bounty was placed on you / collected on your kill
+@rpc("authority", "call_remote", "reliable")
+func bounty_notice(notice: Dictionary) -> void:
+	bounty_notified.emit(notice)
+
+func send_place_bounty(target_peer: int, amount: int) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_place_bounty.rpc_id(1, target_peer, amount)
+
+func send_pay_off_bounty() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_pay_off_bounty.rpc_id(1)
+
+func send_list_bounties() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_list_bounties.rpc_id(1)
+
+# DIV-0022: credit an amount to a character by id (a bounty refund) whether or not it is online. Loads the
+# record, adds credits, persists, and pushes the live wallet if the character happens to be connected.
+func _award_credits_to_character(character_id: String, amount: int, telemetry_type: String = "") -> void:
+	if store == null or character_id == "" or amount == 0:
+		return
+	for pid in _peer_characters:
+		if String(_peer_characters[pid]) == character_id:
+			_award_credits(int(pid), amount)  # online -> the normal wallet path (also pushes the client)
+			if _telemetry != null and telemetry_type != "":
+				_telemetry.log_event(telemetry_type, {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "refund": amount})
+			return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	sheet["credits"] = maxi(int(sheet.get("credits", 0)) + amount, 0)
+	record["sheet"] = sheet
+	_cached_save(character_id, record)
+	if _telemetry != null and telemetry_type != "":
+		_telemetry.log_event(telemetry_type, {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "refund": amount})
+
+# DIV-0022: mirror the active_bounty boolean onto a character's persisted record (the cheap snapshot flag;
+# the pure book is the authority). No-op if the record is gone.
+func _set_active_bounty_flag(character_id: String, active: bool) -> void:
+	if store == null or character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var wh: Dictionary = record.get("world_hooks", {})
+	wh["active_bounty"] = active
+	record["world_hooks"] = wh
+	_cached_save(character_id, record)
+
+# DIV-0022: an eligible hunter's takeout of a bountied target collects the pot ONCE (idempotent — the
+# record is erased on collection). Called at the DIV-0027 credit-once takedown seam so it fires whether the
+# hunter DOWNS or outright KILLS the target. Never the target/placer; secured kills never collect (a bounty
+# never grants secured attackability anyway). Credits go through the normal wallet path.
+func _maybe_collect_bounty(victim_peer: int, killer_peer: int) -> void:
+	if killer_peer <= 0 or store == null:
+		return
+	var victim_cid := String(_peer_characters.get(victim_peer, ""))
+	var killer_cid := String(_peer_characters.get(killer_peer, ""))
+	if victim_cid == "" or killer_cid == "" or not PvpConsent.has_bounty(_consent, victim_cid):
+		return
+	var tier := zones.effective_security(String(_peer_zones.get(victim_peer, _default_zone))) if zones != null else "lawless"
+	if tier == "secured":
+		return  # civic/newbie core: a bounty is never collectable here
+	var res: Dictionary = PvpConsent.collect_bounty(_consent, victim_cid, killer_cid)
+	if not bool(res.get("ok", false)):
+		print("[bounty] %s took out %s but cannot collect (%s)" % [killer_cid, victim_cid, String(res.get("reason", ""))])
+		return
+	_consent = res["state"]
+	var payout := int(res.get("payout", 0))
+	_award_credits(killer_peer, payout)
+	_set_active_bounty_flag(victim_cid, false)
+	_save_world_state()  # the collected contract must not reappear on restart
+	if _telemetry != null:  # DIV-0022 telemetry: bounty payout INFLOW to the hunter
+		_telemetry.log_event("bounty_collect", {
+			"ts": Time.get_unix_time_from_system(), "character_id": killer_cid,
+			"target_id": victim_cid, "payout": payout, "credits": payout, "tier": tier,
+		})
+	print("[bounty] %s COLLECTED %d for taking out %s (%s)" % [killer_cid, payout, victim_cid, tier])
+	bounty_notice.rpc_id(killer_peer, {"kind": "collected", "payout": payout, "target": _peer_name(victim_peer)})
+
+# DIV-0022: a non-lethal duel KO. Conclude the duel (standing party wins), then AUTO-STABILIZE the loser to
+# 'wounded' (sev 2) — below the DIV-0027 downed floor, so NO bleed-out, NO death penalty, NO loot; they
+# recover via the normal medical loop (DIV-0012/0013). Distinct from a lethal takeout (death/downed).
+func _handle_duel_ko(loser: int, winner: int) -> void:
+	var res: Dictionary = PvpConsent.conclude_ko(_consent, loser)
+	if bool(res.get("ok", false)):
+		_consent = res["state"]
+	_clear_downed(loser)  # ensure the loser is never left in the bleed-out loop
+	# Auto-stabilize to wounded (sev 2). Rebuild the live arena wound + persist so a relog is coherent.
+	if arena != null and arena.has_player(loser):
+		arena.set_player_combat(loser, {"player_wound_severity": 2, "player_wound_level": "wounded"})
+		arena.clear_status(loser)
+		arena.clear_intents_targeting(loser)
+	var cid := String(_peer_characters.get(loser, ""))
+	if cid != "":
+		var record := _cached_load(cid)
+		if not record.is_empty():
+			var sheet: Dictionary = record.get("sheet", {})
+			sheet["wound_state"] = "wounded"
+			record["sheet"] = sheet
+			_cached_save(cid, record)
+			_push_sheet(loser, record)
+	_heal_treated.erase(loser)
+	print("[duel] KO — peer %d downed by %d, auto-stabilized to wounded (no death penalty)" % [loser, winner])
+	if mode == Mode.SERVER:
+		duel_notice.rpc_id(loser, {"kind": "ended", "outcome": "ko", "winner_peer": winner, "you_won": false, "winner": _peer_name(winner)})
+		duel_notice.rpc_id(winner, {"kind": "ended", "outcome": "ko", "winner_peer": winner, "you_won": true, "loser": _peer_name(loser)})
+
+# DIV-0022: expire stale duel offers / max-duration + expired bounties (pro-rata escrow refund). Swept on
+# the Director tick (30s) — the offer TTL (60s) / duel cap (600s) / bounty TTL (7d) tolerate coarse sweeps.
+func _sweep_consent() -> void:
+	if _consent.is_empty():
+		return
+	var now := Time.get_unix_time_from_system()
+	var de: Dictionary = PvpConsent.expire(_consent, now)
+	if bool(de.get("ok", false)):
+		_consent = de["state"]
+	_consent = PvpConsent.prune_ended_duels(_consent)  # bound the in-memory duel book
+	# Snapshot the targets about to expire so we can clear their active_bounty mirror after the erase.
+	var expiring: Array = []
+	for tcid in _consent.get("bounties", {}):
+		if now >= float((_consent["bounties"][tcid] as Dictionary).get("expires_at", 0.0)):
+			expiring.append(String(tcid))
+	var be: Dictionary = PvpConsent.expire_bounties(_consent, now)
+	if bool(be.get("ok", false)):
+		_consent = be["state"]
+		var refunds: Dictionary = be.get("refunds", {})
+		for placer_cid in refunds:
+			_award_credits_to_character(String(placer_cid), int(refunds[placer_cid]), "bounty_refund")
+		for tcid in expiring:
+			_set_active_bounty_flag(String(tcid), false)
+		_save_world_state()
 
 # server -> clients: a resolved WEG combat exchange envelope
 @rpc("authority", "call_remote", "reliable")
@@ -536,6 +1013,11 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 		record = _create_character(character_id, chosen_name, build)  # new char: run chargen
 	else:
 		record["name"] = chosen_name
+	# DIV-0022: logging in ALREADY inside a non-secured zone (a saved wild location, or a test --zone) is
+	# the "chose danger" signal too — clear newbie protection just like travel does (one-way, cache-persisted;
+	# no-op if already cleared or if the spawn zone is secured). Runs AFTER _create_character set the fresh flag.
+	if zones != null and zones.effective_security(String(_peer_zones.get(sender, _default_zone))) != "secured":
+		_clear_newbie(character_id, "login in %s" % String(_peer_zones.get(sender, _default_zone)))
 	# E26/G8: bind/persist the account secret on the record as a SALTED HASH (never plaintext).
 	# `changed` is true on the first claim of an unsecured account with a non-empty secret AND on
 	# the one-time legacy-plaintext -> salted-hash migration; apply_auth also strips any legacy
@@ -626,6 +1108,11 @@ func _create_character(character_id: String, display_name: String, build: Dictio
 	record["sheet"] = sheet
 	record["species"] = species_key
 	record["quests"] = QuestModel.initial_quests()  # DIV-0020: empty accepted-quest block
+	# DIV-0022: newbie PvP protection ON at chargen (design §6.1). Cleared ONE-WAY the first time this
+	# character steps into a non-secured (dangerous) zone or opts out via /pvp on — never CP-based.
+	var new_hooks: Dictionary = record.get("world_hooks", {})
+	new_hooks["newbie_protected"] = true
+	record["world_hooks"] = new_hooks
 	_cached_save(character_id, record)
 	print("[chargen] created %s species=%s dex=%s cp=%d" % [
 		character_id, species_key,
@@ -931,6 +1418,10 @@ func submit_change_zone(zone_id: String) -> void:
 		record["zone"] = zone_id  # persist so the next login restores this zone
 		_cached_save(character_id, record)
 	_feed_quest_event(sender, {"type": "travel", "zone_id": zone_id})  # DIV-0020: reach_zone objectives
+	# DIV-0022: stepping into a non-secured (dangerous) zone is the "chose danger" signal — clear newbie
+	# PvP protection one-way (the lawless-warning-ack analogue in this build). Secured travel keeps it.
+	if zones != null and zones.effective_security(zone_id) != "secured":
+		_clear_newbie(character_id, "entered %s" % zone_id)
 	_refresh_peer_hostility(sender)  # DIV-0017: engage/disengage the destination zone's hostile immediately
 	if not _visited_zones.has(character_id):
 		_visited_zones[character_id] = {}
@@ -1793,6 +2284,7 @@ func _save_world_state() -> void:
 	world["territory_influence"] = _territory_influence  # F61: org influence that GATES claim eligibility
 	if territory != null:
 		world["territory"] = territory.to_dict()  # F59: org claims + treasuries
+	world["bounties"] = PvpConsent.bounties_to_dict(_consent)  # DIV-0022: persisted bounty contracts (duels are in-memory)
 	store.save_world(world)
 
 func _load_world_state() -> void:
@@ -1816,9 +2308,11 @@ func _load_world_state() -> void:
 		_territory_influence[org_id] = out
 	if territory != null:
 		territory.apply_persisted(world.get("territory", {}))  # F59: restore org claims + treasuries
-	print("[persist] world state restored (tick_index=%d, pending=%d, claims=%d, ti_orgs=%d)" % [
+	_consent = PvpConsent.apply_persisted_bounties(_consent, world.get("bounties", {}))  # DIV-0022: restore the standing bounty book
+	print("[persist] world state restored (tick_index=%d, pending=%d, claims=%d, ti_orgs=%d, bounties=%d)" % [
 		zones.tick_index, _pending_zone_influence.size(),
-		territory.claim_count() if territory != null else 0, _territory_influence.size()])
+		territory.claim_count() if territory != null else 0, _territory_influence.size(),
+		(_consent.get("bounties", {}) as Dictionary).size()])
 
 # E27: advance each zone's ambient NPC roster (Director-paced, deterministic, hash-seeded
 # like zone_state). Folded into the per-peer snapshot as npcs[].
@@ -2673,6 +3167,7 @@ func _physics_process(delta: float) -> void:
 				_recover_wounds()  # DIV-0012: natural wound recovery for connected players
 				_feed_tense_ticks()  # DIV-0011: tense-zone participation feeds the awakening track
 				_advance_force_awakenings()  # DIV-0011: step every connected latent's hidden awakening
+				_sweep_consent()  # DIV-0022: expire stale duel offers/durations + expired bounties (escrow refund)
 			_resource_accum += delta
 			if _resource_accum >= resource_tick_seconds:
 				_resource_accum = 0.0
@@ -2726,6 +3221,10 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 		var pax := String(_peer_axes.get(ppid, ""))
 		if pax != "":
 			(p as Dictionary)["axis"] = pax  # F36: faction allegiance (only org members carry one)
+		# DIV-0022: a "wanted" flag + pot for any player carrying an active bounty (client renders a marker).
+		var pcid := String(_peer_characters.get(ppid, ""))
+		if pcid != "" and PvpConsent.has_bounty(_consent, pcid):
+			(p as Dictionary)["bounty"] = PvpConsent.bounty_pot(_consent, pcid)
 	if zones != null:
 		snap["zone"] = zones.zone_summary(zone_id)
 	if territory != null and peer_id != 0:
@@ -2762,6 +3261,7 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 		if ws == "":
 			ws = PersistenceStore.wound_state_for_severity(int(ps.get("player_wound_severity", 0)))
 		var mystat := arena.player_status_summary(peer_id)  # DIV-0024: my own venom/restraint status
+		var my_cid := String(_peer_characters.get(peer_id, ""))
 		snap["you"] = {
 			"wound": ws,
 			"wound_penalty": WoundLadder.penalty_dice_for_level(ws),  # F46: the WEG -ND action penalty for this wound
@@ -2771,8 +3271,27 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 			"status_restrained": bool(mystat.get("restrained", false)),             # DIV-0024: "Held"
 			"status_source": String(mystat.get("source", "")),                      # the injecting creature
 			"ammo": _ammo_summary(peer_id),                                         # DIV-0029: equipped-weapon shots + carried packs
+			"newbie_protected": _is_newbie(my_cid),                                 # DIV-0022: PvP-safe new player
+			"bounty_on_me": PvpConsent.bounty_pot(_consent, my_cid),                # DIV-0022: pot on my head (0 = none)
+			"duel": _duel_you_block(peer_id),                                       # DIV-0022: {opponent, lethal} or {}
+			"duel_offer_from": _duel_offer_name(peer_id),                           # DIV-0022: incoming challenge ("" = none)
 		}
 	return snap
+
+# DIV-0022: the local player's ACTIVE-duel view for the snapshot "you" block ({} when not dueling).
+func _duel_you_block(peer_id: int) -> Dictionary:
+	var opp: Dictionary = PvpConsent.active_duel_of(_consent, peer_id)
+	if opp.is_empty():
+		return {}
+	var o := int(opp.get("opponent", 0))
+	return {"opponent_peer": o, "opponent": _peer_name(o), "lethal": bool(opp.get("lethal", false))}
+
+# DIV-0022: the name of a single pending challenger to this peer ("" = none/ambiguous, for the HUD hint).
+func _duel_offer_name(peer_id: int) -> String:
+	var offers: Array = PvpConsent.offers_to(_consent, peer_id)
+	if offers.is_empty():
+		return ""
+	return _peer_name(int(offers[0]))
 
 # DIV-0029: the peer's equipped-weapon ammo for the "you" snapshot block. {weapon, uses_ammo, shots,
 # capacity, packs}. A non-ammo weapon (melee / single_use) reports uses_ammo=false (client shows no
@@ -2994,17 +3513,36 @@ func _resolve_combat_window() -> void:
 		# (CP / zone / territory / Force signal) instead of it being lost to killer 0.
 		if not takedowns.has(vic) or csev > prior_sev or (csev == prior_sev and kp > 0 and prior_killer == 0):
 			takedowns[vic] = {"killer": kp, "name": kname, "severity": csev}
-	# DIV-0027: TIER each takeout exactly once. sev 5 -> full death (DIV-0006, UNCHANGED); sev 3-4 -> downed
-	# (no penalty, frozen in field, escape hatches). credit_killer = not already-downed so a finishing hit
-	# on an already-credited downed victim does not re-reward the attacker.
+	# DIV-0022/DIV-0027: TIER each takeout exactly once. Classify against the consent state BEFORE any
+	# duel is concluded (a double-KO in one window must both read the still-active duel), then apply:
+	#   • non-lethal DUEL KO -> conclude + auto-stabilize (no death/downed) — a THIRD outcome path
+	#   • sev 5 -> full death (DIV-0006, UNCHANGED); sev 3-4 -> downed (no penalty, escape hatches)
+	# An eligible hunter's takeout of a bountied target collects the pot ONCE here (idempotent), for BOTH
+	# the down and the kill path. credit_killer = not already-downed (no double reward on a finishing hit).
+	var duel_kos: Array = []
+	var normal_takeouts: Array = []
 	for victim in takedowns:
-		if state != null and state.has_player(int(victim)):
-			var td: Dictionary = takedowns[victim]
-			var s := int(td.get("severity", CombatArena.DISABLED_SEVERITY))
-			if PvpRules.is_kill(s):
-				_handle_player_death(int(victim), String(td["name"]), int(td["killer"]), not _downed.has(int(victim)))
-			else:
-				_handle_player_downed(int(victim), int(td["killer"]), s, String(td["name"]))
+		if not (state != null and state.has_player(int(victim))):
+			continue
+		var kp := int((takedowns[victim] as Dictionary).get("killer", 0))
+		# Classify against the STILL-ACTIVE consent state (before any conclude mutates it): a non-lethal
+		# duel KO is a THIRD outcome (conclude + stabilize, NOT a lethal takeout — so it never collects a
+		# bounty, per design §5.6). Everything else is a lethal takeout; a bountied target's takeout there
+		# collects the pot ONCE at this seam (idempotent, covers both the down and the kill).
+		if kp > 0 and PvpConsent.duel_active(_consent, kp, int(victim)) and not PvpConsent.duel_lethal(_consent, kp, int(victim)):
+			duel_kos.append({"loser": int(victim), "winner": kp})
+		else:
+			_maybe_collect_bounty(int(victim), kp)  # DIV-0022: bounty payout at the lethal-takedown seam
+			normal_takeouts.append(int(victim))
+	for dk in duel_kos:
+		_handle_duel_ko(int((dk as Dictionary)["loser"]), int((dk as Dictionary)["winner"]))
+	for victim in normal_takeouts:
+		var td: Dictionary = takedowns[victim]
+		var s := int(td.get("severity", CombatArena.DISABLED_SEVERITY))
+		if PvpRules.is_kill(s):
+			_handle_player_death(int(victim), String(td["name"]), int(td["killer"]), not _downed.has(int(victim)))
+		else:
+			_handle_player_downed(int(victim), int(td["killer"]), s, String(td["name"]))
 	if dummy_disabled:
 		arena.reset_target()
 		print("[combat] training target disabled — respawned")

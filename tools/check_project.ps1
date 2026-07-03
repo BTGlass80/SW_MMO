@@ -283,6 +283,12 @@ Invoke-GodotStep "Ammo flow smoke:" @("--headless", "--path", $projectRoot, "--s
 
 Invoke-GodotStep "Ammo status model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/ammo_status_model_smoke.gd")
 
+Invoke-GodotStep "PvP consent wire smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_consent_wire_smoke.gd")
+
+Invoke-GodotStep "Bounty flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/bounty_flow_smoke.gd")
+
+Invoke-GodotStep "Bounty persistence smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/bounty_persistence_smoke.gd")
+
 # Not-before-live invariant (owner ruling 2026-07-03): pure models + design docs for
 # siege / player-cities / server-space are PERMITTED (they live in scripts/rules + docs);
 # their HOT wiring (files or preloads in scripts/net) is PARKED until the ground loop

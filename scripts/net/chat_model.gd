@@ -18,11 +18,14 @@ const COMMANDS := {
 
 ## GUI game commands (distinct from chat channels) recognized by the command bar.
 ## raise/travel/heal/claim/release/shop/buy/sell send RPCs; help/who are client-local info commands.
-const GAME_COMMANDS := ["raise", "travel", "heal", "claim", "release", "shop", "buy", "sell", "insure", "who", "help"]
+## DIV-0022 PvP-consent: duel/accept/decline/yield (opt-in duels), bounty/payoff/bounties (contracts),
+## pvp (newbie-protection opt-out).
+const GAME_COMMANDS := ["raise", "travel", "heal", "claim", "release", "shop", "buy", "sell", "insure",
+	"who", "help", "duel", "accept", "decline", "yield", "bounty", "payoff", "bounties", "pvp"]
 
 ## One-line help listing every command the bar understands (for the /help command + onboarding).
 static func command_help() -> String:
-	return "Commands: /raise <skill> · /travel <zone> · /heal · /claim <node> · /release <node> · /shop · /buy <item> · /sell <item> · /insure · /who · /help.  Chat: /say /ooc /org /emote (plain text = say)."
+	return "Commands: /raise <skill> · /travel <zone> · /heal · /claim <node> · /release <node> · /shop · /buy <item> · /sell <item> · /insure · /who · /help.  PvP: /duel <name> · /accept · /decline · /yield · /bounty <name> <amount> · /payoff · /bounties · /pvp on.  Chat: /say /ooc /org /emote (plain text = say)."
 
 ## Recognize a GUI game command in a free-text line: "/raise dodge" -> {cmd:"raise",
 ## arg:"dodge"}; "/travel tatooine.dune_sea" -> {cmd:"travel", arg:"…"}; "/heal" ->

@@ -26,6 +26,13 @@ const DISABLED_SEVERITY := 3
 # wound(2) a player but NEVER incapacitate(3+) — keeping them out of the owner-gated death/respawn
 # band (DIV-0006) and inside the healable, self-recoverable tiers (DIV-0012/0013).
 const SPARRING_MAX_SEVERITY := 2
+# DIV-0022: the duel KO ceiling — a THIRD clamp mode distinct from the DIV-0016 sparring cap (2). A
+# non-lethal duel's shots are REAL up to incapacitated(3) but NEVER mortal/dead; reaching it KOs the
+# loser (the net layer then concludes the duel + auto-stabilizes them). The net layer opts a shooter into
+# this clamp by passing `{lethal:false, cap:3}` as their pvp_gate value instead of a bare `true` (lethal,
+# uncapped) — so lawless-open / bounty PvP (cap 99) and duel KO (cap 3) coexist in one resolution pass.
+const DUEL_KO_SEVERITY := 3
+const PVP_NO_CLAMP := 99  # a lethal PvP shot's "cap" sentinel (lawless-open / bounty / lethal duel — no clamp)
 # G13/G10: a player-target sentinel meaning "no target — HOLD FIRE". Distinct from "" (the shared
 # training dummy) and from a registered hostile key. A shooter set to HOLD_TARGET has their queued shot
 # DROPPED in resolve_window (no exchange, no dummy fallback), so a player in a zone with no live hostile
@@ -381,7 +388,16 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 			continue
 		var intent: Dictionary = _intents[peer_id]
 		var target_peer := int(intent.get("target_peer", 0))
-		var is_pvp: bool = target_peer != 0 and target_peer != peer_id and bool(pvp_gate.get(peer_id, false)) and _players.has(target_peer)
+		# DIV-0019/DIV-0022: the pvp_gate authorization for this shooter. A bare `true` (legacy / lawless-open /
+		# bounty) means lethal + no clamp; a non-empty Dictionary `{lethal, cap}` carries the DIV-0022 duel KO
+		# clamp (cap 3, non-lethal). GDScript has no bool(Dictionary), so decode truthiness by type explicitly.
+		var pvp_auth: Variant = pvp_gate.get(peer_id, false)
+		var authorized := (typeof(pvp_auth) == TYPE_BOOL and bool(pvp_auth)) or (typeof(pvp_auth) == TYPE_DICTIONARY and not (pvp_auth as Dictionary).is_empty())
+		var is_pvp: bool = target_peer != 0 and target_peer != peer_id and authorized and _players.has(target_peer)
+		# The per-shooter PvP wound ceiling: DUEL_KO cap (3) for a non-lethal duel, else no clamp (99).
+		var pvp_cap := PVP_NO_CLAMP
+		if is_pvp and typeof(pvp_auth) == TYPE_DICTIONARY:
+			pvp_cap = int((pvp_auth as Dictionary).get("cap", PVP_NO_CLAMP))
 		# A named PvP target that FAILED the resolve-time gate (fled / zone-flipped / gone): DROP the
 		# shot. It never falls through to the shared dummy.
 		if target_peer != 0 and not is_pvp:
@@ -466,6 +482,10 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 		var next_pstate: Dictionary = result.get("state", record["state"])
 		if not lethal:
 			next_pstate["player_wound_severity"] = mini(int(next_pstate.get("player_wound_severity", 0)), maxi(SPARRING_MAX_SEVERITY, prior_severity))
+		elif is_pvp and pvp_cap < PVP_NO_CLAMP:
+			# DIV-0022 duel KO clamp on the SHOOTER's OWN return-fire wound (a passive duelist reaction-fires
+			# once): real up to incapacitated(3), never mortal/dead. Floor-aware like the sparring clamp.
+			next_pstate["player_wound_severity"] = mini(int(next_pstate.get("player_wound_severity", 0)), maxi(pvp_cap, prior_severity))
 		# HIGH (audit 2026-07-03): resolve_exchange advances the shooter's player_wound_severity from its OWN
 		# return-fire wound but NOT player_wound_level. The stale level then corrupts persistence (apply_combat
 		# prefers the level string -> a wound saves as "healthy" and is erased on relog), the PvP escalate base
@@ -498,11 +518,24 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 			var prior_level := String(def_state.get("player_wound_level", WoundLadder.level_for_severity(prior_def)))
 			var incoming_hit := int(new_tstate.get("this_hit_severity", 0))
 			var new_level := WoundLadder.escalate(prior_level, incoming_hit)
+			var new_sev_def := WoundLadder.severity_for_level(new_level)
+			# DIV-0022 duel KO clamp on the DEFENDER: a non-lethal duel caps the target at incapacitated(3),
+			# so a big roll can never push them to mortal/dead — the KO ends the duel (net layer stabilizes).
+			# Floor-aware; recompute the level string from the capped severity so both stay coherent.
+			if pvp_cap < PVP_NO_CLAMP:
+				new_sev_def = mini(new_sev_def, maxi(pvp_cap, prior_def))
+				new_level = WoundLadder.level_for_severity(new_sev_def)
 			def_state["player_wound_level"] = new_level
-			def_state["player_wound_severity"] = WoundLadder.severity_for_level(new_level)
+			def_state["player_wound_severity"] = new_sev_def
 			def_state["player_armor_quality_pips"] = int(new_tstate.get("armor_quality_pips", def_state.get("player_armor_quality_pips", 0)))
 			def2["state"] = def_state
 			var new_def := int(def_state["player_wound_severity"])
+			# The envelope must show the TARGET's true ACCUMULATED + (DIV-0022) CLAMPED wound, not the raw
+			# single-exchange result — so a duel KO reads "Incapacitated" (the capped truth), never "Killed",
+			# and a lethal-PvP hit reads the accumulated ladder tier. new_tstate is only consumed by the
+			# envelope from here on for a PvP shot (its name already carries the defender's), so overriding
+			# the severity is display-only and leaves target_name intact.
+			new_tstate["wound_severity"] = new_def
 			# Tiered casualty (dedup by peer; keeps the highest severity + the killer who reached it).
 			if new_def >= DISABLED_SEVERITY and new_def > prior_def:
 				casualties[target_peer] = {"peer": target_peer, "severity": new_def, "killer": peer_id}
@@ -521,6 +554,7 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 			envelope["target_peer_id"] = target_peer
 			envelope["target_key"] = ""
 			envelope["lethal"] = true
+			envelope["duel"] = pvp_cap < PVP_NO_CLAMP  # DIV-0022: a non-lethal duel exchange (client log tint)
 		else:
 			envelope["target_key"] = target_key  # "" = the shared training dummy
 			envelope["lethal"] = lethal
