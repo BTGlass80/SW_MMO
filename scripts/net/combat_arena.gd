@@ -18,6 +18,8 @@ const CombatEventEnvelopeModel := preload("res://scripts/rules/combat_event_enve
 const DerivedStats := preload("res://scripts/rules/derived_stats_model.gd")
 const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")  # DIV-0019: player-target remap
 const WoundLadder := preload("res://scripts/rules/wound_ladder_model.gd")  # G2: cumulative WEG wound escalation
+const CreatureSpecialAttack := preload("res://scripts/rules/creature_special_attack_model.gd")  # DIV-0024: venom/restraint riders
+const ArmorConditionModel := preload("res://scripts/rules/armor_condition_model.gd")  # DIV-0024: restraint crush soak (armor applies)
 const PVP_DISTANCE := 12.0  # DIV-0019: nominal inter-player range (positional range is a follow-up)
 const DISABLED_SEVERITY := 3
 # DIV-0016: non-lethal sparring ceiling. The shared training target's return fire can stun(1) or
@@ -48,7 +50,12 @@ var _window_index := 0
 # per active spawn (creature = the hostile target).
 var _player_lethal: Dictionary = {}   # peer_id -> true: lift the sparring cap for this player
 var _player_target: Dictionary = {}   # peer_id -> hostile target_key ("" / absent = the shared dummy)
-var _hostile_targets: Dictionary = {} # target_key -> {state, pools(target_*), profile{distance,cover_level,name}, spawn}
+var _hostile_targets: Dictionary = {} # target_key -> {state, pools(target_*), profile{distance,cover_level,name}, spawn, rider}
+# DIV-0024: monotonic combat-window counter for venom/restraint STATUS timing. Unlike _window_index (which
+# only advances on windows that HAD queued intents, via resolve_window), this advances EVERY window because
+# tick_status_effects is called unconditionally by the net layer — so a poison schedule's absolute rounds
+# count REAL elapsed windows (honoring onset) even across idle windows where no one fired.
+var _status_window := 0
 
 func _init(rules: Object, combat_data: Dictionary, target_id: String = "b1_training_silhouette", weapon_catalog: Dictionary = {}, armor_catalog: Dictionary = {}) -> void:
 	_rules = rules
@@ -230,7 +237,11 @@ func set_player_lethal(peer_id: int, lethal: bool) -> void:
 ## Register a hostile creature as a lethal target the arena can resolve against. `pools` is the
 ## target_* pool shape (hostile_npc_model.attack_pools_from_creature); `profile` carries
 ## {distance, cover_level, name}; `spawn` is the originating creature_spawn_model roll (kept for loot).
-func register_hostile_target(target_key: String, pools: Dictionary, profile: Dictionary, spawn: Dictionary = {}) -> void:
+## `rider` (DIV-0024, optional, default {}) is the pre-baked CreatureSpecialAttackModel.describe_spawn bundle
+## ({has_special_attack, poison, poison_schedule, restraint}) for this creature. The net layer computes it
+## with a SERVER-owned seed at spawn; the arena seeds it onto a victim on a landed hit. Deep-copied so a
+## per-victim status never aliases the shared bundle (matches the model's deep-copy discipline).
+func register_hostile_target(target_key: String, pools: Dictionary, profile: Dictionary, spawn: Dictionary = {}, rider: Dictionary = {}) -> void:
 	if target_key == "":
 		return
 	_hostile_targets[target_key] = {
@@ -238,6 +249,7 @@ func register_hostile_target(target_key: String, pools: Dictionary, profile: Dic
 		"pools": pools.duplicate(true),
 		"profile": profile.duplicate(true),
 		"spawn": spawn.duplicate(true),
+		"rider": rider.duplicate(true),
 	}
 
 func has_hostile_target(target_key: String) -> bool:
@@ -422,7 +434,21 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 		var next_pstate: Dictionary = result.get("state", record["state"])
 		if not lethal:
 			next_pstate["player_wound_severity"] = mini(int(next_pstate.get("player_wound_severity", 0)), maxi(SPARRING_MAX_SEVERITY, prior_severity))
+		# HIGH (audit 2026-07-03): resolve_exchange advances the shooter's player_wound_severity from its OWN
+		# return-fire wound but NOT player_wound_level. The stale level then corrupts persistence (apply_combat
+		# prefers the level string -> a wound saves as "healthy" and is erased on relog), the PvP escalate base
+		# (a downed player revived by any potshot), and the downed reconstruction on relogin. Keep them coherent,
+		# advance-only (never de-escalate — the sparring clamp may LOWER severity). Mirrors resolve_hostile_aggression.
+		var shooter_sev := int(next_pstate.get("player_wound_severity", 0))
+		if shooter_sev > prior_severity:
+			next_pstate["player_wound_level"] = WoundLadder.level_for_severity(shooter_sev)
 		record["state"] = next_pstate
+		# DIV-0024: the COMMON venom/restraint path — a player who provoked a hostile takes its RETURN FIRE;
+		# if that shot LANDS (hit==true), the creature injects its rider onto the shooter. Only the PvE
+		# hostile branch carries a rider (target_key != "" here => a registered hostile; the shared dummy is
+		# "" and PvP has none). _seed_status_from_rider self-guards a now-downed shooter (downed loop owns them).
+		if not is_pvp and target_key != "" and bool((result.get("return_fire", {}) as Dictionary).get("hit", false)):
+			_seed_status_from_rider(record["state"], target_key)
 		# Write the resolved target's new state back to the RIGHT target.
 		var new_tstate: Dictionary = result.get("target_state", tstate)
 		if is_pvp:
@@ -539,6 +565,15 @@ func resolve_hostile_aggression(target_key: String, victim_ids: Array, seed_base
 		if new_sev > prior:
 			new_vstate["player_wound_level"] = WoundLadder.level_for_severity(new_sev)
 		record["state"] = new_vstate
+		# DIV-0024: an UNPROVOKED hostile bite/sting that LANDS injects its rider onto the victim (same
+		# seed-on-hit rule as the return-fire path). Detect a connecting shot via the per-attack hit flag.
+		var landed := false
+		for inc in result.get("incoming", []):
+			if bool((inc as Dictionary).get("hit", false)):
+				landed = true
+				break
+		if landed:
+			_seed_status_from_rider(record["state"], target_key)
 		# Envelope so same-zone clients render the incoming fire (subject = the victim who took it).
 		var envelope: Dictionary = CombatEventEnvelopeModel.envelope_for_result(result, "ground_range", "local")
 		envelope["shooter_id"] = victim
@@ -552,6 +587,222 @@ func resolve_hostile_aggression(target_key: String, victim_ids: Array, seed_base
 			casualties[victim] = {"peer": victim, "severity": new_sev, "killer": 0}
 		i += 1
 	return {"envelopes": envelopes, "casualties": casualties.values()}
+
+# --- DIV-0024: creature venom/restraint STATUS riders ---
+## The monotonic combat-window counter (for tests / inspection). Advances once per tick_status_effects call.
+func current_status_window() -> int:
+	return _status_window
+
+## Compact per-player status readout for the snapshot ({poison_rounds_left:int, restrained:bool, source}).
+## poison_rounds_left = scheduled ticks still ahead of the current window; source is the injecting creature.
+func player_status_summary(peer_id: int) -> Dictionary:
+	var out := {"poison_rounds_left": 0, "restrained": false, "source": ""}
+	if not _players.has(peer_id):
+		return out
+	var pstate: Dictionary = (_players[peer_id] as Dictionary).get("state", {})
+	if pstate.has("status_poison"):
+		var st: Dictionary = pstate["status_poison"]
+		# The NEXT tick_status_effects call fires round == (_status_window - applied), so ticks still to come
+		# are those with round >= that value (">=", not ">", keeps the count in step with actual application).
+		var relative := _status_window - int(st.get("applied_window", _status_window))
+		var left := 0
+		for t in st.get("schedule", []):
+			if int((t as Dictionary).get("round", 0)) >= relative:
+				left += 1
+		out["poison_rounds_left"] = left
+		out["source"] = String(st.get("source_name", ""))
+	if pstate.has("status_restraint"):
+		out["restrained"] = true
+		if String(out["source"]) == "":
+			out["source"] = String((pstate["status_restraint"] as Dictionary).get("source_name", "held"))
+	return out
+
+## DIV-0024 (audit fix 2026-07-03): erase a player's venom/restraint status. The death/respawn path MUST
+## call this: a player instant-killed (sev 5) while carrying an active schedule respawns at severity 2 —
+## BELOW the tick loop's DISABLED_SEVERITY skip guard — so without an explicit clear the pre-death schedule
+## keeps ticking the freshly respawned body (re-downing it, an extra death penalty). tick_status_effects
+## already self-clears a DOWNED (sev 3-4) victim; this covers the respawn that drops severity below the guard.
+func clear_status(peer_id: int) -> void:
+	if not _players.has(peer_id):
+		return
+	var st: Dictionary = (_players[peer_id] as Dictionary).get("state", {})
+	st.erase("status_poison")
+	st.erase("status_restraint")
+
+## Seed a hostile's baked venom/restraint rider onto a victim who just took a LANDED hit. Never seeds a
+## victim already downed (>=DISABLED_SEVERITY — the DIV-0027 downed loop owns them). A re-bite REFRESHES the
+## poison schedule (replaces, never stacks). Deep-copies everything it stashes so a per-victim status never
+## aliases the shared baked rider / creatures_data (the model's aliasing discipline).
+func _seed_status_from_rider(victim_state: Dictionary, target_key: String) -> void:
+	if not _hostile_targets.has(target_key):
+		return
+	var hrec: Dictionary = _hostile_targets[target_key]
+	var rider: Dictionary = hrec.get("rider", {})
+	if rider.is_empty() or not bool(rider.get("has_special_attack", false)):
+		return
+	if int(victim_state.get("player_wound_severity", 0)) >= DISABLED_SEVERITY:
+		return
+	var source_name := String((hrec.get("profile", {}) as Dictionary).get("name", target_key))
+	var schedule: Array = rider.get("poison_schedule", [])
+	if not schedule.is_empty():
+		# Re-bite REFRESH (documented no-stack): replace any active poison with a fresh schedule stamped NOW.
+		victim_state["status_poison"] = {
+			"schedule": schedule.duplicate(true),
+			"applied_window": _status_window,
+			"source_name": source_name,
+		}
+	var restraint: Dictionary = rider.get("restraint", {})
+	if not restraint.is_empty():
+		var creature_str: Dictionary = (hrec.get("pools", {}) as Dictionary).get("target_soak_pool", {"dice": 2, "pips": 0})
+		victim_state["status_restraint"] = {
+			"descriptor": restraint.duplicate(true),
+			"source_key": target_key,
+			"source_name": source_name,
+			"source_str_pool": (creature_str as Dictionary).duplicate(true),
+		}
+
+## Advance every player's active venom/restraint status ONE combat window. The net layer calls this ONCE
+## per window (like _tick_hostile_aggression / _tick_downed), AFTER the provoked + unprovoked fire passes
+## have seeded new status. Owns the monotonic _status_window advance. Returns {envelopes, casualties} where
+## each casualty is {peer, severity, killer:0} (a creature — no player credit); the net layer routes them
+## through the SAME DIV-0027 downed/death tiering as window/aggression takeouts. seed_base is server-owned.
+func tick_status_effects(seed_base: int) -> Dictionary:
+	var envelopes: Array = []
+	var casualties := {}
+	var window := _status_window
+	var i := 0
+	for peer_id in _players.keys():
+		var record: Dictionary = _players[peer_id]
+		var pstate: Dictionary = record["state"]
+		# A downed victim is the DIV-0027 loop's domain — never tick; drop any lingering status.
+		if int(pstate.get("player_wound_severity", 0)) >= DISABLED_SEVERITY:
+			pstate.erase("status_poison")
+			pstate.erase("status_restraint")
+			i += 1
+			continue
+		var victim_seed := seed_base + (i + 1) * 2749
+		if pstate.has("status_poison"):
+			if _tick_poison(peer_id, record, pstate, window, victim_seed, envelopes, casualties):
+				i += 1
+				continue  # downed by venom this window -> restraint waits for the downed loop
+		if pstate.has("status_restraint"):
+			_tick_restraint(peer_id, record, pstate, victim_seed + 104729, envelopes, casualties)
+		i += 1
+	_status_window = window + 1
+	return {"envelopes": envelopes, "casualties": casualties.values()}
+
+# Apply the poison tick DUE this window (absolute round == window - applied_window). Venom is INTERNAL:
+# armor does NOT protect — the body resists with BARE Strength (player_soak_pool) only. LETHAL (no DIV-0016
+# sparring clamp); accumulates up the WEG wound ladder. Returns true if the victim was DOWNED this tick.
+func _tick_poison(peer_id: int, record: Dictionary, pstate: Dictionary, window: int, seed: int, envelopes: Array, casualties: Dictionary) -> bool:
+	var status: Dictionary = pstate["status_poison"]
+	var schedule: Array = status.get("schedule", [])
+	var applied := int(status.get("applied_window", window))
+	var relative := window - applied
+	var due: Dictionary = {}
+	var last_round := 0
+	for t in schedule:
+		var r := int((t as Dictionary).get("round", 0))
+		last_round = maxi(last_round, r)
+		if r == relative:
+			due = t
+	var rounds_left := 0
+	for t in schedule:
+		if int((t as Dictionary).get("round", 0)) > relative:
+			rounds_left += 1
+	if due.is_empty():
+		if relative >= last_round:
+			pstate.erase("status_poison")  # onset window(s) elapsed with no ticks left -> clear (safety)
+		return false
+	# Real WEG damage-vs-soak: the venom's OWN damage pool vs bare Strength. Deterministic (server seed).
+	var pools: Dictionary = record.get("pools", _default_player_pools)
+	var soak_pool: Dictionary = pools.get("player_soak_pool", {"dice": 2, "pips": 0})
+	var damage_pool: Dictionary = due.get("pool", {"dice": 0, "pips": 0})
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed
+	var damage: Dictionary = _rules.resolve_damage(damage_pool, soak_pool, rng)  # stun_mode=false => a REAL wound
+	var hit_sev := int((damage.get("wound", {}) as Dictionary).get("severity", 0))
+	var prior := int(pstate.get("player_wound_severity", 0))
+	var prior_level := String(pstate.get("player_wound_level", WoundLadder.level_for_severity(prior)))
+	var new_level := WoundLadder.escalate(prior_level, hit_sev)
+	pstate["player_wound_level"] = new_level
+	var new_sev := WoundLadder.severity_for_level(new_level)
+	pstate["player_wound_severity"] = new_sev
+	var source_name := String(status.get("source_name", "venom"))
+	var envelope := {
+		"type": "status_effect", "status": "poison", "kind": "poison",
+		"shooter_id": peer_id, "subject_id": peer_id,
+		"source_name": source_name, "target_name": source_name, "lethal": true,
+		"round": int(due.get("round", relative)),
+		"damage_total": int((damage.get("damage_roll", {}) as Dictionary).get("total", 0)),
+		"soak_total": int((damage.get("soak_roll", {}) as Dictionary).get("total", 0)),
+		"wound_key": String((damage.get("wound", {}) as Dictionary).get("key", "no_damage")),
+		"severity": new_sev, "this_hit_severity": hit_sev, "rounds_left": rounds_left,
+	}
+	envelopes.append(envelope)
+	if new_sev >= DISABLED_SEVERITY and new_sev > prior:
+		casualties[peer_id] = {"peer": peer_id, "severity": new_sev, "killer": 0}
+		pstate.erase("status_poison")     # downed -> stop; downed loop owns them
+		pstate.erase("status_restraint")
+		return true
+	if relative >= last_round:
+		pstate.erase("status_poison")  # last scheduled tick applied -> venom runs its course
+	return false
+
+# Resolve ONE window of a restraint hold: an opposed BREAK check (victim STR vs the creature's STR — WEG
+# max(brawling,STR) approximated by STR, as brawling isn't separately tracked in the combat pools). On the
+# victim WIN -> break free + clear. On the LOSE -> if the descriptor carries hold_damage, resolve it (STR-
+# relative) vs the victim's Strength+ARMOR soak (crush is external, armor DOES protect) and accumulate up
+# the ladder; a hold-crush can DOWN the victim (casualty, killer 0). Auto-resolved (no client RPC in v1).
+func _tick_restraint(peer_id: int, record: Dictionary, pstate: Dictionary, seed: int, envelopes: Array, casualties: Dictionary) -> void:
+	var status: Dictionary = pstate["status_restraint"]
+	var descriptor: Dictionary = status.get("descriptor", {})
+	var source_name := String(status.get("source_name", "a grasp"))
+	var pools: Dictionary = record.get("pools", _default_player_pools)
+	var victim_str: Dictionary = pools.get("player_soak_pool", {"dice": 2, "pips": 0})
+	var creature_str: Dictionary = status.get("source_str_pool", {"dice": 2, "pips": 0})
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed
+	var victim_total := int(_rules.roll_pool(victim_str, rng).get("total", 0))
+	var creature_total := int(_rules.roll_pool(creature_str, rng).get("total", 0))
+	var broke := victim_total > creature_total  # holder wins ties (stays gripped)
+	var envelope := {
+		"type": "status_effect", "status": "restraint", "kind": String(descriptor.get("kind", "grapple")),
+		"shooter_id": peer_id, "subject_id": peer_id,
+		"source_name": source_name, "target_name": source_name, "lethal": true,
+		"break_check": String(descriptor.get("break_check", "opposed brawling/STR")),
+		"victim_roll": victim_total, "opposed_roll": creature_total,
+	}
+	if broke:
+		pstate.erase("status_restraint")
+		envelope["broke_free"] = true
+		envelope["restrained"] = false
+		envelopes.append(envelope)
+		return
+	envelope["broke_free"] = false
+	envelope["restrained"] = true
+	if bool(descriptor.get("has_hold_damage", false)):
+		var hold_pool: Dictionary = CreatureSpecialAttack.resolve_hold_damage_pool(_rules, descriptor, creature_str)
+		var armor_profile: Dictionary = pools.get("player_armor", {})
+		var armor: Dictionary = ArmorConditionModel.armor_for_location(armor_profile, "torso")
+		var quality_pips := int(pstate.get("player_armor_quality_pips", 0))
+		var soak_pool: Dictionary = _rules.apply_armor_to_soak(victim_str, armor, "physical", quality_pips)
+		var damage: Dictionary = _rules.resolve_damage(hold_pool, soak_pool, rng)
+		var hit_sev := int((damage.get("wound", {}) as Dictionary).get("severity", 0))
+		var prior := int(pstate.get("player_wound_severity", 0))
+		var prior_level := String(pstate.get("player_wound_level", WoundLadder.level_for_severity(prior)))
+		var new_level := WoundLadder.escalate(prior_level, hit_sev)
+		pstate["player_wound_level"] = new_level
+		var new_sev := WoundLadder.severity_for_level(new_level)
+		pstate["player_wound_severity"] = new_sev
+		envelope["hold_damage"] = String(descriptor.get("hold_damage", ""))
+		envelope["damage_total"] = int((damage.get("damage_roll", {}) as Dictionary).get("total", 0))
+		envelope["severity"] = new_sev
+		envelope["this_hit_severity"] = hit_sev
+		if new_sev >= DISABLED_SEVERITY and new_sev > prior:
+			casualties[peer_id] = {"peer": peer_id, "severity": new_sev, "killer": 0}
+			pstate.erase("status_restraint")
+	envelopes.append(envelope)
 
 func _apply_intent(state: Dictionary, intent: Dictionary) -> Dictionary:
 	var next := state.duplicate(true)

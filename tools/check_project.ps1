@@ -174,6 +174,8 @@ Invoke-GodotStep "Corpse decay model smoke:" @("--headless", "--path", $projectR
 
 Invoke-GodotStep "Corpse loot wire smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/corpse_loot_wire_smoke.gd")
 
+Invoke-GodotStep "Creature status wire smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_status_wire_smoke.gd")
+
 Invoke-GodotStep "Hostile NPC model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/hostile_npc_model_smoke.gd")
 
 Invoke-GodotStep "Hostile NPC model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/hostile_npc_model_edge_smoke.gd")

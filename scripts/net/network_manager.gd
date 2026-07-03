@@ -32,6 +32,7 @@ const VendorModel := preload("res://scripts/rules/vendor_model.gd")        # ven
 const ReputationModel := preload("res://scripts/rules/reputation_model.gd") # standing-tier buy discount
 const HostileNpc := preload("res://scripts/rules/hostile_npc_model.gd")     # DIV-0017: creature -> lethal target pools
 const CreatureSpawn := preload("res://scripts/rules/creature_spawn_model.gd") # seeded hostile spawn rolls
+const CreatureSpecialAttack := preload("res://scripts/rules/creature_special_attack_model.gd") # DIV-0024: venom/restraint riders
 const DeathPenalty := preload("res://scripts/rules/death_penalty_model.gd")   # DIV-0006: death penalty + respawn
 const ForceAwaken := preload("res://scripts/rules/force_awakening_model.gd")   # DIV-0011: SWG-Village earned unlock
 const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")            # DIV-0019: zone-based PvP consent gate
@@ -1720,7 +1721,10 @@ func _advance_hostiles() -> void:
 			if spawn.is_empty() or not bool(spawn.get("hostile", false)):
 				continue  # only HOSTILE creatures become lethal targets (retry next tick)
 			var pools: Dictionary = HostileNpc.attack_pools_from_creature(D6Rules, spawn)
-			arena.register_hostile_target(zone_id, pools, {"distance": HOSTILE_DISTANCE, "cover_level": 0, "name": String(spawn.get("name", "Creature"))}, spawn)
+			# DIV-0024: bake this creature's venom/restraint rider with a SERVER-owned seed (the poison
+			# schedule is pre-rolled deterministically here; the arena seeds it onto a victim on a landed hit).
+			var rider: Dictionary = CreatureSpecialAttack.describe_spawn(_creatures_data, spawn, D6Rules, _server_rng.randi())
+			arena.register_hostile_target(zone_id, pools, {"distance": HOSTILE_DISTANCE, "cover_level": 0, "name": String(spawn.get("name", "Creature"))}, spawn, rider)
 			print("[hostile] %s spawned in %s (%s, pack %d)" % [String(spawn.get("name", "")), zone_id, tier, int(spawn.get("pack_size", 1))])
 	_refresh_all_hostility()
 
@@ -1818,6 +1822,35 @@ func _tick_hostile_aggression(fired_ids: Array) -> void:
 			else:
 				_handle_player_downed(int(victim), 0, s, String(td["name"]))
 
+# DIV-0024: advance every player's active venom/restraint status ONE combat window. Runs once per window
+# (after the provoked + unprovoked fire passes have seeded new status). Broadcasts each status envelope to
+# same-zone peers (scoped like combat, F65) and routes casualties through the SAME DIV-0027 downed/death
+# tiering as _resolve_combat_window / _tick_hostile_aggression — a venom/hold-crush kill tiers identically
+# (killer 0 = a creature, no player credit). Server owns the seed (_server_rng); nothing here is random.
+func _tick_status_effects() -> void:
+	if arena == null:
+		return
+	var result: Dictionary = arena.tick_status_effects(_server_rng.randi())
+	for envelope in result.get("envelopes", []):
+		var ez := String(_peer_zones.get(int((envelope as Dictionary).get("shooter_id", 0)), _default_zone))
+		for pid in multiplayer.get_peers():
+			if String(_peer_zones.get(pid, _default_zone)) == ez:
+				apply_combat_envelope.rpc_id(pid, envelope)
+	var takedowns := {}  # victim_peer -> {killer:0, name, severity} (dedup, keep MAX severity)
+	for c in result.get("casualties", []):
+		var vic := int((c as Dictionary).get("peer", 0))
+		var csev := int((c as Dictionary).get("severity", CombatArena.DISABLED_SEVERITY))
+		if not takedowns.has(vic) or csev > int((takedowns[vic] as Dictionary).get("severity", 0)):
+			takedowns[vic] = {"killer": 0, "name": "a creature's venom", "severity": csev}
+	for victim in takedowns:
+		if state != null and state.has_player(int(victim)):
+			var td: Dictionary = takedowns[victim]
+			var s := int(td.get("severity", CombatArena.DISABLED_SEVERITY))
+			if PvpRules.is_kill(s):
+				_handle_player_death(int(victim), String(td["name"]), 0, not _downed.has(int(victim)))
+			else:
+				_handle_player_downed(int(victim), 0, s, String(td["name"]))
+
 # DIV-0006: the death consequence. A player taken OUT (live wound >= DISABLED_SEVERITY) by a LETHAL
 # hostile is killed: apply the death penalty (durability loss + partial inventory drop + insurance),
 # write the corpse manifest, relocate to the secured spaceport med bay, respawn 'wounded' (credits
@@ -1870,6 +1903,9 @@ func _handle_player_death(peer_id: int, killer_name: String, killer_peer: int = 
 		arena.set_player_target(peer_id, "")   # disengage from the hostile
 		arena.set_player_lethal(peer_id, false)
 		arena.clear_intents_targeting(peer_id) # cancel shots aimed at the (now-respawned) victim
+		arena.clear_status(peer_id)            # DIV-0024 (audit fix): drop any venom/restraint so a schedule
+		                                       # seeded before death can't tick the respawn (respawn sev 2 < the
+		                                       # tick loop's DISABLED_SEVERITY skip guard, which would re-down it)
 	_heal_treated.erase(peer_id)
 	# DIV-0019/DIV-0027: credit the killer ONCE per takeout. A fresh instant-kill (sev 5) credits here;
 	# every downed-origin death (bleed-out, yield, or a finishing hit on an already-downed victim) passes
@@ -2396,6 +2432,7 @@ func _physics_process(delta: float) -> void:
 				var fired_ids: Array = arena.pending_shooter_ids() if arena != null else []  # G4: capture the provoked shooters BEFORE resolve clears intents
 				_resolve_combat_window()
 				_tick_hostile_aggression(fired_ids)  # G4 (DIV-0017): unprovoked hostile fire at same-zone players who did NOT fire (lethal zones only)
+				_tick_status_effects()  # DIV-0024: advance venom/restraint riders seeded by the two fire passes above (before the downed tick)
 				_tick_downed()  # DIV-0027: bleed-out / deterioration for downed players (SEPARATE call — _resolve_combat_window early-returns on zero intents; a lone downed player must still tick)
 			_autosave_accum += delta
 			if _autosave_accum >= AUTOSAVE_SECONDS:
@@ -2451,6 +2488,14 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 		var ppid := int((p as Dictionary).get("id", 0))
 		if arena != null and arena.has_player(ppid):
 			(p as Dictionary)["wound"] = PersistenceStore.wound_state_for_severity(int((arena.player_state(ppid) as Dictionary).get("player_wound_severity", 0)))
+			# DIV-0024: compact venom/restraint status on the nameplate (additive — only when active).
+			var pstat := arena.player_status_summary(ppid)
+			if int(pstat.get("poison_rounds_left", 0)) > 0:
+				(p as Dictionary)["status_poison_rounds_left"] = int(pstat["poison_rounds_left"])
+			if bool(pstat.get("restrained", false)):
+				(p as Dictionary)["status_restrained"] = true
+			if String(pstat.get("source", "")) != "" and (int(pstat.get("poison_rounds_left", 0)) > 0 or bool(pstat.get("restrained", false))):
+				(p as Dictionary)["status_source"] = String(pstat["source"])
 		var pax := String(_peer_axes.get(ppid, ""))
 		if pax != "":
 			(p as Dictionary)["axis"] = pax  # F36: faction allegiance (only org members carry one)
@@ -2483,11 +2528,15 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 	if arena != null and peer_id != 0 and arena.has_player(peer_id):
 		var ps: Dictionary = arena.player_state(peer_id)
 		var ws := PersistenceStore.wound_state_for_severity(int(ps.get("player_wound_severity", 0)))
+		var mystat := arena.player_status_summary(peer_id)  # DIV-0024: my own venom/restraint status
 		snap["you"] = {
 			"wound": ws,
 			"wound_penalty": WoundLadder.penalty_dice_for_level(ws),  # F46: the WEG -ND action penalty for this wound
 			"cp": int(ps.get("player_character_points", 0)),  # in-combat Character Points (C key, F5)
 			"fp": int(ps.get("player_force_points", 0)),       # Force Points (F key, F5)
+			"status_poison_rounds_left": int(mystat.get("poison_rounds_left", 0)),  # DIV-0024: "Poisoned (n)"
+			"status_restrained": bool(mystat.get("restrained", false)),             # DIV-0024: "Held"
+			"status_source": String(mystat.get("source", "")),                      # the injecting creature
 		}
 	return snap
 
