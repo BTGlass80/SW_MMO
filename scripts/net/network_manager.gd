@@ -41,6 +41,7 @@ const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
 const WEAPONS_DATA_PATH := "res://data/weapons_clone_wars.json"
 const ARMOR_DATA_PATH := "res://data/armor_clone_wars.json"
 const CREATURES_DATA_PATH := "res://data/creatures_clone_wars.json"
+const VENDOR_STOCK_PATH := "res://data/vendor_stock_by_zone.json"  # per-zone vendor variety (overnight C1)
 const HOSTILE_DISTANCE := 10.0  # DIV-0017: nominal engagement range for a spawned hostile creature
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 const DISABLE_INFLUENCE := 5  # Director zone-influence a disable feeds to the shooter's faction axis (owner-tunable)
@@ -103,6 +104,7 @@ var _reputation = null                # server only (ReputationModel instance: s
 var _buy_catalog := {}                # server only (merged {item_key -> {cost, vendor_stocked, name, kind}})
 var _creature_spawn = null            # server only (CreatureSpawn instance: seeded hostile spawn rolls)
 var _creatures_data := {}             # server only (creatures container for the spawner)
+var _vendor_stock_by_zone := {}       # server only (zone_id -> {item_keys:[...]}) per-zone vendor variety
 var force_hostile_key := ""           # TEST-ONLY: force this creature key to spawn in lethal zones (--force-hostile)
 var force_awaken_now := false         # TEST-ONLY: force a connected latent to awaken next Director tick (--force-awaken)
 var _visited_zones := {}              # DIV-0011: character_id -> {zone_id:true} for the distinct-zones awakening signal
@@ -183,6 +185,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	_build_buy_catalog()  # merged priced catalog for buy/sell (Wave F economy)
 	_creature_spawn = CreatureSpawn.new()
 	_creatures_data = _load_json_root(CREATURES_DATA_PATH)  # DIV-0017: hostile spawn source
+	_vendor_stock_by_zone = _load_json_container(VENDOR_STOCK_PATH, "vendor_stock_by_zone")  # per-zone vendor variety
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
@@ -1055,6 +1058,15 @@ func apply_credits(credits: int) -> void:
 	last_credits = credits
 	credits_updated.emit(credits)
 
+# The set of item keys a vendor sells in a zone (data/vendor_stock_by_zone.json). Empty = the full
+# stocked catalog (fallback for any zone without a curated list), so the economy still works everywhere.
+func _zone_stock_keys(zone_id: String) -> Dictionary:
+	var out := {}
+	var z: Dictionary = _vendor_stock_by_zone.get(zone_id, {})
+	for k in z.get("item_keys", []):
+		out[String(k)] = true
+	return out
+
 # client -> server: request the vendor's server-priced stock (buy + 40% sell prices).
 @rpc("any_peer", "call_remote", "reliable")
 func submit_vendor_list() -> void:
@@ -1074,11 +1086,15 @@ func submit_vendor_list() -> void:
 	var mult := _zone_price_multiplier(zone_id)
 	var rep_tier := _rep_tier_for(record)
 	var bargain := _bargain_for(sheet)
+	var allowed := _zone_stock_keys(zone_id)  # per-zone variety; empty = full stocked catalog
 	var stock: Array = []
 	for item in _vendor.list_stock({"weapons": _weapons_catalog}, {"armor": _armor_catalog}):
+		var key := String((item as Dictionary)["key"])
+		if not allowed.is_empty() and not allowed.has(key):
+			continue  # this zone's vendor doesn't carry it
 		var list_cost := int((item as Dictionary).get("base_cost", 0))
 		stock.append({
-			"key": String((item as Dictionary)["key"]),
+			"key": key,
 			"kind": String((item as Dictionary)["kind"]),
 			"name": String((item as Dictionary)["name"]),
 			"buy": EconomyModel.buy_price(list_cost, mult, int(bargain["dice"]), int(bargain["pips"]), rep_tier, _vendor),
