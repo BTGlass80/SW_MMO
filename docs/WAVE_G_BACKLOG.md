@@ -410,6 +410,10 @@ connected, 0 SCRIPT ERROR / 0 engine errors, server survived, server WS flat ~15
 — instrument works end-to-end (character_id join + reload/buy events); flows tiny & skewed
 (autowalk bots don't fight; dummy is free by design) → the real economy read needs PT1 humans.
 
+**CLAIM (tick 6, in flight): B7 PvP-consent duel+bounty HOT wiring on main (DIV-0022 → WIRED);
+thanu probe check + soak-bot economy mix in worktrees. Cron ticks: take NOTHING until this
+line clears.**
+
 Remaining for the loop:
 - Weekly `mush_sync_manifest.py diff` (next due ~2026-07-10; re-port slice on drift — MERGE
   around prototype fields per docs/MUSH_SYNC.md).
