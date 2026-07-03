@@ -399,6 +399,9 @@ session log.
   threat_tier/loot_mult/boss/stun_return_fire/etc.).
 
 ### Queue after tick 4 (the loop should pick from these)
+**CLAIM (tick 5, in flight): ammo-HUD client slice on main (HOT), then the watchdog crash
+drill + detached 30-min 20-bot soak + telemetry tally. Cron ticks: take NOTHING until this
+line clears.**
 - Run `tools/mush_sync_manifest.py diff` weekly (cheap `[PAR]` tick item; re-port on drift).
 - `tools/telemetry_tally.py` over the next live session's `events.jsonl` — first real
   faucets-vs-sinks number now that ammo (sink) + loot/harvest (faucets) are all live.
