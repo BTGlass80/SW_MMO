@@ -207,4 +207,6 @@ Invoke-GodotStep "Monster builder smoke:" @("--headless", "--path", $projectRoot
 
 Invoke-GodotStep "NPC content smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/npc_content_smoke.gd")
 
+Invoke-GodotStep "NPC builder smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/npc_builder_smoke.gd")
+
 Write-Host "`nAll checks passed."
