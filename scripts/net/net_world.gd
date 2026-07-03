@@ -17,6 +17,7 @@ const EYE_HEIGHT := 1.55
 const WorldBuilder := preload("res://scripts/world/world_builder.gd")
 const MonsterBuilder := preload("res://scripts/world/monster_builder.gd")
 const NpcBuilder := preload("res://scripts/world/npc_builder.gd")
+const LandmarkBuilder := preload("res://scripts/world/landmark_builder.gd")  # signature Mos Eisley landmark
 const DialogueModel := preload("res://scripts/rules/dialogue_model.gd")
 
 var _builder: WorldBuilder
@@ -197,6 +198,9 @@ func _ready() -> void:
 	_builder.build_lighting(self)
 	_builder.build_ground(self)
 	_builder.build_settlement(self)
+	# Signature landmark east of Spaceport Row (settlement core ends ~x=30): a Mos Eisley cantina plaza
+	# so the shared world reads as a place, not a prototype. Client-side geometry only (tunable origin).
+	LandmarkBuilder.new().build_cantina_plaza(self, Vector3(40, 0, 6))
 	_monster_builder = MonsterBuilder.new()
 	_npc_builder = NpcBuilder.new()
 	_build_camera()
