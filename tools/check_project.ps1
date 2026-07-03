@@ -47,6 +47,8 @@ Invoke-GodotStep "Ground combat model smoke:" @("--headless", "--path", $project
 
 Invoke-GodotStep "Armor condition model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/armor_condition_model_smoke.gd")
 
+Invoke-GodotStep "Armor repair model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/armor_repair_model_smoke.gd")
+
 Invoke-GodotStep "Action window model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/action_window_model_smoke.gd")
 
 Invoke-GodotStep "Range action window model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/range_action_window_model_smoke.gd")
@@ -101,6 +103,8 @@ Invoke-GodotStep "Combat arena smoke:" @("--headless", "--path", $projectRoot, "
 
 Invoke-GodotStep "Persistence smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/persistence_smoke.gd")
 
+Invoke-GodotStep "Telemetry log smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/telemetry_log_smoke.gd")
+
 Invoke-GodotStep "Persistence schema smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/persistence_schema_smoke.gd")
 
 Invoke-GodotStep "Zone state smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/zone_state_smoke.gd")
@@ -112,6 +116,8 @@ Invoke-GodotStep "Siege smoke:" @("--headless", "--path", $projectRoot, "--scrip
 Invoke-GodotStep "Siege state model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/siege_state_model_edge_smoke.gd")
 
 Invoke-GodotStep "Chargen smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/chargen_smoke.gd")
+
+Invoke-GodotStep "Name policy smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/name_policy_smoke.gd")
 
 Invoke-GodotStep "Progression smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/progression_smoke.gd")
 

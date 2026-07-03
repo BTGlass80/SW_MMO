@@ -191,8 +191,8 @@ func _test_snapshot_round_trip() -> void:
 
 	# Seed is irrelevant here (no randomness in snapshot construction), but we
 	# add two deterministic players so the snapshot has real content.
-	state.add_player(10, "Ahsoka")
-	state.add_player(11, "Rex")
+	state.add_player(10, "Vesh Talro")
+	state.add_player(11, "Rennick")
 
 	# Give player 10 a non-spawn position by applying a seeded tick.
 	state.set_input(10, Vector2(0.0, -1.0), 0.785)  # 45-degree heading, forward
@@ -239,8 +239,8 @@ func _test_snapshot_round_trip() -> void:
 	_assert_equal(int(p11.get("id", -1)), 11, "snapshot rt: player 11 id int")
 
 	# name survives as string.
-	_assert_equal(String(p10.get("name", "")), "Ahsoka", "snapshot rt: player 10 name string")
-	_assert_equal(String(p11.get("name", "")), "Rex", "snapshot rt: player 11 name string")
+	_assert_equal(String(p10.get("name", "")), "Vesh Talro", "snapshot rt: player 10 name string")
+	_assert_equal(String(p11.get("name", "")), "Rennick", "snapshot rt: player 11 name string")
 
 	# yaw survives as float-coercible.
 	# Player 10 was given yaw 0.785; player 11 has default yaw 0.0.

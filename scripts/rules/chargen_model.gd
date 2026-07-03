@@ -34,9 +34,53 @@ static func _pips(rules: Object, code: String) -> int:
 static func _pips_to_code(rules: Object, pips: int) -> String:
 	return String(rules.pool_to_string(rules.normalize_pool(0, maxi(pips, 0))))
 
+## Reserved / canonical Star Wars character names a player may not self-name as (Wave G
+## item G7). Ported (one-way, read-only) from the SW_MUSH inspiration's server-side chargen
+## policy — C:\SW_MUSH\engine\chargen_validator.py `FORBIDDEN_NAMES` — and generalized per
+## C:\SW_MUSH\CLAUDE.md's hard invariant "Canonical Clone Wars figures never appear as
+## open-world NPCs": the same principle applied to player self-naming, and broadened past
+## Clone Wars to the other eras' most recognizable figures (Vader, Leia, Han, etc.) since a
+## player could otherwise dodge the block by picking an OT-era name instead.
+##
+## Matching (see `is_reserved_name`): case-insensitive, and matched against the WHOLE
+## submitted name and each individual whitespace-separated token, never a substring — so
+## ordinary original names that merely CONTAIN a reserved word (e.g. "Kenobiwan",
+## "Reximus") are NOT falsely rejected. Multi-word entries below (e.g. "shaak ti",
+## "han solo") therefore only trip on an exact full-name match, since their individual
+## words alone ("ti", "solo", "bane") are too common/ordinary to block on their own.
+const RESERVED_NAMES := [
+	# Jedi / Clone Wars principals
+	"anakin", "skywalker", "obi-wan", "obiwan", "kenobi", "padme", "padmé", "amidala",
+	"ahsoka", "tano", "yoda", "mace", "windu", "qui-gon", "quigon",
+	"palpatine", "sidious", "dooku", "grievous", "maul", "ventress", "asajj", "vader",
+	"rex", "cody", "satine", "kryze",
+	# Multi-word-only entries: their bare component words are ordinary enough that
+	# blocking them individually would over-reject real players.
+	"shaak ti", "plo koon", "kit fisto", "luminara unduli", "barriss offee",
+	"cad bane", "hondo ohnaka", "wedge antilles", "biggs darklighter",
+	# Original-trilogy principals — still canonical figures, blocked across eras.
+	"leia", "organa", "luke", "chewbacca", "lando", "calrissian", "boba", "jango",
+	"fett", "tarkin", "jabba", "han solo",
+]
+
+## True if `name` is (or contains, as a whole word/token) a reserved canonical Star Wars
+## figure name. Case-insensitive. See RESERVED_NAMES doc comment for the matching rule.
+static func is_reserved_name(name: String) -> bool:
+	var normalized := String(name).strip_edges().to_lower()
+	if normalized == "":
+		return false
+	if RESERVED_NAMES.has(normalized):
+		return true
+	for token in normalized.split(" ", false):
+		if RESERVED_NAMES.has(token):
+			return true
+	return false
+
 ## Validate an attribute (+ optional skill) allocation against a species. Returns
 ## {valid, errors, sheet}. `attributes`/`skills` are {key: "XD+y"} dice codes.
-static func validate_build(rules: Object, species: Dictionary, attributes: Dictionary, skills: Dictionary = {}) -> Dictionary:
+## `character_name`, when non-empty, is checked against the reserved-name policy above;
+## an empty string skips the name check (callers that don't yet have a name to validate).
+static func validate_build(rules: Object, species: Dictionary, attributes: Dictionary, skills: Dictionary = {}, character_name: String = "") -> Dictionary:
 	var errors: Array = []
 	var ranges: Dictionary = species.get("attributes", {})
 
@@ -63,6 +107,9 @@ static func validate_build(rules: Object, species: Dictionary, attributes: Dicti
 		skill_total += sp
 	if skill_total > SKILL_PIPS:
 		errors.append("skill dice exceed the 7D budget (spent %s)" % _pips_to_code(rules, skill_total))
+
+	if character_name != "" and is_reserved_name(character_name):
+		errors.append("character name '%s' is reserved for a canonical Star Wars figure" % character_name)
 
 	var valid := errors.is_empty()
 	return {
