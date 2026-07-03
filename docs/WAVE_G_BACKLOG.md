@@ -372,23 +372,20 @@ session log.
    settles ~10 MB).
 
 ### Next queue (unblocked, non-owner-gated — for the loop)
-**CLAIM (2026-07-03 tick, in flight): the four HOT seam items below are being built ON MAIN
-(one HOT agent owns `scripts/net/*` + port 24555) and the svaper outlier is GREEN in a worktree
-awaiting serial integration. Cron ticks: take NOTHING until this claim line is removed.**
-- `[HOT]` one-liner: `combat_arena` wraps `envelope_for_result` with `attach_replay_inputs`
-  (SERVER/log side only — the block carries both sheets' pools, do NOT broadcast it).
-- `[HOT]` `_active_boss_quest_target_in_zone` → `_cached_load` (G15 advisory: the only direct
-  disk read in the file; fragile to future cache-only mutations).
-- `[PAR→HOT]` NetworkManager-level flow smoke: live wounded_twice patient is First-Aided at
-  Guide_19 difficulty **14** (closes the G14 advisory gap end-to-end).
-- `[HOT]` equal-severity escalation asymmetry: `resolve_hostile_aggression` refreshes
-  `player_wound_level` only when severity strictly advances, so wounded+wounded never escalates
-  to wounded_twice on the unprovoked path (the PvP defender path does escalate) — fold into the
-  DIV-0008 escalate follow-up.
-- `[PAR]` ammo recurring sink (old B8) — pairs a faucet-heavy month per the CLAUDE.md
+- ~~replay_inputs server-side attach~~ **DONE `5c7da43`**: broadcast byte-identical (smoke-proven);
+  enriched copies to a dedicated server-only `user://telemetry/envelopes.jsonl`; a real live
+  envelope replayed through `tools/envelope_replay.gd` → REPRODUCED. Incoming-fire envelopes got
+  their own `replay_inputs.kind` + `_replay_full_incoming`.
+- ~~`_cached_load`~~ **DONE `5c7da43`**.
+- ~~First-Aid-at-14 flow smoke~~ **DONE `5c7da43`** (`first_aid_at_fourteen_smoke`: live
+  wounded_twice → difficulty 14, heals to wounded, no collapse on write-back, follow-up at 11).
+- ~~equal-severity escalation asymmetry~~ **DONE `5c7da43`** (unprovoked wounded+wounded →
+  wounded_twice, level-string load-bearing; DIV-0008 note updated; `hostile_aggression_smoke` §H).
+- ~~svaper cr/min outlier~~ **DONE `f86979f`** (per-creature `loot_mult` dial inside the single
+  axis; t4 spread 7.87x → 1.77x, per-tier means stay monotone, probe table in the merge message).
+  Residual: t3 thanu 366.5 cr/min is the next within-tier high earner (passes the bar).
+- `[PAR→HOT]` ammo recurring sink (old B8) — pairs a faucet-heavy month per the CLAUDE.md
   faucets-and-sinks rule; run `tools/telemetry_tally.py` on the next live session log.
-- `[PAR]` svaper cr/min outlier (824 cr/min at t4) — within-tier loot spread retune; probe is
-  the acceptance instrument, paste the table.
 - **Before PT1 (owner picks the date):** a full 20-bot × 30-min evening soak under
   `tools/run_server_watchdog.ps1` (the 7-min acceptance passed; the long run is the dress
   rehearsal), and the DTLS-or-banner decision for anything beyond LAN.

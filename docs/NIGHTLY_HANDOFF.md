@@ -363,6 +363,11 @@ Three audit passes (F66–F75) now span ~14 dimensions. The remaining substantiv
   (`0a89544`); **live soak acceptance PASS** — 20 bots, 7 min, 20/20 connected, zero script/engine
   errors, server survived (~128 MB/client). Remaining before a PT1 date: the 30-min dress-rehearsal
   soak under the watchdog + the DTLS-or-LAN-only call. Next work: `WAVE_G_BACKLOG.md` § Next queue.
+- **Tick 3 (same day): the five Next-queue seam items shipped** — `5c7da43` (server-side
+  replay-envelope JSONL with byte-identical broadcast + a live envelope replayed to REPRODUCED;
+  boss-quest cached-load; unprovoked equal-severity escalation → wounded_twice; First-Aid-at-14
+  flow smoke) and `f86979f` (svaper loot_mult retune, probe-accepted: t4 spread 7.87x→1.77x,
+  per-tier means monotone). Gate 118 smokes. The unblocked queue is down to the ammo sink (B8).
 
 ## Next Best Slices
 

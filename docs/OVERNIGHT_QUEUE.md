@@ -92,6 +92,11 @@ PT1 prep cleared, PT1 date still owner-gated.
   debuff; positional PvP range (see G9 design-first).
 
 ## Log (newest first)
+- 2026-07-03 (Fable, tick 3): the five Next-queue seam items SHIPPED — HOT batch `5c7da43`
+  (server-side replay-inputs envelope log w/ byte-identical broadcast + live REPRODUCED replay;
+  boss-quest `_cached_load`; unprovoked equal-severity escalation to wounded_twice; First-Aid-at-14
+  flow smoke) + svaper loot_mult retune `f86979f` (probe-accepted: t4 spread 7.87x→1.77x, means
+  monotone). Gate 118 smokes. Remaining unblocked: ammo sink (B8).
 - 2026-07-03 (Fable, session 2 continued): FULL Wave-G delta queue + PT1 prep track SHIPPED. G14
   wounded_twice −2D live everywhere (adversarial verify forced the incoming-fire + heal/recovery seams;
   First Aid now treats live wounded_twice at difficulty 14) `bf27f1e`; G15 probe-accepted retier + one
