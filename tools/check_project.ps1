@@ -277,6 +277,10 @@ Invoke-GodotStep "Combat arena replay-log smoke:" @("--headless", "--path", $pro
 
 Invoke-GodotStep "First-Aid-at-14 flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/first_aid_at_fourteen_smoke.gd")
 
+Invoke-GodotStep "Ammo model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/ammo_model_smoke.gd")
+
+Invoke-GodotStep "Ammo flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/ammo_flow_smoke.gd")
+
 # Not-before-live invariant (owner ruling 2026-07-03): pure models + design docs for
 # siege / player-cities / server-space are PERMITTED (they live in scripts/rules + docs);
 # their HOT wiring (files or preloads in scripts/net) is PARKED until the ground loop

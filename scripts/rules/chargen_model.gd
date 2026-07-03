@@ -14,6 +14,7 @@ extends RefCounted
 const ForceSkillsModel = preload("res://scripts/rules/force_skills_model.gd")
 const ForceAwakeningModel = preload("res://scripts/rules/force_awakening_model.gd")  # DIV-0011 earned-unlock seed
 const EconomyModel = preload("res://scripts/rules/economy_model.gd")  # single source for STARTING_CREDITS
+const AmmoModel = preload("res://scripts/rules/ammo_model.gd")  # DIV-0029: starting power-pack grace kit
 
 const ATTRS := ["dexterity", "knowledge", "mechanical", "perception", "strength", "technical"]
 const ATTRIBUTE_PIPS := 54   # 18D total to distribute (exactly)
@@ -139,6 +140,7 @@ static func build_sheet(rules: Object, attributes: Dictionary, skills: Dictionar
 		"credits": EconomyModel.STARTING_CREDITS,  # Wave F: WEG-anchored economy (DIV-0018)
 		"equipment": {"weapon": STARTER_WEAPON, "armor": STARTER_ARMOR},
 		"inventory": STARTER_INVENTORY.duplicate(),
+		"ammo": AmmoModel.initial_ammo(),  # DIV-0029: STARTING_PACKS grace; the equipped weapon lazy-inits to full on first fire
 	}
 
 ## A deterministic quick-start attribute allocation: each attribute at its species

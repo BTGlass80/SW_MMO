@@ -41,6 +41,7 @@ const QuestModel := preload("res://scripts/rules/quest_model.gd")              #
 const HarvestModel := preload("res://scripts/rules/harvest_model.gd")          # DIV-0023: a disabled creature -> a sellable field-dressed good
 const CorpseDecay := preload("res://scripts/rules/corpse_decay_model.gd")       # DIV-0025: player-corpse decay + third-party full-loot (lawless)
 const ArmorRepairModel := preload("res://scripts/rules/armor_repair_model.gd")  # DIV-0026 (Seam 4b): armor broken-tier repair credit-sink (priced off sell_price)
+const AmmoModel := preload("res://scripts/rules/ammo_model.gd")                  # DIV-0029: weapon-ammo recurring sink (power packs)
 const TelemetryLog := preload("res://scripts/net/telemetry_log.gd")              # Wave G (Seam 5): server-side structured-telemetry writer (JSONL under user://)
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
@@ -367,7 +368,52 @@ func submit_fire_intent(intent: Dictionary) -> void:
 			print("[pvp] peer %d fire on %d refused (%s)" % [sender, target, String(gate.get("reason", ""))])
 			fire_result.rpc_id(sender, {"ok": false, "reason": String(gate.get("reason", "rejected")), "target_peer": target})
 			return
+	# DIV-0029: ammo gate. Only a REAL shot (a PvP player OR a live hostile creature) consumes a shot,
+	# so only a real shot can be refused for lack of ammo — a training-dummy sparring shot is free and a
+	# HOLD-FIRE / empty-zone shot fires at nothing (both skip the check). Reject at SUBMIT (before the
+	# intent is queued) so an empty gun never resolves a free shot; surfaced like the PvP reject above.
+	if _shot_would_consume_ammo(sender, target) and not _peer_can_fire_ammo(sender):
+		var wk := _equipped_weapon_key(sender)
+		print("[ammo] peer %d fire refused (out_of_ammo, weapon=%s)" % [sender, wk])
+		fire_result.rpc_id(sender, {"ok": false, "reason": "out_of_ammo", "weapon": wk})
+		return
 	arena.submit_fire_intent(sender, intent)
+
+# DIV-0029: would a fire intent from `sender` at `target_peer` consume a shot? True for a PvP player
+# target (target != 0, already zone-gated by the caller) and for a live hostile-creature assignment;
+# false for the shared training dummy ("") and HOLD_TARGET (no live target — nothing to shoot).
+func _shot_would_consume_ammo(sender: int, target_peer: int) -> bool:
+	if target_peer != 0:
+		return true  # PvP shot
+	if arena == null:
+		return false
+	var tk := arena.player_target_key(sender)
+	return tk != "" and tk != CombatArena.HOLD_TARGET and arena.has_hostile_target(tk)
+
+# DIV-0029: the equipped weapon key from the peer's persisted sheet ("" when none / not loaded).
+func _equipped_weapon_key(peer_id: int) -> String:
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return ""
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return ""
+	return String((record.get("sheet", {}) as Dictionary).get("equipment", {}).get("weapon", ""))
+
+# DIV-0029: can the peer's EQUIPPED weapon fire right now (a shot in the magazine or a pack to reload)?
+# Non-ammo weapons (melee / single_use) always can. A legacy sheet with no ammo block reads as a full
+# magazine (AmmoModel.can_fire's untracked-weapon default), so a veteran's first shot is never blocked.
+func _peer_can_fire_ammo(peer_id: int) -> bool:
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return true
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return true
+	var sheet: Dictionary = record.get("sheet", {})
+	var weapon_key := String((sheet.get("equipment", {}) as Dictionary).get("weapon", ""))
+	var wdict: Dictionary = _weapons_catalog.get(weapon_key, {})
+	return AmmoModel.can_fire(sheet.get("ammo", {}), weapon_key, wdict)
 
 # server -> client: a PvP fire intent was refused (protected zone / different zone / etc.)
 @rpc("authority", "call_remote", "reliable")
@@ -1142,6 +1188,10 @@ func _build_buy_catalog() -> void:
 	for k in _armor_catalog:
 		var a: Dictionary = _armor_catalog[k]
 		_buy_catalog[String(k)] = {"cost": int(a.get("cost", 0)), "vendor_stocked": bool(a.get("vendor_stocked", false)), "name": String(a.get("name", k)), "kind": "armor"}
+	# DIV-0029: the universal power pack — a vendor consumable (25cr list) that is NOT a weapon/armor
+	# (buying it stacks onto sheet.ammo.packs, not inventory; submit_buy/submit_sell special-case it).
+	# Injected here so buy/sell recognize the key and the DIV-0018 economy pricing applies to it.
+	_buy_catalog[AmmoModel.PACK_ITEM_KEY] = {"cost": AmmoModel.PACK_COST, "vendor_stocked": true, "name": "Power Pack", "kind": "consumable"}
 
 # The Director price multiplier for a zone (trade_boom/merchant_arrival cheapen goods; via vendor_model).
 func _zone_price_multiplier(zone_id: String) -> float:
@@ -1312,6 +1362,15 @@ func submit_vendor_list() -> void:
 			"buy": EconomyModel.buy_price(list_cost, mult, int(bargain["dice"]), int(bargain["pips"]), rep_tier, _vendor),
 			"sell": EconomyModel.sell_price(list_cost),
 		})
+	# DIV-0029: ALWAYS offer the universal power pack — never gated by per-zone stock, or a player could
+	# strand with an empty gun and no vendor to refill. Priced through the same economy dial as any item.
+	stock.append({
+		"key": AmmoModel.PACK_ITEM_KEY,
+		"kind": "consumable",
+		"name": "Power Pack",
+		"buy": EconomyModel.buy_price(AmmoModel.PACK_COST, mult, int(bargain["dice"]), int(bargain["pips"]), rep_tier, _vendor),
+		"sell": EconomyModel.sell_price(AmmoModel.PACK_COST),
+	})
 	print("[vendor] peer %d listed %d items (zone %s mult %.2f rep %s)" % [sender, stock.size(), zone_id, mult, rep_tier])
 	vendor_result.rpc_id(sender, {"stock": stock, "credits": int(sheet.get("credits", 0)), "rep_tier": rep_tier, "price_mult": mult})
 
@@ -1340,6 +1399,29 @@ func submit_buy(item_key: String) -> void:
 		buy_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "unknown_item"})
 		return
 	var sheet: Dictionary = record.get("sheet", {})
+	# DIV-0029: buying a power pack stacks onto sheet.ammo.packs (NOT inventory) — EconomyModel.buy would
+	# misroute it into the item list. Same economy pricing (Director mult / Bargain / rep) as any item.
+	if key == AmmoModel.PACK_ITEM_KEY:
+		var pack_price := _buy_price_for(sender, record, AmmoModel.PACK_COST)
+		if int(sheet.get("credits", 0)) < pack_price:
+			buy_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "cannot_afford", "price": pack_price})
+			return
+		sheet["credits"] = int(sheet.get("credits", 0)) - pack_price
+		var pack_ammo: Dictionary = sheet.get("ammo", {})
+		AmmoModel.add_packs(pack_ammo, 1)
+		sheet["ammo"] = pack_ammo
+		record["sheet"] = sheet
+		_cached_save(character_id, record)
+		apply_credits.rpc_id(sender, int(sheet.get("credits", 0)))
+		_push_sheet(sender, record)
+		print("[buy] peer %d bought power_pack for %d (packs now %d, credits %d)" % [sender, pack_price, AmmoModel.packs(pack_ammo), int(sheet.get("credits", 0))])
+		if _telemetry != null:  # Seam 5: a pack buy is a normal economy SINK — counted here (the reload event is NOT)
+			_telemetry.log_event("buy", {
+				"ts": Time.get_unix_time_from_system(), "character_id": character_id,
+				"item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)),
+			})
+		buy_result.rpc_id(sender, {"ok": true, "item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)), "packs": AmmoModel.packs(pack_ammo)})
+		return
 	var price := _buy_price_for(sender, record, int((_buy_catalog[key] as Dictionary).get("cost", 0)))
 	var result: Dictionary = EconomyModel.buy(sheet, key, price, _buy_catalog)
 	if bool(result.get("ok", false)):
@@ -1378,6 +1460,28 @@ func submit_sell(item_key: String) -> void:
 		sell_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "unknown_item"})
 		return
 	var sheet: Dictionary = record.get("sheet", {})
+	# DIV-0029: selling a power pack draws from sheet.ammo.packs at the normal SELL_RATE (40% of 25 = 10cr).
+	if key == AmmoModel.PACK_ITEM_KEY:
+		var pack_ammo: Dictionary = sheet.get("ammo", {})
+		var removed: Dictionary = AmmoModel.remove_pack(pack_ammo)
+		if not bool(removed.get("ok", false)):
+			sell_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "not_owned"})
+			return
+		var pack_price := EconomyModel.sell_price(AmmoModel.PACK_COST)
+		sheet["ammo"] = pack_ammo
+		sheet["credits"] = int(sheet.get("credits", 0)) + pack_price
+		record["sheet"] = sheet
+		_cached_save(character_id, record)
+		apply_credits.rpc_id(sender, int(sheet.get("credits", 0)))
+		_push_sheet(sender, record)
+		print("[sell] peer %d sold power_pack for %d (packs now %d, credits %d)" % [sender, pack_price, AmmoModel.packs(pack_ammo), int(sheet.get("credits", 0))])
+		if _telemetry != null:  # Seam 5: pack buy-back is a normal economy INFLOW (sell)
+			_telemetry.log_event("sell", {
+				"ts": Time.get_unix_time_from_system(), "character_id": character_id,
+				"item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)),
+			})
+		sell_result.rpc_id(sender, {"ok": true, "item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)), "packs": AmmoModel.packs(pack_ammo)})
+		return
 	var price := EconomyModel.sell_price(int((_buy_catalog[key] as Dictionary).get("cost", 0)))
 	var result: Dictionary = EconomyModel.sell(sheet, key, price)
 	if bool(result.get("ok", false)):
@@ -2666,8 +2770,33 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 			"status_poison_rounds_left": int(mystat.get("poison_rounds_left", 0)),  # DIV-0024: "Poisoned (n)"
 			"status_restrained": bool(mystat.get("restrained", false)),             # DIV-0024: "Held"
 			"status_source": String(mystat.get("source", "")),                      # the injecting creature
+			"ammo": _ammo_summary(peer_id),                                         # DIV-0029: equipped-weapon shots + carried packs
 		}
 	return snap
+
+# DIV-0029: the peer's equipped-weapon ammo for the "you" snapshot block. {weapon, uses_ammo, shots,
+# capacity, packs}. A non-ammo weapon (melee / single_use) reports uses_ammo=false (client shows no
+# ammo readout) but still surfaces the carried pack count. Cache hit for a connected peer.
+func _ammo_summary(peer_id: int) -> Dictionary:
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return {"uses_ammo": false}
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return {"uses_ammo": false}
+	var sheet: Dictionary = record.get("sheet", {})
+	var weapon_key := String((sheet.get("equipment", {}) as Dictionary).get("weapon", ""))
+	var wdict: Dictionary = _weapons_catalog.get(weapon_key, {})
+	var ammo: Dictionary = sheet.get("ammo", {})
+	if not AmmoModel.uses_ammo(wdict):
+		return {"weapon": weapon_key, "uses_ammo": false, "packs": AmmoModel.packs(ammo)}
+	return {
+		"weapon": weapon_key,
+		"uses_ammo": true,
+		"shots": AmmoModel.shots_left(ammo, weapon_key, wdict),
+		"capacity": AmmoModel.shots_per_weapon(wdict),
+		"packs": AmmoModel.packs(ammo),
+	}
 
 # Seed the server's zone roster from data/zones_clone_wars.json (the Director ticks
 # them all). Falls back to the single hardcoded Mos Eisley zone when the file is
@@ -2716,6 +2845,55 @@ func _load_combat_data() -> Dictionary:
 		return {}
 	return parsed
 
+# DIV-0029: does THIS resolved envelope (a player's own fire this window) spend a shot? True for a PvP
+# shot (envelope.pvp) or a hostile-creature shot (target_key != ""); the shared training dummy
+# (target_key=="" and not pvp) is free sparring. Unprovoked incoming-fire + status envelopes never reach
+# this path (they come from _tick_hostile_aggression / _tick_status_effects), but the unprovoked guard is
+# belt-and-braces. The ammo_flow_smoke mirrors this exact predicate.
+func _envelope_consumes_ammo(envelope: Dictionary) -> bool:
+	if bool(envelope.get("unprovoked", false)):
+		return false
+	if bool(envelope.get("pvp", false)):
+		return true
+	return String(envelope.get("target_key", "")) != ""
+
+# DIV-0029: spend one shot from the peer's equipped weapon for a resolved real shot. Loads the sheet,
+# decrements (auto-reloading from a carried pack when empty), and persists sheet.ammo. Melee / single_use
+# weapons no-op (uses_ammo=false). On an auto-reload, logs an INFORMATIONAL "reload" telemetry event.
+func _consume_ammo_for_shot(peer_id: int) -> void:
+	if store == null:
+		return
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var weapon_key := String((sheet.get("equipment", {}) as Dictionary).get("weapon", ""))
+	var wdict: Dictionary = _weapons_catalog.get(weapon_key, {})
+	if not AmmoModel.uses_ammo(wdict):
+		return  # melee / single_use — nothing to spend (single_use stays latent)
+	var ammo: Dictionary = sheet.get("ammo", {})
+	var before_shots := AmmoModel.shots_left(ammo, weapon_key, wdict)
+	var r := AmmoModel.consume(ammo, weapon_key, wdict)
+	sheet["ammo"] = ammo
+	record["sheet"] = sheet
+	_cached_save(character_id, record)
+	if bool(r.get("reloaded", false)):
+		# Auto-reload consumed a power pack (the sink lands). Log an INFORMATIONAL "reload" event so the
+		# faucet/sink tally SEES this outflow — but it carries NO credit field (the pack PURCHASE is already
+		# counted as a "buy"), so tools/telemetry_tally.py needs NO change and does NOT double-count (its
+		# CREDITY_FIELDS check ignores a reload with only weapon_key/packs_left).
+		if _telemetry != null:
+			_telemetry.log_event("reload", {
+				"ts": Time.get_unix_time_from_system(), "character_id": character_id,
+				"weapon_key": weapon_key, "packs_left": int(r.get("packs_left", 0)),
+			})
+		print("[ammo] peer %d auto-reloaded %s (packs left %d)" % [peer_id, weapon_key, int(r.get("packs_left", 0))])
+	else:
+		print("[ammo] peer %d fired %s (%d -> %d shots)" % [peer_id, weapon_key, before_shots, int(r.get("shots_left", 0))])
+
 func _resolve_combat_window() -> void:
 	if arena == null or arena.pending_intent_count() == 0:
 		return
@@ -2752,6 +2930,12 @@ func _resolve_combat_window() -> void:
 	var takedowns := {}
 	for envelope in envelopes:
 		var shooter := int(envelope.get("shooter_id", 0))
+		# DIV-0029: a RESOLVED real shot (a hostile creature OR a PvP player) spends one shot from the
+		# shooter's equipped weapon; the shared training dummy is FREE sparring. The SERVER decrements here
+		# at resolution — never the client — and auto-reloads from a carried pack when the magazine empties
+		# (the submit-time gate guaranteed a pack was available, so a resolved shot never strands).
+		if _envelope_consumes_ammo(envelope):
+			_consume_ammo_for_shot(shooter)
 		var tkey := String(envelope.get("target_key", ""))
 		var target_down := (tkey == "" and dummy_disabled) or (tkey != "" and bool(envelope.get("target_disabled", false)))
 		if target_down:
