@@ -37,7 +37,10 @@ extends RefCounted
 #   So a tier-4 apex (acklay / mutant_acklay / stalker_lizard / voroos ...) can NEVER be rolled in a
 #   calm OR default zone — it only appears under an escalated alert. BOSS-class (tier 5: merdeth /
 #   krayt_dragon / rancor) is NEVER ambient under ANY alert — it is spawned only through the
-#   boss/event channel, never through roll_spawn's ambient path (is_boss filters it out everywhere).
+#   boss/event channel (`boss_spawn`, below), never through roll_spawn's ambient path (is_boss filters
+#   it out everywhere). The boss/event channel is a DELIBERATE, server-driven spawn: today its live
+#   trigger is an accepted bounty whose disable objective names a boss (network_manager._advance_hostiles),
+#   so a boss appears only when a player OPTS IN to hunting it — never as a random ambient one-shot.
 #   Banding NEVER strands the spawner: if the tier cap empties the pool it falls back to the
 #   un-banded (posture, still boss-filtered) set. `candidate_keys` is intentionally left un-banded
 #   (pure posture bias); `roll_spawn` and `banded_candidate_keys` apply the tier cap + boss filter.
@@ -200,7 +203,40 @@ func roll_spawn(creatures_data: Dictionary, zone_alert: String, zone_security: S
 	var pick: String = String(keys[rng.randi_range(0, keys.size() - 1)])
 	var creatures: Dictionary = creatures_data.get("creatures", {})
 	var c: Dictionary = creatures.get(pick, {})
+	return _build_spawn(pick, c, rng)
 
+
+# True when `key` names a boss/event-channel creature in `creatures_data` (see is_boss). Pure predicate;
+# the boss/event channel (boss_spawn) is the only path that may spawn one — never the ambient roll.
+func is_boss_key(creatures_data: Dictionary, key: String) -> bool:
+	var creatures: Dictionary = creatures_data.get("creatures", {})
+	if not creatures.has(key):
+		return false
+	return is_boss(creatures.get(key, {}))
+
+
+# BOSS/EVENT CHANNEL (G15 fix): deterministically spawn ONE specific boss-class creature by key,
+# bypassing the ambient posture/tier band. This is the ONLY path allowed to produce a boss — the
+# ambient roll_spawn filters bosses out everywhere. The SERVER owns `seed`. Its live trigger is a
+# DELIBERATE opt-in (an accepted bounty whose disable objective names this boss); it is never called
+# from the random ambient faucet, so a green wanderer can never be one-shot by a random apex-legendary.
+# Returns {} unless `boss_key` names a boss-class, HOSTILE creature — the channel refuses to spawn a
+# non-boss (that belongs to the ambient path) or a non-hostile boss (nothing to fight).
+func boss_spawn(creatures_data: Dictionary, boss_key: String, seed: int) -> Dictionary:
+	var creatures: Dictionary = creatures_data.get("creatures", {})
+	if not creatures.has(boss_key):
+		return {}
+	var c: Dictionary = creatures.get(boss_key, {})
+	if not is_boss(c) or not bool(c.get("hostile", false)):
+		return {}
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed
+	return _build_spawn(boss_key, c, rng)
+
+
+# Shared spawn-dict builder for both the ambient roll (roll_spawn) and the boss/event channel
+# (boss_spawn). `rng` is already seeded by the caller (the SERVER owns the seed). Pure otherwise.
+func _build_spawn(key: String, c: Dictionary, rng: RandomNumberGenerator) -> Dictionary:
 	var pc: Array = c.get("pack_count", [1, 1])
 	var pack_min := 1
 	var pack_max := 1
@@ -215,8 +251,8 @@ func roll_spawn(creatures_data: Dictionary, zone_alert: String, zone_security: S
 	var pack_size := rng.randi_range(pack_min, pack_max)
 
 	return {
-		"creature_key": pick,
-		"name": String(c.get("name", pick)),
+		"creature_key": key,
+		"name": String(c.get("name", key)),
 		"scale": String(c.get("scale", "creature")),
 		"hostile": bool(c.get("hostile", false)),
 		"pack_size": pack_size,

@@ -149,6 +149,8 @@ Invoke-GodotStep "Creature spawn threat smoke:" @("--headless", "--path", $proje
 
 Invoke-GodotStep "Creature spawn mix smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_spawn_mix_smoke.gd")
 
+Invoke-GodotStep "Boss spawn channel smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/boss_spawn_channel_smoke.gd")
+
 Invoke-GodotStep "Creature special-attack model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_special_attack_model_smoke.gd")
 
 Invoke-GodotStep "Creature combat smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_combat_smoke.gd")
