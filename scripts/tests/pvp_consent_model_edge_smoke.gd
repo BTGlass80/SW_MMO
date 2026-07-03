@@ -12,6 +12,7 @@ var _failures: Array[String] = []
 
 func _init() -> void:
 	_test_double_accept_invariant_bug_fix()
+	_test_abort_ends_all_of_a_players_live_duels()
 	_test_pair_key_symmetry()
 	_test_challenge_and_accept_non_mutating()
 	_test_conclude_ko_and_yield()
@@ -55,6 +56,40 @@ func _test_double_accept_invariant_bug_fix() -> void:
 	_assert_equal(acc2["state"], st, "a rejected accept() returns the state unchanged")
 	_assert_true(not Consent.duel_active(st, 22, 99), "22<->99 never became active")
 	_assert_true(Consent.duel_active(st, 11, 99), "11<->99 remains the sole active duel for 99")
+
+# ---------------------------------------------------------------------------------------------
+# CONFIRMED BUG (fixed in this pass): abort(who) returned after ending only the FIRST live duel it
+# found in dict-insertion order. A player can legitimately hold a pending OFFERED challenge AND an
+# ACTIVE duel at the same time (accept() does not clean up a player's other standing offers, and
+# challenge() only blocks a NEW offer while a side is already ACTIVE — not while merely offered). If
+# the OFFERED record was inserted BEFORE the ACTIVE one, abort() ended the harmless offer and LEFT
+# THE ACTIVE DUEL LIVE — so a player who disconnects / leaves the zone stayed mutually attackable
+# (may_fire still returns duel-consent for the still-active pair). abort() must end EVERY live duel
+# involving `who`, not just the first one encountered.
+# ---------------------------------------------------------------------------------------------
+func _test_abort_ends_all_of_a_players_live_duels() -> void:
+	var st := Consent.new_state()
+	# Insert an OFFERED duel 11<->99 FIRST (the record abort used to wrongly stop on)...
+	st = Consent.challenge(st, 11, 99, "z", 0.0)["state"]
+	# ...then a SECOND offer 22<->99, which 99 accepts -> 22<->99 becomes ACTIVE (inserted later).
+	st = Consent.challenge(st, 22, 99, "z", 0.0)["state"]
+	st = Consent.accept(st, 22, 99, 1.0)["state"]
+	_assert_true(Consent.duel_active(st, 22, 99), "setup: 22<->99 is the active duel; 11<->99 is a lingering offer")
+
+	# 99 disconnects / leaves -> abort must terminate BOTH the active duel and the lingering offer.
+	var ab := Consent.abort(st, 99)
+	_assert_true(bool(ab["ok"]), "abort(99) reports it ended at least one duel")
+	var st_ab: Dictionary = ab["state"]
+	_assert_true(not Consent.duel_active(st_ab, 22, 99),
+		"abort(99) MUST end 99's ACTIVE duel, not just the earlier-inserted offer (else the disconnecting player stays attackable)")
+	# The lingering offer is also cleared (99 can no longer be dueled by it).
+	var offer_rec: Dictionary = (st_ab["duels"] as Dictionary)[Consent.pair_key(11, 99)]
+	_assert_equal(String(offer_rec.get("state", "")), "ended", "abort(99) also ends 99's lingering OFFERED challenge")
+	# And nobody is left able to open PvP against the disconnected player via a stale consent record.
+	var A99 := {"id": 99, "is_player": true, "node_id": "z", "newbie_protected": false}
+	var A22 := {"id": 22, "is_player": true, "node_id": "z", "newbie_protected": false}
+	_assert_equal(bool(Consent.may_fire(st_ab, A22, A99, "secured").get("allowed")), false,
+		"after abort, the ex-opponent can no longer fire the disconnected player in a protected zone")
 
 func _test_pair_key_symmetry() -> void:
 	# String-int ids where the LEXICOGRAPHIC compare disagrees with numeric compare ("10" < "2")

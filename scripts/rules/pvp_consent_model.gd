@@ -198,15 +198,26 @@ static func conclude_ko(state: Dictionary, loser: Variant) -> Dictionary:
 	var winner: Variant = rec["b"] if rec["a"] == loser else rec["a"]
 	return _end_pair(state, key, winner, "ko", ["active"])
 
-# abort(who): a participant leaves the zone / disconnects -> their OFFERED-or-ACTIVE duel ends, no winner.
+# abort(who): a participant leaves the zone / disconnects -> ALL of their OFFERED-or-ACTIVE duels end,
+# no winner. A player can hold several live duels at once (multiple standing offers plus one active one),
+# so this must sweep EVERY live record involving `who` in a single pass — ending only the first match
+# (dict-insertion order) could leave the player's ACTIVE duel live, keeping a disconnected player attackable.
 static func abort(state: Dictionary, who: Variant) -> Dictionary:
 	var duels: Dictionary = state.get("duels", {})
+	var to_end: Array = []
 	for key in duels:
 		var rec: Dictionary = duels[key]
 		var st := String(rec.get("state", "ended"))
 		if (st == "active" or st == "offered") and (rec.get("a") == who or rec.get("b") == who):
-			return _end_pair(state, key, null, "abort", ["active", "offered"])
-	return {"ok": false, "state": state, "reason": "no_duel"}
+			to_end.append(key)
+	if to_end.is_empty():
+		return {"ok": false, "state": state, "reason": "no_duel"}
+	var next := state.duplicate(true)
+	for key in to_end:
+		var r: Dictionary = (next["duels"] as Dictionary)[key]
+		r["state"] = "ended"
+		r["result"] = {"winner": null, "outcome": "abort"}
+	return {"ok": true, "state": next, "reason": ""}
 
 # expire(now): sweep (slow tick) — OFFERED past its TTL and ACTIVE past its max_duration both -> ENDED(expire).
 static func expire(state: Dictionary, now: float) -> Dictionary:
