@@ -361,9 +361,12 @@ session log.
    misfiled in `scripts/net` on day one, moved to `scripts/rules`; `tools/telemetry_tally.py` +
    tests; CLAUDE.md/README/SESSION_HANDOFF de-drifted).
 2. ~~G14 + G15~~ **DONE — merged serially (`bf27f1e`, `107b7bc`), gate green each, claim released.**
-3. **PT1 prep track (owner-approved 2026-07-03) — the ACTIVE queue:** G8 auth/crypto bundle `[HOT]`
-   (salted hash at rest — un-gated by the ruling; DTLS or a "dev transport" banner decision still sized
-   separately), server watchdog, 20-bot headless soak, envelope replay tool. The **PT1 date remains
-   owner-gated.** Also queued: the G14/G15 verifier-advisory follow-ups noted above (equal-severity
-   escalation on the hostile-aggression path; a NetworkManager-level wounded_twice First-Aid-at-14 test;
-   `_active_boss_quest_target_in_zone` → `_cached_load`; svaper cr/min outlier).
+3. **PT1 prep track (owner-approved 2026-07-03) — IN FLIGHT, CLAIMED by the attended 2026-07-03
+   session:** G8 auth/crypto bundle `[HOT]` is being built ON MAIN right now (salted hash at rest +
+   dev-transport banner; DTLS out of scope) and the watchdog + 20-bot soak + envelope replay tools are
+   building in worktrees. **Cron ticks: take NOTHING while this claim stands** (a HOT agent owns
+   `scripts/net/*` and port 24555). The **PT1 date remains owner-gated.** Queued after: the G14/G15
+   verifier-advisory follow-ups (equal-severity escalation on the hostile-aggression path; a
+   NetworkManager-level wounded_twice First-Aid-at-14 test; `_active_boss_quest_target_in_zone` →
+   `_cached_load`; svaper cr/min outlier), the live 20-bot soak acceptance run, and the ammo/repair
+   recurring-sink pairing (G18 faucets-and-sinks).
