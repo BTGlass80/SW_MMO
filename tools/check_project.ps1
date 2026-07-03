@@ -281,6 +281,8 @@ Invoke-GodotStep "Ammo model smoke:" @("--headless", "--path", $projectRoot, "--
 
 Invoke-GodotStep "Ammo flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/ammo_flow_smoke.gd")
 
+Invoke-GodotStep "Ammo status model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/ammo_status_model_smoke.gd")
+
 # Not-before-live invariant (owner ruling 2026-07-03): pure models + design docs for
 # siege / player-cities / server-space are PERMITTED (they live in scripts/rules + docs);
 # their HOT wiring (files or preloads in scripts/net) is PARKED until the ground loop

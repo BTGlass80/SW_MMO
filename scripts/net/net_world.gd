@@ -20,6 +20,7 @@ const NpcBuilder := preload("res://scripts/world/npc_builder.gd")
 const LandmarkBuilder := preload("res://scripts/world/landmark_builder.gd")  # signature Mos Eisley landmark
 const DialogueModel := preload("res://scripts/rules/dialogue_model.gd")
 const PlayerStatusBadgeModel := preload("res://scripts/rules/player_status_badge_model.gd")  # venom/restraint/wound status readout
+const AmmoStatusModel := preload("res://scripts/rules/ammo_status_model.gd")  # DIV-0029: equipped-weapon ammo HUD readout + reload inference
 
 var _builder: WorldBuilder
 var _is_server := false
@@ -121,6 +122,9 @@ var _org_label: Label
 var _last_org_line := ""           # so we log org/territory CHANGES only
 var _boost_label: Label
 var _last_boost := ""              # so we log combat CP/FP CHANGES only
+var _ammo_label: Label            # DIV-0029: equipped-weapon ammo readout (hidden for melee / no-ammo)
+var _last_ammo := ""              # so we log ammo-readout CHANGES only
+var _prev_ammo: Dictionary = {}   # previous snapshot's "you".ammo block — client-side auto-reload inference
 var _sheet_panel: Label            # F24: character sheet (toggle with V); hidden by default
 var _combat_log: Label
 var _combat_lines: Array[String] = []
@@ -612,6 +616,7 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 	var you: Dictionary = snapshot.get("you", {})
 	_update_condition(String(you.get("wound", "healthy")), int(you.get("wound_penalty", 0)), int(you.get("status_poison_rounds_left", 0)), bool(you.get("status_restrained", false)))
 	_update_boost(int(you.get("cp", 0)), int(you.get("fp", 0)))
+	_update_ammo(you.get("ammo", {}))  # DIV-0029: equipped-weapon shots/packs readout + reload inference
 	_update_org(snapshot.get("territory", {}))
 
 func _find_player(peer_id: int) -> Dictionary:
@@ -826,6 +831,13 @@ func _build_hud() -> void:
 	_boost_label.add_theme_font_size_override("font_size", 14)
 	_boost_label.modulate = Color(0.10, 0.10, 0.13)
 	layer.add_child(_boost_label)
+
+	_ammo_label = Label.new()  # DIV-0029: equipped-weapon ammo (shots/capacity + carried packs); blank for melee/no-ammo
+	_ammo_label.position = Vector2(760, 160)
+	_ammo_label.text = ""
+	_ammo_label.add_theme_font_size_override("font_size", 14)
+	_ammo_label.modulate = _status_color("healthy")
+	layer.add_child(_ammo_label)
 
 	_target_label = Label.new()  # F47: persistent target status (the combat log only shows it on a hit)
 	_target_label.position = Vector2(760, 120)
@@ -1112,6 +1124,46 @@ func _update_boost(cp: int, fp: int) -> void:
 	if line != _last_boost:
 		_last_boost = line
 		print("[boost] cp=%d fp=%d" % [cp, fp])
+
+# DIV-0029: update the equipped-weapon ammo readout from the snapshot's "you".ammo block (built by
+# network_manager._ammo_summary). Hidden for a melee / no-ammo weapon; tinted with the wound-severity
+# palette (_status_color) when the magazine runs low (<20%) or fully dry (out of shots AND packs). Also
+# INFERS a server auto-reload from the packs/shots diff so the player SEES the pack get spent in the
+# combat log — the server's "[ammo] auto-reloaded" print never reaches the client.
+func _update_ammo(ammo: Dictionary) -> void:
+	# Reload inference runs against the PREVIOUS snapshot's ammo, before _prev_ammo is overwritten.
+	if AmmoStatusModel.reload_happened(_prev_ammo, ammo):
+		_push_combat_line("Reloaded %s — power pack spent (%d left)." % [
+			_weapon_pretty(String(ammo.get("weapon", ""))), maxi(int(ammo.get("packs", 0)), 0)])
+		print("[ammo] you reloaded (packs left %d)" % maxi(int(ammo.get("packs", 0)), 0))
+	_prev_ammo = ammo.duplicate(true)
+	if not AmmoStatusModel.should_show(ammo):
+		# Melee / single_use / unloaded weapon: no ammo readout to show.
+		if _ammo_label != null:
+			_ammo_label.text = ""
+		_last_ammo = ""
+		return
+	var text := AmmoStatusModel.readout_text(ammo)
+	if _ammo_label != null:
+		_ammo_label.text = text
+		_ammo_label.modulate = _status_color(AmmoStatusModel.color_key(ammo))
+	if text != _last_ammo:
+		_last_ammo = text
+		print("[ammo] you %s%s" % [text, "  LOW" if AmmoStatusModel.is_low(ammo) else ""])
+
+# Append one line to the combat-log HUD, bounded to the last 8 (matching the inline call sites).
+func _push_combat_line(text: String) -> void:
+	_combat_lines.append(text)
+	while _combat_lines.size() > 8:
+		_combat_lines.pop_front()
+	if _combat_log != null:
+		_combat_log.text = "Combat log:\n" + "\n".join(_combat_lines)
+
+# Prettify a weapon key for HUD text (the client has no weapons catalog). "" -> "your weapon".
+func _weapon_pretty(weapon_key: String) -> String:
+	if weapon_key == "":
+		return "your weapon"
+	return weapon_key.replace("_", " ").capitalize()
 
 # Update the org / territory readout from the snapshot's per-peer "territory" block (E23).
 # Shows the player's org, its treasury, and how many of the CURRENT zone's claimed nodes its
@@ -1425,9 +1477,17 @@ func _on_fire_rejected(result: Dictionary) -> void:
 		"protected_zone": "You can't attack players here — this zone is protected. (Open PvP is lawless-only.)",
 		"protected_target": "That player is in a protected zone.",
 		"different_zone": "That player isn't in your zone.",
+		"out_of_ammo": "Out of ammo — buy a power pack from a vendor (B: shop) to reload.",  # DIV-0029
 	}
 	var msg := String(messages.get(reason, "PvP fire refused (%s)." % reason))
-	print("[pvp] fire refused (%s)" % reason)
+	# DIV-0029: an out_of_ammo reject means the shot never fired — a COMBAT event. Surface it in the
+	# combat log too (the server-only "[ammo] ... refused (out_of_ammo)" print never reaches the client),
+	# so a player who only watches the log still learns their gun is empty.
+	if reason == "out_of_ammo":
+		print("[ammo] fire refused (out_of_ammo)")
+		_push_combat_line("*** Out of ammo — %s is empty. Buy a power pack (B). ***" % _weapon_pretty(String(result.get("weapon", ""))))
+	else:
+		print("[pvp] fire refused (%s)" % reason)
 	_set_status(msg)
 
 # DIV-0006: buy-insurance outcome.
