@@ -9,15 +9,6 @@ const DIFFICULTIES = {
 	"heroic": 30,
 }
 
-const ATTRIBUTES = [
-	"dexterity",
-	"knowledge",
-	"mechanical",
-	"perception",
-	"strength",
-	"technical",
-]
-
 const RANGE_BANDS = [
 	{"name": "Point Blank", "max": 4.0, "difficulty": 5},
 	{"name": "Short", "max": 16.0, "difficulty": 10},

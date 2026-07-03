@@ -227,9 +227,6 @@ func set_player_lethal(peer_id: int, lethal: bool) -> void:
 	else:
 		_player_lethal.erase(peer_id)
 
-func is_player_lethal(peer_id: int) -> bool:
-	return bool(_player_lethal.get(peer_id, false))
-
 ## Register a hostile creature as a lethal target the arena can resolve against. `pools` is the
 ## target_* pool shape (hostile_npc_model.attack_pools_from_creature); `profile` carries
 ## {distance, cover_level, name}; `spawn` is the originating creature_spawn_model roll (kept for loot).
@@ -245,9 +242,6 @@ func register_hostile_target(target_key: String, pools: Dictionary, profile: Dic
 
 func has_hostile_target(target_key: String) -> bool:
 	return _hostile_targets.has(target_key)
-
-func hostile_target_keys() -> Array:
-	return _hostile_targets.keys()
 
 func hostile_target_state(target_key: String) -> Dictionary:
 	return ((_hostile_targets.get(target_key, {}) as Dictionary).get("state", {}) as Dictionary).duplicate(true)

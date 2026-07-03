@@ -11,23 +11,6 @@ const ATTRIBUTE_KEYS = [
 	"technical",
 ]
 
-func initial_sheet(character_name = "Character"):
-	var attributes = {}
-	for attribute in ATTRIBUTE_KEYS:
-		attributes[attribute] = "3D"
-	return {
-		"name": character_name,
-		"species": "Human",
-		"attributes": attributes,
-		"skill_bonuses": {},
-		"equipment": {},
-		"character_points": 5,
-		"force_points": 1,
-		"dark_side_points": 0,
-		"wound_severity": 0,
-		"scale": "character",
-	}
-
 func canonical_key(label):
 	return String(label).strip_edges().to_lower().replace(" ", "_").replace("-", "_").replace("/", "_")
 
