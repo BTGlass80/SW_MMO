@@ -18,6 +18,7 @@ extends SceneTree
 const CombatArena := preload("res://scripts/net/combat_arena.gd")
 const HostileNpc := preload("res://scripts/rules/hostile_npc_model.gd")
 const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")
+const WoundLadder := preload("res://scripts/rules/wound_ladder_model.gd")  # DIV-0008: equal-severity escalation
 
 var _failures: Array[String] = []
 var _rules: Object
@@ -184,6 +185,36 @@ func _init() -> void:
 		if int(exp.player_state(91).get("player_wound_severity", 0)) > 0:
 			exposed_hits += 1
 	_assert_true(covered_hits < exposed_hits, "the VICTIM's own cover reduces unprovoked hits (%d covered < %d exposed) — cover is sourced from the victim, not the hostile profile" % [covered_hits, exposed_hits])
+
+	# --- (H) EQUAL-SEVERITY ESCALATION (DIV-0008 asymmetry fix): resolve_incoming_fire_window folds the
+	#         victim's severity with maxi(), so BEFORE the fix a wounded victim taking an equal/lower-severity
+	#         landed hit never advanced the LEVEL and the -2D wounded_twice tier was UNREACHABLE on the
+	#         UNPROVOKED path (only the PvP-defender write-back escalated). Now this path escalates the level
+	#         string by each landed hit's own severity. Construct a GUARANTEED STUN hostile: a huge attack
+	#         pool (always lands at point blank) + default stun_mode (target_stun_mode unset -> true), so
+	#         every landed hit is sev 1. A single stun on a pre-WOUNDED victim deepens wounded -> wounded_twice
+	#         (the live -2D via G14), NOT stuck at 'wounded'. Deterministic: 12D vs a point-blank difficulty of
+	#         5 lands on any seed, and stun_mode pins every landing hit to severity 1. ---
+	var esc := CombatArena.new(_rules, data)
+	# register_hostile_target takes the target_* pool shape directly, so craft a controlled stun hostile.
+	var stun_pools := {
+		"target_attack_pool": {"dice": 12, "pips": 0},   # always hits at point blank
+		"target_damage_pool": {"dice": 12, "pips": 0},    # big margin -> a real landing hit
+		"target_soak_pool": {"dice": 2, "pips": 0},
+		"target_scale": "character",
+		# NB: target_stun_mode is intentionally UNSET -> defaults true -> pure stun (sev 1 on any landing hit).
+	}
+	esc.register_hostile_target("z", stun_pools, {"distance": 4.0, "cover_level": 0, "name": "Stun Droid"}, {})
+	esc.register_player(95, "Wounded Bot", {"attributes": {"dexterity": "1D", "strength": "1D"}, "skills": {}})
+	esc.set_player_combat(95, {"player_wound_severity": 2, "player_wound_level": "wounded"})
+	_assert_equal(String(esc.player_state(95).get("player_wound_level", "")), "wounded", "victim starts LIVE wounded (level string)")
+	esc.resolve_hostile_aggression("z", [95], 55555)
+	_assert_equal(String(esc.player_state(95).get("player_wound_level", "")), "wounded_twice",
+		"an equal-severity landed hit ESCALATES wounded -> wounded_twice on the UNPROVOKED path (was stuck at 'wounded' before the DIV-0008 fix)")
+	_assert_equal(int(esc.player_state(95).get("player_wound_severity", 0)), 2,
+		"wounded_twice still reads severity 2 (the int collapses the two tiers; the LEVEL string is the source of truth)")
+	_assert_equal(WoundLadder.penalty_dice_for_level("wounded_twice"), 2, "wounded_twice carries the LIVE -2D penalty (G14 plumbing)")
+	_assert_equal(WoundLadder.penalty_dice_for_severity(2), 1, "the severity int ALONE yields only -1D -> the escalated LEVEL string is load-bearing")
 
 	if _rules.has_method("free"):
 		_rules.free()

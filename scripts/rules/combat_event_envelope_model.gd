@@ -3,6 +3,11 @@ extends RefCounted
 const ENVELOPE_VERSION := 1
 const MESSAGE_TYPE := "combat.exchange.resolved"
 const REPLAY_INPUTS_VERSION := 1
+# Which resolver a replay_inputs block re-runs. The default/legacy attach_replay_inputs block carries NO
+# "kind" key and is treated as EXCHANGE (attack-and-return, ground_combat_model.resolve_exchange); the
+# incoming-fire variant marks itself INCOMING so envelope_replay_model re-runs resolve_incoming_fire_window.
+const REPLAY_KIND_EXCHANGE := "exchange"
+const REPLAY_KIND_INCOMING := "incoming_fire"
 
 static func envelope_for_result(result: Dictionary, exchange_kind: String = "ground_range", channel: String = "local") -> Dictionary:
 	var events: Array = result.get("events", [])
@@ -45,6 +50,26 @@ static func attach_replay_inputs(envelope: Dictionary, state: Dictionary, target
 		"target_cover_level": target_cover_level,
 		"defender_defense_stance": defender_defense_stance,
 		"action_window": action_window.duplicate(true),
+	}
+	return out
+
+# PT1 replay prep (INCOMING-FIRE variant): the resolve_hostile_aggression / resolve_incoming_fire_window
+# path is NOT an attack-and-return exchange — the victim only TAKES fire, so it cannot be re-run through
+# resolve_exchange. Its replay inputs are the victim's pre-hit state, the merged defensive+attacker pools,
+# and the incoming-attack list (each a {attack_pool, damage_pool, scale, distance, cover_level,
+# wound_severity} dict), plus the envelope's exchange_seed. Marked kind=incoming_fire so envelope_replay_model
+# re-runs resolve_incoming_fire_window (not resolve_exchange). Same discipline as attach_replay_inputs:
+# returns a COPY with one new key, never mutates/broadcasts — server/log side only (it carries pools).
+static func attach_replay_inputs_incoming(envelope: Dictionary, state: Dictionary, pools: Dictionary, incoming_attacks: Array, exchange_seed: int) -> Dictionary:
+	var out := envelope.duplicate(true)
+	out["replay_inputs"] = {
+		"present": true,
+		"version": REPLAY_INPUTS_VERSION,
+		"kind": REPLAY_KIND_INCOMING,
+		"state": state.duplicate(true),
+		"pools": pools.duplicate(true),
+		"incoming": incoming_attacks.duplicate(true),
+		"exchange_seed": exchange_seed,
 	}
 	return out
 

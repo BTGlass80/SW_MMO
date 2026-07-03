@@ -173,6 +173,11 @@ var _corpses := {}                    # DIV-0025: character_id -> {zone_id, pos:
 var _zone_list_cache: Array = []      # DIV-0014: cached [{id, name}] travel list (zones are static)
 var _server_rng := RandomNumberGenerator.new()
 var _telemetry: TelemetryLog = null   # server only (Wave G/Seam 5: structured-telemetry JSONL writer; null in client/solo)
+# PT1 replay: server-only SECOND JSONL writer for replay-enriched combat envelopes (user://telemetry/
+# envelopes.jsonl). Kept SEPARATE from _telemetry (events.jsonl) so the heavy replay_inputs block (both
+# sheets' pools) never bloats the tuning telemetry — and NEVER rides the apply_combat_envelope RPC. Each
+# line is a broadcast envelope + replay_inputs; tools/envelope_replay.gd re-runs disputes off it.
+var _envelope_log: TelemetryLog = null
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
 var _local_jump := false
@@ -220,6 +225,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
 	_telemetry = TelemetryLog.new()  # Wave G/Seam 5: one server-owned JSONL writer under user://telemetry/events.jsonl
+	_envelope_log = TelemetryLog.new("user://telemetry/envelopes.jsonl")  # PT1 replay: server-only enriched-envelope log
 	print("[net] server listening on port %d (combat window %.1fs)" % [port, combat_window_seconds])
 	print("[net] DEV TRANSPORT: unencrypted ENet — LAN/playtest only, do not expose to the internet")
 	server_started.emit(port)
@@ -250,6 +256,7 @@ func stop() -> void:
 	last_snapshot = {}
 	connected = false
 	_telemetry = null  # drop the server-only telemetry writer so a later start_client never keeps a live server writer
+	_envelope_log = null  # PT1 replay: drop the server-only enriched-envelope writer too
 
 func local_peer_id() -> int:
 	if multiplayer.multiplayer_peer == null:
@@ -389,6 +396,20 @@ func _build_pvp_gate() -> Dictionary:
 @rpc("authority", "call_remote", "reliable")
 func apply_combat_envelope(envelope: Dictionary) -> void:
 	combat_envelope.emit(envelope)
+
+# PT1 replay (server/log side only): append each replay-enriched envelope COPY (from
+# combat_arena.resolve_window / resolve_hostile_aggression `replay_envelopes`) to envelopes.jsonl so a
+# PT1 combat dispute can be re-run with tools/envelope_replay.gd. These carry replay_inputs (BOTH sheets'
+# pools) and are NEVER broadcast — the CLEAN envelopes go out via apply_combat_envelope. The server owns
+# the clock, so the ts is stamped here (like the other telemetry sites). No-op off-server / pre-listen.
+func _log_replay_envelopes(replay_envelopes: Array) -> void:
+	if _envelope_log == null:
+		return
+	var ts := Time.get_unix_time_from_system()
+	for renv in replay_envelopes:
+		var entry: Dictionary = (renv as Dictionary).duplicate(true)
+		entry["ts"] = ts
+		_envelope_log.log_event("envelope", entry)
 
 func send_fire_intent(intent: Dictionary) -> void:
 	if mode == Mode.CLIENT and connected:
@@ -1763,7 +1784,10 @@ func _active_boss_quest_target_in_zone(zone_id: String) -> String:
 		var cid := String(_peer_characters.get(pid, ""))
 		if cid == "":
 			continue
-		var record := store.load_record(cid)
+		# G15 advisory: read THROUGH the write-through cache (the only record read in this file that
+		# bypassed it). Semantics are identical today (the cache is write-through) and it stays coherent
+		# with any future cache-only mutation instead of silently reading a stale disk copy.
+		var record := _cached_load(cid)
 		if record.is_empty():
 			continue
 		var quests: Dictionary = _record_quests(record)
@@ -1868,6 +1892,7 @@ func _tick_hostile_aggression(fired_ids: Array) -> void:
 			for pid2 in multiplayer.get_peers():
 				if String(_peer_zones.get(pid2, _default_zone)) == ez:
 					apply_combat_envelope.rpc_id(pid2, envelope)
+		_log_replay_envelopes(result.get("replay_envelopes", []))  # PT1 replay: enriched incoming-fire COPIES (never broadcast)
 		var hname := String((arena.hostile_target_state(zone_id) as Dictionary).get("name", "a hostile"))
 		for c in result.get("casualties", []):
 			var vic := int((c as Dictionary).get("peer", 0))
@@ -2705,6 +2730,7 @@ func _resolve_combat_window() -> void:
 		for pid in multiplayer.get_peers():
 			if String(_peer_zones.get(pid, _default_zone)) == shooter_zone:
 				apply_combat_envelope.rpc_id(pid, envelope)
+	_log_replay_envelopes(result.get("replay_envelopes", []))  # PT1 replay: server/log side only (never broadcast)
 	print("[combat] window %d resolved: %d shot(s), dummy severity %d" % [
 		int(result.get("window", 0)),
 		envelopes.size(),

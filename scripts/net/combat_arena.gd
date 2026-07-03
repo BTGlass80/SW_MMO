@@ -357,9 +357,13 @@ func clear_intents_targeting(peer_id: int) -> void:
 ## casualties}. seed_base is the server-owned per-window seed.
 func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 	var envelopes: Array = []
+	# PT1 replay: parallel to `envelopes`, a per-shot COPY enriched with attach_replay_inputs (both sheets'
+	# pools + pre-exchange state). SERVER/LOG side only — the net layer writes these to envelopes.jsonl and
+	# broadcasts the CLEAN `envelopes` (no replay_inputs) so the RPC payload stays byte-identical.
+	var replay_envelopes: Array = []
 	var casualties := {}  # DIV-0019: target_peer -> {peer, severity, killer} for players taken out this window
 	if _intents.is_empty():
-		return {"window": _window_index, "envelopes": envelopes, "target_state": target_state(), "target_disabled": target_disabled(), "casualties": []}
+		return {"window": _window_index, "envelopes": envelopes, "replay_envelopes": replay_envelopes, "target_state": target_state(), "target_disabled": target_disabled(), "casualties": []}
 
 	var shooters: Array = _intents.keys()
 	var order := _initiative_order(shooters, seed_base)
@@ -449,6 +453,11 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 			# each — suppress the dummy-style auto return-fire here; a passive victim (no intent) still
 			# reaction-fires once. Prevents double-counting each side's offense per window.
 			pools["suppress_return_fire"] = _intents.has(target_peer)
+		# PT1 replay: snapshot the EXACT pre-exchange inputs (server owns all RNG, so seed+inputs fully
+		# determine the outcome) BEFORE resolution mutates the record/target state.
+		var replay_state: Dictionary = (record["state"] as Dictionary).duplicate(true)
+		var replay_tstate: Dictionary = tstate.duplicate(true)
+		var replay_pools: Dictionary = pools.duplicate(true)
 		var result: Dictionary = _ground.resolve_exchange_with_action_window(
 			_rules, record["state"], tstate, pools, distance, cover, window_for_shooter, exchange_seed, defender_defense_stance)
 		# DIV-0016 clamp — UNLESS lethal (DIV-0017 hostile PvE / DIV-0019 PvP). Floor-aware: the cap can
@@ -516,6 +525,10 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 			envelope["target_key"] = target_key  # "" = the shared training dummy
 			envelope["lethal"] = lethal
 		envelopes.append(envelope)
+		# PT1 replay: a COPY of THIS shot enriched with the pre-exchange inputs. attach_replay_inputs
+		# returns a fresh dict (never mutates `envelope`), so the broadcast copy above stays byte-identical.
+		replay_envelopes.append(CombatEventEnvelopeModel.attach_replay_inputs(
+			envelope, replay_state, replay_tstate, replay_pools, distance, cover, defender_defense_stance, window_for_shooter))
 		i += 1
 
 	_intents.clear()
@@ -523,6 +536,7 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 	return {
 		"window": _window_index,
 		"envelopes": envelopes,
+		"replay_envelopes": replay_envelopes,  # server/log side only (both sheets' pools) — never broadcast
 		"target_state": target_state(),
 		"target_disabled": target_disabled(),
 		"casualties": casualties.values(),  # DIV-0019: [{peer, severity, killer}, ...] taken out this window
@@ -539,13 +553,15 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 ## seed_base is the server-owned per-window seed. No-op if the target is absent or already disabled.
 func resolve_hostile_aggression(target_key: String, victim_ids: Array, seed_base: int) -> Dictionary:
 	var envelopes: Array = []
+	# PT1 replay: incoming-fire COPIES enriched with replay_inputs (server/log side only) — see resolve_window.
+	var replay_envelopes: Array = []
 	var casualties := {}
 	if not _hostile_targets.has(target_key):
-		return {"envelopes": envelopes, "casualties": []}
+		return {"envelopes": envelopes, "replay_envelopes": replay_envelopes, "casualties": []}
 	var hrec: Dictionary = _hostile_targets[target_key]
 	var hstate: Dictionary = hrec["state"]
 	if int(hstate.get("wound_severity", 0)) >= DISABLED_SEVERITY:
-		return {"envelopes": envelopes, "casualties": []}  # a downed hostile does not fire
+		return {"envelopes": envelopes, "replay_envelopes": replay_envelopes, "casualties": []}  # a downed hostile does not fire
 	var hpools: Dictionary = hrec["pools"]
 	var hprofile: Dictionary = hrec["profile"]
 	var hname := String(hprofile.get("name", target_key))
@@ -580,21 +596,35 @@ func resolve_hostile_aggression(target_key: String, victim_ids: Array, seed_base
 			"wound_severity": hostile_severity,  # the hostile's own wound penalty on its shot
 		}]
 		var exchange_seed := seed_base + (i + 1) * 6607
+		# PT1 replay: snapshot the victim's PRE-hit state (resolve_incoming_fire_window duplicates internally,
+		# so vstate is unmutated by the call, but record["state"] is reassigned below).
+		var replay_state: Dictionary = vstate.duplicate(true)
+		var replay_pools: Dictionary = pools.duplicate(true)
 		var result: Dictionary = _ground.resolve_incoming_fire_window(_rules, vstate, pools, incoming, exchange_seed)
 		var new_vstate: Dictionary = result.get("state", vstate)
-		var new_sev := int(new_vstate.get("player_wound_severity", prior))
-		# Keep the wound LEVEL string coherent with the severity (mirrors set_player_combat's severity->level
-		# derivation) so a later PvP escalate() reads a sane ladder base. Only advances (never de-escalates).
-		if new_sev > prior:
-			new_vstate["player_wound_level"] = WoundLadder.level_for_severity(new_sev)
-		record["state"] = new_vstate
+		# EQUAL-SEVERITY ESCALATION (DIV-0008): resolve_incoming_fire_window folds the victim's severity with
+		# maxi(), so an equal/lower-severity landed hit (a stun landing on an already-wounded victim) never
+		# advanced the LEVEL under the old strict `new_sev > prior` guard — the -2D wounded_twice tier was
+		# UNREACHABLE on the UNPROVOKED path (the PvP-defender write-back already escalates). Mirror it here:
+		# ESCALATE the victim's LEVEL STRING by EACH landed attack's OWN rolled severity (the raw single-hit
+		# chart value, result.incoming[].wound.severity), then derive the int via severity_for_level AT THE
+		# SEAM (level strings cross the boundary, never raw ints — they diverge at 3). escalate() is monotonic
+		# (only ever deepens); a sev>=3 result still routes through the DIV-0027 downed path exactly as before.
+		# DIV-0016 sparring clamps do not apply here (unprovoked fire is lethal-zone only).
+		var prior_level := String(vstate.get("player_wound_level", WoundLadder.level_for_severity(prior)))
+		var new_level := prior_level
 		# DIV-0024: an UNPROVOKED hostile bite/sting that LANDS injects its rider onto the victim (same
-		# seed-on-hit rule as the return-fire path). Detect a connecting shot via the per-attack hit flag.
+		# seed-on-hit rule as the return-fire path). `landed` is set during the same per-attack pass.
 		var landed := false
 		for inc in result.get("incoming", []):
-			if bool((inc as Dictionary).get("hit", false)):
+			var inc_result: Dictionary = inc
+			if bool(inc_result.get("hit", false)):
 				landed = true
-				break
+				new_level = WoundLadder.escalate(new_level, int((inc_result.get("wound", {}) as Dictionary).get("severity", 0)))
+		new_vstate["player_wound_level"] = new_level
+		var new_sev := WoundLadder.severity_for_level(new_level)
+		new_vstate["player_wound_severity"] = new_sev
+		record["state"] = new_vstate
 		if landed:
 			_seed_status_from_rider(record["state"], target_key)
 		# Envelope so same-zone clients render the incoming fire (subject = the victim who took it).
@@ -606,10 +636,13 @@ func resolve_hostile_aggression(target_key: String, victim_ids: Array, seed_base
 		envelope["lethal"] = true
 		envelope["unprovoked"] = true  # G4: a hostile-INITIATED exchange, not the victim's own return-fire shot
 		envelopes.append(envelope)
+		# PT1 replay: the incoming-fire COPY (kind=incoming_fire -> replay re-runs resolve_incoming_fire_window).
+		replay_envelopes.append(CombatEventEnvelopeModel.attach_replay_inputs_incoming(
+			envelope, replay_state, replay_pools, incoming, exchange_seed))
 		if new_sev >= DISABLED_SEVERITY and new_sev > prior:
 			casualties[victim] = {"peer": victim, "severity": new_sev, "killer": 0}
 		i += 1
-	return {"envelopes": envelopes, "casualties": casualties.values()}
+	return {"envelopes": envelopes, "replay_envelopes": replay_envelopes, "casualties": casualties.values()}
 
 # --- DIV-0024: creature venom/restraint STATUS riders ---
 ## The monotonic combat-window counter (for tests / inspection). Advances once per tick_status_effects call.

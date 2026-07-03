@@ -44,6 +44,11 @@ const EVENT_REPORT_FIELDS: Array[String] = [
 ## Returns {mode, match: bool, mismatches: Array[String], lines: Array[String], recomputed: Dictionary}.
 static func replay(rules: Object, envelope: Dictionary) -> Dictionary:
 	if CombatEventEnvelopeModel.has_replay_inputs(envelope):
+		var inputs: Dictionary = _dict(envelope.get("replay_inputs", {}))
+		# Dispatch on the block's kind: incoming-fire windows re-run resolve_incoming_fire_window; every
+		# other/legacy block (no kind, or "exchange") re-runs resolve_exchange as before.
+		if String(inputs.get("kind", "")) == CombatEventEnvelopeModel.REPLAY_KIND_INCOMING:
+			return _replay_full_incoming(rules, envelope)
 		return _replay_full(rules, envelope)
 	return _replay_partial(envelope)
 
@@ -96,6 +101,44 @@ static func _replay_full(rules: Object, envelope: Dictionary) -> Dictionary:
 		for d in aw_diffs:
 			lines.append("  DIFF %s" % d)
 			mismatches.append(d)
+
+	_compare_events(_array(envelope.get("events", [])), _array(recomputed.get("events", [])), mismatches, lines)
+	return {"mode": MODE_FULL, "match": mismatches.is_empty(), "mismatches": mismatches, "lines": lines, "recomputed": recomputed}
+
+## FULL replay of an INCOMING-FIRE envelope (resolve_hostile_aggression / resolve_incoming_fire_window):
+## re-run resolve_incoming_fire_window from the recorded seed + replay_inputs (state/pools/incoming),
+## rebuild the envelope, and diff recomputed vs recorded exactly like the exchange path.
+static func _replay_full_incoming(rules: Object, envelope: Dictionary) -> Dictionary:
+	var mismatches: Array[String] = []
+	var lines: Array[String] = []
+	var exchange_seed := int(envelope.get("exchange_seed", -1))
+	if exchange_seed < 0:
+		mismatches.append("exchange_seed: recorded=%d — unseeded incoming-fire window, not deterministically replayable" % exchange_seed)
+		return {"mode": MODE_FULL, "match": false, "mismatches": mismatches, "lines": lines, "recomputed": {}}
+
+	var inputs: Dictionary = envelope.get("replay_inputs", {})
+	var state: Dictionary = _dict(inputs.get("state", {}))
+	var pools: Dictionary = _dict(inputs.get("pools", {}))
+	var incoming: Array = _array(inputs.get("incoming", []))
+
+	var ground: RefCounted = GroundCombatModel.new()
+	var result: Dictionary = ground.resolve_incoming_fire_window(rules, state, pools, incoming, exchange_seed)
+	var recomputed: Dictionary = CombatEventEnvelopeModel.envelope_for_result(
+		result,
+		String(envelope.get("exchange_kind", "ground_range")),
+		String(envelope.get("channel", "local"))
+	)
+
+	lines.append("mode=FULL(incoming_fire) seed=%d: re-ran resolve_incoming_fire_window from replay_inputs (%d incoming)" % [exchange_seed, incoming.size()])
+	for key in FULL_COMPARE_KEYS:
+		var field_diffs: Array[String] = []
+		_diff(key, envelope.get(key), recomputed.get(key), field_diffs)
+		if field_diffs.is_empty():
+			lines.append("  %s: OK (%s)" % [key, _fmt(recomputed.get(key))])
+		else:
+			for d in field_diffs:
+				lines.append("  DIFF %s" % d)
+				mismatches.append(d)
 
 	_compare_events(_array(envelope.get("events", [])), _array(recomputed.get("events", [])), mismatches, lines)
 	return {"mode": MODE_FULL, "match": mismatches.is_empty(), "mismatches": mismatches, "lines": lines, "recomputed": recomputed}
