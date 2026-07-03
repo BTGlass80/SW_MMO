@@ -135,6 +135,8 @@ Invoke-GodotStep "Economy model edge smoke:" @("--headless", "--path", $projectR
 
 Invoke-GodotStep "Economy flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_flow_smoke.gd")
 
+Invoke-GodotStep "Economy floor smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_floor_smoke.gd")
+
 Invoke-GodotStep "Harvest model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/harvest_model_smoke.gd")
 
 Invoke-GodotStep "Vendor zone flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/vendor_zone_flow_smoke.gd")
@@ -166,6 +168,8 @@ Invoke-GodotStep "Pending influence smoke:" @("--headless", "--path", $projectRo
 Invoke-GodotStep "Org model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/org_model_smoke.gd")
 
 Invoke-GodotStep "Wound ladder model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/wound_ladder_model_smoke.gd")
+
+Invoke-GodotStep "Wound escalation flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/wound_escalation_flow_smoke.gd")
 
 Invoke-GodotStep "Recovery model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/recovery_model_smoke.gd")
 

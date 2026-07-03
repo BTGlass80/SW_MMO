@@ -17,6 +17,7 @@ const ActionWindowModel := preload("res://scripts/rules/action_window_model.gd")
 const CombatEventEnvelopeModel := preload("res://scripts/rules/combat_event_envelope_model.gd")
 const DerivedStats := preload("res://scripts/rules/derived_stats_model.gd")
 const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")  # DIV-0019: player-target remap
+const WoundLadder := preload("res://scripts/rules/wound_ladder_model.gd")  # G2: cumulative WEG wound escalation
 const PVP_DISTANCE := 12.0  # DIV-0019: nominal inter-player range (positional range is a follow-up)
 const DISABLED_SEVERITY := 3
 # DIV-0016: non-lethal sparring ceiling. The shared training target's return fire can stun(1) or
@@ -203,6 +204,12 @@ func set_player_combat(peer_id: int, combat_state: Dictionary) -> void:
 	for key in ["player_character_points", "player_force_points", "player_wound_severity", "player_armor_quality_pips"]:
 		if combat_state.has(key):
 			st[key] = int(combat_state[key])
+	# G2: carry the wound LEVEL string (cross-window source of truth for cumulative escalation; the int
+	# collapses wounded/wounded_twice). Seed from the record's wound_state when provided, else derive.
+	if combat_state.has("player_wound_level"):
+		st["player_wound_level"] = String(combat_state["player_wound_level"])
+	elif combat_state.has("player_wound_severity"):
+		st["player_wound_level"] = WoundLadder.level_for_severity(int(combat_state["player_wound_severity"]))
 	record["state"] = st
 
 func target_state() -> Dictionary:
@@ -407,7 +414,17 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 			var def2: Dictionary = _players[target_peer]
 			var def_state: Dictionary = def2["state"]
 			var prior_def := int(def_state.get("player_wound_severity", 0))
-			def_state["player_wound_severity"] = maxi(prior_def, int(new_tstate.get("wound_severity", 0)))
+			# G2 (DIV-0006/0019): near-peer PvP ACCUMULATES up the WEG wound ladder instead of
+			# highest-hit-wins, so two sub-lethal hits put a player down rather than leaving them
+			# wounded forever. Cross the int<->ladder boundary via the LEVEL STRING (the int collapses
+			# wounded/wounded_twice); feed escalate() the RAW single-hit severity from THIS exchange
+			# (this_hit_severity) so a small hit deepens by one ladder rung instead of double-counting
+			# the target's already-projected prior wound.
+			var prior_level := String(def_state.get("player_wound_level", WoundLadder.level_for_severity(prior_def)))
+			var incoming_hit := int(new_tstate.get("this_hit_severity", 0))
+			var new_level := WoundLadder.escalate(prior_level, incoming_hit)
+			def_state["player_wound_level"] = new_level
+			def_state["player_wound_severity"] = WoundLadder.severity_for_level(new_level)
 			def_state["player_armor_quality_pips"] = int(new_tstate.get("armor_quality_pips", def_state.get("player_armor_quality_pips", 0)))
 			def2["state"] = def_state
 			var new_def := int(def_state["player_wound_severity"])

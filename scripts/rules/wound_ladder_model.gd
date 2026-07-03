@@ -106,6 +106,23 @@ static func level_index(level: String) -> int:
 		return 0
 	return idx
 
+# The single-hit SEVERITY int (0-5) that represents a ladder level — the inverse the arena uses to
+# derive its `player_wound_severity` int from the level string it accumulates via escalate(). MUST
+# stay in lockstep with PersistenceStore.severity_for_wound_state (persistence uses the same mapping);
+# the wound-ladder smoke asserts they agree. NOTE the deliberate collapse: `wounded_twice` has no
+# single-hit severity (it is purely cumulative) so it shares `wounded`'s int (2) — the level STRING,
+# not this int, is the cross-window source of truth for accumulation (severity 2 -> level_for_severity
+# gives "wounded", never "wounded_twice", so escalation must key off the level, not the int).
+static func severity_for_level(level: String) -> int:
+	match level:
+		"healthy": return 0
+		"stunned": return 1
+		"wounded", "wounded_twice": return 2
+		"incapacitated": return 3
+		"mortally_wounded": return 4
+		"dead": return 5
+	return 0
+
 # CUMULATIVE WEG escalation (Guide_19 §1, Guide_01 §7 apply_wound lines 409-413).
 # Deterministic and TOTAL: defined for every (current_level, severity in 0..5).
 #

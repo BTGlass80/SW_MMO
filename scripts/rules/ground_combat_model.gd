@@ -141,6 +141,11 @@ func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary
 		var damage_pool: Dictionary = rules.apply_scale_to_damage_pool(base_damage, attacker_scale, target_scale)
 		target_damage = rules.resolve_damage(damage_pool, target_soak_pool, rng)
 		target_wound = target_damage["wound"]
+		# G2 (DIV-0006/0019): expose the RAW single-hit severity from THIS exchange, distinct from the
+		# max-folded running `wound_severity`. The arena needs it to ACCUMULATE a player target up the WEG
+		# wound ladder (escalate()) without double-counting the target's already-projected prior wound.
+		# Purely additive — every existing consumer still reads the unchanged max-folded wound_severity.
+		next_target["this_hit_severity"] = int(target_wound["severity"])
 		target_severity = maxi(target_severity, int(target_wound["severity"]))
 		next_target["wound_severity"] = target_severity
 		next_target["armor_quality_pips"] = target_armor_quality_pips
@@ -578,9 +583,11 @@ func _consume_force_point(state: Dictionary) -> bool:
 	return true
 
 func _wound_penalty_dice(severity: int) -> int:
-	# Delegate to the canonical WEG wound ladder (DIV-0008). This restores the
-	# -2D tier for severity >= 3 that this function previously collapsed to 0D.
-	# sev 0->0, 1->1, 2->1 (unchanged), 3->2, 4->2 (the fix), 5->0 (dead, moot).
+	# Delegate to the canonical WEG wound ladder (DIV-0008). Single-hit severities map:
+	# sev 0->0, 1->1 (stunned), 2->1 (wounded), 3->0, 4->0, 5->0 — the "out" tiers
+	# (incapacitated/mortally/dead) carry NO penalty because a downed character can't act
+	# (Guide_19 §1 / Guide_01 §7). The -2D tier belongs to wounded_twice, which is reached
+	# ONLY cumulatively via WoundLadderModel.escalate() and never from a single-hit severity.
 	return WoundLadderModel.penalty_dice_for_severity(severity)
 
 func _build_defense(dodge_pool: Dictionary, defense_type: String) -> Dictionary:

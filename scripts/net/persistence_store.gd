@@ -148,7 +148,12 @@ static func apply_combat(record: Dictionary, combat_state: Dictionary) -> Dictio
 	var sheet: Dictionary = next.get("sheet", {})
 	sheet["character_points"] = int(combat_state.get("player_character_points", sheet.get("character_points", 5)))
 	sheet["force_points"] = int(combat_state.get("player_force_points", sheet.get("force_points", 1)))
-	sheet["wound_state"] = wound_state_for_severity(int(combat_state.get("player_wound_severity", 0)))
+	# G2: prefer the wound LEVEL string when the arena provides it — it preserves `wounded_twice`, which
+	# the severity int collapses to `wounded`. Fall back to the int derivation for any legacy caller.
+	if combat_state.has("player_wound_level"):
+		sheet["wound_state"] = String(combat_state["player_wound_level"])
+	else:
+		sheet["wound_state"] = wound_state_for_severity(int(combat_state.get("player_wound_severity", 0)))
 	next["sheet"] = sheet
 	return next
 
@@ -158,6 +163,7 @@ static func combat_from_record(record: Dictionary) -> Dictionary:
 		"player_character_points": int(sheet.get("character_points", 5)),
 		"player_force_points": int(sheet.get("force_points", 1)),
 		"player_wound_severity": severity_for_wound_state(String(sheet.get("wound_state", "healthy"))),
+		"player_wound_level": String(sheet.get("wound_state", "healthy")),  # G2: level string = cumulative-escalation source of truth
 	}
 
 static func wound_state_for_severity(severity: int) -> String:
