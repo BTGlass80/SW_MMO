@@ -1440,6 +1440,64 @@
         "Rare and difficult to keep in captivity; Jabba the Hutt's palace pit on Tatooine is the only confirmed captive specimen in Hutt space."
       ],
       "source": "WEG Star Wars D6 Revised & Expanded (WEG40120), Creatures chapter, R&E core rulebook (docs/sourcebooks/WEG40120.txt local extraction, page 217, sidecar lines ~20556-20580). Type: Gigantic predator; DEX 4D, PER 1D (search: tracking 3D), STR 7D; Armor +3D physical/energy; Claws STR+3D; Teeth STR+5D; Move 20; Size 5m tall. Faithful transcription (not a re-stat) of the R&E core rulebook, this project's mechanics source of truth per data/manifests/read_only_sources.md. Not previously present in C:\\SW_MUSH\\data\\npcs_creatures.yaml."
+    },
+    "krayt_dragon": {
+      "id": "krayt_dragon",
+      "name": "Canyon Krayt Dragon",
+      "species": "Krayt Dragon",
+      "scale": "creature",
+      "size": "5 meters long",
+      "hostile": true,
+      "pack_count": [
+        1,
+        1
+      ],
+      "description": "The apex predator of the Tatooine wastes: a scaled, multi-legged reptile that hunts the deep desert and the Jundland canyons, big enough to swallow a bantha and armored enough that a blaster bolt is an insult, not a wound. Krayt dragons are solitary, territorial, and mostly a legend to spaceport folk — until one leaves its range and starts taking dewbacks, moisture crews, or whole caravans. A krayt on the move is a settlement-ending event, and its gizzard pearl is worth a fortune to those who can pry it loose from the corpse.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "2D",
+          "perception": "2D",
+          "strength": "9D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "4D",
+          "search": "3D"
+        },
+        "move": 21,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "claws",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2D"
+      },
+      "armor": {
+        "note": "+2D protection against physical and energy attacks (thick scaled hide)."
+      },
+      "special": [
+        "Teeth: STR+3D damage - the crushing bite once prey is inside its reach.",
+        "Tail lash: STR+1D sweep that can knock a target prone at melee range.",
+        "Thick hide: blasters and most hand-held melee weapons barely mark a krayt (see armor)."
+      ],
+      "special_attack": {
+        "restraint": {
+          "kind": "swallow",
+          "hold_damage": "STR+2D",
+          "note": "Engulfs prey whole once bitten and pinned; opposed brawling/STR to escape the jaws before the swallow completes."
+        }
+      },
+      "harvest": {
+        "good": "krayt_dragon_pearl",
+        "resource": "gem",
+        "difficulty": 15,
+        "note": "The iconic gizzard pearl - a fortune to the right buyer; NOT wired (no creature-harvest runtime path yet), latent economy hook like acklay_chitin / merdeth_shell."
+      },
+      "source": "WEG Star Wars D6 Revised & Expanded, Creatures chapter (canyon krayt dragon, the smaller/common Tatooine variety, distinct from the greater krayt). Authored from the WEG R&E canonical krayt dragon stat block; NOTE: the local extraction (docs/sourcebooks/WEG40120.txt) is not present in this worktree, so no verified page/sidecar-line citation is claimed here - the mush-content-porter should reconcile this entry against the local source of truth and add the citation. Type: Gigantic desert predator; DEX 2D, PER 2D (search: tracking 3D), STR 9D; brawling 4D; Armor +2D physical/energy; Claws STR+2D; Teeth STR+3D; Move 21; Size ~5m long (canyon variety). Added to make the pre-existing q_krayt_bounty quest completable and to give the Dune Sea a legendary apex encounter. Not previously present in C:\\SW_MUSH\\data\\npcs_creatures.yaml."
     }
   }
 }

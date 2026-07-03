@@ -1,5 +1,5 @@
 {
-  "source_policy": "Original starter quests authored for the SW_MMO prototype (overnight C2). Clone Wars-era, 20 BBY Mos Eisley framing; not ported from any read-only source. Objective kinds + reward shape match scripts/rules/quest_model.gd; rewards reuse the economy (credits) + dual-track CP (gameplay). Tunable content, not owner-gated balance.",
+  "source_policy": "Original starter quests authored for the SW_MMO prototype (overnight C2). Clone Wars-era, 20 BBY Mos Eisley framing; not ported from any read-only source. Objective kinds + reward shape match scripts/rules/quest_model.gd; rewards reuse the economy (credits) + dual-track CP (gameplay). Tunable content, not owner-gated balance. Starter-quest expansion drop (2026-07-03): +8 original quests, additive to the original 4. Flavor-only consultation of C:\\SW_MUSH docs/design guides for Mos Eisley tone (read-only, never copied verbatim); no MUSH mission data was ported. target_key values are verified real creature ids in data/creatures_clone_wars.json and zone_id values are verified real zone ids in data/zones_clone_wars.json as of this drop; giver values that are not the generic notice board are verified real NPC ids in data/npcs_clone_wars.json, used for flavor only (quest_model.gd does not validate giver).",
   "era": "20 BBY Clone Wars",
   "quests": [
     {
@@ -33,6 +33,70 @@
       "objective": {"kind": "disable", "target_key": "krayt_dragon", "count": 1},
       "reward": {"credits": 500, "cp": 5},
       "giver": "spaceport_notice_board"
+    },
+    {
+      "id": "q_womp_cull",
+      "name": "Canyon Cull",
+      "description": "Old Brana Nesh keeps her dewback stock at the edge of the Jundland canyons, and canyon womp rat packs have been harrying the herd in relay-shift raids. Thin one of the packs before they run a dewback to ground.",
+      "objective": {"kind": "disable", "target_key": "canyon_womp_rat", "count": 4},
+      "reward": {"credits": 220, "cp": 3},
+      "giver": "brana_nesh"
+    },
+    {
+      "id": "q_fringe_muscle",
+      "name": "Fringe Cleanup",
+      "description": "Hutt Enforcer Greeshk doesn't care who is working the Spaceport Fringe as long as it's Hutt muscle. Freelance thugs have been leaning on the wrong doors. Convince three of them to find other work.",
+      "objective": {"kind": "disable", "target_key": "underworld_thug", "count": 3},
+      "reward": {"credits": 260, "cp": 3},
+      "giver": "hutt_enforcer_greeshk"
+    },
+    {
+      "id": "q_draagax_pack",
+      "name": "Berry Season",
+      "description": "The badland shrubs are fruiting, which means the local draagax packs have gone berry-drunk and berserk. Brana Nesh needs the worst of them put down before they reach the stables.",
+      "objective": {"kind": "disable", "target_key": "draagax", "count": 2},
+      "reward": {"credits": 380, "cp": 4},
+      "giver": "brana_nesh"
+    },
+    {
+      "id": "q_acklay_bounty",
+      "name": "Slipped Handler",
+      "description": "Djas Puhr has a lead on a wild acklay working the badlands south of the Dune Sea, likely a Geonosian arena beast that slipped its handler. He'll pay well for proof of the kill.",
+      "objective": {"kind": "disable", "target_key": "acklay", "count": 1},
+      "reward": {"credits": 600, "cp": 6},
+      "giver": "djas_puhr"
+    },
+    {
+      "id": "q_rancor_sighting",
+      "name": "Something Bigger",
+      "description": "Djas Puhr has heard a rumor too big to ignore: a rancor loose in the deep desert, too far from Jabba's palace to be the pit beast. If it's real, it's the most dangerous contract on Tatooine. He wants it confirmed, and ended.",
+      "objective": {"kind": "disable", "target_key": "rancor", "count": 1},
+      "reward": {"credits": 750, "cp": 8},
+      "giver": "djas_puhr"
+    },
+    {
+      "id": "q_scout_market",
+      "name": "Count the Stalls",
+      "description": "Jawa Trade-Elder Ruzz-tha wants a reliable set of eyes in the Market District before the next caravan comes through. Walk the district and report back.",
+      "objective": {"kind": "reach_zone", "zone_id": "tatooine.mos_eisley.market_district", "count": 1},
+      "reward": {"credits": 90, "cp": 2},
+      "giver": "ruzz_tha"
+    },
+    {
+      "id": "q_scout_fringe",
+      "name": "Case the Fringe",
+      "description": "Inspector Haddo wants to know who's moving through the Spaceport Fringe before he decides who owes him a fee. Scout the fringe and report what you see.",
+      "objective": {"kind": "reach_zone", "zone_id": "tatooine.mos_eisley.port_fringe", "count": 1},
+      "reward": {"credits": 100, "cp": 2},
+      "giver": "inspector_haddo"
+    },
+    {
+      "id": "q_hustle_500",
+      "name": "Bigger Hustle",
+      "description": "Kayson at the weapon shop isn't impressed by small-time credits. Earn 500 in the field and he'll start treating you like a real customer.",
+      "objective": {"kind": "earn_credits", "count": 500},
+      "reward": {"credits": 0, "cp": 5},
+      "giver": "kayson"
     }
   ]
 }
