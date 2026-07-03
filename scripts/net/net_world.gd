@@ -1654,8 +1654,11 @@ func _on_duel_notified(notice: Dictionary) -> void:
 			var outcome := String(notice.get("outcome", "ended"))
 			if bool(notice.get("you_won", false)):
 				line = "You WON the duel (%s) vs %s." % [outcome, String(notice.get("loser", "your opponent"))]
+			elif notice.has("winner"):
+				line = "Duel over (%s) — %s wins." % [outcome, String(notice.get("winner"))]
 			else:
-				line = "Duel over (%s) — %s wins." % [outcome, String(notice.get("winner", "your opponent"))]
+				# No-winner endings (left_zone / offer_expired / expired / disconnect): a draw, not a loss.
+				line = "Duel ended (%s) — no winner." % outcome
 		_:
 			line = "Duel update: %s" % kind
 	print("[duel] %s" % line)
