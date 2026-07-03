@@ -60,14 +60,18 @@ func activate_force_point(state: Dictionary) -> Dictionary:
 	next["force_point_active"] = true
 	return next
 
-func resolve_exchange_with_action_window(rules: Object, state: Dictionary, target_state: Dictionary, pools: Dictionary, distance: float, target_cover_level: int, action_window: Dictionary, exchange_seed: int = -1) -> Dictionary:
+func resolve_exchange_with_action_window(rules: Object, state: Dictionary, target_state: Dictionary, pools: Dictionary, distance: float, target_cover_level: int, action_window: Dictionary, exchange_seed: int = -1, defender_defense_stance: String = DEFENSE_NONE) -> Dictionary:
 	if not _action_window_ready(action_window):
 		return _invalid_action_window_result(state, target_state, action_window, exchange_seed)
-	var result := resolve_exchange(rules, state, target_state, pools, distance, target_cover_level, exchange_seed)
+	var result := resolve_exchange(rules, state, target_state, pools, distance, target_cover_level, exchange_seed, defender_defense_stance)
 	result["action_window"] = action_window
 	return result
 
-func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary, pools: Dictionary, distance: float, target_cover_level: int, exchange_seed: int = -1) -> Dictionary:
+# `defender_defense_stance` (G3 / DIV-0019): the TARGET's DECLARED reaction dodge stance
+# (DEFENSE_DODGE / DEFENSE_FULL_DODGE) against THIS attacker's shot. DEFENSE_NONE (the default) is
+# byte-identical to the pre-G3 path: no defender roll, no RNG draw, empty defense — so every PvE /
+# dummy / creature caller is unchanged. The defender's dodge pool comes from pools.target_dodge_pool.
+func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary, pools: Dictionary, distance: float, target_cover_level: int, exchange_seed: int = -1, defender_defense_stance: String = DEFENSE_NONE) -> Dictionary:
 	var target_severity := int(target_state.get("wound_severity", 0))
 	if target_severity >= DISABLED_SEVERITY:
 		var disabled_round := int(state.get("round", 1))
@@ -107,7 +111,11 @@ func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary
 	attack_base_pool = rules.apply_multi_action_penalty(attack_base_pool, player_action_count)
 	var shot_pool: Dictionary = rules.add_pools(attack_base_pool, aim_pool)
 	shot_pool = rules.apply_scale_to_attack_pool(shot_pool, attacker_scale, target_scale)
-	var attack: Dictionary = rules.resolve_ranged_attack(shot_pool, distance, target_cover_level, rng, {}, attack_cp_spent)
+	# G3 (DIV-0019): the DEFENDER's WEG reaction dodge vs this shot. Empty ({}) for every non-PvP path
+	# (stance NONE) -> no RNG draw -> byte-identical to before; a declared-dodge PvP defender raises the
+	# attacker's effective difficulty (dodge REPLACES the range difficulty; full_dodge ADDS to it).
+	var defender_defense := _build_defender_reaction(rules, pools, next_target, defender_defense_stance, rng)
+	var attack: Dictionary = rules.resolve_ranged_attack(shot_pool, distance, target_cover_level, rng, defender_defense, attack_cp_spent)
 	events.append(_attack_event("player_attack", round_num, exchange_seed, attack, player_action_count, player_wound_penalty, shot_pool, attack_cp_spent, force_point_spent))
 	next_state["aim_bonus_dice"] = 0
 	if int(next_state.get("player_cover_level", 0)) > COVER_QUARTER:
@@ -589,6 +597,29 @@ func _wound_penalty_dice(severity: int) -> int:
 	# (Guide_19 §1 / Guide_01 §7). The -2D tier belongs to wounded_twice, which is reached
 	# ONLY cumulatively via WoundLadderModel.escalate() and never from a single-hit severity.
 	return WoundLadderModel.penalty_dice_for_severity(severity)
+
+# G3 (DIV-0019): assemble a DEFENDER player's reaction dodge vs an incoming primary attack. Mirrors
+# _resolve_return_fire's penalization of the dodge pool (defender wound penalty + armor Dexterity
+# penalty + scale) but keyed off the DEFENDER (target_*) side, then caches one roll via
+# prepare_ranged_defense — the contract built for exactly this (one dodge reused across the window).
+# Returns {} for DEFENSE_NONE so the non-PvP path draws no RNG and stays byte-identical.
+func _build_defender_reaction(rules: Object, pools: Dictionary, target_state: Dictionary, defense_stance: String, rng: RandomNumberGenerator) -> Dictionary:
+	if defense_stance != DEFENSE_DODGE and defense_stance != DEFENSE_FULL_DODGE:
+		return {}
+	var defender_wound_penalty := _wound_penalty_dice(int(target_state.get("wound_severity", 0)))
+	var defender_armor: Dictionary = pools.get("target_armor", {})
+	var attacker_scale := String(pools.get("attacker_scale", "character"))
+	var defender_scale := String(pools.get("target_scale", "character"))
+	var dodge_pool: Dictionary = rules.apply_wound_penalty(
+		pools.get("target_dodge_pool", {"dice": 0, "pips": 0}),
+		defender_wound_penalty
+	)
+	dodge_pool = rules.apply_armor_dexterity_penalty(dodge_pool, defender_armor)
+	dodge_pool = rules.apply_scale_to_dodge_pool(dodge_pool, attacker_scale, defender_scale)
+	var defense := _build_defense(dodge_pool, defense_stance)
+	if not defense.is_empty():
+		defense = rules.prepare_ranged_defense(defense, rng)
+	return defense
 
 func _build_defense(dodge_pool: Dictionary, defense_type: String) -> Dictionary:
 	if defense_type == DEFENSE_NONE:

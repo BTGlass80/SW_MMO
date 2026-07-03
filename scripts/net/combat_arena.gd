@@ -367,11 +367,27 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 		var distance := PVP_DISTANCE
 		var cover := 0
 		var lethal := false
+		# G3 (DIV-0019): the DEFENDER's declared reaction dodge stance, passed into resolve_exchange so a
+		# PvP victim's dodge/full_dodge actually raises the attacker's difficulty (was absent: shot got {}).
+		var defender_defense_stance := GroundCombatModel.DEFENSE_NONE
 		if is_pvp:
 			var def_record: Dictionary = _players[target_peer]
 			tstate = PvpRules.defender_target_state(def_record["state"], String(def_record["name"]))
 			tpools = PvpRules.defender_target_pools(def_record["pools"])
-			cover = clampi(int((_intents.get(target_peer, {}) as Dictionary).get("cover", 0)), 0, 4)
+			# G3: read the defender's cover from PERSISTENT state (a maintained crouch decays to quarter
+			# cover and lingers across windows), falling back to THIS window's queued intent when the
+			# persistent value is 0 (the defender may only just have declared it and not yet had their
+			# own _apply_intent run if they act later in initiative order).
+			var def_state: Dictionary = def_record["state"]
+			var def_intent: Dictionary = _intents.get(target_peer, {})
+			var persistent_cover := int(def_state.get("player_cover_level", 0))
+			cover = clampi(persistent_cover if persistent_cover > 0 else int(def_intent.get("cover", 0)), 0, 4)
+			# G3: the defender's DECLARED reaction dodge (from their queued intent) — full_dodge wins if both.
+			defender_defense_stance = (
+				GroundCombatModel.DEFENSE_FULL_DODGE if bool(def_intent.get("full_dodge", false))
+				else GroundCombatModel.DEFENSE_DODGE if bool(def_intent.get("dodge", false))
+				else GroundCombatModel.DEFENSE_NONE
+			)
 			lethal = true  # PvP is always lethal — the sparring clamp is skipped
 		else:
 			target_key = String(_player_target.get(peer_id, ""))
@@ -398,7 +414,7 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 			# reaction-fires once. Prevents double-counting each side's offense per window.
 			pools["suppress_return_fire"] = _intents.has(target_peer)
 		var result: Dictionary = _ground.resolve_exchange_with_action_window(
-			_rules, record["state"], tstate, pools, distance, cover, window_for_shooter, exchange_seed)
+			_rules, record["state"], tstate, pools, distance, cover, window_for_shooter, exchange_seed, defender_defense_stance)
 		# DIV-0016 clamp — UNLESS lethal (DIV-0017 hostile PvE / DIV-0019 PvP). Floor-aware: the cap can
 		# only LOWER toward SPARRING_MAX, never below where the player already was, so a PvP-wounded
 		# player who also fired the dummy is never healed by the clamp (the must-fix).

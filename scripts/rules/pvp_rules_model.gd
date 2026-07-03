@@ -30,11 +30,15 @@ static func can_fire(shooter_zone: String, target_zone: String,
 
 # Remap a DEFENDER's attacker-shaped arena pools (_players[def]["pools"]) into the target_* keys
 # ground_combat_model reads for incoming-attack resolution. target_stun_mode=false => REAL wound.
+# G3 (DIV-0019): also carry the defender's DODGE pool (target_dodge_pool) so resolve_exchange can
+# build the defender's WEG reaction dodge against the attacker's shot — the reaction layer that was
+# absent in PvP (attack passed an EMPTY defense, so only armor + Strength soak defended).
 static func defender_target_pools(defender_pools: Dictionary) -> Dictionary:
 	return {
 		"target_attack_pool": (defender_pools.get("attacker_pool", {"dice": 0, "pips": 0}) as Dictionary).duplicate(true),
 		"target_damage_pool": (defender_pools.get("damage_pool", {"dice": 0, "pips": 0}) as Dictionary).duplicate(true),
 		"target_soak_pool": (defender_pools.get("player_soak_pool", {"dice": 0, "pips": 0}) as Dictionary).duplicate(true),
+		"target_dodge_pool": (defender_pools.get("player_dodge_pool", {"dice": 0, "pips": 0}) as Dictionary).duplicate(true),
 		"target_armor": (defender_pools.get("player_armor", {}) as Dictionary).duplicate(true),
 		"target_scale": String(defender_pools.get("attacker_scale", "character")),
 		"target_stun_mode": false,

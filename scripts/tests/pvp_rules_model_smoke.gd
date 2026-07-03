@@ -23,10 +23,16 @@ func _init() -> void:
 	# --- defender pool remap ---
 	var dpools := Pvp.defender_target_pools({
 		"attacker_pool": {"dice": 5, "pips": 0}, "damage_pool": {"dice": 4, "pips": 0},
-		"player_soak_pool": {"dice": 3, "pips": 0}, "player_armor": {}, "attacker_scale": "character"})
+		"player_soak_pool": {"dice": 3, "pips": 0}, "player_dodge_pool": {"dice": 6, "pips": 1},
+		"player_armor": {}, "attacker_scale": "character"})
 	_assert_equal(int((dpools["target_attack_pool"] as Dictionary)["dice"]), 5, "defender attack pool -> target_attack_pool")
 	_assert_equal(int((dpools["target_damage_pool"] as Dictionary)["dice"]), 4, "defender damage pool -> target_damage_pool")
 	_assert_equal(int((dpools["target_soak_pool"] as Dictionary)["dice"]), 3, "defender soak pool -> target_soak_pool")
+	# G3 (DIV-0019): the defender's DODGE pool is carried so resolve_exchange can build the reaction dodge.
+	_assert_equal(int((dpools["target_dodge_pool"] as Dictionary)["dice"]), 6, "defender dodge pool -> target_dodge_pool (dice)")
+	_assert_equal(int((dpools["target_dodge_pool"] as Dictionary)["pips"]), 1, "defender dodge pool -> target_dodge_pool (pips)")
+	# A defender with NO dodge pool remaps to a safe empty 0D pool (no crash in resolve_exchange).
+	_assert_equal(int((Pvp.defender_target_pools({})["target_dodge_pool"] as Dictionary)["dice"]), 0, "absent dodge pool -> 0D")
 	_assert_equal(String(dpools["target_scale"]), "character", "scale carried")
 	_assert_equal(bool(dpools["target_stun_mode"]), false, "PvP deals REAL damage (stun_mode false)")
 
