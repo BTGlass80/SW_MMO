@@ -60,6 +60,18 @@ Self-imposed guardrail: **local/deterministic only — no paid/external/LLM-in-t
 - [ ] D4  Fix the bridge bottom action-row overlap (space panel fixed Y-offsets) the space agent flagged.
 - [ ] D5  Tune the isometric camera framing (`space_tactical_view3d.gd` WORLD_SCALE/fov/distance) — conservative defaults, no eyeball.
 
+## Done this overnight (commits on master)
+- **A** npc_builder mesh module (`ee45f3b`); named-NPC per-zone render, server+client (`7dbc3ed`, 2-proc); per-zone vendor stock live (`b3a4a7a`, 2-proc).
+- **B** pure `pvp_consent_model` DIV-0022 (`5e694c5`); pure `siege_state_model` DIV-0021 (`650349a`). (HOT wiring of both = follow-up.)
+- **C** pure `quest_model` DIV-0020 (`7746019`); 15 named NPCs + per-zone vendor data (`ef62f10`); +9 creatures 22→31 (`c0ae02d`); dialogue model (in flight).
+- **D** hardening: 3 real bug fixes (pvp-consent double-duel; siege id-collision + open-window) + 8 edge smokes (`e906f46`).
+
+## Highest-value NEXT (follow-ups)
+- Wire NPC TALK (client interact → dialogue_model line). Wire quests live (notice-board RPC + event feeds + panel).
+- HOT-wire siege (declare/join RPCs + Director tick + effective-security gate) and PvP-consent (fire-intent gate + duel/bounty RPCs).
+- Render ambient/named NPC dialogue; corpse-loot RPC; durability-broken; -1D death debuff; positional PvP range.
+
 ## Log (newest first)
+- Named-NPC render + per-zone vendor + npc_builder + hardening (3 bugfixes) + siege/pvp-consent/quest models + NPC/creature content — 11 verified commits.
 - Tick 1 (inline kickoff): C2 pure `quest_model.gd` + quests data + smoke + DIV-0020 ledger row. Gate green.
 - (armed) Wave F complete + presentation + space landed this session (see WAVE_F_HANDOFF + git log).
