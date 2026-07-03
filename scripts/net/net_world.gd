@@ -17,6 +17,7 @@ const EYE_HEIGHT := 1.55
 const WorldBuilder := preload("res://scripts/world/world_builder.gd")
 const MonsterBuilder := preload("res://scripts/world/monster_builder.gd")
 const NpcBuilder := preload("res://scripts/world/npc_builder.gd")
+const DialogueModel := preload("res://scripts/rules/dialogue_model.gd")
 
 var _builder: WorldBuilder
 var _is_server := false
@@ -33,6 +34,10 @@ var _npc_nodes: Dictionary = {} # npc_id -> {"root": Node3D, "seen": bool} (E27 
 var _named_npc_nodes: Dictionary = {} # id -> {"root": Node3D} (named NPCs rendered via npc_builder)
 var _npc_builder: NpcBuilder
 var _last_named_npc_shown := -1
+var _npc_talk_count := {}    # named-NPC id -> how many times talked (rotates dialogue lines)
+var _talk_probe := false     # headless: --talk talks to the first named NPC once after connecting
+var _talk_sent := false
+var _talk_accum := 0.0
 var _last_npc_shown := -1       # log ambient-NPC render-count CHANGES only
 var _aim := 0
 var _spend_cp := 0          # Character Points staged for the NEXT shot (WEG: +1D each); reset on fire
@@ -228,6 +233,7 @@ func _parse_args() -> void:
 	_sell = _arg_value("--sell")  # headless Wave F: sell this item_key once
 	_vendor_list_req = args.has("--vendor-list")  # headless Wave F: request the vendor stock once
 	_buy_insurance_req = args.has("--buy-insurance")  # headless Wave F: buy a death-insurance policy once
+	_talk_probe = args.has("--talk")  # headless: talk to the first named NPC once (verifies dialogue)
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -314,6 +320,14 @@ func _process(delta: float) -> void:
 			if _buy_insurance_req:
 				_buy_insurance_req = false
 				Net.send_buy_insurance()
+	# headless: talk to the first named NPC once (dialogue verification without walking to one)
+	if _talk_probe and not _talk_sent and Net.connected:
+		_talk_accum += delta
+		if _talk_accum >= 4.0:
+			var named: Array = Net.last_snapshot.get("named_npcs", [])
+			if not named.is_empty():
+				_talk_sent = true
+				_do_talk(named[0])
 	# headless net-movement readout: log the server-authoritative position while autowalking
 	if _autowalk and Net.connected:
 		_walk_accum += delta
@@ -383,6 +397,8 @@ func _input(event: InputEvent) -> void:
 				_set_status("Traveling to %s…" % String(z.get("name", z.get("id", ""))))
 		elif event.keycode == KEY_B:
 			_toggle_shop()  # Wave F economy: open/close the shop overlay (server-priced stock)
+		elif event.keycode == KEY_E:
+			_talk_to_nearest_npc()  # talk to the nearest named NPC (dialogue_model)
 		elif event.keycode == KEY_C:
 			_spend_cp = (_spend_cp + 1) % 6  # cycle 0..5 CP staged for the next shot (WEG: +1D each)
 			_announce_next_shot()
@@ -1346,6 +1362,40 @@ func _first_other_player() -> int:
 		if id != 0 and id != _local_id:
 			return id
 	return 0
+
+# Talk to the nearest named NPC within interact range (E key). Rotating line via dialogue_model.
+func _talk_to_nearest_npc() -> void:
+	var my_pos := _my_position()
+	var best := {}
+	var best_d := 6.0  # interact range (units)
+	for entry in Net.last_snapshot.get("named_npcs", []):
+		var e: Dictionary = entry
+		var p: Dictionary = e.get("pos", {})
+		var pos := Vector3(float(p.get("x", 0.0)), float(p.get("y", 1.2)), float(p.get("z", 0.0)))
+		var d := my_pos.distance_to(pos)
+		if d < best_d:
+			best_d = d
+			best = e
+	if best.is_empty():
+		_set_status("No one nearby to talk to.")
+		return
+	_do_talk(best)
+
+# Show the next dialogue line for a named-NPC snapshot entry (rotates per-NPC via dialogue_model).
+func _do_talk(entry: Dictionary) -> void:
+	var id := String(entry.get("id", ""))
+	var tc := int(_npc_talk_count.get(id, 0))
+	var npc := {"name": String(entry.get("name", "")), "role": String(entry.get("role", "")), "dialogue_lines": entry.get("lines", [])}
+	var line := DialogueModel.next_line(npc, tc)
+	_npc_talk_count[id] = tc + 1
+	var say := "%s: \"%s\"" % [String(entry.get("name", "Someone")), line]
+	_set_status(say)
+	_chat_lines.append(say)
+	while _chat_lines.size() > 6:
+		_chat_lines.pop_front()
+	if _chat_log != null:
+		_chat_log.text = "Chat:\n" + "\n".join(_chat_lines)
+	print("[talk] %s" % say)
 
 func _on_heal_replied(result: Dictionary) -> void:
 	if bool(result.get("ok", false)):
