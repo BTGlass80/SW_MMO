@@ -42,6 +42,7 @@ const WEAPONS_DATA_PATH := "res://data/weapons_clone_wars.json"
 const ARMOR_DATA_PATH := "res://data/armor_clone_wars.json"
 const CREATURES_DATA_PATH := "res://data/creatures_clone_wars.json"
 const VENDOR_STOCK_PATH := "res://data/vendor_stock_by_zone.json"  # per-zone vendor variety (overnight C1)
+const NPCS_DATA_PATH := "res://data/npcs_clone_wars.json"  # named NPCs (overnight C1) placed per zone
 const HOSTILE_DISTANCE := 10.0  # DIV-0017: nominal engagement range for a spawned hostile creature
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 const DISABLE_INFLUENCE := 5  # Director zone-influence a disable feeds to the shooter's faction axis (owner-tunable)
@@ -105,6 +106,7 @@ var _buy_catalog := {}                # server only (merged {item_key -> {cost, 
 var _creature_spawn = null            # server only (CreatureSpawn instance: seeded hostile spawn rolls)
 var _creatures_data := {}             # server only (creatures container for the spawner)
 var _vendor_stock_by_zone := {}       # server only (zone_id -> {item_keys:[...]}) per-zone vendor variety
+var _named_npcs_by_zone := {}         # server only (zone_id -> [named-NPC snapshot entries w/ deterministic pos])
 var force_hostile_key := ""           # TEST-ONLY: force this creature key to spawn in lethal zones (--force-hostile)
 var force_awaken_now := false         # TEST-ONLY: force a connected latent to awaken next Director tick (--force-awaken)
 var _visited_zones := {}              # DIV-0011: character_id -> {zone_id:true} for the distinct-zones awakening signal
@@ -186,6 +188,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	_creature_spawn = CreatureSpawn.new()
 	_creatures_data = _load_json_root(CREATURES_DATA_PATH)  # DIV-0017: hostile spawn source
 	_vendor_stock_by_zone = _load_json_container(VENDOR_STOCK_PATH, "vendor_stock_by_zone")  # per-zone vendor variety
+	_load_named_npcs()  # named NPCs placed per zone (broadcast in the snapshot for client rendering)
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
@@ -544,6 +547,49 @@ func _load_json_root(path: String) -> Dictionary:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return {}
 	return parsed
+
+# Load named NPCs (data/npcs_clone_wars.json), give each a DETERMINISTIC position (hash of id -> a
+# point scattered around the shared settlement), map role/flags to an npc_builder kind, and group by
+# zone. Precomputed once at boot; the per-zone list rides the snapshot for the client to render.
+func _load_named_npcs() -> void:
+	_named_npcs_by_zone = {}
+	var npcs: Array = _load_json_root(NPCS_DATA_PATH).get("npcs", [])
+	for entry in npcs:
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+		var npc: Dictionary = entry
+		var zone_id := String(npc.get("zone_id", ""))
+		if zone_id == "":
+			continue
+		var id := String(npc.get("id", ""))
+		var h := absi(hash(id))
+		var angle := fposmod(float(h) * 0.6180339887, 1.0) * TAU
+		var radius := 8.0 + fposmod(float(h / 7) * 0.381966011, 1.0) * 30.0
+		if not _named_npcs_by_zone.has(zone_id):
+			_named_npcs_by_zone[zone_id] = []
+		(_named_npcs_by_zone[zone_id] as Array).append({
+			"id": id,
+			"name": String(npc.get("name", id)),
+			"role": String(npc.get("role", "")),
+			"faction_axis": String(npc.get("faction_axis", "independent")),
+			"kind": _npc_kind(npc),
+			"pos": {"x": cos(angle) * radius, "y": WorldState.GROUND_Y, "z": sin(angle) * radius},
+			"lines": npc.get("dialogue_lines", []),
+		})
+	var counts := {}
+	for z in _named_npcs_by_zone:
+		counts[z] = (_named_npcs_by_zone[z] as Array).size()
+	print("[npc] named NPCs by zone: %s" % str(counts))
+
+# Map an NPC's role / flags to an npc_builder mesh kind.
+func _npc_kind(npc: Dictionary) -> String:
+	if bool(npc.get("vendor", false)):
+		return "vendor"
+	var role := String(npc.get("role", "")).to_lower()
+	for pair in [["bounty", "hunter"], ["hunter", "hunter"], ["liaison", "official"], ["customs", "official"], ["official", "official"], ["officer", "official"], ["enforcer", "thug"], ["thug", "thug"], ["guard", "thug"], ["mechanic", "mechanic"], ["tech", "mechanic"], ["broker", "broker"], ["fixer", "broker"], ["slicer", "broker"], ["pilot", "pilot"], ["merchant", "vendor"], ["trader", "vendor"], ["barkeep", "vendor"], ["bartender", "vendor"]]:
+		if role.find(String(pair[0])) >= 0:
+			return String(pair[1])
+	return "civilian"
 
 func _species_for(species_key: String) -> Dictionary:
 	var species: Dictionary = _species_data.get(species_key, {})
@@ -1743,6 +1789,7 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 		tsum["org_members_online"] = members_online
 		snap["territory"] = tsum
 	snap["npcs"] = _ambient.get(zone_id, [])  # E27: ambient NPCs in the player's zone
+	snap["named_npcs"] = _named_npcs_by_zone.get(zone_id, [])  # named NPCs in this zone (client renders w/ npc_builder)
 	snap["zone_list"] = _zone_list()  # DIV-0014: loaded zones for the client's travel picker (cached)
 	# Per-peer "you" block: the player's OWN live wound condition (so the client can show a
 	# condition readout that reflects combat damage, natural recovery, and First Aid). Pure

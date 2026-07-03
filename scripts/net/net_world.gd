@@ -16,6 +16,7 @@ const MOUSE_SENSITIVITY := 0.0025
 const EYE_HEIGHT := 1.55
 const WorldBuilder := preload("res://scripts/world/world_builder.gd")
 const MonsterBuilder := preload("res://scripts/world/monster_builder.gd")
+const NpcBuilder := preload("res://scripts/world/npc_builder.gd")
 
 var _builder: WorldBuilder
 var _is_server := false
@@ -29,6 +30,9 @@ var _snapshots_logged := 0
 var _npcs_seen := false
 var _avatars: Dictionary = {}   # peer_id -> {"root": Node3D, "seen": bool}
 var _npc_nodes: Dictionary = {} # npc_id -> {"root": Node3D, "seen": bool} (E27 ambient NPCs)
+var _named_npc_nodes: Dictionary = {} # id -> {"root": Node3D} (named NPCs rendered via npc_builder)
+var _npc_builder: NpcBuilder
+var _last_named_npc_shown := -1
 var _last_npc_shown := -1       # log ambient-NPC render-count CHANGES only
 var _aim := 0
 var _spend_cp := 0          # Character Points staged for the NEXT shot (WEG: +1D each); reset on fire
@@ -181,6 +185,7 @@ func _ready() -> void:
 	_builder.build_ground(self)
 	_builder.build_settlement(self)
 	_monster_builder = MonsterBuilder.new()
+	_npc_builder = NpcBuilder.new()
 	_build_camera()
 	_build_hud()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -504,6 +509,7 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 			(_avatars[id]["root"] as Node3D).queue_free()
 			_avatars.erase(id)
 	_reconcile_npcs(snapshot.get("npcs", []))  # E27: render the zone's ambient NPCs
+	_reconcile_named_npcs(snapshot.get("named_npcs", []))  # render the zone's NAMED NPCs via npc_builder
 	var here_count := (snapshot.get("players", []) as Array).size()
 	_set_status("Peer %d | players in zone: %d" % [_local_id, here_count])
 	if here_count != _last_player_count:
@@ -639,6 +645,32 @@ func _reconcile_npcs(npcs: Array) -> void:
 	if _npc_nodes.size() != _last_npc_shown:
 		_last_npc_shown = _npc_nodes.size()
 		print("[npc] showing %d ambient NPC(s)" % _npc_nodes.size())
+
+# Render the zone's NAMED NPCs (from the snapshot's named_npcs) as distinct low-poly figures via
+# npc_builder, reconciled each snapshot like the ambient roster — spawn new, keep positioned, free on
+# zone-leave. Purely presentation from server-provided data (id/name/kind/faction_axis/pos).
+func _reconcile_named_npcs(npcs: Array) -> void:
+	var seen := {}
+	for entry in npcs:
+		var npc: Dictionary = entry
+		var id := String(npc.get("id", ""))
+		if id == "" or _npc_builder == null:
+			continue
+		seen[id] = true
+		var p: Dictionary = npc.get("pos", {})
+		var pos := Vector3(float(p.get("x", 0.0)), float(p.get("y", 1.2)), float(p.get("z", 0.0)))
+		if not _named_npc_nodes.has(id):
+			var root: Node3D = _npc_builder.build_npc(String(npc.get("kind", "civilian")), String(npc.get("name", id)), String(npc.get("faction_axis", "independent")))
+			add_child(root)
+			root.global_position = pos
+			_named_npc_nodes[id] = {"root": root}
+	for id in _named_npc_nodes.keys():
+		if not seen.has(id):
+			(_named_npc_nodes[id]["root"] as Node3D).queue_free()
+			_named_npc_nodes.erase(id)
+	if _named_npc_nodes.size() != _last_named_npc_shown:
+		_last_named_npc_shown = _named_npc_nodes.size()
+		print("[npc] showing %d named NPC(s)" % _named_npc_nodes.size())
 
 func _spawn_npc(npc_id: String, kind: String, pos: Vector3) -> Node3D:
 	var root := Node3D.new()
