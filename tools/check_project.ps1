@@ -45,9 +45,13 @@ Invoke-GodotStep "Rules smoke:" @("--headless", "--path", $projectRoot, "--scrip
 
 Invoke-GodotStep "Ground combat model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/ground_combat_model_smoke.gd")
 
+Invoke-GodotStep "Armor broken soak smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/armor_broken_soak_smoke.gd")
+
 Invoke-GodotStep "Armor condition model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/armor_condition_model_smoke.gd")
 
 Invoke-GodotStep "Armor repair model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/armor_repair_model_smoke.gd")
+
+Invoke-GodotStep "Armor repair wire smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/armor_repair_wire_smoke.gd")
 
 Invoke-GodotStep "Action window model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/action_window_model_smoke.gd")
 

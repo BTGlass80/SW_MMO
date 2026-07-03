@@ -1,6 +1,7 @@
 extends RefCounted
 
 const ArmorConditionModel = preload("res://scripts/rules/armor_condition_model.gd")
+const ArmorRepairModel = preload("res://scripts/rules/armor_repair_model.gd")
 const WoundLadderModel = preload("res://scripts/rules/wound_ladder_model.gd")
 const MAX_AIM_DICE := 3
 const ACTION_WINDOW_SECONDS := 5.0
@@ -137,6 +138,13 @@ func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary
 			"energy",
 			target_armor_quality_pips
 		)
+		# DIV-0026 (Seam 4a): armor sitting AT the condition floor (-6) is "broken" -> only its ARMOR
+		# contribution is HALVED until repaired (bare Strength is never sapped). Applied on the armored
+		# base BEFORE scale/wound so the halving stacks in the documented order; gated on armor_applied so
+		# an UNCOVERED hit (no armor contribution) is untouched. pool_multiplier is 1.0 for any non-floor
+		# pip, so every non-broken path stays byte-identical (no RNG/pool change). Passes the pre-armor
+		# soak pool so the helper can isolate + halve the armor delta alone.
+		target_soak_base = _apply_broken_pool_multiplier(rules, pools["target_soak_pool"], target_soak_base, target_armor_applied, target_armor_quality_pips)
 		target_soak_base = rules.apply_scale_to_soak_pool(target_soak_base, attacker_scale, target_scale)
 		var target_soak_pool: Dictionary = rules.apply_wound_penalty(target_soak_base, target_wound_penalty)
 		# WEG (Guide_01): a Force Point doubles ALL your dice this round — damage included. This pool
@@ -321,6 +329,11 @@ func _resolve_return_fire(rules: Object, state: Dictionary, pools: Dictionary, d
 		"energy",
 		player_armor_quality_pips
 	)
+	# DIV-0026 (Seam 4a): the player's OWN broken armor (pips at the -6 floor) halves only its ARMOR
+	# contribution too — never the wearer's bare Strength. Same order/gating as the target side: on the
+	# armored base, before scale/wound, only when armor covered the hit. Passes the pre-armor Strength
+	# pool so the helper isolates + halves the armor delta. Non-broken -> multiplier 1.0 -> byte-identical.
+	player_soak_base = _apply_broken_pool_multiplier(rules, player_strength_pool, player_soak_base, player_armor_applied, player_armor_quality_pips)
 	player_soak_base = rules.apply_scale_to_soak_pool(player_soak_base, target_scale, player_scale)
 	var player_soak_pool: Dictionary = rules.apply_wound_penalty(player_soak_base, player_wound_penalty)
 	var soak_cp_spent := _consume_cp(state, "pending_soak_cp")
@@ -488,6 +501,11 @@ func _resolve_single_incoming_attack(rules: Object, state: Dictionary, pools: Di
 		"energy",
 		player_armor_quality_pips
 	)
+	# DIV-0026 (Seam 4a): the player's OWN broken armor (pips at the -6 floor) halves only its ARMOR
+	# contribution too — never the wearer's bare Strength. Same order/gating as the target side: on the
+	# armored base, before scale/wound, only when armor covered the hit. Passes the pre-armor Strength
+	# pool so the helper isolates + halves the armor delta. Non-broken -> multiplier 1.0 -> byte-identical.
+	player_soak_base = _apply_broken_pool_multiplier(rules, player_strength_pool, player_soak_base, player_armor_applied, player_armor_quality_pips)
 	player_soak_base = rules.apply_scale_to_soak_pool(player_soak_base, target_scale, player_scale)
 	var player_soak_pool: Dictionary = rules.apply_wound_penalty(player_soak_base, player_wound_penalty)
 	var soak_cp_spent := _consume_cp(state, "pending_soak_cp")
@@ -589,6 +607,28 @@ func _consume_force_point(state: Dictionary) -> bool:
 	state["player_force_points"] = available - 1
 	state["force_point_active"] = false
 	return true
+
+# DIV-0026 (Seam 4a): halve ONLY the ARMOR's contribution to soak when the equipped armor is "broken"
+# (its quality pips sit at the condition floor, -6). ArmorRepairModel owns the broken boolean + the exact
+# multiplier (0.5); this just applies it — to the armor BONUS (armored_pool - unarmored_pool), NOT to the
+# whole armored pool. Halving the combined Strength+armor pool would make broken armor soak WORSE than
+# wearing nothing (it would sap innate Strength), which is nonsensical: broken armor should degrade its
+# OWN protection, never the wearer's body. So we isolate the armor delta in total-pip space, halve just
+# that, and re-add it to the untouched unarmored (Strength) pool. No-ops (returns the armored pool
+# unchanged) when armor did not cover the hit, or the multiplier is 1.0 (any non-floor pip) — so every
+# existing non-broken path is byte-for-byte identical. maxi(...,0) guards the degenerate armored<unarmored
+# case. (verify: broken-pool — halve the armor bonus, floor the result at bare Strength.)
+func _apply_broken_pool_multiplier(rules: Object, unarmored_pool: Dictionary, armored_pool: Dictionary, armor_applied: bool, quality_pips: int) -> Dictionary:
+	if not armor_applied:
+		return armored_pool
+	var multiplier := ArmorRepairModel.pool_multiplier(quality_pips)
+	if multiplier == 1.0:
+		return armored_pool
+	var unarmored_pips := int(unarmored_pool.get("dice", 0)) * 3 + int(unarmored_pool.get("pips", 0))
+	var armored_pips := int(armored_pool.get("dice", 0)) * 3 + int(armored_pool.get("pips", 0))
+	var armor_bonus_pips := maxi(armored_pips - unarmored_pips, 0)          # the armor's contribution only
+	var halved_bonus := int(float(armor_bonus_pips) * multiplier)          # halve ONLY the armor bonus
+	return rules.normalize_pool(0, unarmored_pips + halved_bonus)          # bare Strength + half the armor
 
 func _wound_penalty_dice(severity: int) -> int:
 	# Delegate to the canonical WEG wound ladder (DIV-0008). Single-hit severities map:

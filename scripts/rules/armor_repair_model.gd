@@ -18,8 +18,12 @@ const EconomyModel := preload("res://scripts/rules/economy_model.gd")
 
 # Pip range reused verbatim from the condition model (single source of truth for floor/ceiling).
 const MIN_QUALITY_PIPS := ArmorCondition.MIN_QUALITY_PIPS   # -6, the "broken" floor
-const MAX_QUALITY_PIPS := ArmorCondition.MAX_QUALITY_PIPS   #  6, the fully-repaired ceiling
-const TOTAL_SPAN := MAX_QUALITY_PIPS - MIN_QUALITY_PIPS     # 12 pips floor..ceiling = a full rebuild
+const MAX_QUALITY_PIPS := ArmorCondition.MAX_QUALITY_PIPS   #  6, the condition-clamp bound (NEVER reached in play)
+# PRISTINE/undamaged is 0 — the REPAIR ceiling. Combat seeds armor_quality_pips at 0 and only degrades
+# it DOWN toward the floor; +6 is an unreachable clamp bound. Repairing must anchor at 0, NOT MAX: a +6
+# target would grant super-armor (+2D soak ABOVE pristine) and charge for undamaged gear. (verify: repair-economy)
+const NEW_QUALITY_PIPS := 0
+const TOTAL_SPAN := NEW_QUALITY_PIPS - MIN_QUALITY_PIPS     # 6 pips broken(-6)..pristine(0) = a full rebuild
 
 # --- tunable dials ---
 # DIV-0006: a broken item's pools are HALVED until repaired. The HOT slice multiplies the soak pool
@@ -49,8 +53,8 @@ static func pool_multiplier(quality_pips: int) -> float:
 static func repair_cost(current_pips: int, target_pips: int, list_cost: int) -> int:
 	if list_cost <= 0:
 		return 0
-	var start := clampi(current_pips, MIN_QUALITY_PIPS, MAX_QUALITY_PIPS)
-	var goal := clampi(target_pips, MIN_QUALITY_PIPS, MAX_QUALITY_PIPS)
+	var start := clampi(current_pips, MIN_QUALITY_PIPS, NEW_QUALITY_PIPS)
+	var goal := clampi(target_pips, MIN_QUALITY_PIPS, NEW_QUALITY_PIPS)  # can't repair above pristine (0)
 	var restored := goal - start
 	if restored <= 0:
 		return 0
@@ -62,5 +66,5 @@ static func repair_cost(current_pips: int, target_pips: int, list_cost: int) -> 
 # current level (a target at/below current is a no-op returning current) and never exceeds MAX (a
 # target above the ceiling clamps to MAX).
 static func restore(current_pips: int, target_pips: int) -> int:
-	var goal := clampi(target_pips, MIN_QUALITY_PIPS, MAX_QUALITY_PIPS)
-	return clampi(maxi(current_pips, goal), MIN_QUALITY_PIPS, MAX_QUALITY_PIPS)
+	var goal := clampi(target_pips, MIN_QUALITY_PIPS, NEW_QUALITY_PIPS)  # never above pristine (0) — no super-armor
+	return clampi(maxi(current_pips, goal), MIN_QUALITY_PIPS, NEW_QUALITY_PIPS)

@@ -39,6 +39,7 @@ const DOWNED := preload("res://scripts/rules/downed_model.gd")                 #
 const QuestModel := preload("res://scripts/rules/quest_model.gd")              # DIV-0020: accepted quests + progress + reward
 const HarvestModel := preload("res://scripts/rules/harvest_model.gd")          # DIV-0023: a disabled creature -> a sellable field-dressed good
 const CorpseDecay := preload("res://scripts/rules/corpse_decay_model.gd")       # DIV-0025: player-corpse decay + third-party full-loot (lawless)
+const ArmorRepairModel := preload("res://scripts/rules/armor_repair_model.gd")  # DIV-0026 (Seam 4b): armor broken-tier repair credit-sink (priced off sell_price)
 const TelemetryLog := preload("res://scripts/net/telemetry_log.gd")              # Wave G (Seam 5): server-side structured-telemetry writer (JSONL under user://)
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
@@ -94,6 +95,7 @@ signal credits_updated(credits: int)       # Wave F economy: the player's credit
 signal vendor_listed(payload: Dictionary)   # server-priced vendor stock
 signal buy_replied(result: Dictionary)
 signal sell_replied(result: Dictionary)
+signal repair_replied(result: Dictionary)   # DIV-0026 (Seam 4b): outcome of an armor repair
 signal died(notice: Dictionary)             # DIV-0006: this client was killed + respawned
 signal downed(notice: Dictionary)           # DIV-0027: this client was downed-in-field (sev 3-4, not dead)
 signal revived(notice: Dictionary)          # DIV-0027: this client was First-Aided back above the downed floor
@@ -1388,6 +1390,96 @@ func send_buy(item_key: String) -> void:
 func send_sell(item_key: String) -> void:
 	if mode == Mode.CLIENT and connected:
 		submit_sell.rpc_id(1, item_key)
+
+func send_repair_armor(item_key: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_repair_armor.rpc_id(1, item_key)
+
+# client -> server: repair the EQUIPPED armor's broken condition back to full quality at a vendor — a
+# pure credit SINK (DIV-0026, Seam 4b), same interaction class as buy/sell. Combat DRIVES the armor's
+# quality pips DOWN toward the -6 condition floor ("broken" -> soak HALVED by Seam 4a); this restores
+# them to PRISTINE (0 = NEW_QUALITY_PIPS, the real repair ceiling — combat only degrades DOWN from 0, so
+# repairing to the +6 clamp bound would mint super-armor) for a fee priced off the SAME economy buy-back
+# (ArmorRepairModel.repair_cost -> EconomyModel.sell_price), so dump-and-rebuy never dominates repair.
+# The live pip lives in the arena combat state (the SOURCE Seam 4a's soak build reads); the restored pip
+# is written back THERE via set_player_combat. Like armor degradation itself, the pip axis is
+# session-scoped (not persisted onto the sheet today) — cross-relog durability would need a sheet field
+# + a schema/DIV note and is intentionally OUT OF SCOPE here. Server owns all credits (_award_credits).
+@rpc("any_peer", "call_remote", "reliable")
+func submit_repair_armor(item_key: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var key := item_key.strip_edges()
+	if not _buy_catalog.has(key):
+		repair_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "unknown_item"})
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	# v1 repairs the EQUIPPED armor only — that is the one item whose live quality pips exist (in the
+	# arena combat state). A request for anything else has no pip axis to restore, so reject cleanly.
+	var equipped_armor := String((sheet.get("equipment", {}) as Dictionary).get("armor", ""))
+	if key == "" or key != equipped_armor:
+		repair_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "not_equipped"})
+		return
+	var list_cost := int((_buy_catalog[key] as Dictionary).get("cost", 0))
+	if list_cost <= 0:
+		# unpriced gear (contraband / faction-issued) -> the model returns cost 0; reject like buy/sell.
+		repair_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "unpriced"})
+		return
+	var current_pips := _equipped_armor_pips(sender)
+	# v1 = full rebuild to PRISTINE (0), the real repair ceiling — NOT MAX_QUALITY_PIPS (+6). Combat only
+	# ever degrades pips DOWN from 0, so a +6 target would grant +2D super-armor above undamaged AND charge
+	# for pristine gear (the model now clamps to NEW_QUALITY_PIPS, but keep the intent explicit here).
+	var target := int(ArmorRepairModel.NEW_QUALITY_PIPS)
+	var cost := ArmorRepairModel.repair_cost(current_pips, target, list_cost)
+	var credits := int(sheet.get("credits", 0))
+	if cost <= 0:
+		# already at the ceiling (nothing to restore) -> a no-op reply, never a charge.
+		repair_result.rpc_id(sender, {"ok": true, "item_key": key, "cost": 0, "credits": credits, "quality_pips": current_pips, "reason": "no_op"})
+		return
+	if credits < cost:
+		repair_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "cannot_afford", "cost": cost, "credits": credits})
+		return
+	var restored := ArmorRepairModel.restore(current_pips, target)
+	_award_credits(sender, -cost)                    # the single credit-mutation point buy/sell/loot share (floored >= 0)
+	_set_equipped_armor_pips(sender, restored)       # write the restored pip where Seam 4a's soak build reads it
+	var new_credits := int((_cached_load(character_id).get("sheet", {}) as Dictionary).get("credits", 0))
+	print("[repair] peer %d repaired %s %+d->%+d for %d (credits now %d)" % [sender, key, current_pips, restored, cost, new_credits])
+	if _telemetry != null:   # Seam 5: repair telemetry (economy sink flow)
+		_telemetry.log_event("repair", {
+			"ts": Time.get_unix_time_from_system(), "character_id": character_id,
+			"item_key": key, "cost": cost, "credits": new_credits,
+			"quality_pips_before": current_pips, "quality_pips_after": restored,
+		})
+	repair_result.rpc_id(sender, {"ok": true, "item_key": key, "cost": cost, "credits": new_credits, "quality_pips": restored})
+
+# server -> client: the outcome of an armor repair (mirrors buy_result / sell_result)
+@rpc("authority", "call_remote", "reliable")
+func repair_result(result: Dictionary) -> void:
+	repair_replied.emit(result)
+
+# The equipped armor's LIVE quality pips (session-scoped; held in the arena combat state Seam 4a reads).
+# Undamaged / no live combat state -> 0 (full quality), which repair_cost treats as a no-op (nothing to fix).
+func _equipped_armor_pips(peer_id: int) -> int:
+	if arena == null or not arena.has_player(peer_id):
+		return 0
+	return int(arena.player_state(peer_id).get("player_armor_quality_pips", 0))
+
+# Write the repaired pip back to the arena combat state — the SAME field the soak build (Seam 4a) reads,
+# so a repaired armor actually un-halves soak in the next exchange. set_player_combat merges only the
+# provided key, leaving wound/CP/FP untouched.
+func _set_equipped_armor_pips(peer_id: int, pips: int) -> void:
+	if arena == null or not arena.has_player(peer_id):
+		return
+	arena.set_player_combat(peer_id, {"player_armor_quality_pips": pips})
 
 # server -> client: result of a skill-raise attempt
 @rpc("authority", "call_remote", "reliable")
