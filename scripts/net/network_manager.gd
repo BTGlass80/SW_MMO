@@ -1570,6 +1570,62 @@ func _refresh_peer_hostility(peer_id: int) -> void:
 		arena.set_player_target(peer_id, "")
 		arena.set_player_lethal(peer_id, false)
 
+# G4 (DIV-0017): UNPROVOKED hostile aggression. Runs every COMBAT WINDOW: each ENGAGED, still-alive
+# hostile in a LETHAL (lawless/contested) zone fires at the same-zone players who did NOT declare a shot
+# this window (fired_ids — captured before resolve_window cleared intents). Routes through the arena's
+# resolve_hostile_aggression (which uses the smoked ground_combat_model.resolve_incoming_fire_window),
+# so a player who never presses fire is STILL in danger in a lawless zone (restores the death loop /
+# insurance sink / zone fantasy). SECURED (and any non-lethal) zones NEVER reach the fire step — the
+# is_lethal_zone gate skips them, and _advance_hostiles never spawns a hostile there anyway. No player is
+# double-hit: a shooter already took their return-fire exchange in resolve_window and is excluded here.
+# Casualties route through the SAME DIV-0027 tiering as provoked combat (sev 5 -> _handle_player_death;
+# sev 3-4 -> _handle_player_downed) — no parallel death path. killer 0 = a creature (no player credit).
+func _tick_hostile_aggression(fired_ids: Array) -> void:
+	if arena == null or zones == null:
+		return
+	var fired := {}
+	for pid in fired_ids:
+		fired[int(pid)] = true
+	var takedowns := {}  # victim_peer -> {killer:0, name, severity} (dedup, keep MAX severity)
+	for zone_id in zones.zones:
+		if not HostileNpc.is_lethal_zone(zones.effective_security(zone_id)):
+			continue  # DIV-0017: secured / any non-lethal tier gets NO unprovoked fire (safe zones stay safe)
+		if not arena.has_hostile_target(zone_id) or arena.hostile_target_disabled(zone_id):
+			continue  # only an engaged, still-alive hostile initiates
+		# Idle victims: same-zone, in the arena, did NOT fire this window, and not already out.
+		var victims: Array = []
+		for pid in _peer_zones:
+			var peer := int(pid)
+			if String(_peer_zones[pid]) != zone_id or fired.has(peer) or not arena.has_player(peer):
+				continue
+			if int((arena.player_state(peer) as Dictionary).get("player_wound_severity", 0)) >= CombatArena.DISABLED_SEVERITY:
+				continue
+			victims.append(peer)
+		if victims.is_empty():
+			continue
+		var result: Dictionary = arena.resolve_hostile_aggression(zone_id, victims, _server_rng.randi())
+		# Broadcast the incoming-fire envelopes to same-zone peers (scoped like provoked combat, F65).
+		for envelope in result.get("envelopes", []):
+			var ez := String(_peer_zones.get(int((envelope as Dictionary).get("shooter_id", 0)), _default_zone))
+			for pid2 in multiplayer.get_peers():
+				if String(_peer_zones.get(pid2, _default_zone)) == ez:
+					apply_combat_envelope.rpc_id(pid2, envelope)
+		var hname := String((arena.hostile_target_state(zone_id) as Dictionary).get("name", "a hostile"))
+		for c in result.get("casualties", []):
+			var vic := int((c as Dictionary).get("peer", 0))
+			var csev := int((c as Dictionary).get("severity", CombatArena.DISABLED_SEVERITY))
+			if not takedowns.has(vic) or csev > int((takedowns[vic] as Dictionary).get("severity", 0)):
+				takedowns[vic] = {"killer": 0, "name": hname, "severity": csev}
+	# DIV-0027: TIER each unprovoked takeout exactly once — identical routing to _resolve_combat_window.
+	for victim in takedowns:
+		if state != null and state.has_player(int(victim)):
+			var td: Dictionary = takedowns[victim]
+			var s := int(td.get("severity", CombatArena.DISABLED_SEVERITY))
+			if PvpRules.is_kill(s):
+				_handle_player_death(int(victim), String(td["name"]), 0, not _downed.has(int(victim)))
+			else:
+				_handle_player_downed(int(victim), 0, s, String(td["name"]))
+
 # DIV-0006: the death consequence. A player taken OUT (live wound >= DISABLED_SEVERITY) by a LETHAL
 # hostile is killed: apply the death penalty (durability loss + partial inventory drop + insurance),
 # write the corpse manifest, relocate to the secured spaceport med bay, respawn 'wounded' (credits
@@ -1983,7 +2039,9 @@ func _physics_process(delta: float) -> void:
 			_combat_accum += delta
 			if _combat_accum >= combat_window_seconds:
 				_combat_accum = 0.0
+				var fired_ids: Array = arena.pending_shooter_ids() if arena != null else []  # G4: capture the provoked shooters BEFORE resolve clears intents
 				_resolve_combat_window()
+				_tick_hostile_aggression(fired_ids)  # G4 (DIV-0017): unprovoked hostile fire at same-zone players who did NOT fire (lethal zones only)
 				_tick_downed()  # DIV-0027: bleed-out / deterioration for downed players (SEPARATE call — _resolve_combat_window early-returns on zero intents; a lone downed player must still tick)
 			_autosave_accum += delta
 			if _autosave_accum >= AUTOSAVE_SECONDS:

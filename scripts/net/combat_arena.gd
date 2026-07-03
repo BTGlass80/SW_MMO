@@ -201,7 +201,7 @@ func set_player_combat(peer_id: int, combat_state: Dictionary) -> void:
 		return
 	var record: Dictionary = _players[peer_id]
 	var st: Dictionary = record.get("state", {})
-	for key in ["player_character_points", "player_force_points", "player_wound_severity", "player_armor_quality_pips"]:
+	for key in ["player_character_points", "player_force_points", "player_wound_severity", "player_armor_quality_pips", "player_cover_level"]:
 		if combat_state.has(key):
 			st[key] = int(combat_state[key])
 	# G2: carry the wound LEVEL string (cross-window source of truth for cumulative escalation; the int
@@ -290,6 +290,13 @@ func submit_fire_intent(peer_id: int, intent: Dictionary) -> void:
 
 func pending_intent_count() -> int:
 	return _intents.size()
+
+## G4 (DIV-0017): the peer_ids that queued a fire intent THIS window (the provoked shooters). The net
+## layer captures this BEFORE resolve_window clears intents so its unprovoked hostile-fire pass can
+## EXCLUDE anyone who fired — each player takes exactly ONE combat path per window (their own return-fire
+## exchange OR an unprovoked incoming hit, never both).
+func pending_shooter_ids() -> Array:
+	return _intents.keys()
 
 ## Drop a player's queued intent for the current window WITHOUT resolving it. Used when the player
 ## leaves the zone mid-window: a WEG action window pins you in place, so leaving cancels the queued
@@ -471,6 +478,80 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 		"target_disabled": target_disabled(),
 		"casualties": casualties.values(),  # DIV-0019: [{peer, severity, killer}, ...] taken out this window
 	}
+
+## G4 (DIV-0017): resolve ONE action window of UNPROVOKED fire from a zone's hostile target at a set of
+## same-zone players who did NOT declare a shot this window (the net layer selects the idle victims). The
+## hostile is the ATTACKER; each victim only takes INCOMING fire via the (already-smoked) multi-attacker
+## resolve_incoming_fire_window — they do NOT attack back here, so a player who WANTS to fight the hostile
+## submits a fire intent and goes through resolve_window instead (no victim is double-hit). LETHAL like
+## every hostile: target_stun_mode=false (from the creature pools) means REAL wounds, and there is no
+## DIV-0016 sparring clamp on this path (that clamp lives only in resolve_window's provoked branch).
+## Returns {envelopes, casualties:[{peer, severity, killer}]}; killer is 0 (a creature — no player credit).
+## seed_base is the server-owned per-window seed. No-op if the target is absent or already disabled.
+func resolve_hostile_aggression(target_key: String, victim_ids: Array, seed_base: int) -> Dictionary:
+	var envelopes: Array = []
+	var casualties := {}
+	if not _hostile_targets.has(target_key):
+		return {"envelopes": envelopes, "casualties": []}
+	var hrec: Dictionary = _hostile_targets[target_key]
+	var hstate: Dictionary = hrec["state"]
+	if int(hstate.get("wound_severity", 0)) >= DISABLED_SEVERITY:
+		return {"envelopes": envelopes, "casualties": []}  # a downed hostile does not fire
+	var hpools: Dictionary = hrec["pools"]
+	var hprofile: Dictionary = hrec["profile"]
+	var hname := String(hprofile.get("name", target_key))
+	var distance := float(hprofile.get("distance", PVP_DISTANCE))
+	var hostile_severity := int(hstate.get("wound_severity", 0))
+	var i := 0
+	for victim in victim_ids:
+		if not _players.has(victim):
+			i += 1
+			continue
+		var record: Dictionary = _players[victim]
+		var vstate: Dictionary = record["state"]
+		var prior := int(vstate.get("player_wound_severity", 0))
+		if prior >= DISABLED_SEVERITY:
+			i += 1
+			continue  # already out — a downed victim is the bleed-out/yield/medic loop's domain, not the hostile's
+		# The victim's OWN defensive pools (soak / dodge / armor / scale) + the hostile's attack side.
+		var pools: Dictionary = (record.get("pools", _default_player_pools) as Dictionary).duplicate(true)
+		pools.merge(hpools)  # target_attack_pool / target_damage_pool / target_soak_pool / target_scale / target_stun_mode=false
+		# One incoming attack from the hostile creature this window (the smoked multi-attacker contract).
+		var incoming: Array = [{
+			"source_id": target_key,
+			"source_name": hname,
+			"attack_pool": hpools.get("target_attack_pool", {"dice": 3, "pips": 0}),
+			"damage_pool": hpools.get("target_damage_pool", {"dice": 3, "pips": 0}),
+			"scale": String(hpools.get("target_scale", "creature")),
+			"distance": distance,
+			# G4 fix (verify: attack-correctness): the VICTIM's own cover protects them on the incoming
+			# shot (like the provoked return-fire path), NOT the hostile's profile cover — so a player who
+			# crouched then stopped firing keeps their cover bonus vs an unprovoked attack.
+			"cover_level": int(vstate.get("player_cover_level", 0)),
+			"wound_severity": hostile_severity,  # the hostile's own wound penalty on its shot
+		}]
+		var exchange_seed := seed_base + (i + 1) * 6607
+		var result: Dictionary = _ground.resolve_incoming_fire_window(_rules, vstate, pools, incoming, exchange_seed)
+		var new_vstate: Dictionary = result.get("state", vstate)
+		var new_sev := int(new_vstate.get("player_wound_severity", prior))
+		# Keep the wound LEVEL string coherent with the severity (mirrors set_player_combat's severity->level
+		# derivation) so a later PvP escalate() reads a sane ladder base. Only advances (never de-escalates).
+		if new_sev > prior:
+			new_vstate["player_wound_level"] = WoundLadder.level_for_severity(new_sev)
+		record["state"] = new_vstate
+		# Envelope so same-zone clients render the incoming fire (subject = the victim who took it).
+		var envelope: Dictionary = CombatEventEnvelopeModel.envelope_for_result(result, "ground_range", "local")
+		envelope["shooter_id"] = victim
+		envelope["shooter_name"] = String(record["name"])
+		envelope["target_name"] = hname
+		envelope["target_key"] = target_key
+		envelope["lethal"] = true
+		envelope["unprovoked"] = true  # G4: a hostile-INITIATED exchange, not the victim's own return-fire shot
+		envelopes.append(envelope)
+		if new_sev >= DISABLED_SEVERITY and new_sev > prior:
+			casualties[victim] = {"peer": victim, "severity": new_sev, "killer": 0}
+		i += 1
+	return {"envelopes": envelopes, "casualties": casualties.values()}
 
 func _apply_intent(state: Dictionary, intent: Dictionary) -> Dictionary:
 	var next := state.duplicate(true)

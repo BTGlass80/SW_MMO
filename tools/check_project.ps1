@@ -103,6 +103,8 @@ Invoke-GodotStep "Content smoke:" @("--headless", "--path", $projectRoot, "--scr
 
 Invoke-GodotStep "Combat arena smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/combat_arena_smoke.gd")
 
+Invoke-GodotStep "Hostile aggression smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/hostile_aggression_smoke.gd")
+
 Invoke-GodotStep "Persistence smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/persistence_smoke.gd")
 
 Invoke-GodotStep "Telemetry log smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/telemetry_log_smoke.gd")
