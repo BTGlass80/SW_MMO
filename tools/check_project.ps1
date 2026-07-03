@@ -131,6 +131,8 @@ Invoke-GodotStep "Hostile NPC model smoke:" @("--headless", "--path", $projectRo
 
 Invoke-GodotStep "PvP rules model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_rules_model_smoke.gd")
 
+Invoke-GodotStep "PvP flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pvp_flow_smoke.gd")
+
 Invoke-GodotStep "Security gate smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/security_gate_smoke.gd")
 
 Invoke-GodotStep "Pending influence smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/pending_influence_smoke.gd")

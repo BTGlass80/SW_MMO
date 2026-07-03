@@ -456,6 +456,18 @@ func _init() -> void:
 	_assert_equal(model.wound_name_for_severity(0), "OK", "severity 0 name")
 	_assert_equal(model.wound_name_for_severity(3), "Incapacitated", "severity 3 name")
 
+	# DIV-0019 (P2): suppress_return_fire gates the target's auto return-fire. With the flag set the
+	# shooter takes NO return damage and no return fire is resolved, while the target is still attacked
+	# identically; absent/false it is byte-identical to today (return fire present).
+	var no_suppress: Dictionary = model.resolve_exchange(rules, model.initial_state(), {"wound_severity": 0}, _pools(), 12.0, 0, 5150)
+	var suppress_pools: Dictionary = _pools()
+	suppress_pools["suppress_return_fire"] = true
+	var suppressed: Dictionary = model.resolve_exchange(rules, model.initial_state(), {"wound_severity": 0}, suppress_pools, 12.0, 0, 5150)
+	_assert_equal((suppressed["return_fire"] as Dictionary).is_empty(), true, "suppress_return_fire => no return fire resolved")
+	_assert_equal(int((suppressed["state"] as Dictionary).get("player_wound_severity", 0)), 0, "suppress_return_fire => the shooter takes no return damage")
+	_assert_equal(suppressed["target_damage"], no_suppress["target_damage"], "suppress_return_fire does NOT change the attack on the target (same seed)")
+	_assert_equal((no_suppress["return_fire"] as Dictionary).is_empty(), false, "default (no suppress) still resolves return fire — byte-identical")
+
 	rules.free()
 	rules_script = null
 	model_script = null

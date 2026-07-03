@@ -16,6 +16,8 @@ const GroundCombatModel := preload("res://scripts/rules/ground_combat_model.gd")
 const ActionWindowModel := preload("res://scripts/rules/action_window_model.gd")
 const CombatEventEnvelopeModel := preload("res://scripts/rules/combat_event_envelope_model.gd")
 const DerivedStats := preload("res://scripts/rules/derived_stats_model.gd")
+const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")  # DIV-0019: player-target remap
+const PVP_DISTANCE := 12.0  # DIV-0019: nominal inter-player range (positional range is a follow-up)
 const DISABLED_SEVERITY := 3
 # DIV-0016: non-lethal sparring ceiling. The shared training target's return fire can stun(1) or
 # wound(2) a player but NEVER incapacitate(3+) — keeping them out of the owner-gated death/respawn
@@ -282,6 +284,7 @@ func submit_fire_intent(peer_id: int, intent: Dictionary) -> void:
 		"fp": bool(intent.get("fp", false)),
 		"full_dodge": bool(intent.get("full_dodge", false)),  # F51: defensive stance — forgo the attack, max dodge
 		"dodge": bool(intent.get("dodge", false)),            # F52: active dodge WHILE attacking (-1D multi-action)
+		"target_peer": maxi(int(intent.get("target_peer", 0)), 0),  # DIV-0019: 0 = shared dummy/creature (unchanged path)
 	}
 
 func pending_intent_count() -> int:
@@ -294,13 +297,33 @@ func pending_intent_count() -> int:
 func clear_intent(peer_id: int) -> void:
 	_intents.erase(peer_id)
 
-## Resolve every queued intent for one action window, in WEG initiative order,
-## against the shared target. Returns {window, envelopes:[...], target_state,
-## target_disabled}. seed_base is the server-owned per-window seed.
-func resolve_window(seed_base: int) -> Dictionary:
+## DIV-0019: {shooter_peer: target_peer} for every queued intent naming a player (target_peer != 0).
+## The net layer re-validates each pair (same-zone + still-lawless) into a {shooter: true} auth map.
+func pending_pvp_targets() -> Dictionary:
+	var out := {}
+	for pid in _intents:
+		var t := int((_intents[pid] as Dictionary).get("target_peer", 0))
+		if t != 0:
+			out[pid] = t
+	return out
+
+## DIV-0019: drop every queued intent aimed AT peer_id (mirror of clear_intent). Called when a
+## targeted player leaves the zone or disconnects mid-window so a shot at them can't resolve.
+func clear_intents_targeting(peer_id: int) -> void:
+	for pid in _intents.keys():
+		if int((_intents[pid] as Dictionary).get("target_peer", 0)) == peer_id:
+			_intents.erase(pid)
+
+## Resolve every queued intent for one action window, in WEG initiative order. Each shooter fights
+## their assigned target: a PvP player target (intent.target_peer, authorized in `pvp_gate` — a
+## {shooter_peer: true} map the net layer builds from live zone/security state), else their hostile
+## creature, else the shared training dummy. Returns {window, envelopes, target_state, target_disabled,
+## casualties}. seed_base is the server-owned per-window seed.
+func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 	var envelopes: Array = []
+	var casualties := {}  # DIV-0019: target_peer -> {peer, severity, killer} for players taken out this window
 	if _intents.is_empty():
-		return {"window": _window_index, "envelopes": envelopes, "target_state": target_state(), "target_disabled": target_disabled()}
+		return {"window": _window_index, "envelopes": envelopes, "target_state": target_state(), "target_disabled": target_disabled(), "casualties": []}
 
 	var shooters: Array = _intents.keys()
 	var order := _initiative_order(shooters, seed_base)
@@ -309,56 +332,89 @@ func resolve_window(seed_base: int) -> Dictionary:
 	var i := 0
 	for peer_id in order:
 		var record: Dictionary = _players[peer_id]
+		# DIV-0019 (WEG + clamp-heal guard): a shooter dropped to disabled by a higher-initiative
+		# opponent EARLIER this window is OUT and cannot act. Hoisted ABOVE the target branch (before
+		# _apply_intent) so it also defuses the sparring-clamp-heal exploit for a dummy-firing victim.
+		var prior_severity := int((record["state"] as Dictionary).get("player_wound_severity", 0))
+		if prior_severity >= DISABLED_SEVERITY:
+			i += 1
+			continue
 		var intent: Dictionary = _intents[peer_id]
+		var target_peer := int(intent.get("target_peer", 0))
+		var is_pvp: bool = target_peer != 0 and target_peer != peer_id and bool(pvp_gate.get(peer_id, false)) and _players.has(target_peer)
+		# A named PvP target that FAILED the resolve-time gate (fled / zone-flipped / gone): DROP the
+		# shot. It never falls through to the shared dummy.
+		if target_peer != 0 and not is_pvp:
+			i += 1
+			continue
 		record["state"] = _apply_intent(record["state"], intent)
 		var exchange_seed := seed_base + (i + 1) * 7919
 		var window_for_shooter := window_state.duplicate(true)
 		window_for_shooter["active_ids"] = [str(peer_id)]
 		window_for_shooter["declaration_count"] = 1
-		# S6/DIV-0017: which target does THIS shooter fight? A registered hostile creature (assigned by
-		# the network layer per zone/spawn) if present, else the shared training dummy. `lethal` gates
-		# the DIV-0016 sparring clamp: true (lawless/contested) => REAL uncapped return fire.
-		var target_key := String(_player_target.get(peer_id, ""))
-		var use_hostile := target_key != "" and _hostile_targets.has(target_key)
+		# Which target does THIS shooter fight? A PvP player (DIV-0019, authorized) > a hostile creature
+		# (S6/DIV-0017) > the shared training dummy. `lethal` gates the DIV-0016 sparring clamp.
+		var target_key := ""
 		var tstate: Dictionary
 		var tpools: Dictionary
-		var tprofile: Dictionary
-		if use_hostile:
-			var hrec: Dictionary = _hostile_targets[target_key]
-			tstate = hrec["state"]
-			tpools = hrec["pools"]
-			tprofile = hrec["profile"]
+		var distance := PVP_DISTANCE
+		var cover := 0
+		var lethal := false
+		if is_pvp:
+			var def_record: Dictionary = _players[target_peer]
+			tstate = PvpRules.defender_target_state(def_record["state"], String(def_record["name"]))
+			tpools = PvpRules.defender_target_pools(def_record["pools"])
+			cover = clampi(int((_intents.get(target_peer, {}) as Dictionary).get("cover", 0)), 0, 4)
+			lethal = true  # PvP is always lethal — the sparring clamp is skipped
 		else:
-			tstate = _target_state
-			tpools = _target_pools
-			tprofile = _target_profile
-		var lethal := bool(_player_lethal.get(peer_id, false))
+			target_key = String(_player_target.get(peer_id, ""))
+			var use_hostile := target_key != "" and _hostile_targets.has(target_key)
+			var tprofile: Dictionary
+			if use_hostile:
+				var hrec: Dictionary = _hostile_targets[target_key]
+				tstate = hrec["state"]
+				tpools = hrec["pools"]
+				tprofile = hrec["profile"]
+			else:
+				tstate = _target_state
+				tpools = _target_pools
+				tprofile = _target_profile
+			distance = float(tprofile.get("distance", PVP_DISTANCE))
+			cover = int(tprofile.get("cover_level", 0))
+			lethal = bool(_player_lethal.get(peer_id, false))
 		# This shooter's own pools (from their sheet) + the resolved target side.
 		var pools: Dictionary = (record.get("pools", _default_player_pools) as Dictionary).duplicate(true)
 		pools.merge(tpools)
+		if is_pvp:
+			# DIV-0019 (P2 flag): a DECLARED duel (defender also queued an intent) resolves as one attack
+			# each — suppress the dummy-style auto return-fire here; a passive victim (no intent) still
+			# reaction-fires once. Prevents double-counting each side's offense per window.
+			pools["suppress_return_fire"] = _intents.has(target_peer)
 		var result: Dictionary = _ground.resolve_exchange_with_action_window(
-			_rules,
-			record["state"],
-			tstate,
-			pools,
-			float(tprofile.get("distance", 12.0)),
-			int(tprofile.get("cover_level", 0)),
-			window_for_shooter,
-			exchange_seed
-		)
-		# DIV-0016: clamp the player's resulting wound to the non-lethal sparring ceiling at the SINGLE
-		# server-side chokepoint — UNLESS this is a lethal encounter (DIV-0017: hostile PvE in a
-		# lawless/contested zone), where return fire deals real, uncapped damage up to 'dead'.
-		# record["state"] (player_state(peer)) is the sole accessor every downstream surface reads —
-		# snapshot you.wound (F9) + per-player nameplate wound (F17) + persistence.
+			_rules, record["state"], tstate, pools, distance, cover, window_for_shooter, exchange_seed)
+		# DIV-0016 clamp — UNLESS lethal (DIV-0017 hostile PvE / DIV-0019 PvP). Floor-aware: the cap can
+		# only LOWER toward SPARRING_MAX, never below where the player already was, so a PvP-wounded
+		# player who also fired the dummy is never healed by the clamp (the must-fix).
 		var next_pstate: Dictionary = result.get("state", record["state"])
 		if not lethal:
-			next_pstate["player_wound_severity"] = mini(int(next_pstate.get("player_wound_severity", 0)), SPARRING_MAX_SEVERITY)
+			next_pstate["player_wound_severity"] = mini(int(next_pstate.get("player_wound_severity", 0)), maxi(SPARRING_MAX_SEVERITY, prior_severity))
 		record["state"] = next_pstate
-		# Write the resolved target's new state back to the RIGHT target (the hostile record or the
-		# shared dummy), so each hostile encounter accumulates independently.
+		# Write the resolved target's new state back to the RIGHT target.
 		var new_tstate: Dictionary = result.get("target_state", tstate)
-		if use_hostile:
+		if is_pvp:
+			# Land the shot on the TARGET PLAYER's live state (accumulate; the single field every
+			# downstream surface reads). NOT _target_state, NOT the shooter.
+			var def2: Dictionary = _players[target_peer]
+			var def_state: Dictionary = def2["state"]
+			var prior_def := int(def_state.get("player_wound_severity", 0))
+			def_state["player_wound_severity"] = maxi(prior_def, int(new_tstate.get("wound_severity", 0)))
+			def_state["player_armor_quality_pips"] = int(new_tstate.get("armor_quality_pips", def_state.get("player_armor_quality_pips", 0)))
+			def2["state"] = def_state
+			var new_def := int(def_state["player_wound_severity"])
+			# Tiered casualty (dedup by peer; keeps the highest severity + the killer who reached it).
+			if new_def >= DISABLED_SEVERITY and new_def > prior_def:
+				casualties[target_peer] = {"peer": target_peer, "severity": new_def, "killer": peer_id}
+		elif target_key != "":
 			(_hostile_targets[target_key] as Dictionary)["state"] = new_tstate
 		else:
 			_target_state = new_tstate
@@ -367,9 +423,15 @@ func resolve_window(seed_base: int) -> Dictionary:
 		envelope["shooter_name"] = String(record["name"])
 		envelope["target_name"] = String(new_tstate.get("name", ""))
 		envelope["target_wound_severity"] = int(new_tstate.get("wound_severity", 0))
-		envelope["target_key"] = target_key  # "" = the shared training dummy
 		envelope["target_disabled"] = int(new_tstate.get("wound_severity", 0)) >= DISABLED_SEVERITY
-		envelope["lethal"] = lethal
+		if is_pvp:
+			envelope["pvp"] = true
+			envelope["target_peer_id"] = target_peer
+			envelope["target_key"] = ""
+			envelope["lethal"] = true
+		else:
+			envelope["target_key"] = target_key  # "" = the shared training dummy
+			envelope["lethal"] = lethal
 		envelopes.append(envelope)
 		i += 1
 
@@ -380,6 +442,7 @@ func resolve_window(seed_base: int) -> Dictionary:
 		"envelopes": envelopes,
 		"target_state": target_state(),
 		"target_disabled": target_disabled(),
+		"casualties": casualties.values(),  # DIV-0019: [{peer, severity, killer}, ...] taken out this window
 	}
 
 func _apply_intent(state: Dictionary, intent: Dictionary) -> Dictionary:

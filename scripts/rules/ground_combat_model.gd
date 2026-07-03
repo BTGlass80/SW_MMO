@@ -152,7 +152,11 @@ func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary
 		events.append(_damage_event("target_damage", round_num, exchange_seed, target_damage, target_severity, target_disabled, target_wound_penalty, next_target))
 
 	var return_fire := {}
-	if not target_disabled:
+	# DIV-0019: suppress the target's auto return-fire when the caller opts in (a declared PvP duel
+	# where the defender ALSO queued their own attack -> one attack each, no double-count). Defaulted
+	# false so every existing caller (dummy/creature/incoming) is byte-identical; a passive PvP victim
+	# (no queued intent) leaves it false and still reaction-fires once.
+	if not target_disabled and not bool(pools.get("suppress_return_fire", false)):
 		return_fire = _resolve_return_fire(rules, next_state, pools, distance, rng, target_severity, force_point_spent)
 		events.append(_return_fire_event(round_num, exchange_seed, return_fire))
 		next_state["player_wound_severity"] = maxi(
