@@ -15,3 +15,8 @@ __pycache__/
 # Claude Code runtime locks (keep tracked: .claude/agents/, CLAUDE.md)
 .claude/scheduled_tasks.lock
 
+
+# Soak / watchdog run artifacts (reports + per-run logs)
+soak_logs/
+watchdog_logs/
+soak_report.txt

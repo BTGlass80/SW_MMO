@@ -361,12 +361,31 @@ session log.
    misfiled in `scripts/net` on day one, moved to `scripts/rules`; `tools/telemetry_tally.py` +
    tests; CLAUDE.md/README/SESSION_HANDOFF de-drifted).
 2. ~~G14 + G15~~ **DONE — merged serially (`bf27f1e`, `107b7bc`), gate green each, claim released.**
-3. **PT1 prep track (owner-approved 2026-07-03) — IN FLIGHT, CLAIMED by the attended 2026-07-03
-   session:** G8 auth/crypto bundle `[HOT]` is being built ON MAIN right now (salted hash at rest +
-   dev-transport banner; DTLS out of scope) and the watchdog + 20-bot soak + envelope replay tools are
-   building in worktrees. **Cron ticks: take NOTHING while this claim stands** (a HOT agent owns
-   `scripts/net/*` and port 24555). The **PT1 date remains owner-gated.** Queued after: the G14/G15
-   verifier-advisory follow-ups (equal-severity escalation on the hostile-aggression path; a
-   NetworkManager-level wounded_twice First-Aid-at-14 test; `_active_boss_quest_target_in_zone` →
-   `_cached_load`; svaper cr/min outlier), the live 20-bot soak acceptance run, and the ammo/repair
-   recurring-sink pairing (G18 faucets-and-sinks).
+3. ~~PT1 prep track~~ **DONE 2026-07-03, claim RELEASED.** G8 auth bundle `6d2834e` (salted-hash
+   secrets at rest via Crypto/HashingContext, legacy plaintext records migrate on first verify,
+   DEV-TRANSPORT banner both ends; two-process proven: accept/reject/no-plaintext-on-disk/legacy-
+   upgrade; DTLS still out of scope — gates the first non-LAN evening). Envelope replay tool
+   `0c21e98` (FULL replay from seed+replay_inputs with event-by-event diff + PARTIAL mode for
+   today's envelopes; CLI exit 0 = REPRODUCED). Watchdog + soak probe `0a89544` (+ sampler
+   honesty fix). **Live soak acceptance PASS twice** (20 bots × 7 min and 6 bots × 2 min: all
+   connected, zero SCRIPT ERROR, zero engine errors, server survived; ~128 MB/client, server WS
+   settles ~10 MB).
+
+### Next queue (unblocked, non-owner-gated — for the loop)
+- `[HOT]` one-liner: `combat_arena` wraps `envelope_for_result` with `attach_replay_inputs`
+  (SERVER/log side only — the block carries both sheets' pools, do NOT broadcast it).
+- `[HOT]` `_active_boss_quest_target_in_zone` → `_cached_load` (G15 advisory: the only direct
+  disk read in the file; fragile to future cache-only mutations).
+- `[PAR→HOT]` NetworkManager-level flow smoke: live wounded_twice patient is First-Aided at
+  Guide_19 difficulty **14** (closes the G14 advisory gap end-to-end).
+- `[HOT]` equal-severity escalation asymmetry: `resolve_hostile_aggression` refreshes
+  `player_wound_level` only when severity strictly advances, so wounded+wounded never escalates
+  to wounded_twice on the unprovoked path (the PvP defender path does escalate) — fold into the
+  DIV-0008 escalate follow-up.
+- `[PAR]` ammo recurring sink (old B8) — pairs a faucet-heavy month per the CLAUDE.md
+  faucets-and-sinks rule; run `tools/telemetry_tally.py` on the next live session log.
+- `[PAR]` svaper cr/min outlier (824 cr/min at t4) — within-tier loot spread retune; probe is
+  the acceptance instrument, paste the table.
+- **Before PT1 (owner picks the date):** a full 20-bot × 30-min evening soak under
+  `tools/run_server_watchdog.ps1` (the 7-min acceptance passed; the long run is the dress
+  rehearsal), and the DTLS-or-banner decision for anything beyond LAN.

@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # tools/soak_test.ps1 -- 20-bot scaling probe (PowerShell 5.1)
 # =============================================================================
 # Load-tests the server-authoritative net slice: starts one headless server
@@ -139,7 +139,7 @@ $sampleCount = [Math]::Max(1, $DurationMinutes * 2)
 $samples = @()
 $serverDied = $false
 
-function Count-LogPattern {
+function Get-LogPatternCount {
     param([string]$Pattern)
     $total = 0
     $hits = Select-String -Path (Join-Path $soakDir "*.log") -Pattern $Pattern -SimpleMatch -ErrorAction SilentlyContinue
@@ -151,7 +151,10 @@ Write-Host "[soak] sampling every 30s for $DurationMinutes minute(s) ($sampleCou
 for ($s = 1; $s -le $sampleCount; $s++) {
     Start-Sleep -Seconds 30
 
-    $netProcs = Get-NetWorldProcesses
+    # Each launch is a console-wrapper + real win64 process PAIR; measure only the
+    # real (non-console) processes or the server row reads the 5MB wrapper and the
+    # client count doubles.
+    $netProcs = @((Get-NetWorldProcesses) | Where-Object { $_.Name -notlike "*console*" })
     $serverCim = @($netProcs | Where-Object { $_.CommandLine -like "*--server*" })
     $clientCim = @($netProcs | Where-Object { $_.CommandLine -notlike "*--server*" })
 
@@ -189,8 +192,8 @@ for ($s = 1; $s -le $sampleCount; $s++) {
         Clients       = $clientCim.Count
         CliWS_MB      = [Math]::Round($clientWsMB, 1)
         CliCPU_s      = [Math]::Round($clientCpuS, 1)
-        ScriptErrors  = (Count-LogPattern "SCRIPT ERROR")
-        InsideTreeErr = (Count-LogPattern "is_inside_tree")
+        ScriptErrors  = (Get-LogPatternCount "SCRIPT ERROR")
+        InsideTreeErr = (Get-LogPatternCount "is_inside_tree")
         SrvLogLines   = $serverLogLines
     }
     $samples += $sample
@@ -219,8 +222,8 @@ foreach ($tag in ($botLogs.Keys | Sort-Object)) {
     if (-not $connected) { $neverConnected += "bot$tag" }
 }
 
-$totalScriptErrors = (Count-LogPattern "SCRIPT ERROR")
-$totalInsideTree = (Count-LogPattern "is_inside_tree")
+$totalScriptErrors = (Get-LogPatternCount "SCRIPT ERROR")
+$totalInsideTree = (Get-LogPatternCount "is_inside_tree")
 $maxSrvWs = 0.0
 $maxCliWs = 0.0
 foreach ($smp in $samples) {
@@ -266,3 +269,4 @@ Write-Host "[soak] report written to $ReportPath"
 
 if ($verdict -eq "FAIL") { exit 1 }
 exit 0
+

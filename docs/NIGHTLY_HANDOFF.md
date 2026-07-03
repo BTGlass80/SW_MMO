@@ -352,7 +352,17 @@ Three audit passes (F66–F75) now span ~14 dimensions. The remaining substantiv
   (siege/cities/server-space); PT1 prep track approved (G8 auth bundle un-gated, watchdog, 20-bot soak,
   envelope replay) — PT1 date still owner-gated; push to origin after each green commit.
 - G14 (wounded_twice −2D level plumbing) + G15 (tier/loot re-tune with probe acceptance) implemented via
-  parallel worktrees with adversarial verification; integrated serially on main (see git log).
+  parallel worktrees with adversarial verification; integrated serially on main (`bf27f1e`, `107b7bc`).
+  The verifiers earned their keep both times: G14's missed the unprovoked-incoming-fire path AND a
+  heal-loop WEG bug (live wounded_twice First-Aided at difficulty 11, not 14); G15's "boss channel" was
+  documented but unwired, silently killing two shipped quests — the fix landed the real channel
+  (quest-driven, opt-in, never ambient).
+- **PT1 prep track complete** (owner-approved that morning): G8 salted-hash auth + legacy migration +
+  dev-transport banner (`6d2834e`, two-process proven, no plaintext on disk); combat-envelope replay
+  tool (`0c21e98`, FULL/PARTIAL modes, tamper-detecting); server watchdog + 20-bot soak probe
+  (`0a89544`); **live soak acceptance PASS** — 20 bots, 7 min, 20/20 connected, zero script/engine
+  errors, server survived (~128 MB/client). Remaining before a PT1 date: the 30-min dress-rehearsal
+  soak under the watchdog + the DTLS-or-LAN-only call. Next work: `WAVE_G_BACKLOG.md` § Next queue.
 
 ## Next Best Slices
 

@@ -92,6 +92,15 @@ PT1 prep cleared, PT1 date still owner-gated.
   debuff; positional PvP range (see G9 design-first).
 
 ## Log (newest first)
+- 2026-07-03 (Fable, session 2 continued): FULL Wave-G delta queue + PT1 prep track SHIPPED. G14
+  wounded_twice −2D live everywhere (adversarial verify forced the incoming-fire + heal/recovery seams;
+  First Aid now treats live wounded_twice at difficulty 14) `bf27f1e`; G15 probe-accepted retier + one
+  loot axis + a REAL quest-driven boss channel (verifier caught the phantom channel silently killing
+  q_krayt_bounty/q_rancor_sighting) `107b7bc`; G16/G17/G18 `1983b34` (gate prints counts + not-before-live
+  invariant — which caught siege_state_model misfiled in scripts/net on day one; faucets-and-sinks rule +
+  telemetry_tally.py); G8 salted-hash auth + legacy migration + dev-transport banner `6d2834e`
+  (two-process proven); envelope replay tool `0c21e98`; watchdog + soak probe `0a89544`; live soak
+  acceptance PASS (20 bots, 0 errors, 20/20 connected). Next queue = WAVE_G_BACKLOG § Next queue.
 - 2026-07-03 (Fable takes the wheel, attended→unattended): G13 LIVE acceptance PASS (lawless autofire bot:
   0 dummy hits post-travel, Acklay combat as positive control); D3 done — `!is_inside_tree()` spam fixed
   (`_spawn_npc`/`_build_camera` add_child-before-global_position; 105→0 errors live-verified); Wave G
