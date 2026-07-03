@@ -71,7 +71,7 @@ a combat_arena lethal flag + a Director-tick spawner) is the shared root.
 - **S14** ✅ DONE `ca34285` — `force_awakening_model.gd` + smoke.
 - **S15** ✅ DONE `2c4ebd8` — Force schema + chargen seed (`sheet.force_unlock`).
 - **S16–S19** `[HOT]` Force wiring: signal feeds → Director-tick advancement → completion flip + subtle client notice. **← NEXT**
-- **DIV-0019 PvP** (2026-07-02, NEW): pure `pvp_rules_model.gd` (lawless-only same-zone `can_fire`) + combat_arena `resolve_window(seed, pvp_gate)` + network_manager fire-target gating. Build spec ready.
+- **DIV-0019 PvP** (2026-07-02, NEW) ✅ DONE — pure `pvp_rules_model.gd` (P1 `7a7e63c`) + `suppress_return_fire` flag + combat_arena `resolve_window(seed, pvp_gate)` (P2-P4 `57c0b1a`) + network_manager submit/resolve gate + casualty/death routing + client `--fire-target`/`--fire-nearest` (P5-P6 `5502624`). Two-process verified: PvP kill/respawn in lawless dune_sea; refused (protected_zone) in the secured spaceport. Follow-ups: positional inter-player range, third-party corpse-loot RPC + decay, consensual duels in protected zones.
 
 ## 2026-07-02 owner rulings (fold these into the wiring)
 - **PvP = ZONE-BASED**: lawless = open PvP; secured/contested protected. NEW system beyond S0–S19 —
