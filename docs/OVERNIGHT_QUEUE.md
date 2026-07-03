@@ -19,7 +19,10 @@ Self-imposed guardrail: **local/deterministic only — no paid/external/LLM-in-t
    (the gate does NOT catch its warning-as-error; launch a `--no-register` client and grep for SCRIPT ERROR).
 5. On GREEN: **scoped** `git add <your paths>` (NEVER `-A`; NEVER touch `assets/`, `MMO_Assets/`,
    `tools/fetch_assets.py`, `tools/asset_sources.json`, `docs/ASSET_*.md`) + commit (message via `-F` file
-   to avoid quote-parsing). Mark the item DONE (+hash) here. On RED: `git checkout -- <your paths>`, mark BLOCKED.
+   to avoid quote-parsing). **Then `git push origin master`** — a GitHub remote now exists
+   (`https://github.com/BTGlass80/SW_MMO.git`); keep it in sync after every commit. Best-effort: a failed
+   push is non-fatal (the commit stands; next tick retries). Mark the item DONE (+hash) here. On RED:
+   `git checkout -- <your paths>`, mark BLOCKED.
 6. Keep replies terse. Don't create new crons / don't ScheduleWakeup — THIS cron is the driver.
 6b. **Stay active until your slice(s) COMMIT** — don't end the turn with uncommitted background work
     (the idle-only cron would start an OVERLAPPING tick). Wait on your Workflow/agents (Monitor or a
