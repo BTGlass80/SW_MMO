@@ -71,6 +71,8 @@ Invoke-GodotStep "Range state badge model smoke:" @("--headless", "--path", $pro
 
 Invoke-GodotStep "Range target model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/range_target_model_smoke.gd")
 
+Invoke-GodotStep "Positional range model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/positional_range_model_smoke.gd")
+
 Invoke-GodotStep "Moving target model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/moving_target_model_smoke.gd")
 
 Invoke-GodotStep "Modal overlay model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/modal_overlay_model_smoke.gd")
