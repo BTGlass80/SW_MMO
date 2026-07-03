@@ -44,11 +44,15 @@ static func defender_target_pools(defender_pools: Dictionary) -> Dictionary:
 		"target_stun_mode": false,
 	}
 
-# {wound_severity, armor_quality_pips, name} view of a live defender player-state (the target_state
-# resolve_exchange reads/writes). player_wound_severity -> wound_severity; pips carry.
+# {wound_severity, wound_level, armor_quality_pips, name} view of a live defender player-state (the
+# target_state resolve_exchange reads/writes). player_wound_severity -> wound_severity; pips carry.
+# G14 (DIV-0008): also carry the wound LEVEL STRING (player_wound_level -> wound_level) so the defender's
+# reaction-dodge / return-fire penalty honors the wounded_twice (-2D) tier — the severity int collapses it
+# to 2. Empty when the defender has no level yet (freshly registered/healthy) -> severity fallback.
 static func defender_target_state(defender_state: Dictionary, display_name: String) -> Dictionary:
 	return {
 		"wound_severity": int(defender_state.get("player_wound_severity", 0)),
+		"wound_level": String(defender_state.get("player_wound_level", "")),
 		"armor_quality_pips": int(defender_state.get("player_armor_quality_pips", 0)),
 		"name": display_name,
 	}

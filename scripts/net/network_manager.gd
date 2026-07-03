@@ -2550,7 +2550,13 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 	# presentation data surfaced from the live combat state — no new mechanic.
 	if arena != null and peer_id != 0 and arena.has_player(peer_id):
 		var ps: Dictionary = arena.player_state(peer_id)
-		var ws := PersistenceStore.wound_state_for_severity(int(ps.get("player_wound_severity", 0)))
+		# G14 (DIV-0008): prefer the wound LEVEL STRING so the client readout shows the true
+		# wounded_twice (-2D) tier — the severity int collapses wounded/wounded_twice to 2, which
+		# would display -1D while live combat applies -2D. Fall back to the severity mapping when no
+		# level is tracked (freshly restored / healthy state with no level string).
+		var ws := String(ps.get("player_wound_level", ""))
+		if ws == "":
+			ws = PersistenceStore.wound_state_for_severity(int(ps.get("player_wound_severity", 0)))
 		var mystat := arena.player_status_summary(peer_id)  # DIV-0024: my own venom/restraint status
 		snap["you"] = {
 			"wound": ws,
