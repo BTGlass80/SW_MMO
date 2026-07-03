@@ -447,8 +447,11 @@ func _spawn(creatures: Dictionary, key: String) -> Dictionary:
 		return {}
 	# G15 (reviewer's one-line patch): carry threat_tier so EconomyModel.roll_loot's tier multiplier is
 	# actually exercised in the probe (without it, every probed kill defaulted to the tier-2 x1.0 band).
+	# G16: also carry the optional per-creature loot_mult (default 1.0) so the probe measures the shipped
+	# within-tier wpk-variance correction, not the pre-fix flat-tier numbers.
 	return {"creature_key": key, "name": String(c.get("name", key)), "scale": String(c.get("scale", "creature")),
 		"hostile": bool(c.get("hostile", true)), "pack_size": 1, "threat_tier": int(c.get("threat_tier", 2)),
+		"loot_mult": float(c.get("loot_mult", 1.0)),
 		"char_sheet": c.get("char_sheet", {}), "natural_attack": c.get("natural_attack", {})}
 
 func _species(data: Dictionary, key: String) -> Dictionary:

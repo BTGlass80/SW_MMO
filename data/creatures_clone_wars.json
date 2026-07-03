@@ -246,7 +246,8 @@
         "note": "Thick constrictor hide; field-dressed on kill (Lane A Phase C)."
       },
       "source": "COTG §2.1 (WEG40080)",
-      "threat_tier": 4
+      "threat_tier": 4,
+      "loot_mult": 0.65
     },
     "yeomet": {
       "id": "yeomet",
@@ -526,7 +527,8 @@
         "note": "Bulk hide/flesh from a large beast; field-dressed on kill (Lane A Phase C)."
       },
       "source": "COTG §3 (WEG40080)",
-      "threat_tier": 4
+      "threat_tier": 4,
+      "loot_mult": 2.4
     },
     "shredder_bat": {
       "id": "shredder_bat",
@@ -1369,7 +1371,8 @@
         "note": "The carapace plate is a commercial armour blank; field-dressed on kill."
       },
       "source": "COTG sec.2.3 (WEG40080). Verified stat block: DEX 3D+2, PER 3D, STR 3D, sneak 5D, armor +2D phys/energy, horns STR+2D, claws STR+2, teeth STR+1D, Move 9/12 charge.",
-      "threat_tier": 4
+      "threat_tier": 4,
+      "loot_mult": 0.6
     },
     "preying_makthier": {
       "id": "preying_makthier",
@@ -1630,7 +1633,8 @@
         "note": "The accumulated-alloy shell segments are a salvage good; field-dressed on kill."
       },
       "source": "COTG §2.5 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.5. Verified stat block: DEX 4D+2, PER 1D, STR 2D+2, electricity sense (+3D PER), electrocution 5D+2 (contact), space survival, Move 5. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; Kuat-orbital/station framing recast to Mos Eisley's spaceport hangar bays - the same infrastructure-pest niche, era-clean (no Imperial framing).",
-      "threat_tier": 4
+      "threat_tier": 4,
+      "loot_mult": 0.45
     },
     "svaper": {
       "id": "svaper",
@@ -1680,7 +1684,8 @@
         }
       },
       "source": "COTG §2.2 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.2. Verified stat block: DEX 4D, PER 2D, STR 2D, Bite STR+3D, Spines STR+3D+2 (lodge in skin), Tough skin +2D (not gills), Move 20 swim (land Move calibrated to 13, matching the C:\\SW_MUSH underworld precedent). Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; aquatic Kamino/Nar Shaddaa framing recast to Mos Eisley's own moisture-reclamation cisterns and smugglers' disposal tanks.",
-      "threat_tier": 4
+      "threat_tier": 4,
+      "loot_mult": 0.35
     },
     "syndicate_enforcer": {
       "id": "syndicate_enforcer",
