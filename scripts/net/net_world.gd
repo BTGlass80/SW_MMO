@@ -38,6 +38,8 @@ var _cover := 0             # F50: take 1/4 cover for this shot (0/1). WEG: atta
 var _dodge := false         # F52: active dodge staged for this shot (attack at -1D, defend with dodge)
 var _fire_cp := 0           # headless: --fire-cp N stages CP on the autofire path
 var _fire_fp := false       # headless: --fire-fp stages a Force Point on autofire
+var _fire_target := 0       # headless DIV-0019: --fire-target <peer> aims autofire at a PLAYER (0 = the dummy/creature)
+var _fire_nearest := false  # headless DIV-0019: --fire-nearest aims autofire at the first other player in the zone
 var _fire_cover := 0        # headless: --fire-cover 1 takes 1/4 cover on the autofire path
 var _fire_dodge := false    # headless: --fire-dodge stages an active dodge on the autofire path (F52)
 var _autofire := false
@@ -137,6 +139,7 @@ func _ready() -> void:
 	Net.died.connect(_on_died)
 	Net.insurance_replied.connect(_on_insurance_replied)
 	Net.force_awakened_replied.connect(_on_force_awakened)
+	Net.fire_rejected.connect(_on_fire_rejected)
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -192,6 +195,8 @@ func _parse_args() -> void:
 	_autodefend = args.has("--autodefend")  # headless: full-dodge defensive stance each window (F51)
 	_fire_dodge = args.has("--fire-dodge")  # headless: active dodge on autofire shots (F52)
 	_fire_fp = args.has("--fire-fp")  # headless: stage a Force Point on autofire shots
+	_fire_target = maxi(int(_arg_value("--fire-target")), 0)  # headless DIV-0019: aim autofire at a player peer
+	_fire_nearest = args.has("--fire-nearest")  # headless DIV-0019: aim autofire at the first other player
 	_start_wound = _arg_value("--start-wound")  # headless DIV-0012: new char starts wounded
 	_heal_other = args.has("--heal-other")  # headless DIV-0013: First-Aid the first other player once
 	_travel = _arg_value("--travel")  # headless DIV-0014: travel to this zone_id once
@@ -224,7 +229,10 @@ func _process(delta: float) -> void:
 			if _autodefend:
 				Net.send_fire_intent({"full_dodge": true})  # F51: headless defensive-stance loop
 			else:
-				Net.send_fire_intent({"aim": 3, "cover": _fire_cover, "cp": _fire_cp, "fp": _fire_fp, "dodge": _fire_dodge})
+				var tgt := _fire_target
+				if _fire_nearest and tgt == 0:
+					tgt = _first_other_player()  # DIV-0019: target the first other player in the zone
+				Net.send_fire_intent({"aim": 3, "cover": _fire_cover, "cp": _fire_cp, "fp": _fire_fp, "dodge": _fire_dodge, "target_peer": tgt})
 	if _raise_skill != "" and not _raise_sent and Net.connected:
 		_raise_accum += delta
 		if _raise_accum >= 6.0:  # let some CP accrue first, then raise once (headless test)
@@ -1028,6 +1036,18 @@ func _on_force_awakened(notice: Dictionary) -> void:
 	if _combat_log != null:
 		_combat_log.text = "Combat log:\n" + "\n".join(_combat_lines)
 
+# DIV-0019: a PvP fire intent was refused (fired outside a lawless zone / at a protected target).
+func _on_fire_rejected(result: Dictionary) -> void:
+	var reason := String(result.get("reason", "rejected"))
+	var messages := {
+		"protected_zone": "You can't attack players here — this zone is protected. (Open PvP is lawless-only.)",
+		"protected_target": "That player is in a protected zone.",
+		"different_zone": "That player isn't in your zone.",
+	}
+	var msg := String(messages.get(reason, "PvP fire refused (%s)." % reason))
+	print("[pvp] fire refused (%s)" % reason)
+	_set_status(msg)
+
 # DIV-0006: buy-insurance outcome.
 func _on_insurance_replied(result: Dictionary) -> void:
 	if bool(result.get("ok", false)):
@@ -1089,6 +1109,15 @@ func _my_position() -> Vector3:
 		if int((entry as Dictionary).get("id", 0)) == _local_id:
 			return (entry as Dictionary).get("pos", Vector3.ZERO)
 	return Vector3.ZERO
+
+# DIV-0019: the first OTHER same-zone player in the snapshot (0 if alone). Used by --fire-nearest to
+# aim autofire at a player target without knowing their peer id in advance (the snapshot is zone-scoped).
+func _first_other_player() -> int:
+	for entry in Net.last_snapshot.get("players", []):
+		var id := int((entry as Dictionary).get("id", 0))
+		if id != 0 and id != _local_id:
+			return id
+	return 0
 
 func _on_heal_replied(result: Dictionary) -> void:
 	if bool(result.get("ok", false)):

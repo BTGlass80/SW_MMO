@@ -34,6 +34,7 @@ const HostileNpc := preload("res://scripts/rules/hostile_npc_model.gd")     # DI
 const CreatureSpawn := preload("res://scripts/rules/creature_spawn_model.gd") # seeded hostile spawn rolls
 const DeathPenalty := preload("res://scripts/rules/death_penalty_model.gd")   # DIV-0006: death penalty + respawn
 const ForceAwaken := preload("res://scripts/rules/force_awakening_model.gd")   # DIV-0011: SWG-Village earned unlock
+const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")            # DIV-0019: zone-based PvP consent gate
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -86,6 +87,7 @@ signal sell_replied(result: Dictionary)
 signal died(notice: Dictionary)             # DIV-0006: this client was killed + respawned
 signal insurance_replied(result: Dictionary) # DIV-0006: buy-insurance outcome
 signal force_awakened_replied(notice: Dictionary) # DIV-0011: this client's Force sensitivity awakened
+signal fire_rejected(result: Dictionary)    # DIV-0019: a PvP fire intent was refused (zone/consent)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -241,6 +243,7 @@ func _on_peer_disconnected(id: int) -> void:
 	state.remove_player(id)
 	if arena != null:
 		arena.remove_player(id)
+		arena.clear_intents_targeting(id)  # DIV-0019: cancel PvP shots aimed at a player who disconnected
 	_peer_characters.erase(id)
 	_peer_zones.erase(id)
 	_peer_orgs.erase(id)
@@ -295,7 +298,10 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	last_snapshot = snapshot
 	snapshot_applied.emit(snapshot)
 
-# client -> server: a fire intent for the current combat window
+# client -> server: a fire intent for the current combat window. A non-zero intent.target_peer names a
+# PLAYER target (DIV-0019 PvP): the server gates it here on live zone/security (open PvP only in a
+# shared LAWLESS zone) and re-validates at resolution (_build_pvp_gate). target_peer 0 = the shared
+# dummy/creature, unchanged.
 @rpc("any_peer", "call_remote", "reliable")
 func submit_fire_intent(intent: Dictionary) -> void:
 	if mode != Mode.SERVER or arena == null:
@@ -303,8 +309,43 @@ func submit_fire_intent(intent: Dictionary) -> void:
 	var sender := multiplayer.get_remote_sender_id()
 	if not _rate_ok(sender):
 		return
-	if arena.has_player(sender):
-		arena.submit_fire_intent(sender, intent)
+	if not arena.has_player(sender):
+		return
+	var target := int(intent.get("target_peer", 0))
+	if target != 0:
+		if target == sender or not arena.has_player(target) or zones == null:
+			return  # no self-fire / phantom target
+		var sz := String(_peer_zones.get(sender, _default_zone))
+		var tz := String(_peer_zones.get(target, _default_zone))
+		var gate: Dictionary = PvpRules.can_fire(sz, tz, zones.effective_security(sz), zones.effective_security(tz))
+		if not bool(gate.get("allowed", false)):
+			print("[pvp] peer %d fire on %d refused (%s)" % [sender, target, String(gate.get("reason", ""))])
+			fire_result.rpc_id(sender, {"ok": false, "reason": String(gate.get("reason", "rejected")), "target_peer": target})
+			return
+	arena.submit_fire_intent(sender, intent)
+
+# server -> client: a PvP fire intent was refused (protected zone / different zone / etc.)
+@rpc("authority", "call_remote", "reliable")
+func fire_result(result: Dictionary) -> void:
+	fire_rejected.emit(result)
+
+# DIV-0019: the authoritative RESOLVE-TIME PvP re-gate. Re-checks every queued player-target pair
+# against live zone/security (closing a Director mid-window tier-flip) into a {shooter: true} map the
+# zone-agnostic arena consumes. Only same-zone lawless pairs are authorized.
+func _build_pvp_gate() -> Dictionary:
+	var gate := {}
+	if arena == null or zones == null:
+		return gate
+	var pending: Dictionary = arena.pending_pvp_targets()
+	for shooter in pending:
+		var target := int(pending[shooter])
+		if target == int(shooter) or not arena.has_player(target):
+			continue
+		var sz := String(_peer_zones.get(int(shooter), _default_zone))
+		var tz := String(_peer_zones.get(target, _default_zone))
+		if bool(PvpRules.can_fire(sz, tz, zones.effective_security(sz), zones.effective_security(tz)).get("allowed", false)):
+			gate[int(shooter)] = true
+	return gate
 
 # server -> clients: a resolved WEG combat exchange envelope
 @rpc("authority", "call_remote", "reliable")
@@ -701,6 +742,7 @@ func submit_change_zone(zone_id: String) -> void:
 	# influence to the DESTINATION zone you never fought in. Mirrors the clear on disconnect/resolve.
 	if arena != null:
 		arena.clear_intent(sender)
+		arena.clear_intents_targeting(sender)  # DIV-0019: cancel PvP shots aimed at a player who just left the zone
 	_peer_zones[sender] = zone_id
 	var record := _cached_load(character_id)
 	if not record.is_empty():
@@ -1313,7 +1355,7 @@ func _refresh_peer_hostility(peer_id: int) -> void:
 # KEPT), and disengage from the hostile. v1 fires on incapacitation (a lone character taken out by a
 # hostile in a lawless/contested zone is killed) rather than modeling the mortally-wounded death-roll
 # grace; the survivable incapacitated/mortally band remains the non-lethal medical loop's domain.
-func _handle_player_death(peer_id: int, killer_name: String) -> void:
+func _handle_player_death(peer_id: int, killer_name: String, killer_peer: int = 0) -> void:
 	if store == null:
 		return
 	var character_id := String(_peer_characters.get(peer_id, ""))
@@ -1328,11 +1370,12 @@ func _handle_player_death(peer_id: int, killer_name: String) -> void:
 	var outcome: Dictionary = DeathPenalty.apply_death(sheet, tier)
 	var new_sheet: Dictionary = outcome["sheet"]  # wound_state=wounded, durability loss, drops removed, insurance consumed
 	var dropped: Array = outcome["dropped"]
-	# Corpse manifest -> record.world_hooks.corpse (full-loot by others in lawless is a tracked follow-up).
+	# Corpse manifest -> record.world_hooks.corpse. In LAWLESS the corpse is FULL-LOOT (DIV-0019, other
+	# players may loot it — the loot RPC is a follow-up; the manifest + full_loot flag are written now).
 	var world_hooks: Dictionary = record.get("world_hooks", {})
 	if not dropped.is_empty():
 		var dpos: Vector3 = state.get_player(peer_id).get("pos", WorldState.SPAWN_POINT) if state != null else WorldState.SPAWN_POINT
-		world_hooks["corpse"] = {"zone_id": zone_id, "pos": {"x": dpos.x, "y": dpos.y, "z": dpos.z}, "items": dropped, "decay_unix": 0.0}
+		world_hooks["corpse"] = {"zone_id": zone_id, "pos": {"x": dpos.x, "y": dpos.y, "z": dpos.z}, "items": dropped, "decay_unix": 0.0, "full_loot": PvpRules.is_full_loot(tier)}
 	else:
 		world_hooks["corpse"] = null
 	record["world_hooks"] = world_hooks
@@ -1348,7 +1391,14 @@ func _handle_player_death(peer_id: int, killer_name: String) -> void:
 		arena.set_player_combat(peer_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(String(new_sheet.get("wound_state", "wounded")))})
 		arena.set_player_target(peer_id, "")   # disengage from the hostile
 		arena.set_player_lethal(peer_id, false)
+		arena.clear_intents_targeting(peer_id) # cancel shots aimed at the (now-respawned) victim
 	_heal_treated.erase(peer_id)
+	# DIV-0019: a PvP kill credits the killer (same rewards as a PvE disable) + feeds their awakening.
+	if killer_peer > 0 and arena != null and arena.has_player(killer_peer):
+		_award_cp(killer_peer, "gameplay", COMBAT_CP_REWARD)
+		_accrue_zone_influence(killer_peer, DISABLE_INFLUENCE)
+		_accrue_territory_influence(killer_peer, KILL_TERRITORY_INFLUENCE)
+		_feed_force_signal(killer_peer, "disables", 1)
 	print("[death] peer %d killed by %s in %s (%s): durability -%d%%, dropped %d, insured=%s -> respawn wounded @ spaceport (credits kept %d)" % [
 		peer_id, killer_name, zone_id, tier, int(outcome["durability_delta"]), dropped.size(), str(bool(outcome["insured"])), int(new_sheet.get("credits", 0))])
 	if mode == Mode.SERVER:
@@ -1742,7 +1792,8 @@ func _load_combat_data() -> Dictionary:
 func _resolve_combat_window() -> void:
 	if arena == null or arena.pending_intent_count() == 0:
 		return
-	var result := arena.resolve_window(_server_rng.randi())
+	var pvp_gate := _build_pvp_gate()  # DIV-0019: authorize player-target pairs from live zone/security
+	var result := arena.resolve_window(_server_rng.randi(), pvp_gate)
 	var envelopes: Array = result.get("envelopes", [])
 	for envelope in envelopes:
 		# F65: scope each combat envelope to the SHOOTER's zone (like say/emote chat, F2/F62) — combat
@@ -1757,10 +1808,12 @@ func _resolve_combat_window() -> void:
 		envelopes.size(),
 		int((result.get("target_state", {}) as Dictionary).get("wound_severity", 0)),
 	])
-	# Per-envelope consequences: kill credit (dummy OR hostile), creature LOOT + despawn (DIV-0018),
-	# and player DEATH from a lethal takedown (DIV-0006). The dummy stays CP-only.
+	# Per-envelope consequences: kill credit (dummy OR hostile), creature LOOT + despawn (DIV-0018).
+	# Player DEATHS (DIV-0006/0019) are COLLECTED + deduped, then applied once — a PvP victim can be both
+	# a casualty (hit by an attack) and a return-fire shooter-death in the same window.
 	var dummy_disabled := bool(result.get("target_disabled", false))
 	var looted := {}  # hostile keys already looted/despawned this window (one shooter credited)
+	var deaths := {}  # victim_peer -> {killer: peer(0=creature/dummy), name: String}
 	for envelope in envelopes:
 		var shooter := int(envelope.get("shooter_id", 0))
 		var tkey := String(envelope.get("target_key", ""))
@@ -1781,10 +1834,21 @@ func _resolve_combat_window() -> void:
 				print("[loot] peer %d looted %s: %d credits (%d + salvage %d)" % [
 					shooter, String(spawn.get("name", tkey)), loot_credits, int(loot.get("credits", 0)), int(loot.get("salvage_credits", 0))])
 				arena.remove_hostile_target(tkey)  # a fresh hostile may spawn next Director tick
-		# DIV-0006: a LETHAL hit that took the shooter OUT (>= DISABLED_SEVERITY) kills them.
+		# A LETHAL hit that took the SHOOTER out (creature or PvP return fire) is a death.
 		if bool(envelope.get("lethal", false)) and arena.has_player(shooter):
 			if int((arena.player_state(shooter) as Dictionary).get("player_wound_severity", 0)) >= CombatArena.DISABLED_SEVERITY:
-				_handle_player_death(shooter, String(envelope.get("target_name", "a hostile")))
+				var rf_killer := int(envelope.get("target_peer_id", 0)) if bool(envelope.get("pvp", false)) else 0
+				deaths[shooter] = {"killer": rf_killer, "name": String(envelope.get("target_name", "a hostile"))}
+	# DIV-0019: a PvP victim taken OUT by an incoming attack (the TARGET side of an authorized shot).
+	for c in result.get("casualties", []):
+		var vic := int((c as Dictionary).get("peer", 0))
+		var kp := int((c as Dictionary).get("killer", 0))
+		var kname := String(state.get_player(kp).get("name", "another spacer")) if (state != null and state.has_player(kp)) else "another spacer"
+		deaths[vic] = {"killer": kp, "name": kname}
+	# Apply each death exactly once (DIV-0006 penalty + respawn; killer credited for a PvP kill).
+	for victim in deaths:
+		if state != null and state.has_player(int(victim)):
+			_handle_player_death(int(victim), String((deaths[victim] as Dictionary)["name"]), int((deaths[victim] as Dictionary)["killer"]))
 	if dummy_disabled:
 		arena.reset_target()
 		print("[combat] training target disabled — respawned")
