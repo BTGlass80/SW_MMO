@@ -384,8 +384,14 @@ session log.
 - ~~svaper cr/min outlier~~ **DONE `f86979f`** (per-creature `loot_mult` dial inside the single
   axis; t4 spread 7.87x → 1.77x, per-tier means stay monotone, probe table in the merge message).
   Residual: t3 thanu 366.5 cr/min is the next within-tier high earner (passes the bar).
-- `[PAR→HOT]` ammo recurring sink (old B8) — pairs a faucet-heavy month per the CLAUDE.md
-  faucets-and-sinks rule; run `tools/telemetry_tally.py` on the next live session log.
+- `[PAR→HOT]` ammo recurring sink (old B8) — **CLAIMED (tick 4, in flight on main: DIV-0029 +
+  ammo_model + HOT wiring + onboarding grace; the latent WEG `ammo` fields in weapons data light
+  up). Cron ticks: no HOT work until this line clears.** Pairs the faucet-heavy month per the
+  CLAUDE.md faucets-and-sinks rule; run `tools/telemetry_tally.py` on the next live session log.
+- `[PAR]` MUSH weekly re-extraction cadence (CLAUDE.md program posture) — **CLAIMED (tick 4,
+  worktree):** this tick ships the source-hash MANIFEST + drift-report tool (read-only over
+  C:\SW_MUSH; no content re-port yet — a re-port must MERGE around prototype-added fields like
+  threat_tier/loot_mult/boss, which is its own later slice).
 - **Before PT1 (owner picks the date):** a full 20-bot × 30-min evening soak under
   `tools/run_server_watchdog.ps1` (the 7-min acceptance passed; the long run is the dress
   rehearsal), and the DTLS-or-banner decision for anything beyond LAN.
