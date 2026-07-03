@@ -39,7 +39,7 @@ func _init() -> void:
 
 	# --- NPCs ---------------------------------------------------------------
 	var npcs: Array = npc_data.get("npcs", [])
-	_assert_true(npcs.size() >= 8 and npcs.size() <= 15, "NPC roster is curated in the 8-15 range (got %d)" % npcs.size())
+	_assert_true(npcs.size() >= 8 and npcs.size() <= 40, "NPC roster is curated in the 8-40 range (got %d)" % npcs.size())
 
 	var seen_ids := {}
 	var npc_ids := {}

@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "era": "20 BBY Clone Wars",
-  "source_policy": "Derived READ-ONLY from C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_b_mos_eisley.yaml, C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_mos_eisley_population_p1.yaml, C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_ambient_tatooine_spaceport_civic.yaml, and C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_mob_grind_tatooine.yaml. SW_MUSH is strictly read-only reference; this file is the authoritative project-owned copy. Data flows one way: out of SW_MUSH into data/.",
-  "source_note": "Ported 2026-07-02 (World-Depth Drop). Curated 15 named Clone Wars-era (20 BBY) Mos Eisley NPCs out of ~64 available on SW_MUSH's Tatooine roster, selected for spread across the four loaded zones in data/zones_clone_wars.json and for faction/role variety. All source files are already era-reauthored Clone Wars content per MUSH's own 'no Imperial/Rebel/stormtrooper/Empire, Hutt Cartel is the de facto authority' policy (npcs_mos_eisley_population_p1.yaml header) or were authored CW-native (npcs_drop_b_mos_eisley.yaml, npcs_drop_ambient_tatooine_spaceport_civic.yaml). zone_id assignment is a curation call: MUSH rooms are far more granular than this project's four broad zone_ids, so each NPC's MUSH room (see source_room) was mapped to the nearest of the four loaded zones by in-fiction fit. faction_axis for Djas Puhr is recast from the MUSH source's generic 'independent' tag to this project's dedicated bounty_hunters_guild axis (see his curation_note) -- the MUSH schema has no bounty-hunter-specific faction, ours does, and his profession is explicit in the source text. No CIS/Separatist-affiliated named NPC was found anywhere in SW_MUSH's Tatooine/Mos Eisley content -- this is lore-consistent (the CIS has no meaningful presence in Hutt-controlled Outer Rim space during the war) and is reflected honestly here rather than invented. Canonical film characters (Wuher, Chalmun, Djas Puhr) are carried over ONLY because the MUSH source file itself already re-skinned them for Clone Wars era per its own Q1/Q5 policy notes (original descriptions/dialogue, WEG-only stats, no copied sourcebook text) -- this file does not introduce any new canonical cameo. dialogue_lines are text-only stubs trimmed from each source NPC's ai_config.fallback_lines.",
+  "source_policy": "Derived READ-ONLY from C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_b_mos_eisley.yaml, C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_mos_eisley_population_p1.yaml, C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_ambient_tatooine_spaceport_civic.yaml, C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_mob_grind_tatooine.yaml, C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_mos_eisley_population_p2.yaml, C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_ambient_mos_eisley_service_sector.yaml, and C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_mob_grind_hutt_territory.yaml. SW_MUSH is strictly read-only reference; this file is the authoritative project-owned copy. Data flows one way: out of SW_MUSH into data/.",
+  "source_note": "Ported 2026-07-02 (World-Depth Drop). Curated 15 named Clone Wars-era (20 BBY) Mos Eisley NPCs out of ~64 available on SW_MUSH's Tatooine roster, selected for spread across the four loaded zones in data/zones_clone_wars.json and for faction/role variety. All source files are already era-reauthored Clone Wars content per MUSH's own 'no Imperial/Rebel/stormtrooper/Empire, Hutt Cartel is the de facto authority' policy (npcs_mos_eisley_population_p1.yaml header) or were authored CW-native (npcs_drop_b_mos_eisley.yaml, npcs_drop_ambient_tatooine_spaceport_civic.yaml). zone_id assignment is a curation call: MUSH rooms are far more granular than this project's four broad zone_ids, so each NPC's MUSH room (see source_room) was mapped to the nearest of the four loaded zones by in-fiction fit. faction_axis for Djas Puhr is recast from the MUSH source's generic 'independent' tag to this project's dedicated bounty_hunters_guild axis (see his curation_note) -- the MUSH schema has no bounty-hunter-specific faction, ours does, and his profession is explicit in the source text. No CIS/Separatist-affiliated named NPC was found anywhere in SW_MUSH's Tatooine/Mos Eisley content -- this is lore-consistent (the CIS has no meaningful presence in Hutt-controlled Outer Rim space during the war) and is reflected honestly here rather than invented. Canonical film characters (Wuher, Chalmun, Djas Puhr) are carried over ONLY because the MUSH source file itself already re-skinned them for Clone Wars era per its own Q1/Q5 policy notes (original descriptions/dialogue, WEG-only stats, no copied sourcebook text) -- this file does not introduce any new canonical cameo. dialogue_lines are text-only stubs trimmed from each source NPC's ai_config.fallback_lines.\n\nExtended 2026-07-03 (second import wave, +7 NPCs, 22 total). Drawn from three additional already-era-reauthored MUSH rosters: npcs_mos_eisley_population_p2.yaml (the 'UTILITY tier' -- one NPC per real Mos Eisley service gap: medic, mechanic/vendor, grill vendor), npcs_drop_ambient_mos_eisley_service_sector.yaml (ambient civic/hospitality NPCs explicitly policy-flagged 'no canon figures, all characters original non-canonical' in its own header), and npcs_drop_mob_grind_hutt_territory.yaml (Hutt-muscle guard NPCs, filtered to the one entry actually rooted at Jabba's Mos Eisley Townhouse rather than off-world Hutt territory). All dialogue_lines below are this project's own original phrasing (not copied from source ai_config.fallback_lines/personality text) grounded in each source NPC's real profession, species, and room. Pell Darro's faction_axis is recast from the MUSH source's generic 'independent' tag to this project's 'republic' axis (see his curation_note), matching how this file already axis-tags its other Republic-uniformed NPCs (Stamp, Talon, Dust) by their explicit in-fiction allegiance rather than the source's default tag. No non-canonical-name violations: every name here is either an original MUSH-authored character name or (for the Weequay guard, whose MUSH source uses its room-title as its name -- the same convention this file's own 'Jundland Drifter' entry follows) a lightly-adapted room-title label, never an invented stand-in for a canonical film/show character.",
   "faction_axes": ["republic", "cis", "hutt", "independent", "bounty_hunters_guild"],
   "npcs": [
     {
@@ -276,6 +276,132 @@
       "vendor": false,
       "source_room": "Dewback Stables and Garage",
       "source_file": "npcs_drop_b_mos_eisley.yaml"
+    },
+    {
+      "id": "heist_clinic",
+      "name": "Heist",
+      "species": "Human",
+      "zone_id": "tatooine.mos_eisley.port_fringe",
+      "role": "Back-alley physician",
+      "faction_axis": "independent",
+      "description": "A lean, sharp-eyed doctor working out of a cramped fringe clinic where the equipment is a generation old but spotless. He treats blaster burns, broken bones, and worse without ever asking how the wound was earned, and the Cartel leaves him be because a port like this always needs a physician who can be trusted to forget.",
+      "dialogue_lines": [
+        "Sit down. We'll discuss payment once I've stopped the bleeding.",
+        "I treat the wound, not the story behind it. Cheaper for both of us that way.",
+        "Every kind of hurt this town can hand out, I've stitched closed at least once. Hold still."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "The Cutting Edge Clinic",
+      "source_file": "npcs_mos_eisley_population_p2.yaml"
+    },
+    {
+      "id": "geordi_hans",
+      "name": "Geordi Hans",
+      "species": "Human",
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "role": "Landspeeder dealer and repair mechanic",
+      "faction_axis": "independent",
+      "description": "A grease-streaked mechanic presiding over a spaceport lot crowded with landspeeders in every state from gleaming to barely-running. He buys, sells, rents, and repairs repulsorcraft, talks fast, and can recount the service history of any vehicle on his lot whether or not anyone asked. Politics and the war stay outside the fence; the machines are what matter.",
+      "dialogue_lines": [
+        "Buying, renting, or need something fixed? I do all three, and I do them right.",
+        "Sand kills a repulsorlift faster than anything else on this planet. Keep the intakes clean and it'll outlive you.",
+        "The war's somebody else's business. Repulsorlifts are mine. What are you flying?"
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Spaceport Speeders",
+      "source_file": "npcs_mos_eisley_population_p2.yaml"
+    },
+    {
+      "id": "pell_darro",
+      "name": "Government Clerk Pell Darro",
+      "species": "Human",
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "role": "Republic land registry officer",
+      "faction_axis": "republic",
+      "description": "A thin, methodical Republic clerk at the regional government office, working through a stack of land-deed disputes and weapon-license renewals that never seems to shrink. A small Republic seal is pinned to his collar, more ceremony than authority on a world the Hutts actually run, and eleven years behind this desk have taught him exactly which battles are worth fighting.",
+      "dialogue_lines": [
+        "Filing a dispute, or renewing a license? I'll need the reference number either way.",
+        "I process every form correctly and file every case on schedule. What happens after that isn't always up to me.",
+        "This office closes at the fourth bell. Everything after that is somebody else's jurisdiction."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Regional Government Offices",
+      "source_file": "npcs_drop_ambient_mos_eisley_service_sector.yaml",
+      "curation_note": "MUSH source tags Pell Darro's ai_config.faction as generic 'independent'; recast here to this project's 'republic' axis since he is explicitly described as a Republic civil servant wearing the Republic seal in a regional government office -- consistent with how this file's other Republic-uniformed NPCs (Stamp, Talon, Dust) are axis-tagged by their explicit in-fiction allegiance."
+    },
+    {
+      "id": "varak_ness",
+      "name": "Off-World Trader Varak Ness",
+      "species": "Duros",
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "role": "Duros freighter pilot awaiting cargo clearance",
+      "faction_axis": "independent",
+      "description": "A travel-worn Duros freighter pilot slumped in a spaceport lobby chair, satchel between his feet, waiting out a bureaucratic hold on cargo bonded in a nearby bay. Three jump legs and an overlong inspection have left him running on fumes, but he still knows exactly which trade lanes are quietly unwatched this month, for anyone who makes the wait worth his while.",
+      "dialogue_lines": [
+        "Two days waiting on one stamp. I've started naming the furniture.",
+        "My cargo's bonded until the override clears. Everything else about me is negotiable.",
+        "There are lanes the desk doesn't watch closely right now. That kind of information isn't free, but it isn't expensive either."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Mos Eisley Inn",
+      "source_file": "npcs_drop_ambient_mos_eisley_service_sector.yaml"
+    },
+    {
+      "id": "cg_x2r",
+      "name": "CG-X2R",
+      "species": "Droid",
+      "zone_id": "tatooine.mos_eisley.market_district",
+      "role": "Dockside cafe droid bartender",
+      "faction_axis": "independent",
+      "description": "A catering-chassis droid behind the bar of a small dockside cafe, its finish dulled by years of dry heat and its photoreceptors fixed and unblinking. CG-X2R has poured drinks through two changes of ownership and never once filed a memory of what was said in the booths along the back wall -- a design feature, not a courtesy, that has made the cafe popular with people who need somewhere quiet to talk.",
+      "dialogue_lines": [
+        "What can I get you.",
+        "The booths in back are for conversations that don't need a witness. I am not a witness.",
+        "Two changes of owner, eleven years of pouring. The recipe hasn't changed. Neither has the policy on questions."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Dockside Cafe",
+      "source_file": "npcs_drop_ambient_mos_eisley_service_sector.yaml"
+    },
+    {
+      "id": "gep_grill",
+      "name": "Gep",
+      "species": "Devaronian",
+      "zone_id": "tatooine.mos_eisley.market_district",
+      "role": "Market grill cook and gossip trader",
+      "faction_axis": "independent",
+      "description": "A red-skinned, horned Devaronian working a smoking grill stall in the market, flipping skewers of something fragrant and not entirely identifiable with a showman's ease. He sells hot food cheap and market gossip cheaper, hears everything that passes through the stalls, and wandered into Mos Eisley years ago meaning to keep moving -- the grill, somehow, had other plans.",
+      "dialogue_lines": [
+        "Two credits a skewer. Don't ask what it is. It's good, and that's what it is.",
+        "I hear everything that moves through this market. Some of it's even true, for the right price.",
+        "Meat's gone dear since the war started pinching the supply lines. The grill stays hot regardless."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Market Place - Gep's Grill",
+      "source_file": "npcs_mos_eisley_population_p2.yaml"
+    },
+    {
+      "id": "weequay_chamber_guard",
+      "name": "Weequay Audience-Chamber Guard",
+      "species": "Weequay",
+      "zone_id": "tatooine.mos_eisley.port_fringe",
+      "role": "Jabba's Townhouse audience chamber guard",
+      "faction_axis": "hutt",
+      "description": "A sun-darkened Weequay posted at the edge of the Townhouse's audience chamber, an old and well-used vibroblade at his hip, holding the room in the owner's absence with the stillness his species uses to signal rank. He has earned the trust to guard this chamber unsupervised, and he treats anyone entering without leave as a problem to be resolved quickly and quietly.",
+      "dialogue_lines": [
+        "Leave.",
+        "This chamber is not open. You were not announced."
+      ],
+      "hostile": true,
+      "vendor": false,
+      "source_room": "Jabba's Townhouse - Audience Chamber",
+      "source_file": "npcs_drop_mob_grind_hutt_territory.yaml"
     }
   ]
 }

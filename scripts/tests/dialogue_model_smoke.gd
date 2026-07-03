@@ -15,7 +15,7 @@ func _init() -> void:
 	var data: Dictionary = JSON.parse_string(f.get_as_text()) if f != null else {}
 	var npcs := Dialogue.npcs_from_data(data)
 	_assert_true(npcs.has("wuher") and npcs.has("venn_kator") and npcs.has("djas_puhr"), "npcs_from_data keys by id")
-	_assert_equal(npcs.size(), 15, "all 15 named NPCs parse")
+	_assert_true(npcs.size() >= 15, "all named NPCs parse (>= the seed roster; got %d)" % npcs.size())
 
 	# --- greeting returns the first dialogue line for a real NPC ---
 	var wuher: Dictionary = npcs["wuher"]
