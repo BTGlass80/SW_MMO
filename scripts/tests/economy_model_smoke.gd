@@ -63,31 +63,42 @@ func _init() -> void:
 	_assert_true(not ((sold["sheet"] as Dictionary)["inventory"] as Array).has("vibroblade"), "sold item removed from inventory")
 	_assert_equal(int((newsheet as Dictionary)["credits"]), 750, "original sheet is NOT mutated by sell")
 
-	# --- roll_loot: hostile-only, deterministic, scale-tiered x pack, zero for the dummy ---
-	# This spawn omits threat_tier -> it falls back to DEFAULT_LOOT_TIER (2) = x1.5 (Wave G / G12), so
-	# the credit band is [15,45] x pack 2 = [30,90] x 1.5 = [45,135] (was [30,90] before the tier weight).
+	# --- roll_loot: hostile-only, deterministic, ONE scale-independent base band x pack, zero for dummy ---
+	# G15 (DIV-0028): ONE loot axis — a single base band [15,45] for EVERY hostile head (scale no longer
+	# feeds credits) x threat_tier multiplier. This spawn omits threat_tier -> DEFAULT_LOOT_TIER (2) = x1.0,
+	# so the credit band is [15,45] x pack 2 x1.0 = [30,90].
 	var hostile_spawn := {"hostile": true, "scale": "creature", "pack_size": 2}
 	var loot_a: Dictionary = EconomyModel.roll_loot(hostile_spawn, 7)
 	var loot_b: Dictionary = EconomyModel.roll_loot(hostile_spawn, 7)
 	_assert_equal(int(loot_a["credits"]), int(loot_b["credits"]), "roll_loot is deterministic for a fixed seed")
-	_assert_true(int(loot_a["credits"]) >= 45 and int(loot_a["credits"]) <= 135, "creature loot in [15,45] x pack 2 x tier-2 default (x1.5) = [45,135]")
+	_assert_true(int(loot_a["credits"]) >= 30 and int(loot_a["credits"]) <= 90, "creature loot in [15,45] x pack 2 x tier-2 default (x1.0) = [30,90]")
 	var non_hostile := {"hostile": false, "scale": "creature", "pack_size": 3}
 	_assert_equal(int(EconomyModel.roll_loot(non_hostile, 7)["credits"]), 0, "non-hostile (sparring) disable drops zero credits")
 
-	# --- roll_loot threat-tier weighting (Wave G / G12): risk correlates with reward ---
+	# --- scale no longer feeds loot credits (double-dip killed, G15) ---
+	# character scale and creature scale with the same tier/pack/seed pay IDENTICAL credits now.
+	var creature_t3 := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 3}
+	var character_t3 := {"hostile": true, "scale": "character", "pack_size": 1, "threat_tier": 3}
+	for sc in [1, 7, 99, 4242]:
+		_assert_equal(int(EconomyModel.roll_loot(creature_t3, sc)["credits"]), int(EconomyModel.roll_loot(character_t3, sc)["credits"]), "creature vs character scale pay the SAME credits at equal tier (no scale double-dip, seed %d)" % sc)
+
+	# --- roll_loot threat-tier weighting (Wave G / G15): risk is the ONE reward axis ---
 	# Same scale/pack/seed, only threat_tier differs: credits must be MONOTONE NON-DECREASING in tier,
-	# and a tier-4 apex must pay STRICTLY more than a tier-1 ambient (x3 vs x1 on a >=15 base).
+	# and a tier-4 apex must pay STRICTLY more than a tier-2 common (x7 vs x1 on a >=15 base). Note t1==t2
+	# (both x1) by design — there is no hostile tier-1 creature in the catalog, so t1 is the never-used floor.
 	var t1 := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 1}
 	var t2 := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 2}
 	var t3 := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 3}
 	var t4 := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 4}
+	var t5 := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 5}
 	for s in [1, 7, 99, 4242, 123456]:
 		var c1 := int(EconomyModel.roll_loot(t1, s)["credits"])
 		var c2 := int(EconomyModel.roll_loot(t2, s)["credits"])
 		var c3 := int(EconomyModel.roll_loot(t3, s)["credits"])
 		var c4 := int(EconomyModel.roll_loot(t4, s)["credits"])
-		_assert_true(c1 <= c2 and c2 <= c3 and c3 <= c4, "loot credits monotone non-decreasing in threat_tier (seed %d): %d<=%d<=%d<=%d" % [s, c1, c2, c3, c4])
-		_assert_true(c4 > c1, "a tier-4 apex pays strictly MORE than a tier-1 ambient for the same seed %d (%d > %d)" % [s, c4, c1])
+		var c5 := int(EconomyModel.roll_loot(t5, s)["credits"])
+		_assert_true(c1 <= c2 and c2 <= c3 and c3 <= c4 and c4 <= c5, "loot credits monotone non-decreasing in threat_tier (seed %d): %d<=%d<=%d<=%d<=%d" % [s, c1, c2, c3, c4, c5])
+		_assert_true(c4 > c2, "a tier-4 apex pays strictly MORE than a tier-2 common for the same seed %d (%d > %d)" % [s, c4, c2])
 
 	# tier-1 IS the un-weighted band (x1): its credit == the raw base for the same seed.
 	_assert_true(int(EconomyModel.roll_loot(t1, 7)["credits"]) >= 15 and int(EconomyModel.roll_loot(t1, 7)["credits"]) <= 45, "tier-1 (x1) loot is the raw [15,45] band for pack 1")
@@ -103,11 +114,14 @@ func _init() -> void:
 	_assert_equal(int(d1["credits"]), int(d2["credits"]), "tiered roll_loot credits are deterministic for a fixed seed")
 	_assert_equal(int(d1["salvage_credits"]), int(d2["salvage_credits"]), "tiered roll_loot salvage is deterministic for a fixed seed")
 
-	# the multiplier helper: tier 1 = x1 baseline, tier 4 = x3 cap, out-of-range clamps into band.
-	_assert_equal(EconomyModel.loot_tier_multiplier(1), 1.0, "tier 1 -> x1 baseline")
-	_assert_equal(EconomyModel.loot_tier_multiplier(4), 3.0, "tier 4 apex -> x3 cap")
+	# the multiplier helper (G15): 1=x1 floor, 2=x1, 3=x3, 4=x8 apex, 5=x10 boss; out-of-range clamps in.
+	_assert_equal(EconomyModel.loot_tier_multiplier(1), 1.0, "tier 1 -> x1 floor")
+	_assert_equal(EconomyModel.loot_tier_multiplier(2), 1.0, "tier 2 -> x1 (== t1, the common entry)")
+	_assert_equal(EconomyModel.loot_tier_multiplier(3), 3.0, "tier 3 -> x3")
+	_assert_equal(EconomyModel.loot_tier_multiplier(4), 8.0, "tier 4 apex -> x8")
+	_assert_equal(EconomyModel.loot_tier_multiplier(5), 10.0, "tier 5 boss -> x10")
 	_assert_equal(EconomyModel.loot_tier_multiplier(0), 1.0, "a below-range tier clamps to the x1 floor")
-	_assert_equal(EconomyModel.loot_tier_multiplier(9), 3.0, "an above-range tier clamps to the x3 apex cap")
+	_assert_equal(EconomyModel.loot_tier_multiplier(9), 10.0, "an above-range tier clamps to the x10 boss cap")
 
 	_finish()
 

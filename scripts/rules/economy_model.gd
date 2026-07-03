@@ -21,24 +21,32 @@ const SELL_RATE := 0.40             # vendor buy-back pays 40% of list (the 60% 
 const MAX_TOTAL_DISCOUNT := 0.55
 const REP_DISCOUNT := {"friendly": 0.05, "allied": 0.10}  # by reputation_model.standing_tier; else 0.0
 # loot on a disabled hostile creature (credits/salvage only in v1; item drops are owner-gated follow-up)
-const LOOT_CREATURE := [15, 45]     # per-head credit band for scale "creature"
-const LOOT_CHARACTER := [40, 90]    # per-head credit band for scale "character"
+# ONE loot axis (Wave G / G15, DIV-0028): a SINGLE base credit band that applies to EVERY hostile head
+# regardless of scale, then a pure threat_tier multiplier. character-scale (tuskens / thugs / enforcers)
+# no longer gets a richer base band — that was the double-dip (higher base band AND, being t3, a fat
+# multiplier) the G15 balance re-probe flagged as the best-income exploit in the game. Risk now rides on
+# ONE dial: threat_tier. Salvage stays tier-independent (the raw carcass, not the kill's danger).
+const LOOT_BASE := [15, 45]         # per-head base credit band for EVERY hostile creature (scale-independent)
 const SALVAGE_CHANCE := 0.25        # chance a disabled hostile also yields a salvage bundle
 const SALVAGE_BUNDLE := [20, 60]    # salvage-credit band (tier-independent — the raw carcass, not the kill's danger)
 
-# --- threat-tier -> credit reward multiplier (Wave G / G12: risk correlates with reward) --------------
-# Today loot keys on SCALE only, so a trivial (tier-1) ambient and a dangerous (tier-4) apex in the same
-# scale band pay the SAME — risk anti-correlates with effort. This multiplier weights the credit reward
-# by the creature's threat_tier (1..4; creature_spawn_model.threat_tier_of, mirrored here), so a riskier
-# kill is worth more. Tier 1 is the ×1 baseline (the raw band); tier 4 pays ×3. Monotone non-decreasing
-# so a higher tier is NEVER a worse credit reward. Capped at ×3 on PURPOSE: the richest possible head
-# (tier-4 character scale, band top 90) tops out at 270cr — clearly the premium kill, yet still ~half a
-# blaster pistol's list (500) and well under DIV-0018's sink-relative faucet budget, so this is a
-# risk-graded faucet, NOT an arbitrage/money-printer. Salvage is left tier-independent (see above).
+# --- threat-tier -> credit reward multiplier (Wave G / G15, DIV-0028: risk correlates with reward) ----
+# The SINGLE loot axis. Base band x this multiplier is the whole credit reward, so a riskier (higher-tier)
+# kill is worth more. The curve is tuned against tools/balance_probe.gd, NOT vibes: higher-tier creatures
+# take proportionally MORE windows-per-kill (green anchors: hitcher_crab t2 ~2.5 wpk, tusken t3 ~5.3,
+# acklay t4 ~12.5), AND the flat tier-independent salvage bundle inflates fast-kill low-tier cr/min, so the
+# multiplier has to grow FASTER than the windows-per-kill curve to keep cr/min monotone non-decreasing
+# across ambient tiers t1->t4. Measured per-DATA-tier MEAN cr/min at these mults (base band mean 30, green
+# probe): t2 ~185, t3 ~252, t4 ~416 — monotone; the crab/tusken/acklay anchors are ~196 / ~225 / ~240,
+# also monotone. There is no HOSTILE tier-1 creature in the catalog (every hostile probes >=0.5% out/window
+# = t2+), so the t1 mult is the never-used floor and equals the t2 entry mult. tier 5 = BOSS/event content
+# (merdeth / krayt_dragon / rancor): never ambient, so it is OUTSIDE the monotone-cr/min requirement (bosses
+# are so tanky their cr/min is tiny); its credit mult is a premium but a boss's real reward is its harvest
+# good (pearl/shell), not credit farming.
 const DEFAULT_LOOT_TIER := 2        # tier when a spawn omits threat_tier (== creature_spawn_model.DEFAULT_THREAT_TIER)
 const MIN_LOOT_TIER := 1
-const MAX_LOOT_TIER := 4
-const LOOT_TIER_MULT := {1: 1.0, 2: 1.5, 3: 2.0, 4: 3.0}
+const MAX_LOOT_TIER := 5            # tier 5 = boss/event channel (mirrors creature_spawn_model.BOSS_THREAT_TIER)
+const LOOT_TIER_MULT := {1: 1.0, 2: 1.0, 3: 3.0, 4: 8.0, 5: 10.0}
 
 # Rep-tier -> buy discount (0.0 for hostile/neutral). Keyed on reputation_model.standing_tier().
 static func discount_for_tier(tier: String) -> float:
@@ -151,27 +159,26 @@ static func grant_items(sheet: Dictionary, items: Array) -> Dictionary:
 	next["inventory"] = inv
 	return next
 
-# threat_tier (1..4) -> credit-reward multiplier. Out-of-range clamps to [MIN,MAX]_LOOT_TIER; an
+# threat_tier (1..5) -> credit-reward multiplier. Out-of-range clamps to [MIN,MAX]_LOOT_TIER; an
 # unknown key falls back to ×1. Static/pure so tests and the balance probe can read it directly.
 static func loot_tier_multiplier(threat_tier: int) -> float:
 	var t := clampi(threat_tier, MIN_LOOT_TIER, MAX_LOOT_TIER)
 	return float(LOOT_TIER_MULT.get(t, 1.0))
 
-# Loot from a disabled creature spawn (creature_spawn_model.roll_spawn shape). Hostile-only; the raw
-# scale band x pack_size is then weighted by the creature's threat_tier (Wave G / G12) so a riskier
-# kill pays more; a chance-gated (tier-independent) salvage bundle rides along. Seed is server-owned.
-# threat_tier is read off the spawn dict and defaults to DEFAULT_LOOT_TIER (2) when absent so legacy /
-# partial spawns never break. The RNG draw ORDER is unchanged from the pre-tier version (band roll,
-# then salvage chance, then salvage bundle) — the tier weight is a pure post-multiply on the credit
-# figure, so a given seed's salvage result is identical to before; only the credit total is tier-scaled.
+# Loot from a disabled creature spawn (creature_spawn_model.roll_spawn shape). Hostile-only; the SINGLE
+# scale-independent base band x pack_size is then weighted by the creature's threat_tier (Wave G / G15,
+# DIV-0028) so a riskier kill pays more; a chance-gated (tier-independent) salvage bundle rides along.
+# Seed is server-owned. threat_tier is read off the spawn dict and defaults to DEFAULT_LOOT_TIER (2) when
+# absent so legacy / partial spawns never break. The RNG draw ORDER is unchanged (band roll, then salvage
+# chance, then salvage bundle) — the tier weight is a pure post-multiply on the credit figure, so a given
+# seed's salvage result is identical regardless of scale/tier; only the credit total is tier-scaled.
 static func roll_loot(spawn: Dictionary, seed: int) -> Dictionary:
 	if not bool(spawn.get("hostile", false)):
 		return {"credits": 0, "salvage_credits": 0}
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
-	var band: Array = LOOT_CHARACTER if String(spawn.get("scale", "creature")) == "character" else LOOT_CREATURE
 	var pack := maxi(int(spawn.get("pack_size", 1)), 1)
-	var base := rng.randi_range(int(band[0]), int(band[1])) * pack
+	var base := rng.randi_range(int(LOOT_BASE[0]), int(LOOT_BASE[1])) * pack
 	var tier := int(spawn.get("threat_tier", DEFAULT_LOOT_TIER))
 	var credits := int(round(float(base) * loot_tier_multiplier(tier)))
 	var salvage := 0

@@ -1717,7 +1717,20 @@ func _advance_hostiles() -> void:
 			continue
 		if not arena.has_hostile_target(zone_id) and _players_in_zone(zone_id) > 0:
 			var alert := String((zones.get_zone(zone_id) as Dictionary).get("alert_level", "standard"))
-			var spawn: Dictionary = _forced_spawn() if force_hostile_key != "" else _creature_spawn.roll_spawn(_creatures_data, alert, tier, _server_rng.randi())
+			# BOSS/EVENT CHANNEL (G15 fix): a boss (merdeth/krayt_dragon/rancor) is NEVER in the ambient
+			# faucet, so a bounty naming one (q_krayt_bounty / q_rancor_sighting) would be uncompletable.
+			# The channel is a DELIBERATE opt-in: if an in-zone player has accepted an incomplete bounty
+			# whose disable objective names a boss, spawn THAT boss here (bypassing the ambient band) so the
+			# contract is huntable. Ambient rolls are still boss-filtered — a boss only appears to a player
+			# who chose to hunt it, never as a random one-shot.
+			var boss_key := _active_boss_quest_target_in_zone(zone_id)
+			var spawn: Dictionary
+			if force_hostile_key != "":
+				spawn = _forced_spawn()
+			elif boss_key != "":
+				spawn = _creature_spawn.boss_spawn(_creatures_data, boss_key, _server_rng.randi())
+			else:
+				spawn = _creature_spawn.roll_spawn(_creatures_data, alert, tier, _server_rng.randi())
 			if spawn.is_empty() or not bool(spawn.get("hostile", false)):
 				continue  # only HOSTILE creatures become lethal targets (retry next tick)
 			var pools: Dictionary = HostileNpc.attack_pools_from_creature(D6Rules, spawn)
@@ -1727,6 +1740,42 @@ func _advance_hostiles() -> void:
 			arena.register_hostile_target(zone_id, pools, {"distance": HOSTILE_DISTANCE, "cover_level": 0, "name": String(spawn.get("name", "Creature"))}, spawn, rider)
 			print("[hostile] %s spawned in %s (%s, pack %d)" % [String(spawn.get("name", "")), zone_id, tier, int(spawn.get("pack_size", 1))])
 	_refresh_all_hostility()
+
+# BOSS/EVENT CHANNEL trigger (G15 fix): return a boss creature_key that some in-zone player has as an
+# ACTIVE (accepted, not complete, not claimed) disable-bounty target, else "". This is what makes the
+# boss/event channel LIVE: a boss is spawned only when a player has deliberately taken a contract naming
+# it (q_krayt_bounty -> krayt_dragon, q_rancor_sighting -> rancor). Deterministic order (peers + quest
+# ids sorted) so the same world state always resolves to the same boss. Server-only (reads persisted
+# records + the quest catalog); no RNG.
+func _active_boss_quest_target_in_zone(zone_id: String) -> String:
+	if store == null or _creature_spawn == null or _quest_defs.is_empty():
+		return ""
+	var peers: Array = _peer_zones.keys()
+	peers.sort()
+	for pid in peers:
+		if String(_peer_zones.get(pid, "")) != zone_id:
+			continue
+		var cid := String(_peer_characters.get(pid, ""))
+		if cid == "":
+			continue
+		var record := store.load_record(cid)
+		if record.is_empty():
+			continue
+		var quests: Dictionary = _record_quests(record)
+		var qids: Array = quests.keys()
+		qids.sort()
+		for qid in qids:
+			var st: Dictionary = quests.get(qid, {})
+			if bool(st.get("complete", false)) or bool(st.get("claimed", false)):
+				continue
+			var qdef: Dictionary = _quest_defs.get(qid, {})
+			var objective: Dictionary = qdef.get("objective", {})
+			if String(objective.get("kind", "")) != "disable":
+				continue
+			var target := String(objective.get("target_key", ""))
+			if target != "" and _creature_spawn.is_boss_key(_creatures_data, target):
+				return target
+	return ""
 
 # TEST-ONLY (--force-hostile): build a single-head spawn of a specific creature key, bypassing the
 # seeded random pick, so a two-process death check is deterministic. Empty when the key is unknown.
