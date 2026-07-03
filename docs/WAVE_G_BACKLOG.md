@@ -398,19 +398,26 @@ session log.
   drift-check run + the content re-port slice when drift appears (MERGE, never overwrite:
   threat_tier/loot_mult/boss/stun_return_fire/etc.).
 
-### Queue after tick 4 (the loop should pick from these)
-**CLAIM (tick 5, in flight): ammo-HUD client slice on main (HOT), then the watchdog crash
-drill + detached 30-min 20-bot soak + telemetry tally. Cron ticks: take NOTHING until this
-line clears.**
-- Run `tools/mush_sync_manifest.py diff` weekly (cheap `[PAR]` tick item; re-port on drift).
-- `tools/telemetry_tally.py` over the next live session's `events.jsonl` — first real
-  faucets-vs-sinks number now that ammo (sink) + loot/harvest (faucets) are all live.
-- The 30-min 20-bot dress-rehearsal soak under `tools/run_server_watchdog.ps1` (pre-PT1; the
-  7-min acceptance passed).
-- t3 thanu loot outlier (366.5 cr/min) if the next probe run still shows it leading — the
-  `loot_mult` dial exists.
-- Presentation surfacing of ammo (HUD count is in the "you" block; a client-side low-ammo
-  cue + vendor power-pack visibility is a small `[PAR]` client slice).
+### Queue after tick 5 (the loop should pick from these)
+Tick 5 results (2026-07-03 afternoon): ~~weekly drift check~~ **NO DRIFT (50/50)**. ~~ammo HUD~~
+**DONE `60d91f5`** (readout + low/dry tint on the wound palette + client reload/dry lines;
+two-process: full 6-mag lifecycle visible client-side). ~~watchdog crash drill~~ **PASS** —
+server killed mid-run: journal logged exit + last-20-lines, 3s backoff restart, SAME world
+restored (tick_index 2042, claims, corpses), fresh client connected; stop.flag exits cleanly
+without restart. ~~30-min 20-bot dress-rehearsal soak~~ **PASS** — 60/60 samples, 20/20
+connected, 0 SCRIPT ERROR / 0 engine errors, server survived, server WS flat ~15.6 MB
+(102 MB startup peak), ~370 MB summed clients steady. ~~first faucets-vs-sinks tally~~ **RUN**
+— instrument works end-to-end (character_id join + reload/buy events); flows tiny & skewed
+(autowalk bots don't fight; dummy is free by design) → the real economy read needs PT1 humans.
+
+Remaining for the loop:
+- Weekly `mush_sync_manifest.py diff` (next due ~2026-07-10; re-port slice on drift — MERGE
+  around prototype fields per docs/MUSH_SYNC.md).
+- Soak-bot economy coverage: teach `soak_test.ps1` a `--buy/--sell/--travel`-heavier bot mix so
+  future soaks exercise vendor/economy flow (today's mix never buys).
+- t3 thanu loot outlier (366.5 cr/min) if the next probe run still shows it leading.
+- PT1 is fully prepped: auth hashed, watchdog drilled, 30-min soak green, replay tool live,
+  telemetry + tally proven. **Owner-gated: the PT1 date + DTLS-vs-LAN-only.**
 - **Before PT1 (owner picks the date):** a full 20-bot × 30-min evening soak under
   `tools/run_server_watchdog.ps1` (the 7-min acceptance passed; the long run is the dress
   rehearsal), and the DTLS-or-banner decision for anything beyond LAN.

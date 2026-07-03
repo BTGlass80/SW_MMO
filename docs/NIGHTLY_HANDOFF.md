@@ -363,6 +363,14 @@ Three audit passes (F66–F75) now span ~14 dimensions. The remaining substantiv
   (`0a89544`); **live soak acceptance PASS** — 20 bots, 7 min, 20/20 connected, zero script/engine
   errors, server survived (~128 MB/client). Remaining before a PT1 date: the 30-min dress-rehearsal
   soak under the watchdog + the DTLS-or-LAN-only call. Next work: `WAVE_G_BACKLOG.md` § Next queue.
+- **Tick 5 (same day): PT1 readiness proven end-to-end.** Ammo HUD live (`60d91f5`). The
+  watchdog crash drill ran for real: server murdered mid-run → journaled crash record → 3s
+  restart → identical world state restored (tick_index/claims/corpses) → fresh client joined;
+  stop.flag halts cleanly. The 30-minute 20-bot dress-rehearsal soak PASSED (60/60 samples,
+  20/20 connected, zero script/engine errors, server memory flat ~15.6 MB). First
+  faucets-vs-sinks tally executed on live telemetry — the instrument works; the flows need
+  human players to mean anything. Weekly MUSH drift check: NO DRIFT. **Everything on the PT1
+  ship list is now built AND rehearsed; the date and the DTLS-vs-LAN-only call are the owner's.**
 - **Tick 4 (same day): the ammo sink is live** (`14ed176`, DIV-0029) — the latent WEG `ammo`
   fields on all 46 weapons now consume server-side (resolved real shots only; dummy sparring
   free; auto-reload from 25cr vendor power packs; out-of-ammo rejection; 2 starter packs; lazy

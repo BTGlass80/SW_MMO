@@ -92,6 +92,13 @@ PT1 prep cleared, PT1 date still owner-gated.
   debuff; positional PvP range (see G9 design-first).
 
 ## Log (newest first)
+- 2026-07-03 (Fable, tick 5): ammo HUD `60d91f5` (client readout + low/dry tint + reload/dry
+  lines; two-process full-lifecycle proof). Weekly MUSH drift check: NO DRIFT (50/50). WATCHDOG
+  CRASH DRILL PASS (kill → journaled → 3s restart → same world restored → client reconnects;
+  stop.flag exits clean). 30-MIN 20-BOT DRESS-REHEARSAL SOAK PASS (60/60 samples, 20/20
+  connected, 0 errors, server WS flat ~15.6 MB). First faucets-vs-sinks tally run — instrument
+  proven; real economy read awaits PT1 humans. PT1 is now fully prepped; date + DTLS call are
+  the owner's.
 - 2026-07-03 (Fable, tick 4): AMMO RECURRING SINK live `14ed176` (DIV-0029 — latent WEG ammo
   fields consumed server-side; auto-reload from 25cr vendor packs; dummy sparring free; 2 starter
   packs; two-process: 6-mag → 2 reloads → out_of_ammo refusal; sink 3–60 cr/min analytic, never
