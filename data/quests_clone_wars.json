@@ -1,0 +1,38 @@
+{
+  "source_policy": "Original starter quests authored for the SW_MMO prototype (overnight C2). Clone Wars-era, 20 BBY Mos Eisley framing; not ported from any read-only source. Objective kinds + reward shape match scripts/rules/quest_model.gd; rewards reuse the economy (credits) + dual-track CP (gameplay). Tunable content, not owner-gated balance.",
+  "era": "20 BBY Clone Wars",
+  "quests": [
+    {
+      "id": "q_pest_control",
+      "name": "Pest Control",
+      "description": "The Dune Sea crawls with vermin. Cull three of the beasts prowling the lawless wastes.",
+      "objective": {"kind": "disable", "count": 3},
+      "reward": {"credits": 180, "cp": 3},
+      "giver": "spaceport_notice_board"
+    },
+    {
+      "id": "q_dune_scout",
+      "name": "Into the Dune Sea",
+      "description": "Scout the lawless Dune Sea beyond the spaceport perimeter. Watch your back out there.",
+      "objective": {"kind": "reach_zone", "zone_id": "tatooine.dune_sea", "count": 1},
+      "reward": {"credits": 120, "cp": 2},
+      "giver": "spaceport_notice_board"
+    },
+    {
+      "id": "q_first_earnings",
+      "name": "Make Your Way",
+      "description": "Every spacer needs credits. Earn 200 in the field and prove you can hustle on Tatooine.",
+      "objective": {"kind": "earn_credits", "count": 200},
+      "reward": {"credits": 0, "cp": 3},
+      "giver": "spaceport_notice_board"
+    },
+    {
+      "id": "q_krayt_bounty",
+      "name": "Krayt Bounty",
+      "description": "A monstrous krayt has been raiding the wastes. The Hutts will pay well for its skull.",
+      "objective": {"kind": "disable", "target_key": "krayt_dragon", "count": 1},
+      "reward": {"credits": 500, "cp": 5},
+      "giver": "spaceport_notice_board"
+    }
+  ]
+}

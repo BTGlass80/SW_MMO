@@ -19,6 +19,9 @@ Self-imposed guardrail: **local/deterministic only — no paid/external/LLM-in-t
    `tools/fetch_assets.py`, `tools/asset_sources.json`, `docs/ASSET_*.md`) + commit (message via `-F` file
    to avoid quote-parsing). Mark the item DONE (+hash) here. On RED: `git checkout -- <your paths>`, mark BLOCKED.
 6. Keep replies terse. Don't create new crons / don't ScheduleWakeup — THIS cron is the driver.
+6b. **Stay active until your slice(s) COMMIT** — don't end the turn with uncommitted background work
+    (the idle-only cron would start an OVERLAPPING tick). Wait on your Workflow/agents (Monitor or a
+    foreground gate) before finishing. If a tick overlaps anyway, scoped commits + a fresh gate make it safe.
 7. **NEVER HOLD / never idle** (owner 2026-07-02): if every item below is DONE/BLOCKED, REPLENISH the
    queue — append new valuable slices (deeper presentation, more content, the next system, harder tests,
    real polish) across the four areas and keep shipping verified slices. Always leave the queue with
@@ -45,7 +48,7 @@ Self-imposed guardrail: **local/deterministic only — no paid/external/LLM-in-t
 
 ## C. Content & world depth  [PAR-heavy: mush-content-porter -> data/ JSON]
 - [ ] C1  Port more Clone Wars NPCs/vendors/creatures from read-only C:\SW_MUSH into `data/` (source_policy noted).
-- [ ] C2  Missions/quests: a schema + pure quest model (kill/fetch/deliver) + a board RPC + a first quest.
+- [~] C2  Missions/quests: pure `quest_model.gd` + `data/quests_clone_wars.json` (4 starter quests) + smoke DONE (first tick); the notice-board RPC + event feeds remain a HOT follow-up.
 - [ ] C3  More data-driven zones + `mos_eisley_props`-style set-dressing.
 - [ ] C4  Per-zone / per-faction vendor stock variety.
 - [ ] C5  Named NPCs + dialogue stubs (data + a talk RPC, text-only).
@@ -58,4 +61,5 @@ Self-imposed guardrail: **local/deterministic only — no paid/external/LLM-in-t
 - [ ] D5  Tune the isometric camera framing (`space_tactical_view3d.gd` WORLD_SCALE/fov/distance) — conservative defaults, no eyeball.
 
 ## Log (newest first)
+- Tick 1 (inline kickoff): C2 pure `quest_model.gd` + quests data + smoke + DIV-0020 ledger row. Gate green.
 - (armed) Wave F complete + presentation + space landed this session (see WAVE_F_HANDOFF + git log).
