@@ -363,6 +363,14 @@ Three audit passes (F66–F75) now span ~14 dimensions. The remaining substantiv
   (`0a89544`); **live soak acceptance PASS** — 20 bots, 7 min, 20/20 connected, zero script/engine
   errors, server survived (~128 MB/client). Remaining before a PT1 date: the 30-min dress-rehearsal
   soak under the watchdog + the DTLS-or-LAN-only call. Next work: `WAVE_G_BACKLOG.md` § Next queue.
+- **Tick 4 (same day): the ammo sink is live** (`14ed176`, DIV-0029) — the latent WEG `ammo`
+  fields on all 46 weapons now consume server-side (resolved real shots only; dummy sparring
+  free; auto-reload from 25cr vendor power packs; out-of-ammo rejection; 2 starter packs; lazy
+  veteran migration). The faucets-and-sinks pairing the delta review demanded is closed:
+  loot/harvest faucets now have a recurring sink, measurable via `telemetry_tally.py` (pack
+  buys count as the sink; reload events are informational). Plus the MUSH weekly sync-manifest
+  tool (`7429dfd`): 50 read-only sources baselined, drift is an exit-code, re-port rules in
+  `docs/MUSH_SYNC.md`. Gate 120 smokes.
 - **Tick 3 (same day): the five Next-queue seam items shipped** — `5c7da43` (server-side
   replay-envelope JSONL with byte-identical broadcast + a live envelope replayed to REPRODUCED;
   boss-quest cached-load; unprovoked equal-severity escalation → wounded_twice; First-Aid-at-14

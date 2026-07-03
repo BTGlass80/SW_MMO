@@ -384,14 +384,30 @@ session log.
 - ~~svaper cr/min outlier~~ **DONE `f86979f`** (per-creature `loot_mult` dial inside the single
   axis; t4 spread 7.87x → 1.77x, per-tier means stay monotone, probe table in the merge message).
   Residual: t3 thanu 366.5 cr/min is the next within-tier high earner (passes the bar).
-- `[PAR→HOT]` ammo recurring sink (old B8) — **CLAIMED (tick 4, in flight on main: DIV-0029 +
-  ammo_model + HOT wiring + onboarding grace; the latent WEG `ammo` fields in weapons data light
-  up). Cron ticks: no HOT work until this line clears.** Pairs the faucet-heavy month per the
-  CLAUDE.md faucets-and-sinks rule; run `tools/telemetry_tally.py` on the next live session log.
-- `[PAR]` MUSH weekly re-extraction cadence (CLAUDE.md program posture) — **CLAIMED (tick 4,
-  worktree):** this tick ships the source-hash MANIFEST + drift-report tool (read-only over
-  C:\SW_MUSH; no content re-port yet — a re-port must MERGE around prototype-added fields like
-  threat_tier/loot_mult/boss, which is its own later slice).
+- ~~ammo recurring sink (old B8)~~ **DONE `14ed176` (DIV-0029)**: latent WEG `ammo` fields live —
+  server decrements on RESOLVED real shots only; dummy sparring free; auto-reload from 25cr
+  universal power packs (vendor-stocked buy/sell); `out_of_ammo` submit rejection; 2 starter
+  packs + lazy veteran migration; "you"-block ammo readout; reload telemetry (informational —
+  the pack BUY is the counted sink, no double-count). Two-process proven end-to-end (6-mag →
+  two auto-reloads → refusal; dummy run = 0 ammo lines). Analytic economics in the row: sink
+  3 cr/min (100-mag) to 60 cr/min (5-mag disruptor) vs ~197 cr/min t2 income — never negative.
+- ~~MUSH weekly re-extraction cadence — manifest half~~ **DONE `7429dfd`**:
+  `tools/mush_sync_manifest.py` snapshot/diff (exit 1 on drift), 50 sources baselined in
+  `data/mush_sync_manifest.json`, 13 tests, `docs/MUSH_SYNC.md` (incl. the re-port
+  merge-around-prototype-fields rule). **Follow-up (unblocked):** the first actual weekly
+  drift-check run + the content re-port slice when drift appears (MERGE, never overwrite:
+  threat_tier/loot_mult/boss/stun_return_fire/etc.).
+
+### Queue after tick 4 (the loop should pick from these)
+- Run `tools/mush_sync_manifest.py diff` weekly (cheap `[PAR]` tick item; re-port on drift).
+- `tools/telemetry_tally.py` over the next live session's `events.jsonl` — first real
+  faucets-vs-sinks number now that ammo (sink) + loot/harvest (faucets) are all live.
+- The 30-min 20-bot dress-rehearsal soak under `tools/run_server_watchdog.ps1` (pre-PT1; the
+  7-min acceptance passed).
+- t3 thanu loot outlier (366.5 cr/min) if the next probe run still shows it leading — the
+  `loot_mult` dial exists.
+- Presentation surfacing of ammo (HUD count is in the "you" block; a client-side low-ammo
+  cue + vendor power-pack visibility is a small `[PAR]` client slice).
 - **Before PT1 (owner picks the date):** a full 20-bot × 30-min evening soak under
   `tools/run_server_watchdog.ps1` (the 7-min acceptance passed; the long run is the dress
   rehearsal), and the DTLS-or-banner decision for anything beyond LAN.

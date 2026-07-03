@@ -92,6 +92,12 @@ PT1 prep cleared, PT1 date still owner-gated.
   debuff; positional PvP range (see G9 design-first).
 
 ## Log (newest first)
+- 2026-07-03 (Fable, tick 4): AMMO RECURRING SINK live `14ed176` (DIV-0029 — latent WEG ammo
+  fields consumed server-side; auto-reload from 25cr vendor packs; dummy sparring free; 2 starter
+  packs; two-process: 6-mag → 2 reloads → out_of_ammo refusal; sink 3–60 cr/min analytic, never
+  negative vs t2 income) — the B8 sink finally pairs the faucet month. + MUSH sync-manifest tool
+  `7429dfd` (50 sources baselined, drift = exit 1, weekly cadence formalized; re-port = later
+  MERGE slice). Gate 120 smokes.
 - 2026-07-03 (Fable, tick 3): the five Next-queue seam items SHIPPED — HOT batch `5c7da43`
   (server-side replay-inputs envelope log w/ byte-identical broadcast + live REPRODUCED replay;
   boss-quest `_cached_load`; unprovoked equal-severity escalation to wounded_twice; First-Aid-at-14
