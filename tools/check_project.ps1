@@ -152,6 +152,7 @@ Invoke-GodotStep "Economy flow smoke:" @("--headless", "--path", $projectRoot, "
 Invoke-GodotStep "Economy floor smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_floor_smoke.gd")
 
 Invoke-GodotStep "Harvest model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/harvest_model_smoke.gd")
+Invoke-GodotStep "Harvest wire smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/harvest_wire_smoke.gd")
 
 Invoke-GodotStep "Vendor zone flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/vendor_zone_flow_smoke.gd")
 

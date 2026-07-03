@@ -1,0 +1,25 @@
+{
+  "source_policy": "DIV-0023 / DIV-0018 TUNABLE CONTENT — NOT a WEG-fixed number and NOT an owner-gated fork. Per-unit credit value the SERVER pays for a field-dressed creature good (harvest_model.gd returns a good DESCRIPTOR with no price; pricing is deferred to the server, mirroring economy_model.sell_price taking a server-supplied list cost). Values are kept in the SAME ORDER as creature loot (economy_model LOOT_CREATURE 15-45 + SALVAGE_BUNDLE 20-60): common hides/meat are modest, black-market chemicals and armour blanks are higher, and the difficulty-15 krayt_dragon_pearl is a fortune to the right buyer. Lookup precedence: by_good override -> by_resource bucket -> default. Value paid = per-unit value * harvest quantity (partial/failure tiers already reduce quantity in the model, so value scales automatically). This is Option A (instant credits at harvest); a carryable inventory resource good the vendor buys back is the DEFERRED upgrade + the OPEN OWNER DECISION (see docs/design/LATENT_MODEL_WIRING_PLAN.md Seam 1). Every resource bucket used by a real harvest block in data/creatures_clone_wars.json is covered here; goods with no `resource` key fall to harvest_model.DEFAULT_RESOURCE = 'salvage'. All values safe to retune. Tuned 2026-07-03: pearl 800->300, gem 200->120 to keep the krayt harvest a clear top prize (~5-6x salvage) without an economy-distorting faucet; krayt spawn-rarity (G12 threat-tier) is the lever for a larger jackpot later.",
+  "default": 10,
+  "by_resource": {
+    "organic": 12,
+    "chemical": 40,
+    "composite": 35,
+    "metal": 30,
+    "gem": 120,
+    "salvage": 18
+  },
+  "by_good": {
+    "krayt_dragon_pearl": 300,
+    "spor_venom": 60,
+    "draagax_fang": 50,
+    "acklay_chitin": 60,
+    "merdeth_shell": 40,
+    "sovra_shell_segment": 40,
+    "arqet_carapace": 45,
+    "water_sacs": 20,
+    "gornt_meat": 14,
+    "scurrier_meat": 12,
+    "voroos_hide": 14
+  }
+}

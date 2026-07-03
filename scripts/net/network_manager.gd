@@ -37,6 +37,7 @@ const ForceAwaken := preload("res://scripts/rules/force_awakening_model.gd")   #
 const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")            # DIV-0019: zone-based PvP consent gate
 const DOWNED := preload("res://scripts/rules/downed_model.gd")                 # DIV-0027: death tiering + downed escape hatch
 const QuestModel := preload("res://scripts/rules/quest_model.gd")              # DIV-0020: accepted quests + progress + reward
+const HarvestModel := preload("res://scripts/rules/harvest_model.gd")          # DIV-0023: a disabled creature -> a sellable field-dressed good
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -46,6 +47,7 @@ const CREATURES_DATA_PATH := "res://data/creatures_clone_wars.json"
 const VENDOR_STOCK_PATH := "res://data/vendor_stock_by_zone.json"  # per-zone vendor variety (overnight C1)
 const NPCS_DATA_PATH := "res://data/npcs_clone_wars.json"  # named NPCs (overnight C1) placed per zone
 const QUESTS_DATA_PATH := "res://data/quests_clone_wars.json"  # DIV-0020: quest defs — notice board + rewards
+const HARVEST_VALUES_PATH := "res://data/harvest_values_clone_wars.json"  # DIV-0023: per-good/per-resource harvest credit values (Option A)
 const HOSTILE_DISTANCE := 10.0  # DIV-0017: nominal engagement range for a spawned hostile creature
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 const DISABLE_INFLUENCE := 5  # Director zone-influence a disable feeds to the shooter's faction axis (owner-tunable)
@@ -97,6 +99,7 @@ signal force_awakened_replied(notice: Dictionary) # DIV-0011: this client's Forc
 signal fire_rejected(result: Dictionary)    # DIV-0019: a PvP fire intent was refused (zone/consent)
 signal quests_updated(quests: Dictionary)   # DIV-0020: this client's live quest progress changed
 signal quest_catalog_received(defs: Dictionary) # DIV-0020: the available-quest catalog (notice board)
+signal harvested(notice: Dictionary)        # DIV-0023: this client field-dressed a disabled creature into a sellable good
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -115,6 +118,7 @@ var _creatures_data := {}             # server only (creatures container for the
 var _vendor_stock_by_zone := {}       # server only (zone_id -> {item_keys:[...]}) per-zone vendor variety
 var _named_npcs_by_zone := {}         # server only (zone_id -> [named-NPC snapshot entries w/ deterministic pos])
 var _quest_defs := {}                 # server only (DIV-0020: quest_id -> def; the notice-board catalog)
+var _harvest_values := {}             # server only (DIV-0023: {by_good, by_resource, default} credit values for field-dressed goods)
 var force_hostile_key := ""           # TEST-ONLY: force this creature key to spawn in lethal zones (--force-hostile)
 var force_awaken_now := false         # TEST-ONLY: force a connected latent to awaken next Director tick (--force-awaken)
 var _visited_zones := {}              # DIV-0011: character_id -> {zone_id:true} for the distinct-zones awakening signal
@@ -198,6 +202,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	_build_buy_catalog()  # merged priced catalog for buy/sell (Wave F economy)
 	_creature_spawn = CreatureSpawn.new()
 	_creatures_data = _load_json_root(CREATURES_DATA_PATH)  # DIV-0017: hostile spawn source
+	_harvest_values = _load_json_root(HARVEST_VALUES_PATH)  # DIV-0023: harvest good -> credit value (Option A)
 	_vendor_stock_by_zone = _load_json_container(VENDOR_STOCK_PATH, "vendor_stock_by_zone")  # per-zone vendor variety
 	_load_named_npcs()  # named NPCs placed per zone (broadcast in the snapshot for client rendering)
 	_quest_defs = QuestModel.defs_from_data(_load_json_root(QUESTS_DATA_PATH))  # DIV-0020: notice-board quest catalog
@@ -1150,6 +1155,77 @@ func _award_credits(peer_id: int, amount: int) -> void:
 func apply_credits(credits: int) -> void:
 	last_credits = credits
 	credits_updated.emit(credits)
+
+# DIV-0023 (Seam 1, Option A): field-dress a just-disabled harvestable creature into a sellable good and
+# pay its sale value as INSTANT CREDITS (mirrors the salvage_credits path in _award_credits). This is IN
+# ADDITION to loot credits — the good is a SEPARATE reward — and it fires ONCE per creature because the
+# ONLY caller is inside the `not looted.has(tkey)` dedup block (one credited shooter per kill). Most
+# creatures carry no harvest block, so has_harvest short-circuits cheaply and the hot loot path stays cheap.
+#
+# OPTION A = instant credits (the owner-recommended default). OPTION B (the DEFERRED upgrade + the OPEN
+# OWNER DECISION in docs/design/LATENT_MODEL_WIRING_PLAN.md §Seam 1) grants a CARRYABLE inventory resource
+# good the vendor buys back — object-permanence for crafting / quest turn-ins and the living-world scarcity
+# index. When Option B ships, this is where result.good would append to sheet.inventory instead of (or
+# alongside) the credit grant. Server owns the RNG (a fresh _server_rng.randi() seed, independent of loot).
+func _maybe_harvest(shooter: int, spawn: Dictionary, tkey: String) -> void:
+	if not HarvestModel.has_harvest(spawn, _creatures_data):
+		return  # ~15 of the creatures carry a harvest block; the rest no-op here
+	var dress_pool = _field_dress_pool(shooter)  # survival pool ("xD+y" dict) or null = untrained 0D
+	var harvest: Dictionary = HarvestModel.roll_harvest(D6Rules, spawn, _creatures_data, dress_pool, _server_rng.randi())
+	var good := String(harvest.get("good", ""))
+	var qty := int(harvest.get("quantity", 0))
+	# quantity > 0 (not `success`) so a PARTIAL recovery still pays its reduced yield; a gated failure
+	# (e.g. an untrained field-dresser vs the krayt difficulty 15) yields quantity 0 -> no credit.
+	if not bool(harvest.get("harvestable", false)) or qty <= 0:
+		print("[harvest] peer %d field-dressed %s: nothing recovered (%s)" % [
+			shooter, String(spawn.get("name", tkey)), String(harvest.get("tier", ""))])
+		return
+	var resource := String(harvest.get("resource", ""))
+	var value := _harvest_value_per_unit(good, resource) * qty
+	if value > 0:
+		_award_credits(shooter, value)  # same single credit-mutation point loot/buy/sell route through
+		if mode == Mode.SERVER:
+			harvest_notice.rpc_id(shooter, {
+				"good": good, "resource": resource, "quantity": qty,
+				"credits": value, "tier": String(harvest.get("tier", "")),
+			})
+		# feed a future harvest objective (no-op today: no quest def has a "harvest" objective, so
+		# record_event returns unchanged and _feed_quest_event writes nothing — safe forward hook).
+		_feed_quest_event(shooter, {"type": "harvest", "good": good, "resource": resource, "quantity": qty})
+	print("[harvest] peer %d field-dressed %s: %d x %s (%s, %s) -> %d credits" % [
+		shooter, String(spawn.get("name", tkey)), qty, good, resource, String(harvest.get("tier", "")), value])
+
+# The shooter's WEG field-dressing pool for harvest_model.roll_harvest: the survival skill parsed to a
+# {dice,pips} dict, or `null` (untrained -> 0D, which the model coerces). Mirrors _bargain_for, but
+# resolves the sheet from the peer since the loot hook holds only the shooter id, not the record.
+func _field_dress_pool(peer_id: int):
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return null
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return null
+	var skills: Dictionary = (record.get("sheet", {}) as Dictionary).get("skills", {})
+	if not skills.has(HarvestModel.FIELD_DRESS_SKILL):
+		return null  # untrained -> the model treats null as 0D
+	return D6Rules.parse_pool(String(skills.get(HarvestModel.FIELD_DRESS_SKILL, "0D")))
+
+# DIV-0023 Option A: the per-unit credit value of a harvested good. A per-good override wins; else the
+# resource bucket; else the table default. TUNABLE CONTENT within DIV-0018 (kept in the same order as
+# creature loot) — NOT a WEG-fixed number and NOT an owner fork. harvest_wire_smoke mirrors this lookup.
+func _harvest_value_per_unit(good: String, resource: String) -> int:
+	var by_good: Dictionary = _harvest_values.get("by_good", {})
+	if by_good.has(good):
+		return maxi(int(by_good[good]), 0)
+	var by_resource: Dictionary = _harvest_values.get("by_resource", {})
+	if by_resource.has(resource):
+		return maxi(int(by_resource[resource]), 0)
+	return maxi(int(_harvest_values.get("default", 0)), 0)
+
+# server -> client: you field-dressed a creature into a sellable good (DIV-0023 toast/log)
+@rpc("authority", "call_remote", "reliable")
+func harvest_notice(notice: Dictionary) -> void:
+	harvested.emit(notice)
 
 # The set of item keys a vendor sells in a zone (data/vendor_stock_by_zone.json). Empty = the full
 # stocked catalog (fallback for any zone without a curated list), so the economy still works everywhere.
@@ -2232,6 +2308,7 @@ func _resolve_combat_window() -> void:
 					shooter, String(spawn.get("name", tkey)), loot_credits, int(loot.get("credits", 0)), int(loot.get("salvage_credits", 0))])
 				# DIV-0020: a disabled HOSTILE creature advances disable objectives (creature_key narrows the targeted ones).
 				_feed_quest_event(shooter, {"type": "disable", "creature_key": String(spawn.get("creature_key", ""))})
+				_maybe_harvest(shooter, spawn, tkey)  # DIV-0023: ~15 creatures ALSO field-dress into a sellable good (Option A)
 				arena.remove_hostile_target(tkey)  # a fresh hostile may spawn next Director tick
 		# A LETHAL hit that took the SHOOTER out (creature or PvP return fire) is a takeout.
 		if bool(envelope.get("lethal", false)) and arena.has_player(shooter):
