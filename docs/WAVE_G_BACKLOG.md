@@ -372,6 +372,9 @@ session log.
    settles ~10 MB).
 
 ### Next queue (unblocked, non-owner-gated — for the loop)
+**CLAIM (2026-07-03 tick, in flight): the four HOT seam items below are being built ON MAIN
+(one HOT agent owns `scripts/net/*` + port 24555) and the svaper outlier is GREEN in a worktree
+awaiting serial integration. Cron ticks: take NOTHING until this claim line is removed.**
 - `[HOT]` one-liner: `combat_arena` wraps `envelope_for_result` with `attach_replay_inputs`
   (SERVER/log side only — the block carries both sheets' pools, do NOT broadcast it).
 - `[HOT]` `_active_boss_quest_target_in_zone` → `_cached_load` (G15 advisory: the only direct
