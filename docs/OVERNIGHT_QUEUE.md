@@ -92,6 +92,13 @@ PT1 prep cleared, PT1 date still owner-gated.
   debuff; positional PvP range (see G9 design-first).
 
 ## Log (newest first)
+- 2026-07-03 (Fable, tick 6): B7 PVP-CONSENT WIRED (DIV-0022) `01bc457`+`1d7926d` — duels
+  (any-zone once accepted, sev-3 KO clamp, zone-leave/disconnect abort) + persisted bounties
+  (escrow, fee sink, collect-once at the takedown seam) + newbie protection, composed OVER the
+  DIV-0019 zone gate. The mandatory seam audit CAUGHT a consent self-accept bypass + a phantom
+  zone-leave abort in the first commit — fixed + re-verified PASS (attack paths traced dead-end).
+  RPC surface 45→57, gate 124 smokes. Also: thanu probe = no change needed (bars pass);
+  soak-bot economy mix `4373c4c`; B2/B7 of the old area list now both closed.
 - 2026-07-03 (Fable, tick 5): ammo HUD `60d91f5` (client readout + low/dry tint + reload/dry
   lines; two-process full-lifecycle proof). Weekly MUSH drift check: NO DRIFT (50/50). WATCHDOG
   CRASH DRILL PASS (kill → journaled → 3s restart → same world restored → client reconnects;

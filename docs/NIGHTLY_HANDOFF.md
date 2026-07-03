@@ -363,6 +363,17 @@ Three audit passes (F66–F75) now span ~14 dimensions. The remaining substantiv
   (`0a89544`); **live soak acceptance PASS** — 20 bots, 7 min, 20/20 connected, zero script/engine
   errors, server survived (~128 MB/client). Remaining before a PT1 date: the 30-min dress-rehearsal
   soak under the watchdog + the DTLS-or-LAN-only call. Next work: `WAVE_G_BACKLOG.md` § Next queue.
+- **Tick 6 (same day): PvP-consent layers 2+3 are LIVE** (`01bc457`+`1d7926d`, DIV-0022 WIRED) —
+  opt-in duels that work even in secured zones (challenge/accept/decline/yield commands, KO at
+  incapacitated with auto-stabilize and NO death penalty, aborts on zone-leave/disconnect/TTL)
+  and persisted bounty contracts (escrowed pot, 10% posting-fee sink, collect-once by an
+  eligible hunter at the takedown seam, pay-off at 1.5x). The consent layer composes OVER the
+  zone gate — lawless open-PvP and all protections unchanged where no layer applies. **The
+  mandatory post-HOT seam audit earned its keep again**: it caught a challenger-self-accept
+  consent bypass (lethal-duel griefing of newbies in safe zones) and a documented-but-unwired
+  zone-leave abort in the first commit; both fixed, re-verified, attack paths traced dead-end.
+  Telemetry tally taught the four bounty event types (place/collect/payoff/refund). Also:
+  thanu probe check = no change needed; soak bots now exercise the economy (`4373c4c`).
 - **Tick 5 (same day): PT1 readiness proven end-to-end.** Ammo HUD live (`60d91f5`). The
   watchdog crash drill ran for real: server murdered mid-run → journaled crash record → 3s
   restart → identical world state restored (tick_index/claims/corpses) → fresh client joined;

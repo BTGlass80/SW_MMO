@@ -410,18 +410,30 @@ connected, 0 SCRIPT ERROR / 0 engine errors, server survived, server WS flat ~15
 — instrument works end-to-end (character_id join + reload/buy events); flows tiny & skewed
 (autowalk bots don't fight; dummy is free by design) → the real economy read needs PT1 humans.
 
-**CLAIM (tick 6, in flight): B7 PvP-consent duel+bounty HOT wiring on main (DIV-0022 → WIRED);
-thanu probe check + soak-bot economy mix in worktrees. Cron ticks: take NOTHING until this
-line clears.**
+Tick 6 results (2026-07-03 evening):
+- ~~B7 PvP-consent duels + bounties~~ **WIRED (DIV-0022): `01bc457` + audit-fix `1d7926d`.**
+  Consent composes OVER the DIV-0019 zone gate (§1.2 precedence verified); duels work in ANY
+  zone once accepted (sev-3 KO clamp — three clamps coexist strictly ordered: sparring 2 <
+  duel KO 3 < lethal uncapped); bounties escrow through the economy with the posting fee as a
+  sink (telemetry tally taught + tested); bounty book persists in world_state.dat; newbie
+  protection = one-way `world_hooks.newbie_protected` flag. **The mandatory seam audit FAILED
+  the first commit** (challenger self-accept consent bypass; phantom zone-leave abort) — both
+  fixed + re-verified PASS with the attack paths traced dead-end. Two-client live proofs:
+  secured-zone duel → KO → no death penalty; non-duel secured fire rejected ×77; bounty pays
+  the hunter once, net sink = the fee.
+- ~~thanu probe check~~ **NO CHANGE NEEDED** (fresh probe byte-identical to tick 3; both loot
+  bars pass: t3 within-tier 1.93x < 3x; thanu 1.26x the t4 mean < 1.5x).
+- ~~soak-bot economy mix~~ **DONE `4373c4c`** (buy power_pack / buy-insurance / vendor-list /
+  sell hold_out_blaster on modulo bots; flags+keys grep-proven; live validation next soak).
 
 Remaining for the loop:
 - Weekly `mush_sync_manifest.py diff` (next due ~2026-07-10; re-port slice on drift — MERGE
   around prototype fields per docs/MUSH_SYNC.md).
-- Soak-bot economy coverage: teach `soak_test.ps1` a `--buy/--sell/--travel`-heavier bot mix so
-  future soaks exercise vendor/economy flow (today's mix never buys).
-- t3 thanu loot outlier (366.5 cr/min) if the next probe run still shows it leading.
-- PT1 is fully prepped: auth hashed, watchdog drilled, 30-min soak green, replay tool live,
-  telemetry + tally proven. **Owner-gated: the PT1 date + DTLS-vs-LAN-only.**
+- Next soak run doubles as live validation of the economy bot mix + the duel/bounty paths.
+- Known-accepted edges (documented in DIV-0022, revisit on demand): pot-cap fee-for-nothing;
+  `hunters_guild_only` unreachable; sweep-expiry notices are minimal.
+- PT1 is fully prepped AND the evening's "lawless duel" beat now also works as a consensual
+  safe-zone duel. **Owner-gated: the PT1 date + DTLS-vs-LAN-only.**
 - **Before PT1 (owner picks the date):** a full 20-bot × 30-min evening soak under
   `tools/run_server_watchdog.ps1` (the 7-min acceptance passed; the long run is the dress
   rehearsal), and the DTLS-or-banner decision for anything beyond LAN.
