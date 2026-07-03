@@ -11,10 +11,13 @@ const HostileNpc := preload("res://scripts/rules/hostile_npc_model.gd")
 const Chargen := preload("res://scripts/rules/chargen_model.gd")
 const Ladder := preload("res://scripts/rules/wound_ladder_model.gd")
 const EconomyModel := preload("res://scripts/rules/economy_model.gd")
+const GroundCombatModel := preload("res://scripts/rules/ground_combat_model.gd")  # regime: direct soak-pool ladder
 
 const IID_WINDOWS := 2000       # per creature/profile: fresh-state exchanges for the severity histogram
 const CAMPAIGNS := 300          # campaigns per creature/profile/model
 const CAMPAIGN_CAP := 400       # max windows per campaign before declaring "survived"
+const REGIME_CAMPAIGNS := 150   # armor-condition regime: campaigns per cell (bounded runtime)
+const REGIME_CAMPAIGN_CAP := 120  # armor-condition regime: window cap per campaign
 const KILL_BATCH := 400         # windows for player-offense (windows-per-creature-kill)
 const LOOT_SAMPLES := 4000
 const HOSTILE_DISTANCE := 10.0  # mirrors network_manager
@@ -27,6 +30,18 @@ func _init() -> void:
 	var combat_data := _json("res://data/prototype_combatants.json")
 	var weapons: Dictionary = _json("res://data/weapons_clone_wars.json").get("weapons", {})
 	var armors: Dictionary = _json("res://data/armor_clone_wars.json").get("armor", {})
+	# Synthetic +3D-energy full-coverage TEST armor. The shipped catalog maxes at +2D energy, which the
+	# -6 quality floor drives to 0 BEFORE the broken-halving runs -> no REAL armor leaves a positive
+	# remnant for _apply_broken_pool_multiplier to act on. This synthetic armor (energy 9 pips) is the
+	# only way to make the fix's HALVING gradient (full 6D > broken 3D+1 > bare 3D) observable in-path.
+	armors["probe_energy_3d"] = {
+		"name": "Probe Test Energy Armor (+3D, full)",
+		"protection_energy": "+3D",
+		"protection_physical": "+3D",
+		"dexterity_penalty": "",
+		"cost": 0,
+		"vendor_stocked": false,
+	}
 	var species: Dictionary = _json("res://data/species_clone_wars.json")
 	var human: Dictionary = _species(species, "human")
 	var creatures: Dictionary = _json("res://data/creatures_clone_wars.json").get("creatures", {})
@@ -118,6 +133,11 @@ func _init() -> void:
 		print("  offense: %d kills / %d windows -> %.1f windows/kill | loot %.0f cr/kill -> ~%.0f cr/min farming" % [
 			kills, windows, wpk, loot_mean, cr_min])
 
+	# NEW (DIV-0026): sweep the broken-armor regime alongside the pristine probe above.
+	_armor_condition_regime(arena, creatures, sheet, armors, profiles)
+
+	if rules != null and is_instance_valid(rules):
+		rules.free()   # d6_rules is a Node — free it so the tool leaks nothing at exit (no engine stderr)
 	print("\nbalance_probe: OK")
 	quit(0)
 
@@ -130,19 +150,19 @@ func _one_window(arena: Object, seed_v: int, p: Dictionary) -> int:
 				return _sev_for_key(String((ev as Dictionary).get("wound_key", "no_damage")))
 	return 0
 
-func _campaigns(arena: Object, key: String, pools: Dictionary, spawn: Dictionary, seed_v: int, p: Dictionary, use_escalate: bool) -> Dictionary:
+func _campaigns(arena: Object, key: String, pools: Dictionary, spawn: Dictionary, seed_v: int, p: Dictionary, use_escalate: bool, quality_pips: int = 0, campaigns_n: int = CAMPAIGNS, cap: int = CAMPAIGN_CAP) -> Dictionary:
 	var deaths := 0
 	var lengths: Array = []
 	var terminal := {}
-	for c in range(CAMPAIGNS):
+	for c in range(campaigns_n):
 		var level := "healthy"
 		var sev := 0
-		_reset_player(arena, 0)
+		_reset_player(arena, 0, quality_pips)
 		_engage(arena, key, pools, spawn)
-		for w in range(CAMPAIGN_CAP):
+		for w in range(cap):
 			if not arena.has_hostile_target(key):
 				_engage(arena, key, pools, spawn)  # Director respawn
-			_reset_player(arena, sev)  # project tracked level onto the arena's severity int
+			_reset_player(arena, sev, quality_pips)  # project tracked level + pinned armor condition
 			var rolled := _one_window(arena, seed_v + c * 100000 + w * 7, p)
 			if arena.hostile_target_disabled(key):
 				arena.remove_hostile_target(key)
@@ -166,8 +186,89 @@ func _engage(arena: Object, key: String, pools: Dictionary, spawn: Dictionary) -
 	arena.set_player_target(1, key)
 	arena.set_player_lethal(1, true)
 
-func _reset_player(arena: Object, sev: int) -> void:
-	arena.set_player_combat(1, {"player_wound_severity": sev, "player_character_points": 0, "player_force_points": 0, "player_armor_quality_pips": 0})
+func _reset_player(arena: Object, sev: int, quality_pips: int = 0) -> void:
+	arena.set_player_combat(1, {"player_wound_severity": sev, "player_character_points": 0, "player_force_points": 0, "player_armor_quality_pips": quality_pips})
+
+# --- DIV-0026 broken-armor regime (added alongside the pristine probe; does not alter it) ---
+
+# Swap peer 1's equipped armor to `armor_key` ("" = no armor / bare Strength), rebuilding its pools.
+func _equip_variant(arena: Object, base_sheet: Dictionary, armor_key: String) -> void:
+	var s := base_sheet.duplicate(true)
+	var eq: Dictionary = (s.get("equipment", {}) as Dictionary).duplicate(true)
+	eq["armor"] = armor_key
+	s["equipment"] = eq
+	arena.set_player_sheet(1, s)
+
+# Fresh-state incoming-severity histogram at a PINNED armor-quality level (mirrors the main IID loop).
+func _iid_probe(arena: Object, key: String, pools: Dictionary, spawn: Dictionary, p: Dictionary, quality_pips: int, seed_base: int) -> Dictionary:
+	var hist := [0, 0, 0, 0, 0, 0]
+	for i in range(IID_WINDOWS):
+		_reset_player(arena, 0, quality_pips)
+		_engage(arena, key, pools, spawn)
+		var sev := _one_window(arena, seed_base + i * 13, p)
+		hist[clampi(sev, 0, 5)] += 1
+	return {"none": hist[0], "out": hist[3] + hist[4] + hist[5], "kill": hist[5]}
+
+# Deterministic (no RNG) resolved-soak ladder: the EXACT pool live combat builds on a covered hit,
+# pristine(0)/near-floor(-5)/broken(-6), via apply_armor_to_soak then _apply_broken_pool_multiplier.
+func _soak_ladder(ground: Object, str_pool: Dictionary, armor: Dictionary, label: String) -> void:
+	print("  %s" % label)
+	print("    Str-only (no armor): %s" % rules.pool_to_string(str_pool))
+	for pips in [0, -5, -6]:
+		var armored: Dictionary = rules.apply_armor_to_soak(str_pool, armor, "energy", pips)
+		var fixed: Dictionary = ground._apply_broken_pool_multiplier(rules, str_pool, armored, true, pips)
+		var note := ""
+		if pips == -6:
+			var combined := int(armored.get("dice", 0)) * 3 + int(armored.get("pips", 0))
+			var old_bug: Dictionary = rules.normalize_pool(0, int(float(combined) * 0.5))
+			note = "   (OLD bug halved COMBINED -> %s, BELOW bare Str)" % rules.pool_to_string(old_bug)
+		print("    quality %+d: armored=%-5s  FIXED soak=%-5s%s" % [
+			pips, rules.pool_to_string(armored), rules.pool_to_string(fixed), note])
+
+func _armor_condition_regime(arena: Object, creatures: Dictionary, base_sheet: Dictionary, armors: Dictionary, profiles: Dictionary) -> void:
+	var ground := GroundCombatModel.new()
+	print("\n################  ARMOR CONDITION REGIME  (DIV-0026 broken-pool fix)  ################")
+	print("# Invariant: full-quality armor soaks MOST; broken(-6) soaks LESS than full but NEVER below")
+	print("# bare Strength (no armor). Pip levels: pristine 0 / near-floor -5 (NOT broken) / broken -6.")
+	print("# NOTE: the shipped armor catalog maxes at +2D energy, which the -6 quality penalty zeroes")
+	print("#       BEFORE the broken-halving -> on real gear broken soak == bare (the fix's floor, not a")
+	print("#       cliff below it). 'probe_energy_3d' (+3D) is synthetic so the HALVING gradient shows.")
+
+	var str_pool: Dictionary = rules.parse_pool(String((base_sheet.get("attributes", {}) as Dictionary).get("strength", "3D")))
+	print("\n-- (A) resolved SOAK pool on a COVERED hit (exact live-combat pipeline, deterministic) --")
+	_soak_ladder(ground, str_pool, armors.get("probe_energy_3d", {}), "probe_energy_3d (+3D energy, full)  <- matches the fix's documented unit case")
+	_soak_ladder(ground, str_pool, armors.get("blast_vest", {}), "blast_vest (+1D energy, torso only)  <- the REAL starter armor")
+
+	var green: Dictionary = profiles.get("green", {"aim": 0, "cover": 0, "dodge": false})
+	var variants := [
+		["heavy+3D pristine(0)", "probe_energy_3d", 0],
+		["heavy+3D near(-5)",    "probe_energy_3d", -5],
+		["heavy+3D BROKEN(-6)",  "probe_energy_3d", -6],
+		["blast+1D pristine(0)", "blast_vest",      0],
+		["blast+1D near(-5)",    "blast_vest",      -5],
+		["blast+1D BROKEN(-6)",  "blast_vest",      -6],
+		["NO ARMOR (bare Str)",  "",                0],
+	]
+	print("\n-- (B) incoming severity per 5s window, green profile, %d windows/cell (higher out%% = dies faster) --" % IID_WINDOWS)
+	for key in ["hitcher_crab", "tusken_warrior", "acklay"]:
+		var spawn := _spawn(creatures, key)
+		var pools: Dictionary = HostileNpc.attack_pools_from_creature(rules, spawn)
+		print("  vs %-14s (creature dmg %s):" % [key, rules.pool_to_string(pools["target_damage_pool"])])
+		for v in variants:
+			_equip_variant(arena, base_sheet, String(v[1]))
+			var r := _iid_probe(arena, key, pools, spawn, green, int(v[2]), hash(key + String(v[0])))
+			print("    %-22s none %5.1f%%   out(3+) %6.2f%%   kill(5) %6.2f%%" % [
+				String(v[0]), 100.0 * r["none"] / IID_WINDOWS, 100.0 * r["out"] / IID_WINDOWS, 100.0 * r["kill"] / IID_WINDOWS])
+
+	print("\n-- (C) LIVE(maxi) campaign windows-to-out (TTK) vs tusken_warrior, %d campaigns cap %d --" % [REGIME_CAMPAIGNS, REGIME_CAMPAIGN_CAP])
+	var tk := "tusken_warrior"
+	var tspawn := _spawn(creatures, tk)
+	var tpools: Dictionary = HostileNpc.attack_pools_from_creature(rules, tspawn)
+	for v in variants:
+		_equip_variant(arena, base_sheet, String(v[1]))
+		var c := _campaigns(arena, tk, tpools, tspawn, hash(tk + String(v[0])) + 7000000, green, false, int(v[2]), REGIME_CAMPAIGNS, REGIME_CAMPAIGN_CAP)
+		print("    %-22s died %3d/%d   median windows-to-out %-7s (~%s)" % [
+			String(v[0]), c["deaths"], REGIME_CAMPAIGNS, _fmt(c["median"]), _mins(c["median"])])
 
 func _sev_for_key(k: String) -> int:
 	match k:
