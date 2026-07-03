@@ -97,6 +97,19 @@ func _init() -> void:
 	var d2: Dictionary = Model.solve(Vector3(1, 2, 3), Vector3(9, 2, 3), bp_ranges, 2, rules)
 	_assert_eq(d1, d2, "solve is deterministic for identical inputs")
 
+	# --- REGRESSION: the echoed weapon_ranges must be a DEFENSIVE COPY, never a live reference to
+	# the shared weapon catalog. A weapon-key solve pulls ranges out of the long-lived catalog; if the
+	# result aliased that array, a consumer appending/editing weapon_ranges would silently corrupt the
+	# catalog for every future shot with that weapon. ---
+	var cat2 := {"weapons": {"blaster_pistol": {"name": "BP", "ranges": [3, 10, 30, 120]}}}
+	var leak_solve: Dictionary = Model.solve(Vector3.ZERO, Vector3(8, 0, 0), "blaster_pistol", 0, rules, cat2)
+	(leak_solve["weapon_ranges"] as Array).append(9999)  # try to corrupt the catalog through the echo
+	_assert_eq((cat2["weapons"]["blaster_pistol"]["ranges"] as Array), [3, 10, 30, 120], "solve() must not leak a live ref to the catalog ranges")
+	# An Array passed directly is also defensively copied, not echoed by reference.
+	var in_arr: Array = [3, 10, 30, 120]
+	var arr_solve: Dictionary = Model.solve(Vector3.ZERO, Vector3(8, 0, 0), in_arr, 0, rules)
+	_assert_eq(is_same(arr_solve["weapon_ranges"], in_arr), false, "solve() returns a defensive copy of a passed ranges array, not the same reference")
+
 	rules.free()
 
 	if _failures.is_empty():

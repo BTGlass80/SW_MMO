@@ -34,6 +34,9 @@ const BREAK_CHECK := "opposed brawling/STR"
 # --- Rider access ------------------------------------------------------------------------------
 
 # The raw `special_attack` block for a creature key ({} if the creature has none, or key is unknown).
+# Returns an INDEPENDENT deep copy: the rider is read-only over the shared creatures_data, and the
+# server mutates the baked bundle it applies (consuming poison rounds, marking ticks), so handing back
+# a live reference would corrupt the global creature table for every future spawn of this key.
 static func special_attack_for(creatures_data: Dictionary, creature_key: String) -> Dictionary:
 	if creature_key == "":
 		return {}
@@ -41,15 +44,16 @@ static func special_attack_for(creatures_data: Dictionary, creature_key: String)
 	var c: Dictionary = creatures.get(creature_key, {})
 	var sa = c.get("special_attack", {})
 	if typeof(sa) == TYPE_DICTIONARY:
-		return sa
+		return (sa as Dictionary).duplicate(true)
 	return {}
 
 # Same, keyed off a creature_spawn_model.roll_spawn result. Honors a spawn that already embeds its own
-# "special_attack" (future-proofing); otherwise looks the rider up by the spawn's creature_key.
+# "special_attack" (future-proofing); otherwise looks the rider up by the spawn's creature_key. The
+# embedded block is likewise deep-copied so a mutated bundle never aliases the caller's spawn.
 static func special_attack_for_spawn(creatures_data: Dictionary, spawn: Dictionary) -> Dictionary:
 	var embedded = spawn.get("special_attack", null)
 	if typeof(embedded) == TYPE_DICTIONARY:
-		return embedded
+		return (embedded as Dictionary).duplicate(true)
 	return special_attack_for(creatures_data, String(spawn.get("creature_key", "")))
 
 static func has_special_attack(creatures_data: Dictionary, creature_key: String) -> bool:

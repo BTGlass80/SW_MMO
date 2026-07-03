@@ -70,17 +70,22 @@ static func distance_between(a, b) -> float:
 #   - a String weapon key + `catalog`     -> the entry's "ranges" from the catalog
 # `catalog` may be the weapons_clone_wars.json root ({"weapons": {...}}) OR the
 # inner "weapons" map directly; both are handled.
+# Every path returns a DEFENSIVE COPY of the ranges array so the value echoed back in solve()'s
+# result never aliases a live, long-lived structure (the shared weapon catalog, a weapon-spec dict,
+# or the caller's own array). Without this, a consumer editing result["weapon_ranges"] would silently
+# corrupt the catalog for every future shot with that weapon. Elements are numbers (immutable), so a
+# shallow duplicate is sufficient.
 static func weapon_ranges_for(weapon, catalog = null) -> Array:
 	if weapon is Array:
-		return weapon
+		return (weapon as Array).duplicate()
 	match typeof(weapon):
 		TYPE_DICTIONARY:
 			var r = weapon.get("ranges", [])
-			return r if r is Array else []
+			return (r as Array).duplicate() if r is Array else []
 		TYPE_STRING:
 			var entry := _lookup_weapon(String(weapon), catalog)
 			var r2 = entry.get("ranges", [])
-			return r2 if r2 is Array else []
+			return (r2 as Array).duplicate() if r2 is Array else []
 	return []
 
 static func _lookup_weapon(key: String, catalog) -> Dictionary:

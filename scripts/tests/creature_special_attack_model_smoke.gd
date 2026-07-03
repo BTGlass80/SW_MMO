@@ -103,6 +103,23 @@ func _init() -> void:
 	var lone := Model.poison_tick(hc_poison, rules, 4242, 2)
 	_assert_equal(int(lone["total"]), int(det_a[0]["total"]), "poison_tick(seed, round) reproduces the schedule entry")
 
+	# --- REGRESSION: the rider is READ-ONLY over the shared creatures_data. describe()/
+	# special_attack_for must hand back an INDEPENDENT copy, never a live reference into the global
+	# creature table -- the server will consume/mutate a baked bundle (decrementing rounds, marking
+	# ticks) and that must NOT corrupt every future spawn of the same creature key. ---
+	var src_rounds := int(((creatures["hitcher_crab"] as Dictionary)["special_attack"] as Dictionary)["poison"]["rounds"])
+	var baked := Model.describe(data, "hitcher_crab", rules, 1)
+	var baked_poison := baked["poison"] as Dictionary
+	if not baked_poison.is_empty():
+		baked_poison["rounds"] = 999  # simulate the server mutating the bundle it is applying
+	var src_rounds_after := int(((creatures["hitcher_crab"] as Dictionary)["special_attack"] as Dictionary)["poison"]["rounds"])
+	_assert_equal(src_rounds_after, src_rounds, "mutating a baked bundle must NOT corrupt the shared creature table")
+	# special_attack_for itself returns an independent copy: mutating one lookup can't be seen by the next.
+	var rider_a := Model.special_attack_for(data, "hitcher_crab")
+	(rider_a["poison"] as Dictionary)["rounds"] = 42
+	var rider_b := Model.special_attack_for(data, "hitcher_crab")
+	_assert_equal(int((rider_b["poison"] as Dictionary)["rounds"]), 2, "special_attack_for returns an independent copy (rider mutation does not leak)")
+
 	if _failures.is_empty():
 		print("creature_special_attack_model_smoke: OK")
 		rules.free()  # d6_rules extends Node
