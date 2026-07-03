@@ -433,6 +433,13 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	var chosen_name := display_name.strip_edges()
 	if chosen_name == "":
 		chosen_name = String(record.get("name", existing.get("name", "")))
+	# G7: canonical Star Wars figure names are reserved (Chargen.is_reserved_name, ported from the MUSH
+	# name policy). Enforce at the single registration name-resolution point by falling back to the
+	# account id — this is the one name that flows to the record, world state, and arena, so a reserved
+	# name can never land. A client-facing rejection message is a follow-up (needs an error round-trip).
+	if chosen_name != "" and Chargen.is_reserved_name(chosen_name):
+		print("[chargen] reserved name '%s' rejected -> using account id '%s'" % [chosen_name, character_id])
+		chosen_name = character_id
 	if record.is_empty():
 		record = _create_character(character_id, chosen_name, build)  # new char: run chargen
 	else:
