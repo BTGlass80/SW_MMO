@@ -9,6 +9,7 @@ const SpaceContactSelectionModel = preload("res://scripts/rules/space_contact_se
 const SpaceActionLogModel = preload("res://scripts/rules/space_action_log_model.gd")
 const SpaceOverlayModeModel = preload("res://scripts/rules/space_overlay_mode_model.gd")
 const SpaceStationStripModel = preload("res://scripts/rules/space_station_strip_model.gd")
+const SpaceTacticalView3D = preload("res://scripts/world/space_tactical_view3d.gd")
 
 class HazardZone:
 	extends Control
@@ -32,6 +33,7 @@ var _selected_target_label: Label
 var _action_log_label: Label
 var _map_size := Vector2(760, 520)
 var _map_origin := Vector2(32, 118)
+var _view3d: SpaceTacticalView3D
 var _mouse_mode_before_open := Input.MOUSE_MODE_CAPTURED
 var _selected_contact_id := ""
 var _contacts: Array = []
@@ -102,6 +104,15 @@ func _process(delta: float) -> void:
 	_update_traffic_label()
 
 func _input(event: InputEvent) -> void:
+	# Bridge keys are handled on the physical key-down only. Without the is_echo() guard, an
+	# OS auto-repeat while a key is held (very easy to trigger on M when tapping it to leave the
+	# bridge) re-fires this handler several times for what the player experiences as a single
+	# press. _set_open(not visible) is NOT idempotent, so an even number of repeat toggles lands
+	# right back on "open" — the bridge silently refuses to close and reads as "stuck in space".
+	# ESC/action keys route through _set_open too, so the same guard keeps every bridge action
+	# (including gunnery/sensor rolls) to one resolution per press.
+	if event is InputEventKey and event.pressed and event.is_echo():
+		return
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and visible:
 		_set_open(false)
 		get_viewport().set_input_as_handled()
@@ -373,26 +384,22 @@ func _current_route_preview() -> Dictionary:
 	return _model.maneuver_route_preview(_player_ship, _gunnery_drill.get("maneuver_action", {}))
 
 func _add_map_surface() -> void:
-	var surface := ColorRect.new()
-	surface.position = _map_origin
-	surface.size = _map_size
-	surface.color = Color(0.08, 0.105, 0.12, 0.94)
-	_root.add_child(surface)
+	# DIV-0004's "2.5D plane with 3D ships/camera": an isometric-angled Camera3D replaces the
+	# old flat top-down ColorRect + axis-line plane. The border frames it like the rest of the
+	# panel's instrument styling; the 3D scene draws its own ground plane + axis bars.
+	var border := ColorRect.new()
+	border.position = _map_origin - Vector2(2, 2)
+	border.size = _map_size + Vector2(4, 4)
+	border.color = Color(0.20, 0.27, 0.29, 0.9)
+	_root.add_child(border)
 
-	var x_axis := ColorRect.new()
-	x_axis.position = _map_origin + Vector2(0, _map_size.y * 0.5)
-	x_axis.size = Vector2(_map_size.x, 1)
-	x_axis.color = Color(0.28, 0.36, 0.38, 0.7)
-	_root.add_child(x_axis)
-
-	var y_axis := ColorRect.new()
-	y_axis.position = _map_origin + Vector2(_map_size.x * 0.5, 0)
-	y_axis.size = Vector2(1, _map_size.y)
-	y_axis.color = Color(0.28, 0.36, 0.38, 0.7)
-	_root.add_child(y_axis)
+	_view3d = SpaceTacticalView3D.new()
+	_view3d.position = _map_origin
+	_root.add_child(_view3d)
+	_view3d.configure(_map_size)
 
 func _add_range_rings() -> void:
-	var center := _map_origin + _map_size * 0.5
+	var center := _view3d_screen_position(Vector2.ZERO)
 	for band in _range_bands:
 		if typeof(band) != TYPE_DICTIONARY:
 			continue
@@ -414,7 +421,7 @@ func _add_hazards() -> void:
 		if typeof(hazard) != TYPE_DICTIONARY:
 			continue
 		var pos: Dictionary = hazard.get("position", {})
-		var map_pos := _space_to_map(Vector2(float(pos.get("x", 0.0)), float(pos.get("y", 0.0))))
+		var map_pos := _view3d_screen_position(Vector2(float(pos.get("x", 0.0)), float(pos.get("y", 0.0))))
 		var radius := float(hazard.get("radius", 0.0))
 		if radius <= 0.0:
 			continue
@@ -457,7 +464,7 @@ func _add_contacts() -> void:
 		if typeof(contact) != TYPE_DICTIONARY:
 			continue
 		var pos: Dictionary = contact.get("position", {})
-		var map_pos := _space_to_map(Vector2(float(pos.get("x", 0.0)), float(pos.get("y", 0.0))))
+		var map_pos := _view3d_screen_position(Vector2(float(pos.get("x", 0.0)), float(pos.get("y", 0.0))))
 		var contact_id := String(contact.get("id", ""))
 		var selector := ColorRect.new()
 		selector.position = map_pos - Vector2(9, 9)
@@ -573,11 +580,17 @@ func _add_action_buttons() -> void:
 		button.pressed.connect(Callable(self, "_resolve_space_action_key").bind(action["key"]))
 		_root.add_child(button)
 
+	# Close gets a fixed top-right slot instead of the next open grid cell. Appending it to the
+	# dynamic action grid (its old spot) let it land in the same row as the last 1-2 action
+	# buttons, which the Selected Target readout (fixed at panel y=118) draws over — Close was
+	# rendered underneath that label, unreadable and easy to miss even though still clickable.
+	# A fixed corner slot keeps it visible and reachable no matter how many actions are live.
 	var close_button := Button.new()
 	close_button.add_to_group("space_action_button")
-	close_button.position = Vector2(x + (actions.size() % buttons_per_row) * (button_width + gap), y + int(actions.size() / buttons_per_row) * (button_height + gap))
+	var viewport_size := get_viewport().get_visible_rect().size
+	close_button.position = Vector2(viewport_size.x - button_width - 28.0, 22.0)
 	close_button.size = Vector2(button_width, button_height)
-	close_button.text = "Close"
+	close_button.text = "Close [Esc]"
 	close_button.focus_mode = Control.FOCUS_NONE
 	close_button.mouse_filter = Control.MOUSE_FILTER_STOP
 	close_button.pressed.connect(Callable(self, "_set_open").bind(false))
@@ -941,6 +954,8 @@ func _station_assist_actions() -> Array:
 
 func _refresh_contact_visibility() -> void:
 	var revealed: Array = _space_state.get("revealed_contacts", [])
+	if _view3d != null:
+		_view3d.sync_contacts(_contacts, revealed, _target_contact_id())
 	for contact_id in _contact_visuals.keys():
 		var entry: Dictionary = _contact_visuals[contact_id]
 		var contact: Dictionary = entry.get("contact", {})
@@ -970,7 +985,7 @@ func _update_contact_visual_position(contact_id: String, contact: Dictionary) ->
 	var heading: ColorRect = visual.get("heading")
 	var label: Label = visual.get("label")
 	var pos: Dictionary = contact.get("position", {})
-	var map_pos := _space_to_map(Vector2(float(pos.get("x", 0.0)), float(pos.get("y", 0.0))))
+	var map_pos := _view3d_screen_position(Vector2(float(pos.get("x", 0.0)), float(pos.get("y", 0.0))))
 	if selector != null:
 		selector.position = map_pos - Vector2(9, 9)
 	if dot != null:
@@ -987,6 +1002,16 @@ func _space_to_map(pos: Vector2) -> Vector2:
 		clampf((180.0 - pos.y) / 360.0, 0.0, 1.0)
 	)
 	return _map_origin + normalized * _map_size
+
+## Screen position (in _root's local space) that a data-space point projects to through the
+## isometric Camera3D, so the 2D click targets/labels/range-rings stay registered with the 3D
+## ship they represent instead of drifting apart under the angled camera. Falls back to the old
+## flat top-down mapping if the 3D view hasn't been built yet (defensive; should not happen once
+## _build_overlay has run).
+func _view3d_screen_position(pos: Vector2) -> Vector2:
+	if _view3d == null:
+		return _space_to_map(pos)
+	return _map_origin + _view3d.screen_position_for(pos)
 
 func _contact_color(kind: String) -> Color:
 	match kind:

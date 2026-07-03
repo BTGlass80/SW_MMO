@@ -63,7 +63,7 @@ func _build_hud() -> void:
 
 	var label := Label.new()
 	label.position = Vector2(18, 16)
-	label.text = "Mos Eisley Spaceport Row, 20 BBY | Move: WASD / Mouse / Space | Ground: LMB fire / RMB aim / E inspect / H sheet / C cover / Q dodge / F full dodge / V force volley / Z pause remotes / P-O CP / G FP / R reset | Space: M map / N sensors / T pause traffic / B gunnery / U assist"
+	label.text = "Mos Eisley Spaceport Row, 20 BBY | Move: WASD / Mouse / Space | Ground: LMB fire / RMB aim / E inspect / H sheet / C cover / Q dodge / F full dodge / V force volley / Z pause remotes / P-O CP / G FP / R reset | Space: M map / N sensors / T pause traffic / B gunnery / U assist / Esc or M close"
 	label.add_theme_font_size_override("font_size", 17)
 	label.modulate = Color(0.09, 0.08, 0.06)
 	layer.add_child(label)
