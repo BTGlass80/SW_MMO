@@ -15,7 +15,7 @@
         1,
         3
       ],
-      "description": "A squat, toad-like creature the colour of wet sand sits motionless in a shallow scrape, only its bulging eyes moving. Worrts are blindly stupid ambush feeders \u2014 it will snap its long sticky tongue at anything roughly its own size or smaller that crawls past, prey or droid or drifting rock alike. Harmless to a grown being, endlessly annoying everywhere else.",
+      "description": "A squat, toad-like creature the colour of wet sand sits motionless in a shallow scrape, only its bulging eyes moving. Worrts are blindly stupid ambush feeders — it will snap its long sticky tongue at anything roughly its own size or smaller that crawls past, prey or droid or drifting rock alike. Harmless to a grown being, endlessly annoying everywhere else.",
       "char_sheet": {
         "attributes": {
           "dexterity": "1D",
@@ -38,7 +38,7 @@
         "to_hit_skill": "brawling",
         "damage": "1D"
       },
-      "source": "COTG \u00a72.1 (WEG40080)"
+      "source": "COTG §2.1 (WEG40080)"
     },
     "glim_worm": {
       "id": "glim_worm",
@@ -51,7 +51,7 @@
         3,
         4
       ],
-      "description": "The sand here is undisturbed \u2014 until it isn't. Glim worms track prey by vibration at speed beneath the dunes and erupt directly underneath it, wrapping the victim in adhesive scales and rolling it toward a ring of teeth. They travel in small knots of three or four. The first warning is usually the ground giving way.",
+      "description": "The sand here is undisturbed — until it isn't. Glim worms track prey by vibration at speed beneath the dunes and erupt directly underneath it, wrapping the victim in adhesive scales and rolling it toward a ring of teeth. They travel in small knots of three or four. The first warning is usually the ground giving way.",
       "char_sheet": {
         "attributes": {
           "dexterity": "1D",
@@ -86,7 +86,7 @@
           "note": "Adhesive coils; opposed brawling/STR to break free."
         }
       },
-      "source": "COTG \u00a72.1 (WEG40080). Damage code cleaned to a machine-parseable STR+1D baseline bite (source text listed only the opposed brawling/STR escape-roll for the grapple hold, which is not a strike code and parsed to 0D); the escape mechanic is unchanged in special_attack.restraint. Mirrors the rock_wart cleanup pattern."
+      "source": "COTG §2.1 (WEG40080). Damage code cleaned to a machine-parseable STR+1D baseline bite (source text listed only the opposed brawling/STR escape-roll for the grapple hold, which is not a strike code and parsed to 0D); the escape mechanic is unchanged in special_attack.restraint. Mirrors the rock_wart cleanup pattern."
     },
     "hitcher_crab": {
       "id": "hitcher_crab",
@@ -99,7 +99,7 @@
         1,
         2
       ],
-      "description": "A spiked desert crustacean the size of a footlocker, half-buried to wait out the heat \u2014 easy to tread on before you see it. Its claws carry a slow-acting venom that is merely painful to most beings if treated, and its body holds water sacs that make it a genuine survival prize for anyone who can kill one without getting clawed.",
+      "description": "A spiked desert crustacean the size of a footlocker, half-buried to wait out the heat — easy to tread on before you see it. Its claws carry a slow-acting venom that is merely painful to most beings if treated, and its body holds water sacs that make it a genuine survival prize for anyone who can kill one without getting clawed.",
       "char_sheet": {
         "attributes": {
           "dexterity": "1D",
@@ -125,7 +125,7 @@
       },
       "special": [
         "Claw venom 2D+2 (slow-acting; painful, treatable). Shell venom 1D+2 on contact.",
-        "Burrows to wait out the heat \u2014 often encountered buried/unseen."
+        "Burrows to wait out the heat — often encountered buried/unseen."
       ],
       "special_attack": {
         "poison": {
@@ -140,7 +140,7 @@
         "resource": "chemical",
         "note": "Internal water sacs are a desert survival/sale good; field-dressed on kill."
       },
-      "source": "COTG \u00a72.1 (WEG40080)"
+      "source": "COTG §2.1 (WEG40080)"
     },
     "magus": {
       "id": "magus",
@@ -153,7 +153,7 @@
         1,
         2
       ],
-      "description": "A low, armoured burrower about the length of a forearm, plated in a hide tough enough that it is hunted commercially for it. The magus wants nothing to do with you \u2014 threaten it and it vanishes under the sand, leaving behind the eye-watering reek of its defensive oil-gland.",
+      "description": "A low, armoured burrower about the length of a forearm, plated in a hide tough enough that it is hunted commercially for it. The magus wants nothing to do with you — threaten it and it vanishes under the sand, leaving behind the eye-watering reek of its defensive oil-gland.",
       "char_sheet": {
         "attributes": {
           "dexterity": "2D+1",
@@ -188,7 +188,7 @@
         "resource": "organic",
         "note": "Armour-tough hide is a commercially hunted good; field-dressed on kill."
       },
-      "source": "COTG \u00a72.1 (WEG40080)"
+      "source": "COTG §2.1 (WEG40080)"
     },
     "stalker_lizard": {
       "id": "stalker_lizard",
@@ -201,7 +201,7 @@
         1,
         1
       ],
-      "description": "Low and fast and the purple-blue of dune-grass, the stalker lizard is a patient plains constrictor. It shadows a target for distance, then sprints the last fifty metres and throws its coils, crushing the windpipe. It hunts alone and takes one kill at a time \u2014 which is small comfort when you are the one it has chosen.",
+      "description": "Low and fast and the purple-blue of dune-grass, the stalker lizard is a patient plains constrictor. It shadows a target for distance, then sprints the last fifty metres and throws its coils, crushing the windpipe. It hunts alone and takes one kill at a time — which is small comfort when you are the one it has chosen.",
       "char_sheet": {
         "attributes": {
           "dexterity": "1D",
@@ -241,7 +241,7 @@
         "resource": "organic",
         "note": "Thick constrictor hide; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG \u00a72.1 (WEG40080)"
+      "source": "COTG §2.1 (WEG40080)"
     },
     "yeomet": {
       "id": "yeomet",
@@ -254,7 +254,7 @@
         2,
         5
       ],
-      "description": "A scaled, rat-faced vermin the height of a knee, the yeomet is the definitive pest of built worlds, ships, and stations. It chews through almost anything \u2014 cables and conduits included, which makes it a fire hazard \u2014 carries disease, and breeds in non-hierarchical herds that sleep in heaped piles. It flees unless cornered, at which point its teeth are a real problem. Exterminators who clear them are respected.",
+      "description": "A scaled, rat-faced vermin the height of a knee, the yeomet is the definitive pest of built worlds, ships, and stations. It chews through almost anything — cables and conduits included, which makes it a fire hazard — carries disease, and breeds in non-hierarchical herds that sleep in heaped piles. It flees unless cornered, at which point its teeth are a real problem. Exterminators who clear them are respected.",
       "char_sheet": {
         "attributes": {
           "dexterity": "4D",
@@ -278,9 +278,9 @@
       "special": [
         "Claws STR+1D.",
         "Disease transmission: a bite forces a Moderate stamina (or STR) roll.",
-        "Gnaws through cables/conduits \u2014 an infrastructure/electrical-fire hazard."
+        "Gnaws through cables/conduits — an infrastructure/electrical-fire hazard."
       ],
-      "source": "COTG \u00a72.4 (WEG40080)"
+      "source": "COTG §2.4 (WEG40080)"
     },
     "borcatu": {
       "id": "borcatu",
@@ -293,7 +293,7 @@
         1,
         3
       ],
-      "description": "A bad-tempered little stowaway scavenger, spread galaxy-wide from desert origins by riding cargo holds into the urban slums. Rock-hard digging claws, an armoured hide, and a reflex to bite anything that grabs it make the borcatu a dockworker's curse \u2014 cheap to find, irritating to remove.",
+      "description": "A bad-tempered little stowaway scavenger, spread galaxy-wide from desert origins by riding cargo holds into the urban slums. Rock-hard digging claws, an armoured hide, and a reflex to bite anything that grabs it make the borcatu a dockworker's curse — cheap to find, irritating to remove.",
       "char_sheet": {
         "attributes": {
           "dexterity": "3D",
@@ -321,7 +321,7 @@
         "Claws STR+1; rock-hard digging claws (burrows).",
         "Bites anything that grabs it."
       ],
-      "source": "COTG \u00a72.4 (WEG40080)"
+      "source": "COTG §2.4 (WEG40080)"
     },
     "tymp": {
       "id": "tymp",
@@ -334,7 +334,7 @@
         1,
         3
       ],
-      "description": "The tymp began as a forest forager, but a city-bred subspecies has turned aggressive \u2014 raiding trash and grain stores after dark and, more and more, attacking the people it finds there. Tusked, sharp-clawed, and a strong climber when pressed, it owns the night in the lower levels.",
+      "description": "The tymp began as a forest forager, but a city-bred subspecies has turned aggressive — raiding trash and grain stores after dark and, more and more, attacking the people it finds there. Tusked, sharp-clawed, and a strong climber when pressed, it owns the night in the lower levels.",
       "char_sheet": {
         "attributes": {
           "dexterity": "3D",
@@ -364,7 +364,7 @@
         "resource": "organic",
         "note": "Tough urban-beast hide; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG \u00a72.4 (WEG40080)"
+      "source": "COTG §2.4 (WEG40080)"
     },
     "spor_crawler": {
       "id": "spor_crawler",
@@ -377,7 +377,7 @@
         3,
         6
       ],
-      "description": "Barely the length of a finger joint, the spor crawler is a tiny, deadly thing \u2014 an assassin's pet that hides in dirt, drawers, and bedding and stings with a venom that kills slowly and agonizingly. Its hives swarm anything that disturbs them. Ownership is tightly regulated; the black market in them thrives anyway.",
+      "description": "Barely the length of a finger joint, the spor crawler is a tiny, deadly thing — an assassin's pet that hides in dirt, drawers, and bedding and stings with a venom that kills slowly and agonizingly. Its hives swarm anything that disturbs them. Ownership is tightly regulated; the black market in them thrives anyway.",
       "char_sheet": {
         "attributes": {
           "dexterity": "0D+2",
@@ -400,7 +400,7 @@
       },
       "special": [
         "Venom: roll every 5 minutes for 1 hour; Difficult stamina to resist the pain.",
-        "Burrowing; camouflage (Difficult search to spot) \u2014 a hidden hazard.",
+        "Burrowing; camouflage (Difficult search to spot) — a hidden hazard.",
         "Hives swarm intruders.",
         "The STR+1D natural_attack code is the baseline puncture of the sting itself; the lethal venom is the real threat and lives entirely in special_attack.poison (5D/round)."
       ],
@@ -418,7 +418,7 @@
         "difficulty": 10,
         "note": "Black-market venom; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG \u00a72.4 (WEG40080). Damage code cleaned to a machine-parseable STR+1D baseline sting (source text listed 'Poison 5D', which duplicated the special_attack.poison damage as a prose-wrapped strike code); the 5D lethal venom is unchanged in special_attack.poison. Mirrors the rock_wart cleanup pattern."
+      "source": "COTG §2.4 (WEG40080). Damage code cleaned to a machine-parseable STR+1D baseline sting (source text listed 'Poison 5D', which duplicated the special_attack.poison damage as a prose-wrapped strike code); the 5D lethal venom is unchanged in special_attack.poison. Mirrors the rock_wart cleanup pattern."
     },
     "somago": {
       "id": "somago",
@@ -431,7 +431,7 @@
         1,
         1
       ],
-      "description": "A net-shaped ambush creature that comes in several body-forms; the \"helmet\" form is sized to a humanoid head and drops to choke its prey head-first. Its origin is debated \u2014 rumoured to be engineered, though by whom no one agrees. It haunts cramped interiors and ship corridors, waiting overhead.",
+      "description": "A net-shaped ambush creature that comes in several body-forms; the \"helmet\" form is sized to a humanoid head and drops to choke its prey head-first. Its origin is debated — rumoured to be engineered, though by whom no one agrees. It haunts cramped interiors and ship corridors, waiting overhead.",
       "char_sheet": {
         "attributes": {
           "dexterity": "4D",
@@ -463,7 +463,7 @@
           "note": "Engulfs the head and chokes for +3D/round once it has a grip."
         }
       },
-      "source": "COTG \u00a72.4 (WEG40080), origin recast (engineered, debated)"
+      "source": "COTG §2.4 (WEG40080), origin recast (engineered, debated)"
     },
     "voroos": {
       "id": "voroos",
@@ -476,7 +476,7 @@
         1,
         1
       ],
-      "description": "What looks like a mound of sand, moss, or drifted snow is, sometimes, a voroos \u2014 a stationary terrain-mimic that waits, perfectly disguised, for something to wander within reach of its tongue. It grabs, hauls the prey in, and bites down; the bigger the voroos, the harder it is to tear free. The land itself, it turns out, can be hungry.",
+      "description": "What looks like a mound of sand, moss, or drifted snow is, sometimes, a voroos — a stationary terrain-mimic that waits, perfectly disguised, for something to wander within reach of its tongue. It grabs, hauls the prey in, and bites down; the bigger the voroos, the harder it is to tear free. The land itself, it turns out, can be hungry.",
       "char_sheet": {
         "attributes": {
           "dexterity": "4D",
@@ -499,7 +499,7 @@
       },
       "special": [
         "Camouflage: a Difficult perception roll to notice before it strikes.",
-        "STR 4D / 6D / 8D by size (1-10m) \u2014 scale the threat to the region.",
+        "STR 4D / 6D / 8D by size (1-10m) — scale the threat to the region.",
         "Teeth do half STR; +3D damage to anything trying to pull free of the grasp."
       ],
       "special_attack": {
@@ -515,7 +515,7 @@
         "yield": 2,
         "note": "Bulk hide/flesh from a large beast; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG \u00a73 (WEG40080)"
+      "source": "COTG §3 (WEG40080)"
     },
     "shredder_bat": {
       "id": "shredder_bat",
@@ -528,7 +528,7 @@
         6,
         12
       ],
-      "description": "Eyeless and silent until it isn't, the shredder bat hunts by hearing alone \u2014 it can pick out prey from kilometres off, then folds its wings and dives for an artery. They travel in packs of twenty or more, sometimes hundreds, and they have spread to a thousand worlds. A cloud of them coming out of the dark is a very bad sign.",
+      "description": "Eyeless and silent until it isn't, the shredder bat hunts by hearing alone — it can pick out prey from kilometres off, then folds its wings and dives for an artery. They travel in packs of twenty or more, sometimes hundreds, and they have spread to a thousand worlds. A cloud of them coming out of the dark is a very bad sign.",
       "char_sheet": {
         "attributes": {
           "dexterity": "1D+2",
@@ -558,7 +558,7 @@
         "Eyeless; hunts by hearing, detecting prey to ~15km.",
         "Dive-strikes the artery; attacks in packs."
       ],
-      "source": "COTG \u00a73 (WEG40080)"
+      "source": "COTG §3 (WEG40080)"
     },
     "wrix": {
       "id": "wrix",
@@ -598,7 +598,7 @@
         "damage": "STR+1D"
       },
       "special": [
-        "Intimidating howl (intimidation 5D) \u2014 freezes prey.",
+        "Intimidating howl (intimidation 5D) — freezes prey.",
         "Hunts in packs; subspecies up to 3.5m."
       ],
       "harvest": {
@@ -606,7 +606,7 @@
         "resource": "organic",
         "note": "Pack-carnivore pelt; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG \u00a73 (WEG40080)"
+      "source": "COTG §3 (WEG40080)"
     },
     "winged_xendrite": {
       "id": "winged_xendrite",
@@ -619,7 +619,7 @@
         10,
         20
       ],
-      "description": "A pinpoint insect-hunter introduced to \"fix\" infestations, the winged xendrite did its job too well and then overran the ecosystems it was meant to protect. One is harmless \u2014 a fast, sharp-eyed bug. A cloud of them sweeping through a passage is a different matter, and a sign that something upstream has gone badly out of balance.",
+      "description": "A pinpoint insect-hunter introduced to \"fix\" infestations, the winged xendrite did its job too well and then overran the ecosystems it was meant to protect. One is harmless — a fast, sharp-eyed bug. A cloud of them sweeping through a passage is a different matter, and a sign that something upstream has gone badly out of balance.",
       "char_sheet": {
         "attributes": {
           "dexterity": "3D",
@@ -641,10 +641,10 @@
         "damage": "STR (negligible to a humanoid; dangerous only en masse)"
       },
       "special": [
-        "Eyesight +2D \u2014 a pinpoint hunter of smaller insects.",
+        "Eyesight +2D — a pinpoint hunter of smaller insects.",
         "Harmless individually; the hazard is an overpopulation swarm."
       ],
-      "source": "COTG \u00a73 (WEG40080)"
+      "source": "COTG §3 (WEG40080)"
     },
     "acklay": {
       "id": "acklay",
@@ -657,7 +657,7 @@
         1,
         1
       ],
-      "description": "A nightmare of chitin and blades: six long, bladed legs carry a low armoured body and a wedge of a head fringed with sensory stalks. Acklays run prey down on those legs and open it with them, then finish with a crushing bite. Geonosian beast-handlers prize them for the arena \u2014 a single acklay can clear a pit \u2014 and the wild ones that have slipped their handlers hunt the badlands and the shore of the Ebon Sea. The first sign is usually the drumming of legs on rock.",
+      "description": "A nightmare of chitin and blades: six long, bladed legs carry a low armoured body and a wedge of a head fringed with sensory stalks. Acklays run prey down on those legs and open it with them, then finish with a crushing bite. Geonosian beast-handlers prize them for the arena — a single acklay can clear a pit — and the wild ones that have slipped their handlers hunt the badlands and the shore of the Ebon Sea. The first sign is usually the drumming of legs on rock.",
       "char_sheet": {
         "attributes": {
           "dexterity": "3D+1",
@@ -686,14 +686,14 @@
       },
       "special": [
         "Bite: STR+1D (the killing blow once prey is pinned by the legs).",
-        "Claw-reach ~5m on the six bladed legs \u2014 strikes before most foes close.",
+        "Claw-reach ~5m on the six bladed legs — strikes before most foes close.",
         "D6 stub re-statted from WotC lore; calibrate on the dev box."
       ],
       "harvest": {
         "good": "acklay_chitin",
         "note": "Arena armourers buy intact chitin plate; NOT wired (no creature-harvest runtime path yet)."
       },
-      "source": "Geonosis & Outer Rim (WotC d20) \u00a71.8 \u2014 D6 re-stat from scratch; calibrate on dev box."
+      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box."
     },
     "mutant_acklay": {
       "id": "mutant_acklay",
@@ -706,7 +706,7 @@
         1,
         1
       ],
-      "description": "The chemical sludge that bled from Golbah's Pit into the Ebon Sea did not kill the acklays that took to the water \u2014 it changed them. The Ebon Sea strain is bigger and better armoured than its desert kin, breathes the stagnant water as easily as air, and hunts the lightless depths beneath the scum film by sense and echo. It lies submerged until something crosses the shore, then comes up out of the black water all at once.",
+      "description": "The chemical sludge that bled from Golbah's Pit into the Ebon Sea did not kill the acklays that took to the water — it changed them. The Ebon Sea strain is bigger and better armoured than its desert kin, breathes the stagnant water as easily as air, and hunts the lightless depths beneath the scum film by sense and echo. It lies submerged until something crosses the shore, then comes up out of the black water all at once.",
       "char_sheet": {
         "attributes": {
           "dexterity": "3D+1",
@@ -734,12 +734,12 @@
         "note": "+2D thickened chitin."
       },
       "special": [
-        "Amphibious \u2014 breathes water; Move 12 swimming.",
+        "Amphibious — breathes water; Move 12 swimming.",
         "Low-light / echo-sense: hunts the dark water unimpaired by darkness.",
         "+1D vs radiation and toxin (acclimated to the poisoned sea).",
         "Bite STR+1D. D6 stub re-statted from WotC lore; calibrate on the dev box."
       ],
-      "source": "Geonosis & Outer Rim (WotC d20) \u00a71.8 \u2014 D6 re-stat from scratch; calibrate on dev box."
+      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box."
     },
     "merdeth": {
       "id": "merdeth",
@@ -752,7 +752,7 @@
         1,
         1
       ],
-      "description": "A merdeth is less an animal than a slow catastrophe: a vast armoured shell hauling itself across the dunes on barbed tentacles, consuming anything organic in its path. It is nearly unstoppable and nearly mindless, and it corners prey by smashing whatever the prey has fled into \u2014 a hive wall, a den mouth, a parked ship. Geonosians cannot kill them, so before the annual flood they herd them into the low desert to drown; the receding water leaves their glittering shells behind. Each one carries a cloud of mip parasites.",
+      "description": "A merdeth is less an animal than a slow catastrophe: a vast armoured shell hauling itself across the dunes on barbed tentacles, consuming anything organic in its path. It is nearly unstoppable and nearly mindless, and it corners prey by smashing whatever the prey has fled into — a hive wall, a den mouth, a parked ship. Geonosians cannot kill them, so before the annual flood they herd them into the low desert to drown; the receding water leaves their glittering shells behind. Each one carries a cloud of mip parasites.",
       "char_sheet": {
         "attributes": {
           "dexterity": "1D",
@@ -779,7 +779,7 @@
         "note": "+4D shell."
       },
       "special": [
-        "Walker-scale-equivalent juggernaut (STR 8D, \"bigger than a star freighter\"); D6 stub \u2014 calibrate scale (likely walker) on the dev box before live combat.",
+        "Walker-scale-equivalent juggernaut (STR 8D, \"bigger than a star freighter\"); D6 stub — calibrate scale (likely walker) on the dev box before live combat.",
         "Hosts 1D6 Mip swarms (see mip_swarm); they disperse if the merdeth dies.",
         "Attacks structures (\"nests\") to corner fleeing prey."
       ],
@@ -794,7 +794,7 @@
         "good": "merdeth_shell",
         "note": "The glittering post-flood shells are a salvage good; NOT wired (no creature-harvest runtime path yet)."
       },
-      "source": "Geonosis & Outer Rim (WotC d20) \u00a71.8 \u2014 D6 re-stat from scratch; calibrate on dev box."
+      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box."
     },
     "mip_swarm": {
       "id": "mip_swarm",
@@ -833,7 +833,7 @@
         "Screens and scouts for its host merdeth; disperses if the host dies.",
         "Auto-damage: the 2D natural_attack code applies to anything sharing its space, with no to-hit roll required (the swarm is everywhere at once); calibrate the auto-hit rule on the dev box."
       ],
-      "source": "Geonosis & Outer Rim (WotC d20) \u00a71.8 \u2014 D6 re-stat from scratch; calibrate on dev box. Damage code cleaned to a flat 2D (source text was '2D auto-damage to anything sharing its space (no to-hit...)'; the auto-hit/no-roll flavor now lives in the special[] note so combat-pool resolution parses cleanly)."
+      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box. Damage code cleaned to a flat 2D (source text was '2D auto-damage to anything sharing its space (no to-hit...)'; the auto-hit/no-roll flavor now lives in the special[] note so combat-pool resolution parses cleanly)."
     },
     "dewback": {
       "id": "dewback",
@@ -846,7 +846,7 @@
         3,
         6
       ],
-      "description": "A heavy, four-legged desert reptile the colour of weathered sandstone, thick-tailed and slow-blinking. Dewbacks are docile beasts of burden \u2014 the moisture farmers and Tusken bands of the Dune Sea ride them where a repulsorlift would choke on grit. Left alone they amble and graze; pressed into a corner, the tail comes around like a dropped girder. Their pebbled hide turns a glancing blow that would open softer skin.",
+      "description": "A heavy, four-legged desert reptile the colour of weathered sandstone, thick-tailed and slow-blinking. Dewbacks are docile beasts of burden — the moisture farmers and Tusken bands of the Dune Sea ride them where a repulsorlift would choke on grit. Left alone they amble and graze; pressed into a corner, the tail comes around like a dropped girder. Their pebbled hide turns a glancing blow that would open softer skin.",
       "char_sheet": {
         "attributes": {
           "dexterity": "1D+2",
@@ -916,7 +916,7 @@
         "damage": "STR+1D"
       },
       "special": [
-        "Carries a stolen slugthrower (cycler rifle) as a ranged option; modelled as flavor \u2014 the spawn fights with the gaderffii.",
+        "Carries a stolen slugthrower (cycler rifle) as a ranged option; modelled as flavor — the spawn fights with the gaderffii.",
         "Hunts in coordinated bands; the war party (4-6) is a deep-desert, Contested-Marches+ threat."
       ],
       "source": "D6 stats from scratch per docs/design/secrets_of_tatooine_extraction_v1.md (SoT is d20; that block is discarded under the WEG-only invariant). Calibrated to the R&E NPC-template conventions in WEG40120 (e.g. the trained-trooper template: DEX 3D, STR 3D+1, brawling 4D+1)."
@@ -931,7 +931,7 @@
         3,
         5
       ],
-      "description": "Low to the ground, grey as the ferrocrete it hunts across, a maze predator is all shoulder and jaw \u2014 a pack carnivore bred by a hundred generations of the abandoned deep levels into something fast, silent and patient. They run down prey in coordinated packs, eyes catching what little light filters through the grates, and the first sign you have of them is usually the musk and ozone smell a heartbeat before they break cover. Singly dangerous; in a pack, the reason the lower warrens are quiet.",
+      "description": "Low to the ground, grey as the ferrocrete it hunts across, a maze predator is all shoulder and jaw — a pack carnivore bred by a hundred generations of the abandoned deep levels into something fast, silent and patient. They run down prey in coordinated packs, eyes catching what little light filters through the grates, and the first sign you have of them is usually the musk and ozone smell a heartbeat before they break cover. Singly dangerous; in a pack, the reason the lower warrens are quiet.",
       "char_sheet": {
         "attributes": {
           "dexterity": "3D",
@@ -960,7 +960,7 @@
         "Pack hunter: maze predators attack in coordinated packs (3-5); isolating one is the only mercy.",
         "Ambush from darkness: undetected approach is their advantage (flavor; calibrate on the dev box)."
       ],
-      "source": "Bespoke Coruscant Underworld creature (D6 from scratch). Anchored to the in-repo anomaly canon (engine/wilderness_anomalies.py maze_predator_outbreak / maze_predator_apex \u2014 the T2/T3 escalations) and the R&E predator conventions in WEG40120 ch. Creatures (ghest/wampa family)."
+      "source": "Bespoke Coruscant Underworld creature (D6 from scratch). Anchored to the in-repo anomaly canon (engine/wilderness_anomalies.py maze_predator_outbreak / maze_predator_apex — the T2/T3 escalations) and the R&E predator conventions in WEG40120 ch. Creatures (ghest/wampa family)."
     },
     "underworld_thug": {
       "id": "underworld_thug",
@@ -973,7 +973,7 @@
         2,
         4
       ],
-      "description": "Gang muscle from the lower levels \u2014 tattooed knuckles, mismatched armour scraps over a flightsuit, a blaster pistol already clearing its holster. The underworld's gangs run these toughs in packs of two to four to work a corridor, lean on a stranger, and take what isn't bolted down. Not trained, not subtle, but there are always more of them and they shoot first.",
+      "description": "Gang muscle from the lower levels — tattooed knuckles, mismatched armour scraps over a flightsuit, a blaster pistol already clearing its holster. The underworld's gangs run these toughs in packs of two to four to work a corridor, lean on a stranger, and take what isn't bolted down. Not trained, not subtle, but there are always more of them and they shoot first.",
       "char_sheet": {
         "attributes": {
           "dexterity": "3D",
@@ -1003,9 +1003,9 @@
       },
       "special": [
         "Armed: blaster pistol (4D) with a vibroblade backup; gangs travel 2-4 strong.",
-        "Black Sun / Pyke street-level muscle \u2014 the canonical Frontier-tier underworld hostile."
+        "Black Sun / Pyke street-level muscle — the canonical Frontier-tier underworld hostile."
       ],
-      "source": "D6 stats from scratch \u2014 R&E NPC-template conventions in WEG40120 (trained-trooper / pirate-sentry templates: DEX 3D, STR 3D, blaster 3D+1, brawling 3D+2). Flavor from GG11 Criminal Organizations + the Coruscant underworld lore."
+      "source": "D6 stats from scratch — R&E NPC-template conventions in WEG40120 (trained-trooper / pirate-sentry templates: DEX 3D, STR 3D, blaster 3D+1, brawling 3D+2). Flavor from GG11 Criminal Organizations + the Coruscant underworld lore."
     },
     "bantha": {
       "id": "bantha",
@@ -1501,6 +1501,330 @@
         "note": "The iconic gizzard pearl - a fortune to the right buyer; NOT wired (no creature-harvest runtime path yet), latent economy hook like acklay_chitin / merdeth_shell."
       },
       "source": "WEG Star Wars D6 Revised & Expanded, Creatures chapter (canyon krayt dragon, the smaller/common Tatooine variety, distinct from the greater krayt). Authored from the WEG R&E canonical krayt dragon stat block; NOTE: the local extraction (docs/sourcebooks/WEG40120.txt) is not present in this worktree, so no verified page/sidecar-line citation is claimed here - the mush-content-porter should reconcile this entry against the local source of truth and add the citation. Type: Gigantic desert predator; DEX 2D, PER 2D (search: tracking 3D), STR 9D; brawling 4D; Armor +2D physical/energy; Claws STR+2D; Teeth STR+3D; Move 21; Size ~5m long (canyon variety). Added to make the pre-existing q_krayt_bounty quest completable and to give the Dune Sea a legendary apex encounter. Not previously present in C:\\SW_MUSH\\data\\npcs_creatures.yaml."
+    },
+    "keejin": {
+      "id": "keejin",
+      "name": "Keejin",
+      "species": "Keejin",
+      "scale": "creature",
+      "size": "1-2m",
+      "hostile": false,
+      "pack_count": [
+        2,
+        4
+      ],
+      "description": "The keejin is the kind of creature you only see when it decides you should. Near-blind, it moves by vibration and air-pressure, skittering across walls and ceilings on clinging feet that make no sound at all. It flees light with the desperate urgency of something that has been prey its whole evolutionary life, and a camouflage reflex makes it almost invisible while it holds still - which, in the shadowed canyon overhangs of the Jundland Wastes, is most of the time. Moisture farmers who bunk in old rock cisterns know the rule: check the ceiling before you sleep under it. The rare larger cousin does not flee - it waits for a clear angle, and then it drops.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D",
+          "perception": "2D",
+          "strength": "2D+1",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 5,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "claws",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D"
+      },
+      "special": [
+        "Camouflage: +2 difficulty to spot while motionless.",
+        "Clinging: moves freely on walls and ceilings.",
+        "Near-blind: hunts by vibration and air-pressure, not vision.",
+        "Flees bright light; a rare larger variant does not flee and drops from above instead."
+      ],
+      "source": "COTG §2.3 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.3. Verified stat block: DEX 3D, PER 2D, STR 2D+1, camouflage +2 difficulty to spot, clinging (walls/ceilings), Move 5, 1-2m. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; cave/rock creature recast from Geonosis-only framing to fit the Jundland Wastes canyon overhangs and old rock cisterns (COTG notes it is 'found on countless worlds')."
+    },
+    "raen_sovra": {
+      "id": "raen_sovra",
+      "name": "Raen Sovra",
+      "species": "Raen Sovra",
+      "scale": "creature",
+      "size": "<=8m long, 5cm wide",
+      "hostile": true,
+      "pack_count": [
+        2,
+        4
+      ],
+      "description": "A Raen Sovra is a length of dark-metal-shelled worm, segmented and dull-gleaming, threading through conduit runs and power trunking like insulation that has come alive. It feeds on electricity and the metal it lives inside, and it spreads from hangar to hangar the same way it always has - riding the docking clamps of ships that never bothered to fumigate. Mos Eisley's older landing bays are notorious for infestations: a hangar with flickering lumas and a persistent smell of oxidized metal usually has one working the walls. The worms themselves stay hidden until a hand strays too close to a junction box or a hull panel gets pulled without checking first.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "4D+2",
+          "perception": "1D",
+          "strength": "2D+2",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 5,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "electrocution",
+        "to_hit_skill": "brawling",
+        "damage": "5D+2"
+      },
+      "special": [
+        "Electricity sense: +3D PER vs anything carrying a power source.",
+        "Space survival: can survive vacuum (travels via docking ships between stations/worlds/hangars).",
+        "Infrastructure hazard: infests hangar and ship conduits, causing power surges and brown-outs."
+      ],
+      "special_attack": {
+        "poison": {
+          "damage": "5D+2",
+          "rounds": 1,
+          "onset": 0,
+          "note": "Electrocution on contact - not venom, but the special_attack path handles it as an instantaneous damage rider."
+        }
+      },
+      "harvest": {
+        "good": "sovra_shell_segment",
+        "resource": "metal",
+        "difficulty": 9,
+        "note": "The accumulated-alloy shell segments are a salvage good; field-dressed on kill."
+      },
+      "source": "COTG §2.5 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.5. Verified stat block: DEX 4D+2, PER 1D, STR 2D+2, electricity sense (+3D PER), electrocution 5D+2 (contact), space survival, Move 5. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; Kuat-orbital/station framing recast to Mos Eisley's spaceport hangar bays - the same infrastructure-pest niche, era-clean (no Imperial framing)."
+    },
+    "svaper": {
+      "id": "svaper",
+      "name": "Svaper",
+      "species": "Svaper",
+      "scale": "creature",
+      "size": "2-3m",
+      "hostile": true,
+      "pack_count": [
+        1,
+        2
+      ],
+      "description": "A compact, low-slung predator built like compressed aggression - smooth-scaled, fast, and permanently hungry. In Mos Eisley's back alleys it is most often an escapee from a fighting pit or a smuggler's disposal tank: something that made it out of the cage and into the moisture-reclamation cisterns beneath the spaceport, and has not yet been retrieved. It wraps fast and bites deep, and the spines that ridge its back snap off into whatever grabs it. The pit-conditioned strains are meaner than the wild ones ever were.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "4D",
+          "perception": "2D",
+          "strength": "2D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "4D+2",
+          "sneak": "3D+1"
+        },
+        "move": 13,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "bite",
+        "to_hit_skill": "brawling",
+        "damage": "STR+3D"
+      },
+      "special": [
+        "Spines: STR+3D+2 damage; lodge in the skin of anything that grabs the svaper - Moderate STR roll to remove each spine without further damage.",
+        "Tough skin: +2D vs physical and energy (not the gill area).",
+        "Fighting-pit strain: escapees around a spaceport are combat-conditioned - more aggressive than wild specimens."
+      ],
+      "special_attack": {
+        "restraint": {
+          "kind": "grapple",
+          "hold_damage": "STR+3D+2",
+          "note": "Spine-lodge: anything grappling the svaper takes STR+3D+2 from lodging spines; Moderate STR to remove each."
+        }
+      },
+      "source": "COTG §2.2 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.2. Verified stat block: DEX 4D, PER 2D, STR 2D, Bite STR+3D, Spines STR+3D+2 (lodge in skin), Tough skin +2D (not gills), Move 20 swim (land Move calibrated to 13, matching the C:\\SW_MUSH underworld precedent). Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; aquatic Kamino/Nar Shaddaa framing recast to Mos Eisley's own moisture-reclamation cisterns and smugglers' disposal tanks."
+    },
+    "syndicate_enforcer": {
+      "id": "syndicate_enforcer",
+      "name": "Syndicate Enforcer",
+      "species": "Human",
+      "scale": "character",
+      "intelligent": true,
+      "hostile": true,
+      "pack_count": [
+        1,
+        2
+      ],
+      "description": "One or two figures in well-cut civilian coats stand in the shadows near a docking bay's edge - not the tattooed gang muscle from the cantina backrooms, but something a step up. Polished boots, a visible sidearm worn with practice, and the stillness of someone paid to stand in a particular spot and discourage particular behaviors. Syndicate enforcers work Mos Eisley's fringe districts on retainer for Hutt cartel and organized-crime interests too respectable to use street gangs directly. They don't negotiate, and they don't miss.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D+1",
+          "perception": "3D",
+          "strength": "3D",
+          "knowledge": "2D",
+          "mechanical": "2D",
+          "technical": "2D"
+        },
+        "skills": {
+          "blaster": "4D",
+          "dodge": "3D+2",
+          "brawling": "3D+2",
+          "intimidation": "4D",
+          "streetwise": "3D+1"
+        },
+        "move": 10,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "blaster pistol",
+        "to_hit_skill": "blaster",
+        "damage": "4D"
+      },
+      "special": [
+        "Armed: blaster pistol (4D); vibroblade backup (STR+1D) at close range.",
+        "Works in pairs when available; does not break and run - fights until the contract says otherwise.",
+        "Hutt cartel or organized-crime retainer - better trained and more professional than street gang muscle."
+      ],
+      "source": "D6 stats from scratch - anchored to WEG40120 p.199 Extras NPC conventions (Guards: DEX 3D, blaster 3D+1, STR 3D+1 as floor; pirate sentry DEX 4D, blaster 5D+2 as ceiling). Enforcer sits between at DEX 3D+1, blaster 4D. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml (Coruscant underworld 'syndicate_enforcer'); recast to Mos Eisley's Hutt-cartel fringe districts. Era-clean: no Imperial/Rebel affiliation."
+    },
+    "drain_lurker": {
+      "id": "drain_lurker",
+      "name": "Drain Lurker",
+      "species": "Drain Lurker",
+      "scale": "creature",
+      "size": "1.2-1.8m",
+      "hostile": true,
+      "pack_count": [
+        1,
+        2
+      ],
+      "description": "The moisture-reclamation sumps beneath Mos Eisley's older quarters are warm, wet, and full of biological runoff from a thousand species passing through the spaceport. The drain lurker evolved into that niche: a pale, fast ambush predator built low and flat, able to squeeze through conduit gaps and explode upward from storm-grate openings with a bite that locks. It hunts thermal signatures in total dark, is blind in bright light, and smells strongly of the sumps it came from. Locals in the lower quarter know the rule: if a grate is warm and the hinge is corroded from the inside, do not walk over it.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D+2",
+          "perception": "3D",
+          "strength": "2D+2",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "4D",
+          "sneak": "4D+1",
+          "search": "4D"
+        },
+        "move": 11,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "bite",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D+1"
+      },
+      "special": [
+        "Heat sense: hunts by thermal signature; darkness does not impair it.",
+        "Blind in bright light: strong illumination reduces effective PER to 1D while exposed.",
+        "Ambushes from below: erupts from grates and drainage openings; first attack has +1D from surprise if not detected beforehand.",
+        "Noxious odor: Moderate stamina roll for anyone within 2m of a freshly-killed lurker."
+      ],
+      "source": "Original (D6-statted from scratch), ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml. Bespoke drainage-sump predator recast from Coruscant's mid-levels to Mos Eisley's own moisture-reclamation sumps - the same ecological niche, era-clean. Calibrated between the tymp (STR 1D+1, brawling flavor) and the maze_predator (STR 4D, min_band 3); STR 2D+2 + brawling 4D produces a credible Frontier-tier threat for a starting character."
+    },
+    "slimy_nonakara": {
+      "id": "slimy_nonakara",
+      "name": "Slimy Nonakara",
+      "species": "Nonakara",
+      "scale": "creature",
+      "size": "20cm-4m",
+      "hostile": false,
+      "pack_count": [
+        1,
+        1
+      ],
+      "description": "Not every oasis in the Dune Sea is safe to drink from. A slimy nonakara fouls its own pool with a caustic secretion over months of feeding, then hauls itself overland on stunted fins to find the next one - a slow, patient migration that leaves a trail of dead vegetation and a very bad smell. Moisture farmers who find one submerged in a vaporator catch-basin drain the basin and burn the mud rather than fight it directly; the slime coat does a slow 1D a round to anything that grabs it bare-handed, and its larvae, given the chance, implant in whatever waded through the water first.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "2D+2",
+          "perception": "1D+1",
+          "strength": "2D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 10,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "teeth",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D"
+      },
+      "special": [
+        "Caustic slime coat: Easy STR roll to avoid 1D/round contact damage while grappling or handling it bare-handed.",
+        "Slow crawl on land (Move 2) between pools; Move 10 swimming in its current pool.",
+        "Larval implantation: 1-in-6 chance for anything that wades through an infested pool; drains STR over the following days if untreated."
+      ],
+      "special_attack": {
+        "poison": {
+          "damage": "1D",
+          "rounds": 1,
+          "onset": 0,
+          "note": "Caustic slime coat on contact; an Easy STR roll avoids it."
+        }
+      },
+      "source": "COTG §3 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §3. Verified stat block: DEX 2D+2, PER 1D+1, STR 2D, slime (Easy STR or 1D/round on contact), teeth STR+1D, larval implantation (1-in-6 in an infested pool, drains STR over days), Move 10 swim / 2 crawl, 20cm-4m. Any-water cross-biome hazard placed at Tatooine's Dune Sea oases and moisture-farm catch-basins alongside the already-imported gornt herd."
+    },
+    "thanu": {
+      "id": "thanu",
+      "name": "Thanu",
+      "species": "Thanu",
+      "scale": "creature",
+      "size": "1.1m tall",
+      "hostile": true,
+      "pack_count": [
+        2,
+        4
+      ],
+      "description": "Squat and round, rolling on stubby stone-hard 'feet' across ground too hot for anything else to cross, the thanu is built for terrain that should kill it. Heat that would blister durasteel does not slow it down, and a pack of them will circle a target methodically, lashing out with short grasping tentacles to hold it still for the others. Geonosian handlers use tamed thanu as living furnace-tenders; the wild packs that work the scorched flats and superheated rock of the Outer Rim's badlands are a different matter entirely - patient, coordinated, and entirely comfortable waiting you out in heat that will kill you first.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D",
+          "perception": "1D+2",
+          "strength": "2D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 4,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "teeth",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2D"
+      },
+      "special": [
+        "Heat immunity: +1D STR vs blaster damage; unaffected by any-temperature surfaces, including molten or superheated rock.",
+        "Tentacles: STR damage plus an entangling grab (see special_attack.restraint).",
+        "Pack tactic: circles a target and uses tentacles to hold it still for the group."
+      ],
+      "special_attack": {
+        "restraint": {
+          "kind": "grapple",
+          "hold_damage": "STR",
+          "note": "Entangling tentacles; opposed brawling/STR to break free."
+        }
+      },
+      "source": "COTG §2.3 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.3. Verified stat block: DEX 3D, PER 1D+2, STR 2D, heat immunity (+1D STR vs blaster; any-temperature surfaces), tentacles (STR dmg + entangle), teeth STR+2D, Move 4, 1.1m tall. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; volcanic/heat-adapted analog to the Geonosis/Ebon Sea set already imported (acklay, merdeth, mip_swarm, arqet, draagax, preying_makthier), placed as superheated-terrain Outer-Rim fauna rather than pinned to one world, matching COTG's own note that it is 'volcanic rather than strictly Geonosian.'"
     }
   }
 }
