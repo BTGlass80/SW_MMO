@@ -127,6 +127,8 @@ Invoke-GodotStep "Quest live-flow smoke:" @("--headless", "--path", $projectRoot
 
 Invoke-GodotStep "Creature spawn model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_spawn_model_smoke.gd")
 
+Invoke-GodotStep "Creature special-attack model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_special_attack_model_smoke.gd")
+
 Invoke-GodotStep "Vendor model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/vendor_model_smoke.gd")
 
 Invoke-GodotStep "Economy model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_model_smoke.gd")
@@ -146,6 +148,8 @@ Invoke-GodotStep "Death penalty model smoke:" @("--headless", "--path", $project
 Invoke-GodotStep "Death penalty model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_penalty_model_edge_smoke.gd")
 
 Invoke-GodotStep "Death flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_flow_smoke.gd")
+
+Invoke-GodotStep "Corpse decay model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/corpse_decay_model_smoke.gd")
 
 Invoke-GodotStep "Hostile NPC model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/hostile_npc_model_smoke.gd")
 
@@ -214,6 +218,8 @@ Invoke-GodotStep "Zone flow smoke:" @("--headless", "--path", $projectRoot, "--s
 Invoke-GodotStep "Chat flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/chat_flow_smoke.gd")
 
 Invoke-GodotStep "Monster builder smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/monster_builder_smoke.gd")
+
+Invoke-GodotStep "Landmark builder smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/landmark_builder_smoke.gd")
 
 Invoke-GodotStep "NPC content smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/npc_content_smoke.gd")
 
