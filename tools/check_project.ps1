@@ -189,4 +189,6 @@ Invoke-GodotStep "Chat flow smoke:" @("--headless", "--path", $projectRoot, "--s
 
 Invoke-GodotStep "Monster builder smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/monster_builder_smoke.gd")
 
+Invoke-GodotStep "NPC content smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/npc_content_smoke.gd")
+
 Write-Host "`nAll checks passed."

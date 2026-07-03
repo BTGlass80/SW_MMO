@@ -1,0 +1,281 @@
+{
+  "schema_version": 1,
+  "era": "20 BBY Clone Wars",
+  "source_policy": "Derived READ-ONLY from C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_b_mos_eisley.yaml, C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_mos_eisley_population_p1.yaml, C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_ambient_tatooine_spaceport_civic.yaml, and C:\\SW_MUSH\\data\\worlds\\clone_wars\\npcs_drop_mob_grind_tatooine.yaml. SW_MUSH is strictly read-only reference; this file is the authoritative project-owned copy. Data flows one way: out of SW_MUSH into data/.",
+  "source_note": "Ported 2026-07-02 (World-Depth Drop). Curated 15 named Clone Wars-era (20 BBY) Mos Eisley NPCs out of ~64 available on SW_MUSH's Tatooine roster, selected for spread across the four loaded zones in data/zones_clone_wars.json and for faction/role variety. All source files are already era-reauthored Clone Wars content per MUSH's own 'no Imperial/Rebel/stormtrooper/Empire, Hutt Cartel is the de facto authority' policy (npcs_mos_eisley_population_p1.yaml header) or were authored CW-native (npcs_drop_b_mos_eisley.yaml, npcs_drop_ambient_tatooine_spaceport_civic.yaml). zone_id assignment is a curation call: MUSH rooms are far more granular than this project's four broad zone_ids, so each NPC's MUSH room (see source_room) was mapped to the nearest of the four loaded zones by in-fiction fit. faction_axis for Djas Puhr is recast from the MUSH source's generic 'independent' tag to this project's dedicated bounty_hunters_guild axis (see his curation_note) -- the MUSH schema has no bounty-hunter-specific faction, ours does, and his profession is explicit in the source text. No CIS/Separatist-affiliated named NPC was found anywhere in SW_MUSH's Tatooine/Mos Eisley content -- this is lore-consistent (the CIS has no meaningful presence in Hutt-controlled Outer Rim space during the war) and is reflected honestly here rather than invented. Canonical film characters (Wuher, Chalmun, Djas Puhr) are carried over ONLY because the MUSH source file itself already re-skinned them for Clone Wars era per its own Q1/Q5 policy notes (original descriptions/dialogue, WEG-only stats, no copied sourcebook text) -- this file does not introduce any new canonical cameo. dialogue_lines are text-only stubs trimmed from each source NPC's ai_config.fallback_lines.",
+  "faction_axes": ["republic", "cis", "hutt", "independent", "bounty_hunters_guild"],
+  "npcs": [
+    {
+      "id": "ct2207_stamp",
+      "name": "Clone Customs Liaison CT-2207 \"Stamp\"",
+      "species": "Human",
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "role": "Republic customs liaison",
+      "faction_axis": "republic",
+      "description": "A clone trooper in dust-streaked Phase II armor, stationed at the spaceport's customs checkpoint with a battered datapad and a stack of docking manifests. Fourteen months into what he considers a punishment posting, Stamp processes manifests fast, flags almost nothing, and knows the Hutts run Tatooine in every way that matters.",
+      "dialogue_lines": [
+        "Republic Checkpoint. Manifest please, citizen.",
+        "No flags. Welcome to Tatooine.",
+        "Inspections are random and rare. The Hutts run the rest of the planet. The checkpoint is a formality.",
+        "Fourteen months. Two more to rotation. Then maybe somewhere the war actually is."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "City Outskirts - Republic Checkpoint",
+      "source_file": "npcs_drop_b_mos_eisley.yaml"
+    },
+    {
+      "id": "lt_vesh_talon",
+      "name": "Republic Navy Traffic Controller Lt. Vesh Talon",
+      "species": "Human",
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "role": "Spaceport traffic control officer",
+      "faction_axis": "republic",
+      "description": "A Republic Navy lieutenant at the spaceport's aging central traffic console, six months into a year-long rotation that followed duty aboard a Venator-class Star Destroyer. She logs the formal manifests while the Hutts run the actual docking arrangements, and she is already counting the days back to real Navy duty.",
+      "dialogue_lines": [
+        "Mos Eisley Spaceport Control. Lieutenant Talon. Authorized?",
+        "Two hundred movements a day. The Hutts run the docking. I log the manifests. The arrangement works because everyone has agreed it does.",
+        "Six months in, six to go. Then back to a Venator. Possibly. War schedule depending.",
+        "Inbound on Lane Two -- looks like a Ghtroc. Common type. Light traffic today."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Mos Eisley Spaceport Control Tower",
+      "source_file": "npcs_drop_b_mos_eisley.yaml"
+    },
+    {
+      "id": "venn_kator",
+      "name": "Venn Kator",
+      "species": "Corellian Human",
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "role": "Starship mechanic and repair trainer",
+      "faction_axis": "independent",
+      "description": "A stocky, oil-stained Corellian mechanic who has worked Docking Bay 94 for decades, convinced Corellian Engineering builds the best hulls in the galaxy. Gruff with tourists, generous with anyone who genuinely wants to learn starship repair.",
+      "dialogue_lines": [
+        "You need something fixed, or you just here to watch?",
+        "Corellian Engineering -- best in the galaxy. Everything else is catching up.",
+        "War's good for my trade and bad for my parts bin. More damage limping in, fewer components to fix it with."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Docking Bay 94 - Pit Floor",
+      "source_file": "npcs_mos_eisley_population_p1.yaml"
+    },
+    {
+      "id": "tova_shenn",
+      "name": "Tova Shenn",
+      "species": "Human",
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "role": "Spaceport confidence artist",
+      "faction_axis": "independent",
+      "description": "A Human woman working the top of Docking Bay 94's steps, running one of three practiced schemes on whichever new arrival looks most distracted. Two years into the beat, she considers herself observant rather than dishonest, and avoids marks with Hutt or Republic militia ties out of pure efficiency.",
+      "dialogue_lines": [
+        "First time in Bay 94? You need directions?",
+        "There's a loading voucher discount running this week for arrivals through Bay 94. Saves about forty credits. Takes two minutes.",
+        "The stairs down to the pit are unlit past the second landing. Management doesn't fix them. I mention it as a courtesy."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Docking Bay 94 - Entrance",
+      "source_file": "npcs_drop_ambient_tatooine_spaceport_civic.yaml"
+    },
+    {
+      "id": "ct7041_dust",
+      "name": "Clone Patrol Trooper CT-7041 \"Dust\"",
+      "species": "Human",
+      "zone_id": "tatooine.mos_eisley.port_fringe",
+      "role": "Eastern Gate patrol trooper",
+      "faction_axis": "republic",
+      "description": "A clone trooper in heat-modified Phase II armor, helmet off and clipped to his belt, watching the road at Mos Eisley's Eastern Gate. Eight months on Tatooine has made him friendlier than most of his cohort; he has yet to draw his rifle in anger at this post.",
+      "dialogue_lines": [
+        "Eastern Gate. Going in or coming out?",
+        "Hot today. Always hot. The locals say it gets hotter. I don't know if they're joking.",
+        "No, the Republic doesn't enforce on Tatooine the way it does in the Core. Hutts run the day-to-day. We just stand here."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "City Outskirts - Eastern Gate",
+      "source_file": "npcs_drop_b_mos_eisley.yaml"
+    },
+    {
+      "id": "hutt_enforcer_greeshk",
+      "name": "Hutt Enforcer Greeshk",
+      "species": "Twi'lek",
+      "zone_id": "tatooine.mos_eisley.port_fringe",
+      "role": "Hutt Cartel townhouse enforcer",
+      "faction_axis": "hutt",
+      "description": "A red-skinned Twi'lek in dark Cartel enforcement leather, standing watch at the entrance to a Mos Eisley townhouse the Hutts maintain for visiting business. Eleven years in Cartel service have made him calm, professional, and openly dismissive of the Republic's presence on Tatooine.",
+      "dialogue_lines": [
+        "Petitioner. State your business with the Townhouse.",
+        "No appointment, no entry. Cartel petition forms are at the Mos Eisley merchant office. Three days to process.",
+        "I have been in the Cartel's service eleven years. I know the underworld better than the Republic does."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Jabba's Townhouse - Main Entrance",
+      "source_file": "npcs_drop_b_mos_eisley.yaml"
+    },
+    {
+      "id": "inspector_haddo",
+      "name": "Inspector Haddo",
+      "species": "Human",
+      "zone_id": "tatooine.mos_eisley.port_fringe",
+      "role": "Customs inspector (unofficial fee collector)",
+      "faction_axis": "independent",
+      "description": "A Human customs officer who has held his desk for nine years by filing accurate reports about nothing at all. He clears Hutt-linked cargo without a second glance and calls his unofficial processing fees 'service gratuities.'",
+      "dialogue_lines": [
+        "Standard clearance is running three to five standard days. There is an expedited documentation option. Processing fees apply.",
+        "I see a notation on this manifest that requires additional verification.",
+        "Your clearance will be in the system by end of the standard day. Welcome to Tatooine."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Spaceport Customs Office",
+      "source_file": "npcs_drop_ambient_tatooine_spaceport_civic.yaml"
+    },
+    {
+      "id": "drue_bay87",
+      "name": "Drue",
+      "species": "Ishi Tib",
+      "zone_id": "tatooine.mos_eisley.port_fringe",
+      "role": "Docking bay operator (inspection-avoidance broker)",
+      "faction_axis": "independent",
+      "description": "An orderly Ishi Tib who has turned Docking Bay 87 into the most modernized berth in this stretch of Mos Eisley by reinvesting his inspection-waiver fees into infrastructure. Never evasive, always precise about the price of looking the other way.",
+      "dialogue_lines": [
+        "Thirty credits, standard day. Twenty-five if you prefer no cargo documentation filed. Both transactions are straightforward.",
+        "Bay 87 is the most reliable facility in this section. I upgraded the blast doors last season.",
+        "The port authority inspects this zone on an irregular schedule. Irregular, in practice, means predictable to anyone paying attention."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Docking Bay 87",
+      "source_file": "npcs_drop_ambient_tatooine_spaceport_civic.yaml"
+    },
+    {
+      "id": "wuher",
+      "name": "Wuher",
+      "species": "Human",
+      "zone_id": "tatooine.mos_eisley.market_district",
+      "role": "Cantina bartender",
+      "faction_axis": "independent",
+      "description": "The surly, territorial bartender at the cantina's main bar. Gruff, transactional, and quietly observant, he hears everything across the room, bars droids on principle, and has no interest in the war except as it affects the liquor trade.",
+      "dialogue_lines": [
+        "You drinking, or just taking up space?",
+        "We don't serve their kind here. Your business, you keep outside.",
+        "Hutts run this rock. You keep your trouble off my floor and we'll get along fine."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Chalmun's Cantina - Main Bar",
+      "source_file": "npcs_mos_eisley_population_p1.yaml"
+    },
+    {
+      "id": "chalmun",
+      "name": "Chalmun",
+      "species": "Wookiee",
+      "zone_id": "tatooine.mos_eisley.market_district",
+      "role": "Cantina proprietor",
+      "faction_axis": "independent",
+      "description": "The massive, silver-streaked Wookiee owner of the cantina that bears his name. He rarely works the floor, watching instead from a corner booth, and enforces one rule above all others: no killing inside, and no trouble for the house.",
+      "dialogue_lines": [
+        "Chalmun rumbles a low greeting from his booth, eyes never leaving the room.",
+        "A warning growl -- unmistakable in any language: take it outside.",
+        "A short, dismissive bark. The meaning is plain: he's heard that story before, and he doesn't lend credits."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Chalmun's Cantina - Main Bar",
+      "source_file": "npcs_mos_eisley_population_p1.yaml"
+    },
+    {
+      "id": "djas_puhr",
+      "name": "Djas Puhr",
+      "species": "Sakiyan",
+      "zone_id": "tatooine.mos_eisley.market_district",
+      "role": "Bounty hunter and tracker",
+      "faction_axis": "bounty_hunters_guild",
+      "description": "A lean, bald Sakiyan who sits where the shadows are deepest and the exits are visible, nursing one drink for hours. His species' heightened senses make him an exceptional tracker, and the Hutt cartel and private clients alike pay well for the talent. A contract is a contract; he has no loyalty to either side of the war.",
+      "dialogue_lines": [
+        "I find people who don't want to be found. You looking, or being looked for?",
+        "I'll remember you.",
+        "The war's a long way from here. Good. Contracts pay the same either way."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Chalmun's Cantina - Main Bar",
+      "source_file": "npcs_mos_eisley_population_p1.yaml",
+      "curation_note": "MUSH source tags his ai_config.faction as generic 'independent'; recast here to this project's dedicated bounty_hunters_guild axis (which the MUSH schema lacks) since his profession is explicit in the source description."
+    },
+    {
+      "id": "kayson",
+      "name": "Kayson",
+      "species": "Human",
+      "zone_id": "tatooine.mos_eisley.market_district",
+      "role": "Weapon shop keeper",
+      "faction_axis": "independent",
+      "description": "A wiry, sharp-eyed proprietor whose shop walls are covered floor to ceiling with weapons, all kept unloaded until sold. He can quote any piece's stopping power and quirks from memory, sells legal hardware up front, and keeps the more interesting inventory in back for those who ask right.",
+      "dialogue_lines": [
+        "Welcome. Whatever you're hunting -- or hunting with -- I've got it. What do you need?",
+        "Everything on the wall's legal to carry in this town. Mostly. Tatooine's relaxed about such things.",
+        "War's on, sure, and everybody wants a blaster. Good for me. I don't ask which side -- credits are credits."
+      ],
+      "hostile": false,
+      "vendor": true,
+      "source_room": "Kayson's Weapon Shop",
+      "source_file": "npcs_mos_eisley_population_p1.yaml"
+    },
+    {
+      "id": "ruzz_tha",
+      "name": "Jawa Trade-Elder Ruzz-tha",
+      "species": "Jawa",
+      "zone_id": "tatooine.mos_eisley.market_district",
+      "role": "Trading-post elder",
+      "faction_axis": "independent",
+      "description": "A small, hooded Jawa trade-elder who runs the city-fixed half of a scavenger operation out of a converted Mos Eisley warehouse, selling salvaged droid components and refurbished droids brought in by his cousins' sandcrawler clan.",
+      "dialogue_lines": [
+        "Utinni! Off-worlder buyer? Or browser?",
+        "Salvaged droids. Components. Refurbished tech. Cheap by city standards. Fair by Jawa standards.",
+        "Thirty percent upfront for non-Jawa buyers. Clan rule. Will not change for you."
+      ],
+      "hostile": false,
+      "vendor": true,
+      "source_room": "Jawa Traders",
+      "source_file": "npcs_drop_b_mos_eisley.yaml"
+    },
+    {
+      "id": "jundland_drifter",
+      "name": "Jundland Drifter",
+      "species": "Human",
+      "zone_id": "tatooine.dune_sea",
+      "role": "Canyon highwayman",
+      "faction_axis": "independent",
+      "description": "A lean, canyon-dusted Human who has made Beggar's Canyon his hunting ground, blaster ready before travelers round the bend. No ideology behind it -- just a living carved out of a natural choke point for speeder traffic.",
+      "dialogue_lines": [
+        "Credits. Now.",
+        "Wrong answer."
+      ],
+      "hostile": true,
+      "vendor": false,
+      "source_room": "Jundland Wastes - Beggar's Canyon",
+      "source_file": "npcs_drop_mob_grind_tatooine.yaml"
+    },
+    {
+      "id": "brana_nesh",
+      "name": "Stable-Keeper Old Brana Nesh",
+      "species": "Human",
+      "zone_id": "tatooine.dune_sea",
+      "role": "Dewback stables keeper and desert guide",
+      "faction_axis": "independent",
+      "description": "An older woman who has run the Dewback Stables and Garage at the edge of Mos Eisley for thirty-one years, renting saddle-broken dewbacks to anyone bound for the Dune Sea and repairing speeders on the side. She has outlasted four sheriffs and three Hutt-Cartel lieutenants.",
+      "dialogue_lines": [
+        "Stables open. Five credits a day, fifty deposit. Garage queue's three days.",
+        "Thirty-one years on this lot. Outlasted the four sheriffs. Plan to outlast more.",
+        "Tusken's been quiet recently. Don't trust the quiet. Quiet means they're somewhere else."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Dewback Stables and Garage",
+      "source_file": "npcs_drop_b_mos_eisley.yaml"
+    }
+  ]
+}

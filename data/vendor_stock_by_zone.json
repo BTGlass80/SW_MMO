@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "era": "20 BBY Clone Wars",
+  "source_policy": "Curated project-owned composition over this repo's own data/weapons_clone_wars.json and data/armor_clone_wars.json (both themselves derived READ-ONLY from C:\\SW_MUSH). SW_MUSH is strictly read-only reference and is not consulted directly for this file. Data flows one way: out of SW_MUSH into data/.",
+  "source_note": "Added 2026-07-02 (World-Depth Drop) to give the four loaded zones in data/zones_clone_wars.json distinct vendor variety instead of one flat catalog. Every item_keys entry below is drawn ONLY from weapons/armor already marked vendor_stocked:true in data/weapons_clone_wars.json and data/armor_clone_wars.json -- currently 10 weapons (hold_out_blaster, blaster_pistol, heavy_blaster_pistol, sporting_blaster, sporting_blaster_rifle, blaster_pistol_dl22, heavy_blaster_pistol_dl6h, knife, vibroblade, stun_baton) and 2 armors (blast_vest, blast_helmet) -- 12 items total, each used in at least one zone. No item is invented here and no vendor_stocked:false or contraband item (e.g. disruptor_pistol, faction-issued gear) is referenced, per the task constraint; 'heavier' framing for contested/lawless zones is expressed by which subset of the existing 12 vendor_stocked items is offered, not by unlocking non-stocked stock. vendor_npc_ids cross-reference data/npcs_clone_wars.json entries flagged vendor:true who plausibly run each zone's counter.",
+  "vendor_stock_by_zone": {
+    "tatooine.mos_eisley.spaceport": {
+      "display_name": "Mos Eisley Spaceport District",
+      "security_base": "secured",
+      "flavor_note": "Official spaceport vendors stick to legal sidearms and standard-issue protective gear for travelers clearing customs.",
+      "item_keys": ["hold_out_blaster", "blaster_pistol", "blast_vest", "blast_helmet", "knife"],
+      "vendor_npc_ids": []
+    },
+    "tatooine.mos_eisley.port_fringe": {
+      "display_name": "Spaceport Fringe",
+      "security_base": "contested",
+      "flavor_note": "Fringe merchants deal in heavier sidearms and gray-market self-defense gear for smugglers and independent operators skirting the checkpoints.",
+      "item_keys": ["blaster_pistol", "blaster_pistol_dl22", "heavy_blaster_pistol", "vibroblade", "stun_baton", "blast_vest"],
+      "vendor_npc_ids": []
+    },
+    "tatooine.mos_eisley.market_district": {
+      "display_name": "Mos Eisley Market District",
+      "security_base": "contested",
+      "flavor_note": "The cantina district and Kayson's shop carry the widest civilian selection in the city: hunting rifles, sporting blasters, and everyday tools.",
+      "item_keys": ["sporting_blaster", "sporting_blaster_rifle", "blaster_pistol", "knife", "vibroblade", "stun_baton", "blast_helmet"],
+      "vendor_npc_ids": ["kayson", "ruzz_tha"]
+    },
+    "tatooine.dune_sea": {
+      "display_name": "The Dune Sea",
+      "security_base": "lawless",
+      "flavor_note": "Lawless desert trade favors the heaviest hardware the open market will still sell -- heavy pistols, hunting rifles, and blades for travelers who won't see a checkpoint again before Beggar's Canyon.",
+      "item_keys": ["heavy_blaster_pistol", "heavy_blaster_pistol_dl6h", "sporting_blaster_rifle", "vibroblade", "knife"],
+      "vendor_npc_ids": []
+    }
+  }
+}

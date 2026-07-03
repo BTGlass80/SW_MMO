@@ -121,3 +121,48 @@ All three files carry `source_policy` provenance.
 - **CW-specific military starfighters** (V-19 Torrent, ARC-170, Eta-2, Delta-7,
   Vulture droid, Tri-fighter) are NOT in the SW_MUSH source; authoring them from WEG
   sourcebook stats is a future drop, noted in the file's `source_note`.
+
+## Imported — World-Depth NPC & Vendor Drop (2026-07-02)
+
+Named NPCs and per-zone vendor stock variety extracted READ-ONLY into standalone
+JSON. Both files carry `source_policy` provenance.
+
+### Sources consumed
+
+| Source file | Destination |
+|---|---|
+| `C:\SW_MUSH\data\worlds\clone_wars\npcs_drop_b_mos_eisley.yaml` | `data/npcs_clone_wars.json` |
+| `C:\SW_MUSH\data\worlds\clone_wars\npcs_mos_eisley_population_p1.yaml` | `data/npcs_clone_wars.json` |
+| `C:\SW_MUSH\data\worlds\clone_wars\npcs_drop_ambient_tatooine_spaceport_civic.yaml` | `data/npcs_clone_wars.json` |
+| `C:\SW_MUSH\data\worlds\clone_wars\npcs_drop_mob_grind_tatooine.yaml` | `data/npcs_clone_wars.json` |
+| This repo's own `data/weapons_clone_wars.json` + `data/armor_clone_wars.json` (`vendor_stocked:true` subset only) | `data/vendor_stock_by_zone.json` |
+
+### Destination files created
+
+| File | Contents |
+|---|---|
+| `data/npcs_clone_wars.json` | 15 named Clone Wars-era (20 BBY) Mos Eisley NPCs spread across the 4 zones in `data/zones_clone_wars.json`, with role/faction_axis/description/dialogue_lines |
+| `data/vendor_stock_by_zone.json` | Per-zone curated vendor item lists (existing `vendor_stocked:true` weapons/armor only) for the same 4 zones |
+
+### Curation decisions
+
+- **Zone mapping is a curation call**: SW_MUSH rooms are far more granular than
+  this project's four broad `zone_id`s, so each NPC's MUSH room was mapped to the
+  nearest loaded zone by in-fiction fit (documented per-entry via `source_room`).
+- **Djas Puhr's `faction_axis` recast** from the MUSH source's generic
+  `independent` tag to this project's dedicated `bounty_hunters_guild` axis (the
+  MUSH schema has no bounty-hunter-specific faction; ours does, and his profession
+  is explicit in the source text). Documented per-entry via `curation_note`.
+- **No CIS-affiliated named NPC**: none exists anywhere in SW_MUSH's
+  Tatooine/Mos Eisley content — lore-consistent (the CIS has no meaningful
+  presence in Hutt-controlled Outer Rim space during the war) — reflected
+  honestly rather than invented.
+- **Canonical film characters** (Wuher, Chalmun, Djas Puhr) are carried over ONLY
+  because `npcs_mos_eisley_population_p1.yaml` itself already re-skinned them for
+  the Clone Wars era per its own header policy (original descriptions/dialogue,
+  WEG-only stats, no copied sourcebook text); no new canonical cameo is
+  introduced by this drop.
+- **Vendor stock is a strict subset**: every `item_keys` entry in
+  `vendor_stock_by_zone.json` is drawn only from weapons/armor already marked
+  `vendor_stocked:true` in the existing catalogs (12 items total); no
+  `vendor_stocked:false` or contraband item is unlocked for any zone.
