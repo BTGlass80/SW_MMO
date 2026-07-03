@@ -173,6 +173,9 @@ func roll_spawn(creatures_data: Dictionary, zone_alert: String, zone_security: S
 		"pack_size": pack_size,
 		"char_sheet": c.get("char_sheet", {}),
 		"natural_attack": c.get("natural_attack", {}),
+		# G12: carry the creature's threat_tier into the spawn so economy_model.roll_loot can grade the
+		# reward by risk (without this the loot side defaults every kill to tier 2 = a flat x1.5 bump).
+		"threat_tier": threat_tier_of(c),
 	}
 
 

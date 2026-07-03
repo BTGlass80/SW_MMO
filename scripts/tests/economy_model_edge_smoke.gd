@@ -66,9 +66,11 @@ func _init() -> void:
 	_assert_equal(String(EconomyModel.can_sell(s2["sheet"], "knife")["reason"]), "not_owned", "a third sell attempt correctly reports not_owned")
 
 	# --- roll_loot: "character" scale band + a distinct seed changes the roll (seed actually matters) ---
+	# No threat_tier -> DEFAULT_LOOT_TIER (2) = x1.5 (Wave G / G12), so the character band [40,90] x pack 1
+	# scales to [60,135] (was [40,90] before the tier weight).
 	var char_spawn := {"hostile": true, "scale": "character", "pack_size": 1}
 	var loot_char: Dictionary = EconomyModel.roll_loot(char_spawn, 42)
-	_assert_true(int(loot_char["credits"]) >= 40 and int(loot_char["credits"]) <= 90, "character-scale loot lands in [40,90] for pack 1")
+	_assert_true(int(loot_char["credits"]) >= 60 and int(loot_char["credits"]) <= 135, "character-scale loot in [40,90] x tier-2 default (x1.5) = [60,135] for pack 1")
 	var loot_other_seed: Dictionary = EconomyModel.roll_loot(char_spawn, 4242)
 	# not asserting inequality of a single field (small band could coincide) -- assert the pair of
 	# (credits, salvage_credits) tuples differ across enough distinct seeds to prove determinism-by-seed.
@@ -82,12 +84,27 @@ func _init() -> void:
 	_assert_true(distinct_found, "different seeds produce different loot rolls (seed actually drives the RNG)")
 
 	# --- roll_loot: missing pack_size defaults to (and floors at) 1, no crash on scale 0 / negative ---
+	# threat_tier absent -> tier 2 (x1.5): creature band [15,45] x pack 1 -> round([22.5,67.5]) = [23,68].
 	var no_pack := {"hostile": true, "scale": "creature"}
 	var loot_no_pack: Dictionary = EconomyModel.roll_loot(no_pack, 9)
-	_assert_true(int(loot_no_pack["credits"]) >= 15 and int(loot_no_pack["credits"]) <= 45, "a missing pack_size defaults to pack 1 (band unmultiplied)")
+	_assert_true(int(loot_no_pack["credits"]) >= 23 and int(loot_no_pack["credits"]) <= 68, "a missing pack_size defaults to pack 1 ([15,45] x tier-2 default x1.5 = [23,68])")
 	var neg_pack := {"hostile": true, "scale": "creature", "pack_size": -3}
 	var loot_neg_pack: Dictionary = EconomyModel.roll_loot(neg_pack, 9)
-	_assert_true(int(loot_neg_pack["credits"]) >= 15 and int(loot_neg_pack["credits"]) <= 45, "a negative pack_size floors at 1, does not invert/crash")
+	_assert_true(int(loot_neg_pack["credits"]) >= 23 and int(loot_neg_pack["credits"]) <= 68, "a negative pack_size floors at 1, does not invert/crash ([23,68])")
+
+	# --- roll_loot threat-tier weighting edge cases (Wave G / G12) ---
+	# An out-of-band threat_tier on the SPAWN is clamped like the helper: tier 0 -> x1, tier 99 -> x3 cap.
+	var lo_tier := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 0}
+	var hi_tier := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 99}
+	var t1_spawn := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 1}
+	var t4_spawn := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 4}
+	for seed in [3, 17, 500, 90210]:
+		_assert_equal(int(EconomyModel.roll_loot(lo_tier, seed)["credits"]), int(EconomyModel.roll_loot(t1_spawn, seed)["credits"]), "a below-range spawn threat_tier clamps to the x1 tier-1 reward (seed %d)" % seed)
+		_assert_equal(int(EconomyModel.roll_loot(hi_tier, seed)["credits"]), int(EconomyModel.roll_loot(t4_spawn, seed)["credits"]), "an above-range spawn threat_tier clamps to the x3 tier-4 apex cap (seed %d)" % seed)
+	# salvage is tier-INDEPENDENT: the salvage bundle for a fixed seed is identical across tiers (only
+	# the credit figure is tier-weighted) -- proves the tier weight is a pure post-multiply on credits.
+	for seed2 in [3, 17, 500, 90210]:
+		_assert_equal(int(EconomyModel.roll_loot(t1_spawn, seed2)["salvage_credits"]), int(EconomyModel.roll_loot(t4_spawn, seed2)["salvage_credits"]), "salvage is unchanged by threat_tier for a fixed seed (seed %d)" % seed2)
 
 	# --- discount_for_tier: unknown tier defaults to no discount ---
 	_assert_equal(EconomyModel.discount_for_tier("nonexistent_tier"), 0.0, "an unrecognized rep tier gets no discount")
