@@ -161,6 +161,8 @@ var _yield_duel := false     # --yield-duel: concede an active duel once
 var _yield_duel_sent := false
 var _place_bounty := ""      # --place-bounty <name>:<amount>: place a bounty once after connecting
 var _place_bounty_sent := false
+var _leave_after := ""       # --leave-after <zone>: travel out LATE (after an accepted duel is active) to test zone-leave abort
+var _leave_after_sent := false
 var _consent_accum := 0.0
 var _toast_label: Label           # transient HUD feedback (credits/loot/buy/sell/force-awaken)
 var _toast_tween: Tween
@@ -277,6 +279,7 @@ func _parse_args() -> void:
 	_duel_accept = args.has("--duel-accept")      # headless DIV-0022: accept the single pending duel offer
 	_yield_duel = args.has("--yield-duel")        # headless DIV-0022: concede an active duel
 	_place_bounty = _arg_value("--place-bounty")  # headless DIV-0022: "name:amount" bounty placement
+	_leave_after = _arg_value("--leave-after")    # headless DIV-0022: travel out LATE (zone-leave duel-abort test)
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -299,7 +302,7 @@ func _process(delta: float) -> void:
 		Net.send_yield()  # headless DIV-0027: auto-yield when downed (two-process test hook; server is idempotent + rate-limited)
 	# DIV-0022 headless PvP-consent: challenge / accept / place-bounty / yield-duel, staggered so both
 	# peers have registered and the challenge has propagated before the accept fires.
-	if (_duel != "" or _duel_accept or _place_bounty != "" or _yield_duel) and Net.connected:
+	if (_duel != "" or _duel_accept or _place_bounty != "" or _yield_duel or _leave_after != "") and Net.connected:
 		_consent_accum += delta
 		if _duel != "" and not _duel_sent and _consent_accum >= 3.5:
 			var tgt := _peer_by_name(_duel)
@@ -323,6 +326,10 @@ func _process(delta: float) -> void:
 			_yield_duel_sent = true
 			Net.send_duel_yield()
 			print("[duel] client yielding")
+		if _leave_after != "" and not _leave_after_sent and _consent_accum >= 8.0:
+			_leave_after_sent = true  # travel out AFTER the duel is active -> server aborts the active duel
+			Net.send_change_zone(_leave_after)
+			print("[duel] client leaving the zone to %s (zone-leave abort test)" % _leave_after)
 	if (_autofire or _autodefend) and Net.connected:
 		_autofire_accum += delta
 		if _autofire_accum >= 0.4:

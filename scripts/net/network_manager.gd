@@ -305,11 +305,9 @@ func _on_peer_disconnected(id: int) -> void:
 	_heal_treated.erase(id)  # DIV-0013: drop this peer's First-Aid retry gate (keyed by target peer)
 	_downed.erase(id)  # DIV-0027: no orphan downed-tick against an absent peer (persisted wound_state carries it to relogin)
 	# DIV-0022: abort every live (offered/active) duel this peer was in — a disconnected duelist must not
-	# stay attackable, mirroring clear_intents_targeting. Bounties (persisted contracts) survive the logout.
-	if not _consent.is_empty():
-		var _ab: Dictionary = PvpConsent.abort(_consent, id)
-		if bool(_ab.get("ok", false)):
-			_consent = _ab["state"]
+	# stay attackable, mirroring clear_intents_targeting. Notifies surviving opponents so their "you" block
+	# clears. Bounties (persisted contracts) survive the logout.
+	_abort_duels_for(id, "disconnect")
 	if character_id != "": _visited_zones.erase(character_id)  # DIV-0011: drop the distinct-zones tracker
 	# Evict the record cache on disconnect: _save_peer just flushed final state to disk, the
 	# single-session lock means no other peer holds this character, and the next login does a
@@ -529,6 +527,44 @@ func _peer_name(peer_id: int) -> String:
 		return String((state.get_player(peer_id) as Dictionary).get("name", "Spacer-%d" % peer_id))
 	return "Spacer-%d" % peer_id
 
+# DIV-0022 advisory (b): a peer can act (start/accept combat) only while below the arena DISABLED floor.
+func _can_act(peer_id: int) -> bool:
+	if arena == null or not arena.has_player(peer_id):
+		return true
+	return int((arena.player_state(peer_id) as Dictionary).get("player_wound_severity", 0)) < CombatArena.DISABLED_SEVERITY
+
+# DIV-0022 (audit BLOCKER 2): abort EVERY live (offered/active) duel involving `peer_id` and NOTIFY both
+# sides so their snapshot "you" duel block clears and they may duel again. Called on zone-leave (a fled
+# duelist must not stay ACTIVE up to DUEL_MAX_DURATION, blocking new duels + staying attackable on
+# re-co-location) AND on disconnect. Captures opponents BEFORE the pure abort erases the linkage.
+func _abort_duels_for(peer_id: int, outcome: String) -> void:
+	if _consent.is_empty():
+		return
+	var duels: Dictionary = _consent.get("duels", {})
+	var opponents: Array = []
+	for key in duels:
+		var rec: Dictionary = duels[key]
+		var st := String(rec.get("state", ""))
+		if (st == "active" or st == "offered") and (rec.get("a") == peer_id or rec.get("b") == peer_id):
+			opponents.append(int(rec.get("b")) if rec.get("a") == peer_id else int(rec.get("a")))
+	if opponents.is_empty():
+		return
+	var traveler_name := _peer_name(peer_id)
+	var ab: Dictionary = PvpConsent.abort(_consent, peer_id)
+	if not bool(ab.get("ok", false)):
+		return
+	_consent = ab["state"]
+	if arena != null:
+		arena.clear_intents_targeting(peer_id)  # no queued shot resolves a KO after the bout is voided
+	for opp in opponents:
+		if arena != null:
+			arena.clear_intents_targeting(int(opp))
+		if mode == Mode.SERVER and state != null and state.has_player(int(opp)):
+			duel_notice.rpc_id(int(opp), {"kind": "ended", "outcome": outcome, "opponent_left": traveler_name})
+	if mode == Mode.SERVER and state != null and state.has_player(peer_id):
+		duel_notice.rpc_id(peer_id, {"kind": "ended", "outcome": outcome})
+	print("[duel] aborted %d live duel(s) for peer %d (%s)" % [opponents.size(), peer_id, outcome])
+
 # client -> server: challenge another CO-LOCATED player to a duel (default NON-lethal). An accepted duel
 # makes exactly this pair mutually attackable in ANY zone (even secured) — a duel outranks zone + newbie.
 @rpc("any_peer", "call_remote", "reliable")
@@ -540,6 +576,11 @@ func submit_duel_challenge(target_peer: int, lethal: bool = false) -> void:
 		return
 	if target_peer == sender or not state.has_player(target_peer):
 		duel_result.rpc_id(sender, {"ok": false, "reason": "no_target", "target_peer": target_peer})
+		return
+	# Advisory (b): an incapacitated/mortally/dead challenger OR target can't start a bout — mirrors the
+	# submit_fire_intent / arena DISABLED_SEVERITY gating so a downed player is never dragged into a duel.
+	if not _can_act(sender) or not _can_act(target_peer):
+		duel_result.rpc_id(sender, {"ok": false, "reason": "incapacitated", "target_peer": target_peer})
 		return
 	var zone_id := String(_peer_zones.get(sender, _default_zone))
 	if zone_id != String(_peer_zones.get(target_peer, _default_zone)):
@@ -797,14 +838,15 @@ func send_list_bounties() -> void:
 	if mode == Mode.CLIENT and connected:
 		submit_list_bounties.rpc_id(1)
 
-# DIV-0022: credit an amount to a character by id (a bounty refund) whether or not it is online. Loads the
-# record, adds credits, persists, and pushes the live wallet if the character happens to be connected.
+# DIV-0022: credit an amount to a character by id (a bounty ESCROW REFUND) whether or not it is online.
+# Loads the record, adds credits, persists, and pushes the live wallet if the character is connected.
+# Advisory (d): refunds pass feed_quest=false so pay-off/expiry round-trips never grind earn_credits.
 func _award_credits_to_character(character_id: String, amount: int, telemetry_type: String = "") -> void:
 	if store == null or character_id == "" or amount == 0:
 		return
 	for pid in _peer_characters:
 		if String(_peer_characters[pid]) == character_id:
-			_award_credits(int(pid), amount)  # online -> the normal wallet path (also pushes the client)
+			_award_credits(int(pid), amount, false)  # online -> normal wallet path, NO quest credit feed
 			if _telemetry != null and telemetry_type != "":
 				_telemetry.log_event(telemetry_type, {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "refund": amount})
 			return
@@ -851,9 +893,12 @@ func _maybe_collect_bounty(victim_peer: int, killer_peer: int) -> void:
 		return
 	_consent = res["state"]
 	var payout := int(res.get("payout", 0))
-	_award_credits(killer_peer, payout)
+	# Advisory (c) crash-window ordering: ERASE the contract from disk (world_state.dat) FIRST, THEN credit
+	# the hunter. A crash between the two now UNDER-pays (contract gone, hunter unpaid) rather than DOUBLE-
+	# pays (a persisted contract that already paid a cached-saved hunter would re-collect on the next kill).
 	_set_active_bounty_flag(victim_cid, false)
 	_save_world_state()  # the collected contract must not reappear on restart
+	_award_credits(killer_peer, payout)
 	if _telemetry != null:  # DIV-0022 telemetry: bounty payout INFLOW to the hunter
 		_telemetry.log_event("bounty_collect", {
 			"ts": Time.get_unix_time_from_system(), "character_id": killer_cid,
@@ -896,9 +941,24 @@ func _sweep_consent() -> void:
 	if _consent.is_empty():
 		return
 	var now := Time.get_unix_time_from_system()
+	# Advisory (a): capture the duels about to expire BEFORE the pure sweep erases the linkage, so both
+	# parties get a duel_notice — otherwise a TTL/max-duration expiry drops the duel SILENTLY from the "you"
+	# block (the client still thinks it's dueling). expire() itself doesn't report which records changed.
+	var expiring_pairs: Array = []
+	for key in _consent.get("duels", {}):
+		var rec: Dictionary = (_consent["duels"] as Dictionary)[key]
+		var st := String(rec.get("state", ""))
+		if st == "offered" and now >= float(rec.get("offer_ttl", 0.0)):
+			expiring_pairs.append([int(rec.get("a")), int(rec.get("b")), "offer_expired"])
+		elif st == "active" and float(rec.get("max_duration", 0.0)) > 0.0 and now >= float(rec["max_duration"]):
+			expiring_pairs.append([int(rec.get("a")), int(rec.get("b")), "expired"])
 	var de: Dictionary = PvpConsent.expire(_consent, now)
 	if bool(de.get("ok", false)):
 		_consent = de["state"]
+		for pr in expiring_pairs:
+			for pid in [int(pr[0]), int(pr[1])]:
+				if mode == Mode.SERVER and state != null and state.has_player(pid):
+					duel_notice.rpc_id(pid, {"kind": "ended", "outcome": String(pr[2])})
 	_consent = PvpConsent.prune_ended_duels(_consent)  # bound the in-memory duel book
 	# Snapshot the targets about to expire so we can clear their active_bounty mirror after the erase.
 	var expiring: Array = []
@@ -1412,6 +1472,10 @@ func submit_change_zone(zone_id: String) -> void:
 	if arena != null:
 		arena.clear_intent(sender)
 		arena.clear_intents_targeting(sender)  # DIV-0019: cancel PvP shots aimed at a player who just left the zone
+	# DIV-0022 (audit BLOCKER 2): a duel is scoped to co-located play (design §4.2 "ends on leaving the
+	# zone") — leaving ABORTS any live duel/offer involving the traveler and notifies both parties, so a
+	# fled duelist doesn't stay ACTIVE (blocking new duels + attackable on re-co-location) until it times out.
+	_abort_duels_for(sender, "left_zone")
 	_peer_zones[sender] = zone_id
 	var record := _cached_load(character_id)
 	if not record.is_empty():
@@ -1713,7 +1777,10 @@ func _buy_price_for(sender: int, record: Dictionary, list_cost: int) -> int:
 
 # Credit the player's persisted wallet by `amount` (may be negative; floored at 0) and push the new
 # balance + sheet. The single credit mutation point — loot (S13), buy/sell, and future sinks route here.
-func _award_credits(peer_id: int, amount: int) -> void:
+# feed_quest (advisory d): default true so genuine faucets (loot/sell/bounty payout) advance earn_credits.
+# A bounty escrow REFUND (pay-off / expiry) passes false — otherwise place->pay-off cycling would grind
+# earn_credits objectives off money that only round-trips back to the placer.
+func _award_credits(peer_id: int, amount: int, feed_quest: bool = true) -> void:
 	if store == null or amount == 0:
 		return
 	var character_id := String(_peer_characters.get(peer_id, ""))
@@ -1731,7 +1798,7 @@ func _award_credits(peer_id: int, amount: int) -> void:
 		apply_credits.rpc_id(peer_id, credits)
 		_push_sheet(peer_id, record)
 	print("[credits] peer %d %+d -> %d" % [peer_id, amount, credits])
-	if amount > 0:
+	if amount > 0 and feed_quest:
 		_feed_quest_event(peer_id, {"type": "credits", "amount": amount})  # DIV-0020: earn_credits objectives
 
 # server -> client: the player's authoritative credit balance

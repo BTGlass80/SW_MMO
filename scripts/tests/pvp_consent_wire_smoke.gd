@@ -98,6 +98,38 @@ func _init() -> void:
 	st = ko["state"]
 	_assert_true(not PvpConsent.duel_active(st, 2, 3), "the duel is over after a KO")
 
+	# --- BLOCKER 1 (audit): the challenger CANNOT self-accept his own offer (one-sided-consent bypass) ---
+	var cs := PvpConsent.new_state()
+	var off: Dictionary = PvpConsent.challenge(cs, 2, 3, "secured.newbie_zone", 10.0, true)  # A(2) offers B(3), LETHAL
+	cs = off["state"]
+	# the offer must expose the proposed lethality so the acceptor consents to the ACTUAL terms.
+	var offered_rec: Dictionary = (cs.get("duels", {}) as Dictionary)[PvpConsent.pair_key(2, 3)]
+	_assert_equal(bool(offered_rec.get("lethal", false)), true, "the OFFER carries the proposed lethality (acceptor consents to the real stakes)")
+	# A self-accepts by claiming B is the challenger: accept(challenger=3, acceptor=2) on A's own offer.
+	var self_ac: Dictionary = PvpConsent.accept(cs, 3, 2, 20.0)
+	_assert_equal(String(self_ac.get("reason", "")), "wrong_side", "the challenger cannot self-accept (acceptor must be the CHALLENGED side)")
+	_assert_true(not PvpConsent.duel_active(self_ac["state"], 2, 3), "the self-accept attack does NOT drive the duel ACTIVE")
+	_assert_true(not PvpConsent.duel_active(cs, 2, 3), "the offer stays OFFERED, never active, after a wrong-side accept")
+	# The legit acceptor (B=3) can still accept A's(2) offer.
+	var good_ac: Dictionary = PvpConsent.accept(cs, 2, 3, 30.0)
+	_assert_true(bool(good_ac.get("ok", false)) and PvpConsent.duel_active(good_ac["state"], 2, 3), "the true challenged party (B) CAN accept the offer")
+	_assert_true(PvpConsent.duel_lethal(good_ac["state"], 2, 3), "the accepted duel keeps the offered LETHAL terms")
+
+	# --- BLOCKER 2 (audit): abort ends a fled duelist's live duel/offer so it can't linger to timeout ---
+	var zs := PvpConsent.new_state()
+	zs = PvpConsent.challenge(zs, 5, 6, "z", 0.0, false)["state"]
+	zs = PvpConsent.accept(zs, 5, 6, 1.0)["state"]
+	_assert_true(PvpConsent.duel_active(zs, 5, 6), "duel active before either leaves")
+	var ab: Dictionary = PvpConsent.abort(zs, 5)  # peer 5 travels away -> the net layer calls abort(traveler)
+	_assert_true(bool(ab.get("ok", false)), "abort ends the traveler's live duel")
+	zs = ab["state"]
+	_assert_true(not PvpConsent.duel_active(zs, 5, 6), "a fled duelist's duel is ENDED (not left ACTIVE until DUEL_MAX_DURATION)")
+	_assert_true(PvpConsent.active_duel_of(zs, 6).is_empty(), "the STAYING opponent is also freed (can duel again)")
+	# a pending OFFER is aborted on leave too (not just active duels).
+	var os: Dictionary = PvpConsent.challenge(PvpConsent.new_state(), 7, 8, "z", 0.0, false)["state"]
+	os = PvpConsent.abort(os, 8)["state"]  # the CHALLENGED party leaves
+	_assert_equal(PvpConsent.offers_to(os, 8), [], "a pending offer is aborted when the challenged party leaves the zone")
+
 	# --- §1.2 precedence the arena gate is built from ---
 	var A := {"id": 2, "is_player": true, "node_id": "z", "newbie_protected": false}
 	var B := {"id": 3, "is_player": true, "node_id": "z", "newbie_protected": false}

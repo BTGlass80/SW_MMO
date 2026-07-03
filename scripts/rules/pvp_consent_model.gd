@@ -155,18 +155,24 @@ static func challenge(state: Dictionary, a: Variant, b: Variant, zone_id: String
 	}
 	return {"ok": true, "state": next, "reason": ""}
 
-# accept(B): OFFERED -> ACTIVE; both flagged mutually attackable. Returns {ok, state, reason}.
-# Guards the SAME one-active-duel-per-player invariant challenge() enforces at offer time: a player
-# may hold several simultaneous OFFERED challenges (e.g. two different challengers), but accepting a
-# second one while already in an ACTIVE duel is rejected (bug found in hardening review — without this
-# guard two different challengers could each have their offer to the same player accepted, leaving that
-# player "active" in two duels at once).
+# accept(challenger a, acceptor b): OFFERED -> ACTIVE; both flagged mutually attackable. {ok, state, reason}.
+# CONSENT INTEGRITY (audit fix): the pair_key is UNORDERED, so a lookup alone can't tell the challenger
+# from the challenged — accept() MUST verify the acceptor `b` is the CHALLENGED side (rec.b) and `a` is the
+# original challenger (rec.a). Without this, the challenger A could call accept(challenger=B, acceptor=A) on
+# his OWN offer to B (same pair key, state=="offered") and drive it ACTIVE with ONLY his consent — then rule
+# 5 outranks the zone gate AND the newbie guard, i.e. a one-sided (even lethal) attack on a non-consenting
+# newbie in a secured zone. The wrong-side guard closes that: only the true B may accept A's offer to B.
+# Also guards the one-active-duel-per-player invariant challenge() enforces at offer time (a player may hold
+# several OFFERED challenges, but accepting one while already ACTIVE in another is rejected).
 static func accept(state: Dictionary, a: Variant, b: Variant, now: float,
 		max_duration: float = DUEL_MAX_DURATION) -> Dictionary:
 	var key := pair_key(a, b)
 	var rec: Dictionary = (state.get("duels", {}) as Dictionary).get(key, {})
 	if rec.is_empty() or String(rec.get("state", "")) != "offered":
 		return {"ok": false, "state": state, "reason": "no_offer"}
+	# Two-sided consent: the acceptor must be the party the offer was aimed AT, not its author.
+	if rec.get("a") != a or rec.get("b") != b:
+		return {"ok": false, "state": state, "reason": "wrong_side"}
 	if _in_active_duel(state, a) != "" or _in_active_duel(state, b) != "":
 		return {"ok": false, "state": state, "reason": "already_dueling"}
 	var next := state.duplicate(true)
