@@ -39,6 +39,7 @@ const DOWNED := preload("res://scripts/rules/downed_model.gd")                 #
 const QuestModel := preload("res://scripts/rules/quest_model.gd")              # DIV-0020: accepted quests + progress + reward
 const HarvestModel := preload("res://scripts/rules/harvest_model.gd")          # DIV-0023: a disabled creature -> a sellable field-dressed good
 const CorpseDecay := preload("res://scripts/rules/corpse_decay_model.gd")       # DIV-0025: player-corpse decay + third-party full-loot (lawless)
+const TelemetryLog := preload("res://scripts/net/telemetry_log.gd")              # Wave G (Seam 5): server-side structured-telemetry writer (JSONL under user://)
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -168,6 +169,7 @@ var _downed := {}                     # DIV-0027: peer -> {severity:int, killer:
 var _corpses := {}                    # DIV-0025: character_id -> {zone_id, pos:{x,y,z}, decay_unix:float, security_tier:String} — server-only corpse index (rebuilt from records on boot)
 var _zone_list_cache: Array = []      # DIV-0014: cached [{id, name}] travel list (zones are static)
 var _server_rng := RandomNumberGenerator.new()
+var _telemetry: TelemetryLog = null   # server only (Wave G/Seam 5: structured-telemetry JSONL writer; null in client/solo)
 var _local_move := Vector2.ZERO
 var _local_yaw := 0.0
 var _local_jump := false
@@ -214,6 +216,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
+	_telemetry = TelemetryLog.new()  # Wave G/Seam 5: one server-owned JSONL writer under user://telemetry/events.jsonl
 	print("[net] server listening on port %d (combat window %.1fs)" % [port, combat_window_seconds])
 	server_started.emit(port)
 	return OK
@@ -242,6 +245,7 @@ func stop() -> void:
 	state = null
 	last_snapshot = {}
 	connected = false
+	_telemetry = null  # drop the server-only telemetry writer so a later start_client never keeps a live server writer
 
 func local_peer_id() -> int:
 	if multiplayer.multiplayer_peer == null:
@@ -859,6 +863,11 @@ func submit_change_zone(zone_id: String) -> void:
 		(_visited_zones[character_id] as Dictionary)[zone_id] = true
 		_feed_force_signal(sender, "zones_visited", 1)  # DIV-0011: reaching a new zone nudges the track
 	print("[zone] peer %d traveled to %s (%s)" % [sender, zone_id, zones.effective_security(zone_id)])
+	if _telemetry != null:  # Seam 5: travel telemetry (server owns the clock)
+		_telemetry.log_event("travel", {
+			"ts": Time.get_unix_time_from_system(), "character_id": character_id,
+			"zone_id": zone_id, "security_tier": zones.effective_security(zone_id),
+		})
 	zone_result.rpc_id(sender, {"ok": true, "zone_id": zone_id, "display_name": zones.zone_summary(zone_id).get("display_name", zone_id)})
 
 func send_change_zone(zone_id: String) -> void:
@@ -1311,6 +1320,11 @@ func submit_buy(item_key: String) -> void:
 		apply_credits.rpc_id(sender, int(new_sheet.get("credits", 0)))
 		_push_sheet(sender, record)
 		print("[buy] peer %d bought %s for %d (credits now %d)" % [sender, key, price, int(new_sheet.get("credits", 0))])
+		if _telemetry != null:  # Seam 5: buy telemetry (economy flow)
+			_telemetry.log_event("buy", {
+				"ts": Time.get_unix_time_from_system(), "character_id": character_id,
+				"item_key": key, "price": price, "credits": int(new_sheet.get("credits", 0)),
+			})
 		buy_result.rpc_id(sender, {"ok": true, "item_key": key, "price": price, "credits": int(new_sheet.get("credits", 0))})
 	else:
 		print("[buy] peer %d buy %s rejected (%s, price %d)" % [sender, key, String(result.get("reason", "")), price])
@@ -1344,6 +1358,11 @@ func submit_sell(item_key: String) -> void:
 		apply_credits.rpc_id(sender, int(new_sheet.get("credits", 0)))
 		_push_sheet(sender, record)
 		print("[sell] peer %d sold %s for %d (credits now %d)" % [sender, key, price, int(new_sheet.get("credits", 0))])
+		if _telemetry != null:  # Seam 5: sell telemetry (economy flow)
+			_telemetry.log_event("sell", {
+				"ts": Time.get_unix_time_from_system(), "character_id": character_id,
+				"item_key": key, "price": price, "credits": int(new_sheet.get("credits", 0)),
+			})
 		sell_result.rpc_id(sender, {"ok": true, "item_key": key, "price": price, "credits": int(new_sheet.get("credits", 0))})
 	else:
 		print("[sell] peer %d sell %s rejected (%s)" % [sender, key, String(result.get("reason", ""))])
@@ -1767,6 +1786,13 @@ func _handle_player_death(peer_id: int, killer_name: String, killer_peer: int = 
 		_credit_takedown(killer_peer)
 	print("[death] peer %d killed by %s in %s (%s): durability -%d%%, dropped %d, insured=%s -> respawn wounded @ spaceport (credits kept %d)" % [
 		peer_id, killer_name, zone_id, tier, int(outcome["durability_delta"]), dropped.size(), str(bool(outcome["insured"])), int(new_sheet.get("credits", 0))])
+	if _telemetry != null:  # Seam 5: death telemetry (death rate / penalty flow)
+		_telemetry.log_event("death", {
+			"ts": Time.get_unix_time_from_system(), "character_id": character_id,
+			"zone": zone_id, "tier": tier, "killer": killer_name,
+			"durability_delta": int(outcome["durability_delta"]), "dropped": dropped.size(),
+			"insured": bool(outcome["insured"]), "credits": int(new_sheet.get("credits", 0)),
+		})
 	if mode == Mode.SERVER:
 		apply_credits.rpc_id(peer_id, int(new_sheet.get("credits", 0)))  # unchanged (credits kept) — refresh the client
 		_push_sheet(peer_id, record)
@@ -2439,6 +2465,11 @@ func _resolve_combat_window() -> void:
 		envelopes.size(),
 		int((result.get("target_state", {}) as Dictionary).get("wound_severity", 0)),
 	])
+	if _telemetry != null:  # Seam 5: combat-window resolution telemetry (throughput / TTK)
+		_telemetry.log_event("window_resolve", {
+			"ts": Time.get_unix_time_from_system(),
+			"window": int(result.get("window", 0)), "envelope_count": envelopes.size(),
+		})
 	# Per-envelope consequences: kill credit (dummy OR hostile), creature LOOT + despawn (DIV-0018).
 	# Player DEATHS (DIV-0006/0019) are COLLECTED + deduped, then applied once — a PvP victim can be both
 	# a casualty (hit by an attack) and a return-fire shooter-death in the same window.
@@ -2467,6 +2498,15 @@ func _resolve_combat_window() -> void:
 					_award_credits(shooter, loot_credits)
 				print("[loot] peer %d looted %s: %d credits (%d + salvage %d)" % [
 					shooter, String(spawn.get("name", tkey)), loot_credits, int(loot.get("credits", 0)), int(loot.get("salvage_credits", 0))])
+				if _telemetry != null:  # Seam 5: creature-loot telemetry (economy inflow)
+					_telemetry.log_event("loot", {
+						# character_id must be the PERSISTENT character-id STRING (like death/buy/sell/travel),
+						# not the transient peer int — else loot (the primary economy INFLOW) can't be joined
+						# to a character's other events for a faucet/sink tally (verify: coverage-correctness).
+						"ts": Time.get_unix_time_from_system(), "character_id": String(_peer_characters.get(shooter, "")), "peer_id": shooter,
+						"creature_key": String(spawn.get("creature_key", tkey)),
+						"loot_credits": int(loot.get("credits", 0)), "salvage_credits": int(loot.get("salvage_credits", 0)),
+					})
 				# DIV-0020: a disabled HOSTILE creature advances disable objectives (creature_key narrows the targeted ones).
 				_feed_quest_event(shooter, {"type": "disable", "creature_key": String(spawn.get("creature_key", ""))})
 				_maybe_harvest(shooter, spawn, tkey)  # DIV-0023: ~15 creatures ALSO field-dress into a sellable good (Option A)

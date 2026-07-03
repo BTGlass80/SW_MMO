@@ -109,6 +109,8 @@ Invoke-GodotStep "Persistence smoke:" @("--headless", "--path", $projectRoot, "-
 
 Invoke-GodotStep "Telemetry log smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/telemetry_log_smoke.gd")
 
+Invoke-GodotStep "Telemetry wire smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/telemetry_wire_smoke.gd")
+
 Invoke-GodotStep "Persistence schema smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/persistence_schema_smoke.gd")
 
 Invoke-GodotStep "Zone state smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/zone_state_smoke.gd")
