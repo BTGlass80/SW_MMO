@@ -49,18 +49,18 @@ func _init() -> void:
 	_assert_equal(int(t1.get("rounds", -1)), 1, "sev-4 downed_tick carries rounds -> 1")
 	_assert_equal(int(t1.get("next_severity", 0)), 4, "sev-4 downed_tick keeps severity 4 on a hold/die")
 
-	# --- downed_tick: sev-3 HOLDs below the threshold, DETERIORATEs exactly at it ---
+	# --- downed_tick: sev-3 (incapacitated) is STABLE. The AFK safety net is DISABLED by default
+	#     (INCAP_DETERIORATE_WINDOWS <= 0, owner ruling 2026-07-03 = WEG faithfulness: incapacitated is
+	#     stable/unconscious), so sev-3 HOLDS at any round count and never auto-deteriorates or auto-dies;
+	#     the exit is yield (net layer) or a medic's First Aid. (If re-enabled (>0), downed_softlock_smoke
+	#     covers the deteriorate-then-bleed-out path.) ---
 	var rng := _seeded(7)
-	var below := Downed.downed_tick({"severity": 3, "rounds": Downed.INCAP_DETERIORATE_WINDOWS - 2}, rng)
-	_assert_equal(String(below.get("action", "")), "hold", "sev-3 holds below INCAP_DETERIORATE_WINDOWS")
-	var at := Downed.downed_tick({"severity": 3, "rounds": Downed.INCAP_DETERIORATE_WINDOWS - 1}, rng)
-	_assert_equal(String(at.get("action", "")), "deteriorate", "sev-3 deteriorates exactly at INCAP_DETERIORATE_WINDOWS")
-	_assert_equal(int(at.get("next_severity", 0)), 4, "deterioration escalates to sev 4 (mortally_wounded)")
-
-	# --- sev-3 never deteriorates when the const is <= 0 (disabled) is a code invariant we assert on the
-	# shipped const value: with the shipped positive default the threshold is reachable; the <=0 branch is
-	# guarded in downed_tick. Assert the shipped const is positive (safety net ON by default). ---
-	_assert_true(Downed.INCAP_DETERIORATE_WINDOWS > 0, "safety-net deterioration is ON by default (>0)")
+	_assert_true(Downed.INCAP_DETERIORATE_WINDOWS <= 0, "AFK safety net is DISABLED by default (WEG-faithful stable sev-3)")
+	var s3a := Downed.downed_tick({"severity": 3, "rounds": 0}, rng)
+	_assert_equal(String(s3a.get("action", "")), "hold", "sev-3 holds at round 0 (stable, no auto-death)")
+	var s3b := Downed.downed_tick({"severity": 3, "rounds": 999}, rng)
+	_assert_equal(String(s3b.get("action", "")), "hold", "sev-3 holds even at a huge round count (never auto-deteriorates when disabled)")
+	_assert_equal(int(s3b.get("next_severity", 0)), 3, "sev-3 severity never spontaneously worsens when the safety net is off")
 	_assert_true(Downed.MORTAL_CERTAIN_ROUNDS >= 13, "the bleed-out proof bound is >= 13 (2D max 12)")
 
 	# --- a severity below the floor returns 'revived' (a medic dropped them out of the downed band) ---

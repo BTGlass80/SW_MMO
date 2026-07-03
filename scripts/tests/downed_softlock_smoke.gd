@@ -1,14 +1,15 @@
 extends SceneTree
-## Dedicated SOFTLOCK-GUARD (DIV-0027). Proves a medic-less downed player ALWAYS resolves in bounded time
-## by ticking the REAL scripts/rules/downed_model.gd with a server-owned SEEDED rng (no arena/RPC). This
-## is the escape-hatch proof the execution plan mandates: tiering-without-a-bounded-exit is a softlock.
-##   (1) sev-4, NO medic, NO yield: the bleed-out reaches 'die' within <= MORTAL_CERTAIN_ROUNDS, for a
-##       spread of seeds (termination is seed-INDEPENDENT).
-##   (2) sev-3, NO medic, NO yield: deteriorates to sev-4 exactly at INCAP_DETERIORATE_WINDOWS, then the
-##       sev-4 bleed-out reaches 'die' — BOTH tiers auto-resolve with ZERO player input.
+## Dedicated escape-hatch / no-softlock guard (DIV-0027). Ticks the REAL scripts/rules/downed_model.gd
+## with a server-owned SEEDED rng (no arena/RPC) to prove a downed player has a bounded, guaranteed exit.
+##   (1) sev-4 (mortally_wounded), NO medic, NO yield: the bleed-out reaches 'die' within
+##       <= MORTAL_CERTAIN_ROUNDS across a spread of seeds (termination is seed-INDEPENDENT).
+##   (2) sev-3 (incapacitated) is STABLE per WEG (Guide_19 §1): with the AFK safety net DISABLED (the
+##       shipped default, owner ruling 2026-07-03 = WEG faithfulness) it HOLDS indefinitely with NO
+##       auto-death — resolution is yield (net layer) or a medic's First Aid, never spontaneous. (If the
+##       optional safety net is re-enabled (>0) it deteriorates to sev-4 then bleeds out — also tested.)
 ##   (3) revive: a tick whose severity was lowered below the floor (medic) returns 'revived', no death.
 ##   (4) determinism: same seed + entry -> identical action.
-## No infinite loop is reachable for either tier.
+## No sev-4 infinite loop is reachable; sev-3 is intentionally stable (yield/medic is the always-available exit).
 
 const Downed = preload("res://scripts/rules/downed_model.gd")
 
@@ -34,33 +35,45 @@ func _init() -> void:
 		_assert_true(died, "seed %d: sev-4 bleeds out to death" % (1000 + s))
 		_assert_true(iterations <= Downed.MORTAL_CERTAIN_ROUNDS, "seed %d: death within <= MORTAL_CERTAIN_ROUNDS (%d iters)" % [1000 + s, iterations])
 
-	# --- (2) sev-3 deteriorates at exactly INCAP_DETERIORATE_WINDOWS, then bleeds out ---
+	# --- (2) sev-3 (incapacitated): WEG-STABLE when the AFK safety net is DISABLED (shipped default),
+	#     or deteriorate-then-bleed-out when it is enabled. Test whichever is configured. ---
 	var rng3 := _seeded(55)
 	var e3 := {"severity": 3, "rounds": 0}
-	var deteriorated_at := -1
-	for i in range(Downed.INCAP_DETERIORATE_WINDOWS + 2):
-		var res := Downed.downed_tick(e3, rng3)
-		var action := String(res.get("action", ""))
-		if action == "deteriorate":
-			deteriorated_at = i + 1  # number of ticks taken
+	if Downed.INCAP_DETERIORATE_WINDOWS <= 0:
+		# WEG faithfulness (owner ruling): a stable incapacitated player NEVER auto-deteriorates or
+		# auto-dies. It HOLDS indefinitely — the exit is yield (net layer) or a medic. Tick far beyond
+		# any plausible window count and require a stable 'hold' every time (no 'deteriorate'/'die').
+		for i in range(50):
+			var res := Downed.downed_tick(e3, rng3)
+			_assert_equal(String(res.get("action", "")), "hold", "disabled safety net: sev-3 HOLDS stable (tick %d) — no auto-death, yield/medic only" % (i + 1))
+			_assert_equal(int(res.get("next_severity", 3)), 3, "sev-3 severity never spontaneously worsens (tick %d)" % (i + 1))
+			e3["severity"] = int(res.get("next_severity", 3))
+			e3["rounds"] = int(res.get("rounds", 0))
+	else:
+		# Optional safety net enabled: deteriorate at exactly INCAP_DETERIORATE_WINDOWS, then bleed out.
+		var deteriorated_at := -1
+		for i in range(Downed.INCAP_DETERIORATE_WINDOWS + 2):
+			var res := Downed.downed_tick(e3, rng3)
+			var action := String(res.get("action", ""))
+			if action == "deteriorate":
+				deteriorated_at = i + 1
+				e3["severity"] = int(res.get("next_severity", 4))
+				e3["rounds"] = int(res.get("rounds", 0))
+				break
+			_assert_equal(action, "hold", "sev-3 holds until deterioration (tick %d)" % (i + 1))
+			e3["severity"] = int(res.get("next_severity", 3))
+			e3["rounds"] = int(res.get("rounds", 0))
+		_assert_equal(deteriorated_at, Downed.INCAP_DETERIORATE_WINDOWS, "sev-3 deteriorates at exactly INCAP_DETERIORATE_WINDOWS")
+		_assert_equal(int(e3["severity"]), 4, "post-deterioration severity is 4 (mortally_wounded)")
+		var died3 := false
+		for _j in range(Downed.MORTAL_CERTAIN_ROUNDS + 1):
+			var res := Downed.downed_tick(e3, rng3)
+			if String(res.get("action", "")) == "die":
+				died3 = true
+				break
 			e3["severity"] = int(res.get("next_severity", 4))
 			e3["rounds"] = int(res.get("rounds", 0))
-			break
-		_assert_equal(action, "hold", "sev-3 holds until deterioration (tick %d)" % (i + 1))
-		e3["severity"] = int(res.get("next_severity", 3))
-		e3["rounds"] = int(res.get("rounds", 0))
-	_assert_equal(deteriorated_at, Downed.INCAP_DETERIORATE_WINDOWS, "sev-3 deteriorates at exactly INCAP_DETERIORATE_WINDOWS")
-	_assert_equal(int(e3["severity"]), 4, "post-deterioration severity is 4 (mortally_wounded)")
-	# continue from sev-4 -> must reach death
-	var died3 := false
-	for _j in range(Downed.MORTAL_CERTAIN_ROUNDS + 1):
-		var res := Downed.downed_tick(e3, rng3)
-		if String(res.get("action", "")) == "die":
-			died3 = true
-			break
-		e3["severity"] = int(res.get("next_severity", 4))
-		e3["rounds"] = int(res.get("rounds", 0))
-	_assert_true(died3, "a deteriorated sev-3 then bleeds out to death (zero player input)")
+		_assert_true(died3, "a deteriorated sev-3 then bleeds out to death")
 
 	# --- (3) revive: a sub-floor severity returns 'revived', never death ---
 	var rrev := _seeded(9)

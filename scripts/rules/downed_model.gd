@@ -15,9 +15,10 @@ extends RefCounted
 #   (a) mortally_wounded (sev 4) bleeds out via recovery_model.death_roll, provably
 #       terminating (2D maxes at 12, so `died` is CERTAIN once rounds >= 13);
 #   (b) a downed player may voluntarily yield (network_manager.submit_yield);
-#   safety net: an untreated incapacitated (sev 3) DETERIORATES to sev 4 after
-#   INCAP_DETERIORATE_WINDOWS combat windows (tunable; <= 0 disables) so a passive/AFK
-#   player also resolves. First Aid (DIV-0013) dropping below DISABLED revives.
+#   sev 3 (incapacitated) is STABLE (WEG Guide_19 §1) and resolves ONLY via yield or a
+#   medic's First Aid — NO auto-death (owner ruling 2026-07-03: WEG faithfulness). An
+#   OPTIONAL AFK safety net (INCAP_DETERIORATE_WINDOWS > 0, DISABLED by default) can make
+#   an untreated sev-3 deteriorate to sev 4. First Aid (DIV-0013) below DISABLED revives.
 #
 # Grounding (read-only reference):
 #   - C:\SW_MUSH\docs\design\Guide_19_Medical_Death.md §1 (wound ladder: incapacitated
@@ -32,10 +33,12 @@ const Recovery = preload("res://scripts/rules/recovery_model.gd")
 # net-layer dependency; the smokes assert these agree with the shipped constants.
 const DISABLED_SEVERITY := 3
 const KILL_SEVERITY := 5
-# Sev-3 (incapacitated) safety net: after this many downed combat windows an untreated
-# incapacitated player deteriorates to mortally_wounded (sev 4), which then bleeds out.
-# ~12 windows @ 5s = ~60s. Set <= 0 to DISABLE (yield-only for sev 3).
-const INCAP_DETERIORATE_WINDOWS := 12
+# Sev-3 (incapacitated) OPTIONAL deterioration: >0 = after this many downed combat windows
+# an untreated incapacitated player deteriorates to mortally_wounded (sev 4) and bleeds out.
+# DISABLED (0) by owner ruling 2026-07-03 (WEG faithfulness): incapacitated is STABLE
+# (Guide_19 §1), so a sev-3 player resolves ONLY via yield (network_manager.submit_yield)
+# or a medic's First Aid — never auto-death. Set >0 to re-enable the AFK safety net.
+const INCAP_DETERIORATE_WINDOWS := 0
 # Proof bound: recovery_model.death_roll's 2D maxes at 12, so `died` is certain once the
 # mortally-wounded round count reaches this. Used by the softlock-guard smoke.
 const MORTAL_CERTAIN_ROUNDS := 13
