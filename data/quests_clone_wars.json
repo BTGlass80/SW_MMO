@@ -1,5 +1,5 @@
 {
-  "source_policy": "Original starter quests authored for the SW_MMO prototype (overnight C2). Clone Wars-era, 20 BBY Mos Eisley framing; not ported from any read-only source. Objective kinds + reward shape match scripts/rules/quest_model.gd; rewards reuse the economy (credits) + dual-track CP (gameplay). Tunable content, not owner-gated balance. Starter-quest expansion drop (2026-07-03): +8 original quests, additive to the original 4. Flavor-only consultation of C:\\SW_MUSH docs/design guides for Mos Eisley tone (read-only, never copied verbatim); no MUSH mission data was ported. target_key values are verified real creature ids in data/creatures_clone_wars.json and zone_id values are verified real zone ids in data/zones_clone_wars.json as of this drop; giver values that are not the generic notice board are verified real NPC ids in data/npcs_clone_wars.json, used for flavor only (quest_model.gd does not validate giver).",
+  "source_policy": "Original starter quests authored for the SW_MMO prototype (overnight C2). Clone Wars-era, 20 BBY Mos Eisley framing; not ported from any read-only source. Objective kinds + reward shape match scripts/rules/quest_model.gd; rewards reuse the economy (credits) + dual-track CP (gameplay). Tunable content, not owner-gated balance. Starter-quest expansion drop (2026-07-03): +8 original quests, additive to the original 4. Flavor-only consultation of C:\\SW_MUSH docs/design guides for Mos Eisley tone (read-only, never copied verbatim); no MUSH mission data was ported. target_key values are verified real creature ids in data/creatures_clone_wars.json and zone_id values are verified real zone ids in data/zones_clone_wars.json as of this drop; giver values that are not the generic notice board are verified real NPC ids in data/npcs_clone_wars.json, used for flavor only (quest_model.gd does not validate giver). Second starter-quest expansion drop (2026-07-03): +8 more original quests, additive to the prior 12, bringing the roster to 20 -- rounds out reach_zone coverage to all four loaded zones (adds tatooine.mos_eisley.spaceport), adds new disable target_keys (tymp, spor_crawler, wrix) plus one higher-tier untargeted disable and a higher-tier underworld_thug bounty, and extends the earn_credits ladder to 350 and 800. Same one-way, flavor-only sourcing policy as above; all new target_key/zone_id/giver values re-verified against the current data/creatures_clone_wars.json, data/zones_clone_wars.json, and data/npcs_clone_wars.json.",
   "era": "20 BBY Clone Wars",
   "quests": [
     {
@@ -97,6 +97,70 @@
       "objective": {"kind": "earn_credits", "count": 500},
       "reward": {"credits": 0, "cp": 5},
       "giver": "kayson"
+    },
+    {
+      "id": "q_market_watch",
+      "name": "Control Tower Rounds",
+      "description": "Lieutenant Talon logs two hundred movements a day from a console she barely trusts. She wants a set of boots on the actual spaceport floor to confirm the manifests match what's really parked out there. Walk the Mos Eisley Spaceport District and report back.",
+      "objective": {"kind": "reach_zone", "zone_id": "tatooine.mos_eisley.spaceport", "count": 1},
+      "reward": {"credits": 80, "cp": 2},
+      "giver": "lt_vesh_talon"
+    },
+    {
+      "id": "q_dust_patrol",
+      "name": "Eastern Gate Nights",
+      "description": "CT-7041 \"Dust\" has watched tymp packs get bolder outside the Eastern Gate after dark, tusked and climbing where they shouldn't. He hasn't drawn his rifle in anger yet at this post and would like to keep it that way. Drive off three of them.",
+      "objective": {"kind": "disable", "target_key": "tymp", "count": 3},
+      "reward": {"credits": 240, "cp": 3},
+      "giver": "ct7041_dust"
+    },
+    {
+      "id": "q_bay94_pest",
+      "name": "Something in the Crates",
+      "description": "Venn Kator found spor crawlers nesting in a shipment of parts crates on the Bay 94 pit floor — finger-length, venomous, and absolutely not something he's touching with his bare hands. Clear them out before someone reaches into the wrong drawer.",
+      "objective": {"kind": "disable", "target_key": "spor_crawler", "count": 4},
+      "reward": {"credits": 260, "cp": 3},
+      "giver": "venn_kator"
+    },
+    {
+      "id": "q_confidence_hustle",
+      "name": "Honest Work",
+      "description": "Tova Shenn runs three schemes off the top of the Bay 94 steps and doesn't think much of spacers who can't match her take without bending a single rule. Earn 350 credits clean and she might start pointing marks your way instead of running them herself.",
+      "objective": {"kind": "earn_credits", "count": 350},
+      "reward": {"credits": 0, "cp": 4},
+      "giver": "tova_shenn"
+    },
+    {
+      "id": "q_drue_smuggler_run",
+      "name": "Bay 87 Volume",
+      "description": "Drue upgraded Bay 87's blast doors on inspection-waiver fees alone, and he's precise about what buys a waiver: volume. Move 800 credits through the field and he'll start quoting you his better rate.",
+      "objective": {"kind": "earn_credits", "count": 800},
+      "reward": {"credits": 0, "cp": 7},
+      "giver": "drue_bay87"
+    },
+    {
+      "id": "q_cantina_trouble",
+      "name": "Keep It Outside",
+      "description": "Wuher hears everything across the cantina floor and likes almost none of it lately. Word is trouble has been gathering near the entrance again. Clear four of them out before Chalmun has to get up from his booth.",
+      "objective": {"kind": "disable", "count": 4},
+      "reward": {"credits": 300, "cp": 4},
+      "giver": "wuher"
+    },
+    {
+      "id": "q_chalmun_debt",
+      "name": "House Rules",
+      "description": "Chalmun's one rule is no trouble for the house, and lately Hutt-linked debt collectors have been leaning on his patrons at the door in defiance of it. He wants a message sent: put down five of the enforcers working the cantina's doorstep.",
+      "objective": {"kind": "disable", "target_key": "underworld_thug", "count": 5},
+      "reward": {"credits": 450, "cp": 5},
+      "giver": "chalmun"
+    },
+    {
+      "id": "q_wastes_apex",
+      "name": "Pack Pressure",
+      "description": "Brana Nesh has lost sleep to wrix howls circling closer to the stables each night — pack hunters that prey on bantha and dewback alike and don't scatter easy. Thin the pack before they work up the nerve to hit the paddock.",
+      "objective": {"kind": "disable", "target_key": "wrix", "count": 3},
+      "reward": {"credits": 300, "cp": 4},
+      "giver": "brana_nesh"
     }
   ]
 }
