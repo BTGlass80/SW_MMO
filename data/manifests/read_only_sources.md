@@ -2,6 +2,19 @@
 
 The new project is standalone. These paths are references only and must not be modified by prototype work.
 
+## Weekly sync manifest (drift detection)
+
+`tools/mush_sync_manifest.py` hashes the specific `C:\SW_MUSH` files below
+that fed a curated import and stores the baseline in
+`data/mush_sync_manifest.json`. Run `python tools/mush_sync_manifest.py diff`
+to get a weekly ADDED/REMOVED/CHANGED report versus that baseline (exit 0 =
+no drift, 1 = drift) — see `docs/MUSH_SYNC.md` for the full cadence, what a
+report means, and the re-port merge rule (prototype-added fields like
+`threat_tier`/`loot_mult`/`boss`/`stun_return_fire` must survive any
+re-extraction). **When a new source file is added to this manifest below,
+add its relpath to `tools/mush_sync_manifest.py`'s tracked-source config
+too**, so the next `diff` run can see it.
+
 ## Primary Local Source
 
 - `C:\SW_MUSH`
