@@ -135,6 +135,8 @@ Invoke-GodotStep "Creature spawn model smoke:" @("--headless", "--path", $projec
 
 Invoke-GodotStep "Creature special-attack model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_special_attack_model_smoke.gd")
 
+Invoke-GodotStep "Creature combat smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_combat_smoke.gd")
+
 Invoke-GodotStep "Vendor model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/vendor_model_smoke.gd")
 
 Invoke-GodotStep "Economy model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_model_smoke.gd")

@@ -71,12 +71,13 @@
         "dark_side_points": 0
       },
       "natural_attack": {
-        "name": "grapple",
+        "name": "grapple bite",
         "to_hit_skill": "brawling",
-        "damage": "opposed (brawling vs. brawling or STR)"
+        "damage": "STR+1D"
       },
       "special": [
-        "Burrows at ~40 kph; digging 4D. Erupts from beneath prey for a surprise grapple."
+        "Burrows at ~40 kph; digging 4D. Erupts from beneath prey for a surprise grapple.",
+        "Baseline STR+1D bite/crush is the ring-of-teeth once rolled into the grapple; the opposed brawling/STR escape roll is the separate hold mechanic in special_attack.restraint."
       ],
       "special_attack": {
         "restraint": {
@@ -85,7 +86,7 @@
           "note": "Adhesive coils; opposed brawling/STR to break free."
         }
       },
-      "source": "COTG \u00a72.1 (WEG40080)"
+      "source": "COTG \u00a72.1 (WEG40080). Damage code cleaned to a machine-parseable STR+1D baseline bite (source text listed only the opposed brawling/STR escape-roll for the grapple hold, which is not a strike code and parsed to 0D); the escape mechanic is unchanged in special_attack.restraint. Mirrors the rock_wart cleanup pattern."
     },
     "hitcher_crab": {
       "id": "hitcher_crab",
@@ -395,12 +396,13 @@
       "natural_attack": {
         "name": "sting",
         "to_hit_skill": "brawling",
-        "damage": "Poison 5D"
+        "damage": "STR+1D"
       },
       "special": [
         "Venom: roll every 5 minutes for 1 hour; Difficult stamina to resist the pain.",
         "Burrowing; camouflage (Difficult search to spot) \u2014 a hidden hazard.",
-        "Hives swarm intruders."
+        "Hives swarm intruders.",
+        "The STR+1D natural_attack code is the baseline puncture of the sting itself; the lethal venom is the real threat and lives entirely in special_attack.poison (5D/round)."
       ],
       "special_attack": {
         "poison": {
@@ -416,7 +418,7 @@
         "difficulty": 10,
         "note": "Black-market venom; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG \u00a72.4 (WEG40080)"
+      "source": "COTG \u00a72.4 (WEG40080). Damage code cleaned to a machine-parseable STR+1D baseline sting (source text listed 'Poison 5D', which duplicated the special_attack.poison damage as a prose-wrapped strike code); the 5D lethal venom is unchanged in special_attack.poison. Mirrors the rock_wart cleanup pattern."
     },
     "somago": {
       "id": "somago",
@@ -824,13 +826,14 @@
       "natural_attack": {
         "name": "swarm",
         "to_hit_skill": "brawling",
-        "damage": "2D auto-damage to anything sharing its space (no to-hit; the swarm is everywhere at once)"
+        "damage": "2D"
       },
       "special": [
         "Distraction: a target engulfed suffers a penalty to actions (calibrate on the dev box).",
-        "Screens and scouts for its host merdeth; disperses if the host dies."
+        "Screens and scouts for its host merdeth; disperses if the host dies.",
+        "Auto-damage: the 2D natural_attack code applies to anything sharing its space, with no to-hit roll required (the swarm is everywhere at once); calibrate the auto-hit rule on the dev box."
       ],
-      "source": "Geonosis & Outer Rim (WotC d20) \u00a71.8 \u2014 D6 re-stat from scratch; calibrate on dev box."
+      "source": "Geonosis & Outer Rim (WotC d20) \u00a71.8 \u2014 D6 re-stat from scratch; calibrate on dev box. Damage code cleaned to a flat 2D (source text was '2D auto-damage to anything sharing its space (no to-hit...)'; the auto-hit/no-roll flavor now lives in the special[] note so combat-pool resolution parses cleanly)."
     },
     "dewback": {
       "id": "dewback",
