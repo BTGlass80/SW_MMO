@@ -32,49 +32,15 @@ Self-imposed guardrail: **local/deterministic only — no paid/external/LLM-in-t
    real polish) across the four areas and keep shipping verified slices. Always leave the queue with
    unblocked work for the next tick. Quality bar stays: gate-green + verified + scoped commit.
 
-## G. Wave G — TOP PRIORITY (external Fable review, owner-steered 2026-07-03)
-**Work these BEFORE areas A–D and before any replenishment.** Full detail + files + verify in
-`docs/WAVE_G_BACKLOG.md`; the review itself is in `docs/fable/`. These are post-Wave-F **seam** fixes:
-Wave F shipped lethality + PvP, and three follow-ups became prerequisites. **Seam guard (mandatory):**
-the smoke must assert **what actually ships** (G1 is a shipped green smoke asserting the OPPOSITE of the
-wire — do not repeat that); after each `[HOT]` Wave-G slice do a doc↔model↔wire reconciliation before
-marking DONE. Owner decisions are baked in below — do NOT re-open them.
-- [ ] G2  `[HOT]` Wire `wound_ladder_model.escalate()` into the 3 live accumulation sites (resolve_exchange,
-      _resolve_return_fire, PvP defender write-back). Cross the severity↔level seam via **level strings**,
-      never raw ints (they diverge at 3). Re-seed affected smokes; update DIV-0008. **Land this FIRST** —
-      it and G1 are one seam.
-- [ ] G1  `[HOT]` **PvP death = TRUE TIERING (owner-decided fork A, 2026-07-03):** sev 5 = death; sev 3–4 =
-      downed-in-field. Requires the **escape-hatch bundle** or a downed lawless player softlocks: (a) wire
-      `recovery_model.death_roll` on the Director tick for mortally_wounded; (b) a **yield/respawn** command
-      for a downed (sev 3) player with no medic. Then wire `is_kill`/`PVP_DEATH_SEVERITY` on the live path,
-      fix the two `pvp_rules_model_smoke` asserts + DIV-0019 text to match. Depends on G2.
-- [ ] G3  `[HOT]` PvP defenders can't dodge — build defender defense from declared stance + `player_dodge_pool`
-      (wound/armor-penalized) into the `is_pvp` branch via `prepare_ranged_defense`; read cover from
-      persistent state. Smoke: dodge raises attacker difficulty; full-dodge defender skips own attack.
-- [ ] G10 `[HOT]` De-fang the dummy faucet: hostile-death fallback → no-target/hold-fire (not the global
-      dummy); dummy disables pay reduced/zero influence + drop the Force feed; move `_window_index = 0` out
-      of `reset_target()`.
-- [ ] G11 `[PAR]` Resolved-pool content smoke for every `hostile:true` creature (resolved atk/dmg ≥ 1D and
-      match listed); fix `glim_worm`(0D dmg!)/`mip_swarm`/`spor_crawler` prose stat strings to dice codes.
-- [ ] G4  `[HOT]` Hostiles never initiate — add a Director/window-tick unprovoked-attack path via the
-      already-built `ground_combat_model.resolve_incoming_fire_window` (lawless+contested). 2-proc: idle bot
-      in dune_sea takes fire and can die.
-- [ ] G5  `[PAR]` Economy floor guard: assert `MAX_TOTAL_DISCOUNT <= 1 - SELL_RATE - ε` + a catalog-wide smoke
-      `buy_floor(list) > sell_price(list)` (buy→sell arbitrage is one dial-turn away today).
-- [ ] G12 `[PAR]` `threat_tier` per creature + alert-banded spawn table (calm lawless = tiers 1–2; merdeth-class
-      = event/boss, never ambient) + loot-by-tier (risk currently anti-correlates with reward). Re-run
-      `tools/balance_probe.gd` as acceptance.
-- [ ] G6  `[PAR]` Doc-rot batch: fix `_wound_penalty_dice` stale comment; make `check_project.ps1` PRINT smoke
-      + RPC counts (docs say "see gate output", kills the 59/66/72 drift); rewrite README "Current Slice" as
-      bullets; DIV-0011 `force_sensitive` storage-divergence sentence; 3 `d6_rules` house-rule ledger lines.
-- [ ] G7  `[PAR]` Rename the "Ahsoka" fixture in `wire_roundtrip_smoke.gd`; add a chargen reserved/canonical-name
-      filter (port the MUSH name-policy list).
-- **Process (fold in as you go):** a **dead-symbol detector** in the gate (orphan public funcs/consts outside
-  their own smoke — would have caught G1's `is_kill`); structured **JSONL telemetry** from the existing print
-  sites (death/buy/sell/loot/travel/window-resolve) BEFORE any tuning; the weekly `mush-content-porter`
-  re-extraction cadence (CLAUDE.md program posture).
-- **Owner-gated (still PARK):** PT1 playtest scheduling; the auth/crypto bundle (before non-LAN playtest);
-  the positional-truth spike (G9, design doc first) — see `docs/WAVE_G_BACKLOG.md` owner-forks.
+## G. Wave G — DRAINED through G13 (2026-07-03); delta follow-ups are the live queue
+**G1–G5, G7, G10(=G13), G11, G12-mechanism, telemetry: DONE** — verified by the external delta review
+(`docs/fable/SW_MMO_waveG_delta_review_2026-07-03.md`) and G13's live acceptance. The LIVE queue is
+**`docs/WAVE_G_BACKLOG.md` § Delta follow-ups: G14–G18, then the owner-approved PT1 prep track** (G8
+auth bundle, server watchdog, 20-bot soak, envelope replay). Work those BEFORE areas A–D. **Seam guard
+stands (mandatory):** the smoke must assert **what actually ships**; after each `[HOT]` slice do a
+doc↔model↔wire reconciliation before marking DONE. **Owner rulings 2026-07-03 (attended):** not-before-
+live = models-OK/wiring-PARKED (siege/cities/server-space); push origin after each green commit;
+PT1 prep cleared, PT1 date still owner-gated.
 
 ## A. Presentation / playable feel  [PAR-heavy: new client modules + minimal net_world hooks]
 - [ ] A1  Inventory/equipment panel (I key): list `sheet.inventory`, equip via click (`Net.send_equip`), show equipped.
@@ -91,7 +57,8 @@ marking DONE. Owner decisions are baked in below — do NOT re-open them.
 - [ ] B3  Durability=0 "broken" -> halved pools until repaired + a repair vendor action (credit sink).
 - [ ] B4  Post-death -1D DEATH_DEBUFF live (round-keyed, recovery_model.death_debuff_dice) in the arena.
 - [ ] B5  Server-global (offline) Force soft-cap tally persisted in world_state (not just connected).
-- [ ] B6  Siege state machine per `docs/SIEGE_DESIGN.md` — pure `siege_state` model + smoke, then HOT.
+- [~] B6  Siege state machine per `docs/SIEGE_DESIGN.md` — pure `siege_state` model + smoke DONE (`650349a`,
+      DIV-0021). **HOT wiring PARKED (owner 2026-07-03: not-before-live = models OK, wiring parked).**
 - [ ] B7  PvP-consent (challenge/accept + bounty) per `docs/PVP_CONSENT_DESIGN.md` — pure model + smoke, then HOT (protected-zone opt-in).
 - [ ] B8  Ammo/repair recurring sink; ammo count on the sheet + a reload/buy path.
 
@@ -105,7 +72,8 @@ marking DONE. Owner decisions are baked in below — do NOT re-open them.
 ## D. Hardening & tests  [PAR-heavy]
 - [ ] D1  Adversarial-review Workflow over economy/death/Force/PvP; fix confirmed findings.
 - [ ] D2  Coverage: corpse manifest, insurance edge cases, casualty dedup, the new RPCs' composition (flow smokes).
-- [ ] D3  Fix the pre-existing `!is_inside_tree()` warning (set global_position AFTER add_child) in net_world.gd `_build_camera`/`_spawn_npc`/`_spawn_avatar`.
+- [x] D3  DONE (`fe7768f`, 2026-07-03): `!is_inside_tree()` fixed in `_spawn_npc`/`_build_camera` (105→0
+      errors, live-verified); `_spawn_avatar` + FX spawners audited already-correct.
 - [ ] D4  Fix the bridge bottom action-row overlap (space panel fixed Y-offsets) the space agent flagged.
 - [ ] D5  Tune the isometric camera framing (`space_tactical_view3d.gd` WORLD_SCALE/fov/distance) — conservative defaults, no eyeball.
 
@@ -116,11 +84,20 @@ marking DONE. Owner decisions are baked in below — do NOT re-open them.
 - **D** hardening: 3 real bug fixes (pvp-consent double-duel; siege id-collision + open-window) + 8 edge smokes (`e906f46`).
 
 ## Highest-value NEXT (follow-ups)
+- FIRST: `WAVE_G_BACKLOG.md` § Delta follow-ups (G14–G18), then the PT1 prep track (G8/watchdog/soak/replay).
 - Wire NPC TALK (client interact → dialogue_model line). Wire quests live (notice-board RPC + event feeds + panel).
-- HOT-wire siege (declare/join RPCs + Director tick + effective-security gate) and PvP-consent (fire-intent gate + duel/bounty RPCs).
-- Render ambient/named NPC dialogue; corpse-loot RPC; durability-broken; -1D death debuff; positional PvP range.
+- ~~HOT-wire siege~~ **PARKED (owner 2026-07-03: wiring not-before-live)**; PvP-consent wiring (fire-intent
+  gate + duel/bounty RPCs) is NOT parked — it stays queued.
+- Render ambient/named NPC dialogue; durability-broken repair RPC (pairs with a faucet per G18); -1D death
+  debuff; positional PvP range (see G9 design-first).
 
 ## Log (newest first)
+- 2026-07-03 (Fable takes the wheel, attended→unattended): G13 LIVE acceptance PASS (lawless autofire bot:
+  0 dummy hits post-travel, Acklay combat as positive control); D3 done — `!is_inside_tree()` spam fixed
+  (`_spawn_npc`/`_build_camera` add_child-before-global_position; 105→0 errors live-verified); Wave G
+  delta review landed + G13–G18 folded into WAVE_G_BACKLOG § Delta follow-ups; owner rulings recorded
+  (siege models-OK/wiring-parked; PT1 prep track approved; push-per-green-commit); G14+G15 running as a
+  worktree workflow with adversarial verify.
 - Named-NPC render + per-zone vendor + npc_builder + hardening (3 bugfixes) + siege/pvp-consent/quest models + NPC/creature content — 11 verified commits.
 - Tick 1 (inline kickoff): C2 pure `quest_model.gd` + quests data + smoke + DIV-0020 ledger row. Gate green.
 - (armed) Wave F complete + presentation + space landed this session (see WAVE_F_HANDOFF + git log).

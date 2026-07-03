@@ -338,6 +338,22 @@ A THIRD audit Workflow on new angles (server lifecycle & multi-actor races, solo
 
 Three audit passes (F66–F75) now span ~14 dimensions. The remaining substantive frontier is owner-gated (death-penalty/economy-spend/Force/siege). Smoke count 61.
 
+## 2026-07-03 — Fable takes the wheel (Wave G delta)
+
+- The external **Wave G delta review** (`docs/fable/SW_MMO_waveG_delta_review_2026-07-03.md`) scored the
+  Wave-G night: G1–G5/G7/G11/telemetry shipped & live-verified; its follow-ups G13–G18 are folded into
+  `docs/WAVE_G_BACKLOG.md` § Delta follow-ups (the live queue).
+- **G13 live acceptance PASS**: lawless autofire bot logged ZERO `Training Silhouette` hits after entering
+  the Dune Sea (3 pre-travel hits in the secured spawn zone = intended onboarding), with live Acklay
+  combat as the positive control. The faucet is closed live, not just at symbol level.
+- **`!is_inside_tree()` spam fixed** (OVERNIGHT_QUEUE D3): `_spawn_npc` + `_build_camera` set
+  `global_position` before `add_child` — 105 engine errors per short session → 0, live-verified twice.
+- **Owner rulings (attended):** not-before-live = pure models/design docs OK, HOT wiring PARKED
+  (siege/cities/server-space); PT1 prep track approved (G8 auth bundle un-gated, watchdog, 20-bot soak,
+  envelope replay) — PT1 date still owner-gated; push to origin after each green commit.
+- G14 (wounded_twice −2D level plumbing) + G15 (tier/loot re-tune with probe acceptance) implemented via
+  parallel worktrees with adversarial verification; integrated serially on main (see git log).
+
 ## Next Best Slices
 
 - Add richer moving-target and remote-fire encounter behavior beyond sine/patrol movement, cadence/phase firing, model-derived state summaries, peeking/tucked cycles, flanking holds, reload/weapon-cycle holds, covering-fire holds, morale hesitation, wounded fallback, and hit suppression.

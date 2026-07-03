@@ -10,6 +10,10 @@ python, green), read every `scripts/rules/*` and `scripts/net/*` at symbol level
 - `SW_MMO_livefire_balance_probe_2026-07-02.md` — live-fire + balance numbers (queue G10–G12).
 - `SW_MMO_path_forward_2026-07-02.md` — strategy addendum (PT1, posture, process).
 - `balance_probe.gd` — the probe tool, now relocated to [`tools/balance_probe.gd`](../tools/balance_probe.gd).
+- `SW_MMO_waveG_delta_review_2026-07-03.md` — the DELTA review of the Wave-G night (scorecard:
+  G1–G5/G7/G11/telemetry shipped & verified; G10 skipped → **G13**; a new wounded_twice −2D phantom →
+  **G14**; G12 tuning fails the probe → **G15**; G6 → **G16**; posture → **G17**; faucets/sinks → **G18**).
+  The G13–G18 queue is folded into house format at the bottom of this file (**§ Delta follow-ups**).
 
 This file distills that into the project's house backlog format so the items are tracked and
 executable. **House rules still apply** (`docs/SESSION_HANDOFF.md` §§3–4): `[PAR]` pure-model+test
@@ -204,15 +208,15 @@ tactical escape hatch from an up-tier spawn.)*
    ships complete."* + the not-before-live list (multiplayer space stays solo until the ground loop has
    real players; sieges; player cities; runtime LLM). Written into `CLAUDE.md`. LLM policy also set:
    author-time, never runtime.
-4. **First Strangers Night (PT1)** — the highest-information next milestone: 5–10 outside players for one
-   evening running a scripted ~30-min loop (chargen → range → travel → Dune Sea fight → die/respawn →
-   insure → buy/sell → lawless duel → org claim). Let PT1 *pull* priorities. Its ship list is small: the
-   three P0s, G4 hostile-initiation, the presentation wave already in flight, the auth bundle (below),
-   and telemetry.
-5. **Auth/crypto bundle (G8, gate on "before any non-LAN playtest"):** `check_secret` stores/compares
-   secrets in **plaintext** JSON over **unencrypted ENet**; unsecured accounts are first-claimer-wins.
-   Godot ships `Crypto`/`HashingContext` — salted hash at rest is a small slice; DTLS (or an explicit
-   "dev transport" banner) for flight. Not now; it gates strangers.
+4. **First Strangers Night (PT1)** — ⚙️ **PREP APPROVED 2026-07-03 (owner, attended): build the PT1 prep
+   track** (G8 auth bundle + server watchdog + 20-bot soak + envelope replay tool) after G14–G18 land, so
+   PT1 is schedulable whenever the owner picks a date. **The date itself stays owner-gated.** The evening:
+   5–10 outside players running a scripted ~30-min loop (chargen → range → travel → Dune Sea fight →
+   die/respawn → insure → buy/sell → lawless duel → org claim). Let PT1 *pull* priorities.
+5. **Auth/crypto bundle (G8):** ✅ **UN-GATED 2026-07-03** as part of the PT1 prep ruling. `check_secret`
+   stores/compares secrets in **plaintext** JSON over **unencrypted ENet**; unsecured accounts are
+   first-claimer-wins. Godot ships `Crypto`/`HashingContext` — salted hash at rest is a small slice; DTLS
+   (or an explicit "dev transport" banner) for flight. Queued in § Delta follow-ups execution order.
 6. **Positional-truth spike (G9) — the next fidelity cliff.** Distance is a profile constant
    (`HOSTILE_DISTANCE`, `PVP_DISTANCE=12`) and cover is intent-supplied, while `WorldState` already owns
    authoritative positions. Deriving combat distance from server positions and cover from world/zone
@@ -273,6 +277,9 @@ tactical escape hatch from an up-tier spawn.)*
 
 ## Suggested execution order
 
+*(Historic — the G1–G12 wave shipped 2026-07-03; see the delta-review scorecard. Current order lives
+in § Delta follow-ups below.)*
+
 1. **G2 → G1, plus G3** (the P0 seam): `escalate()` (G2) FIRST, then G1 true-tiering + the escape-hatch
    bundle (they're one seam); G3 (PvP defender dodge) in parallel.
 2. **G10, G11** (de-fang the faucet + stop silent data rot — both cheap, both distort every other number).
@@ -282,3 +289,58 @@ tactical escape hatch from an up-tier spawn.)*
 
 *Do not wire `tools/balance_probe.gd` into the gate — it's statistical and slow; run it on demand as the
 acceptance instrument for the spawn-table / loot-tier / `escalate()` drops.*
+
+---
+
+## Delta follow-ups (Fable delta review 2026-07-03) — G13–G18
+
+**Status of the original queue** (delta-review scorecard, verified at symbol level + live): G1 ✅ (DIV-0027
+downed/tiering, live-verified) · G2 ✅ (level-string seam; its one caveat became **G14**) · G3 ✅ (defender
+dodge) · G4 ✅ (unprovoked aggression, live-verified) · G5 ✅ (floor guard, structural) · G7 ✅ (name policy,
+whole-token) · G10 → shipped later as **G13** · G11 ✅ (data rot + resolved-pool smoke) · G12 ⚠️ mechanism ✓
+(DIV-0028) / tuning ✗ → **G15** · G6 ❌ → **G16** · telemetry ✅ (JSONL, character_id join).
+
+### G13 — de-fang the dummy faucet (= the deferred G10) `[HOT]` — **DONE `8cd9619` + LIVE-VERIFIED 2026-07-03**
+Dummy `target_down` pays capped CP only (no zone/territory influence, no Force `disables` signal);
+hostile-death fallback → `HOLD_TARGET` sentinel, never the cross-zone dummy (dummy only in the secured
+spawn zone); `_window_index = 0` removed from `reset_target()` (monotonic counter). `_status_window`
+collapse evaluated: CANNOT collapse (different cadence: every-window vs intent-only), documented.
+**Live acceptance (this session):** lawless autofire bot — 3 dummy hits in the secured spawn zone only
+(intended onboarding sparring), **ZERO `Training Silhouette` hits after entering `tatooine.dune_sea`**,
+with live Acklay combat in the log as the positive control. Runtime-error check clean.
+
+### G14 — wounded_twice fights at −1D live; comments claim −2D `[PAR]` — IN FLIGHT (worktree + adversarial verify)
+Level-string penalty plumbing into `resolve_exchange`/`_resolve_return_fire`/G3 defender path
+(`penalty_dice_for_level`, severity-int fallback only where no level exists); live-penalty smoke asserting
+`player_wound_penalty_dice == 2` at wounded_twice; fix the three lying comments; DIV-0008 sentence.
+
+### G15 — G12 re-tune to pass its own acceptance instrument `[PAR]` — IN FLIGHT (worktree + adversarial verify)
+Per delta §4 (a–e): lethality-derived tiers (t1 <0.5% out/window, t2 <3%, t3 <20%, t4 ≥20% → acklay/
+mutant_acklay leave default ambient); merdeth-class = boss/event channel, NEVER ambient under any alert;
+kill the loot scale double-dip (one axis: base band × tier mult); `LOOT_TIER_MULT` set so probe cr/min is
+monotone non-decreasing in tier; unknown-alert fail-safe clamp to the safest band + warning; keep the
+probe `_spawn()` threat_tier patch. **Acceptance = a fresh probe table pasted in the drop notes.** DIV-0028 update.
+
+### G16 — the G6 doc-hygiene tick, for real `[PAR]`
+Gate **prints** smoke + RPC counts (docs say "see gate output" — kills the 59/66/72/111 drift class);
+DIV-0011 `force_sensitive` storage-divergence sentence; 3 `d6_rules` house-rule header/ledger notes;
+README "Current Slice" → bullets; pip-drop convention note. **Add (found this session):** SESSION_HANDOFF
+§6 documents a `--quit-after` client flag that does not exist — fix the affordance list there.
+
+### G17 — posture codification `[owner ✚ PAR]` — **RULED 2026-07-03 (owner, attended): models-OK / wiring-parked**
+The not-before-live list means: pure models + design docs for siege/player-cities/server-space are
+PERMITTED; their HOT wiring, RPCs, Director hooks, and snapshot fields are PARKED until the ground loop
+has real players. Codify the reading in `CLAUDE.md` and make it a mechanical invariant check (new
+`siege_*`/`city_*`/server-side `space_*` files in `scripts/net/*` or RPC surface → audit failure).
+
+### G18 — faucets-and-sinks invariant `[PAR]`
+Import the MUSH rule verbatim into `CLAUDE.md` ("faucets and sinks land together"); add the telemetry
+inflow/outflow tally script over `events.jsonl` (the `character_id` join works); run it on every PT1
+session log.
+
+### Current execution order
+1. ~~G13~~ done + live-verified. **G14 + G15** (in flight, parallel worktrees → serial integration).
+2. **G16 + G17 + G18** as one docs/gate/CLAUDE.md slice (they share files).
+3. **PT1 prep track (owner-approved 2026-07-03):** G8 auth/crypto bundle `[HOT]` (salted hash at rest —
+   un-gated by the ruling; DTLS or a "dev transport" banner decision still sized separately), server
+   watchdog, 20-bot headless soak, envelope replay tool. The **PT1 date remains owner-gated.**
