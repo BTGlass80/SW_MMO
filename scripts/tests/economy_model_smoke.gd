@@ -20,8 +20,9 @@ func _init() -> void:
 	_assert_equal(EconomyModel.buy_price(500, 1.0, 10, 0, "allied", vendor), 315, "bargain 10D (-30%) then allied -10%")
 	# hostile/neutral get no rep discount.
 	_assert_equal(EconomyModel.buy_price(500, 1.0, 0, 0, "hostile", vendor), 500, "hostile rep -> no discount")
-	# MAX_TOTAL_DISCOUNT floor: stacked deep discounts never drop below 0.35 of list.
-	_assert_equal(EconomyModel.buy_price(500, 0.5, 20, 0, "allied", vendor), 175, "stacked discounts clamp at 0.35 of list")
+	# Buy floor (G5): stacked deep discounts never drop below 0.45 of list — the floor was raised above
+	# the 0.40 sell rate so buy-at-floor-then-sell can no longer print credits.
+	_assert_equal(EconomyModel.buy_price(500, 0.5, 20, 0, "allied", vendor), 225, "stacked discounts clamp at the 0.45-of-list floor (> sell)")
 	# contraband / faction-issued (cost 0) is not vendor-priced.
 	_assert_equal(EconomyModel.buy_price(0, 1.0, 0, 0, "neutral", vendor), 0, "cost-0 item is unpriced")
 

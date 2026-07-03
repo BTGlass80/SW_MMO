@@ -28,11 +28,12 @@ func _init() -> void:
 	var broke_sheet := {"credits": 0, "inventory": [], "equipment": {}}
 	_assert_true(bool(EconomyModel.can_buy(broke_sheet, "issued_kit", 0, free_catalog)["ok"]), "a 0-price stocked item is buyable even at 0 credits")
 
-	# --- buy_price: MAX_TOTAL_DISCOUNT floor at its EXACT boundary (0.35 of list, list=1000) ---
+	# --- buy_price: buy floor at its EXACT boundary (G5: 0.45 of list, list=1000) ---
 	# An extreme director discount + max bargain + allied rep would drive the raw price far below the
-	# floor; buy_price must clamp to exactly ceil(1000*0.35)=350, never lower.
+	# floor; buy_price must clamp to exactly ceil(1000*0.45)=450 (the floor now sits above the 0.40
+	# sell rate so buy-at-floor-then-sell can't print credits), never lower.
 	var floored := EconomyModel.buy_price(1000, 0.1, 20, 0, "allied", vendor)
-	_assert_equal(floored, 350, "stacked extreme discounts clamp to exactly the 0.35-of-list floor")
+	_assert_equal(floored, 450, "stacked extreme discounts clamp to exactly the 0.45-of-list floor")
 	# A price already ABOVE the floor before clamping passes through unclamped (sanity: the floor is a
 	# MINIMUM, not a universal re-price).
 	var unclamped := EconomyModel.buy_price(1000, 1.0, 0, 0, "neutral", vendor)

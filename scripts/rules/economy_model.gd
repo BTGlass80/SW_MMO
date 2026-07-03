@@ -3,7 +3,8 @@ extends RefCounted
 ## "modest sink, WEG-anchored prices". Each catalog `cost` IS the WEG R&E list price and the
 ## BUY anchor (BUY_MARKUP=1.0); the churn sink is the 40% sell/buy-back spread. Buy price layers
 ## the Director event multiplier + Bargain (via a PASSED vendor_model instance) + a small rep
-## discount, clamped so stacked discounts never drop below 0.35 of list. Loot credits drop from a
+## discount, clamped by buy_floor() so a fully-discounted BUY always costs strictly MORE than the
+## SELL buy-back returns (no buy->sell arbitrage, Wave G / G5). Loot credits drop from a
 ## disabled HOSTILE creature only (the training dummy stays CP-only). All-static, NO RNG of its
 ## own — the loot roller takes an explicit server-owned seed. All SPEND numbers are tunable consts.
 
@@ -11,7 +12,13 @@ extends RefCounted
 const STARTING_CREDITS := 1000       # chargen wallet (~2 sidearms or 1 heavy + vest of headroom)
 const BUY_MARKUP := 1.0              # WEG list = street price; the sink is the sell spread, not markup
 const SELL_RATE := 0.40             # vendor buy-back pays 40% of list (the 60% spread is the churn sink)
-const MAX_TOTAL_DISCOUNT := 0.65    # stacked bargain+rep+event never take price below 0.35 of list
+# Stacked bargain+rep+event can only take a BUY down to (1-MAX_TOTAL_DISCOUNT) of list = 0.45 here.
+# ANTI-ARBITRAGE INVARIANT (Wave G / G5): (1.0 - MAX_TOTAL_DISCOUNT) MUST stay > SELL_RATE so the
+# cheapest a buy can ever cost stays above what selling it straight back pays; otherwise a
+# fully-discounted buy -> immediate sell would PRINT credits. buy_floor() is the single source of
+# truth for that clamp and ALSO hard-floors at sell_price+1, so even re-widening THIS dial toward
+# 0.65 again can never reopen the exploit.
+const MAX_TOTAL_DISCOUNT := 0.55
 const REP_DISCOUNT := {"friendly": 0.05, "allied": 0.10}  # by reputation_model.standing_tier; else 0.0
 # loot on a disabled hostile creature (credits/salvage only in v1; item drops are owner-gated follow-up)
 const LOOT_CREATURE := [15, 45]     # per-head credit band for scale "creature"
@@ -24,15 +31,29 @@ static func discount_for_tier(tier: String) -> float:
 	return float(REP_DISCOUNT.get(tier, 0.0))
 
 # Final buy price. Delegates the Director multiplier + Bargain to the passed vendor INSTANCE
-# (vendor_model.quote), then applies BUY_MARKUP + the rep discount, clamped to MAX_TOTAL_DISCOUNT
-# of list, floored at 1 credit.
+# (vendor_model.quote), then applies BUY_MARKUP + the rep discount, clamped UP to buy_floor()
+# (the single source of truth for the minimum a buy can ever cost).
 static func buy_price(list_cost: int, director_multiplier: float, bargain_dice: int, bargain_pips: int, rep_tier: String, vendor: Object) -> int:
 	if list_cost <= 0:
 		return 0  # contraband / faction-issued (cost 0) is not vendor-priced
 	var quoted := int(vendor.quote(list_cost, director_multiplier, bargain_dice, bargain_pips))
 	var price := int(round(float(quoted) * BUY_MARKUP * (1.0 - discount_for_tier(rep_tier))))
-	var floor_price := int(ceil(float(list_cost) * (1.0 - MAX_TOTAL_DISCOUNT)))
-	return maxi(maxi(price, floor_price), 1)
+	return maxi(price, buy_floor(list_cost))
+
+# buy_floor(list_cost) -> the minimum credits a BUY can EVER cost (the clamped floor). This is the
+# SINGLE SOURCE OF TRUTH used by buy_price's clamp so the floor and the price path can't drift.
+# It is the LARGER of:
+#   * the stacked-discount floor  ceil((1 - MAX_TOTAL_DISCOUNT) * list) = 0.45 of list, and
+#   * sell_price(list) + 1        -- the HARD anti-arbitrage guarantee.
+# The +1 clamp makes buy_floor(list) > sell_price(list) for EVERY list >= 1 (including tiny costs
+# where integer rounding would otherwise let the two tie), so a fully-discounted buy followed by an
+# immediate sell can never net a profit. The guarantee holds even if MAX_TOTAL_DISCOUNT is later
+# re-widened (Wave G / G5); economy_floor_smoke.gd pins it across the whole vendor catalog.
+static func buy_floor(list_cost: int) -> int:
+	if list_cost <= 0:
+		return 0  # unpriced (contraband / faction-issued, cost 0); mirrors buy_price/sell_price
+	var pct_floor := int(ceil(float(list_cost) * (1.0 - MAX_TOTAL_DISCOUNT)))
+	return maxi(pct_floor, sell_price(list_cost) + 1)
 
 # Vendor buy-back: pays SELL_RATE of the item's list cost, floored at 1.
 static func sell_price(list_cost: int) -> int:
