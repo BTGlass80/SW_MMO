@@ -2374,7 +2374,13 @@ func _recover_wounds() -> void:
 		sheet["wound_state"] = new_level
 		record["sheet"] = sheet
 		_cached_save(character_id, record)
-		arena.set_player_combat(peer_id, {"player_wound_severity": PersistenceStore.severity_for_wound_state(new_level)})
+		# G14 (DIV-0008): write the healed LEVEL STRING back alongside the severity so a wounded_twice->wounded
+		# recovery is NOT re-collapsed to 'wounded' by set_player_combat's severity->level fallback (both pin to
+		# severity 2). Without the explicit level the -2D tier would be silently erased on the first recovery tick.
+		arena.set_player_combat(peer_id, {
+			"player_wound_severity": PersistenceStore.severity_for_wound_state(new_level),
+			"player_wound_level": new_level,
+		})
 		_feed_force_signal(peer_id, "recoveries", 1)      # DIV-0011: recovering from a wound nudges the track
 		if new_level == "healthy":
 			_heal_treated.erase(peer_id)  # fully recovered -> reset the First-Aid retry gate (DIV-0013/F8)
@@ -2390,7 +2396,16 @@ func _recover_wounds() -> void:
 # save); fall back to the sheet for any character not currently in the arena.
 func _live_wound_state(peer_id: int, sheet: Dictionary) -> String:
 	if arena != null and arena.has_player(peer_id):
-		return PersistenceStore.wound_state_for_severity(int((arena.player_state(peer_id) as Dictionary).get("player_wound_severity", 0)))
+		var ps: Dictionary = arena.player_state(peer_id)
+		# G14 (DIV-0008): prefer the arena's wound LEVEL STRING — it is the cross-window source of truth
+		# that distinguishes wounded (-1D) from wounded_twice (-2D). Deriving from the severity int here
+		# collapses wounded_twice -> wounded (severity_for_level pins both to 2), which would make a live
+		# wounded_twice patient heal at the wrong difficulty and skip a ladder rung. Fall back to the
+		# severity-derived level only when no level string is present.
+		var lvl := String(ps.get("player_wound_level", ""))
+		if lvl != "":
+			return lvl
+		return PersistenceStore.wound_state_for_severity(int(ps.get("player_wound_severity", 0)))
 	return String(sheet.get("wound_state", "healthy"))
 
 func _attribute_for_skill(skill: String) -> String:
@@ -2510,7 +2525,13 @@ func _build_snapshot(zone_id: String = CURRENT_ZONE, peer_id: int = 0) -> Dictio
 	for p in snap.get("players", []):
 		var ppid := int((p as Dictionary).get("id", 0))
 		if arena != null and arena.has_player(ppid):
-			(p as Dictionary)["wound"] = PersistenceStore.wound_state_for_severity(int((arena.player_state(ppid) as Dictionary).get("player_wound_severity", 0)))
+			# G14 (DIV-0008): prefer the wound LEVEL STRING so an ally's nameplate shows wounded_twice (the -2D
+			# tier) for correct First-Aid targeting, not the severity-collapsed 'wounded'. Fall back to severity.
+			var pps: Dictionary = arena.player_state(ppid)
+			var pw := String(pps.get("player_wound_level", ""))
+			if pw == "":
+				pw = PersistenceStore.wound_state_for_severity(int(pps.get("player_wound_severity", 0)))
+			(p as Dictionary)["wound"] = pw
 			# DIV-0024: compact venom/restraint status on the nameplate (additive — only when active).
 			var pstat := arena.player_status_summary(ppid)
 			if int(pstat.get("poison_rounds_left", 0)) > 0:

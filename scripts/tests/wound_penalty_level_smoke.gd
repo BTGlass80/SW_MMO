@@ -13,6 +13,7 @@ extends SceneTree
 
 const CombatArena := preload("res://scripts/net/combat_arena.gd")
 const GroundCombatModel := preload("res://scripts/rules/ground_combat_model.gd")
+const Recovery := preload("res://scripts/rules/recovery_model.gd")
 
 var _failures: Array[String] = []
 var _rules: Object
@@ -22,6 +23,8 @@ func _init() -> void:
 
 	_test_pure_resolve_exchange()
 	_test_live_arena_window()
+	_test_incoming_fire_window()
+	_test_heal_preserves_wounded_twice()
 
 	if _rules.has_method("free"):
 		_rules.free()
@@ -97,6 +100,88 @@ func _test_live_arena_window() -> void:
 	s.submit_fire_intent(2, {"aim": 0})
 	var s_pen := _player_attack_penalty(s.resolve_window(778899))
 	_assert_equal(s_pen, 1, "live arena: severity-2-only shooter (derived 'wounded') stays -1D")
+
+# --- Issue 1: the INCOMING-fire path (unprovoked hostile aggression -> resolve_incoming_fire_window)
+# derives the VICTIM's dodge/soak penalty from the LEVEL STRING, so a wounded_twice victim dodges at -2D. ---
+func _test_incoming_fire_window() -> void:
+	var ground := GroundCombatModel.new()
+	var pools := {
+		"player_dodge_pool": _rules.parse_pool("4D"),
+		"player_soak_pool": _rules.parse_pool("3D"),
+		"player_armor": {},
+		"target_attack_pool": _rules.parse_pool("4D"),
+		"target_damage_pool": _rules.parse_pool("4D"),
+		"damage_pool": _rules.parse_pool("4D"),
+		"target_scale": "creature",
+	}
+	var incoming := [{
+		"source_id": "hostile",
+		"source_name": "Massiff",
+		"attack_pool": _rules.parse_pool("4D"),
+		"damage_pool": _rules.parse_pool("4D"),
+		"scale": "creature",
+		"distance": 6.0,
+		"cover_level": 0,
+		"wound_severity": 0,
+	}]
+
+	# wounded_twice victim: severity int 2 (collapsed), level string 'wounded_twice' -> LIVE -2D on the dodge/soak.
+	var wt_state := ground.initial_state()
+	wt_state["player_wound_severity"] = 2
+	wt_state["player_wound_level"] = "wounded_twice"
+	var wt := ground.resolve_incoming_fire_window(_rules, wt_state, pools, incoming, 33445)
+	var wt_pen := _incoming_penalty(wt)
+	print("  incoming-fire window: wounded_twice victim -> player_wound_penalty_dice=%d (expect 2)" % wt_pen)
+	_assert_equal(wt_pen, 2, "incoming-fire: wounded_twice victim dodges at -2D")
+
+	# wounded control: same severity int 2, level 'wounded' -> -1D.
+	var w_state := ground.initial_state()
+	w_state["player_wound_severity"] = 2
+	w_state["player_wound_level"] = "wounded"
+	var w := ground.resolve_incoming_fire_window(_rules, w_state, pools, incoming, 33445)
+	_assert_equal(_incoming_penalty(w), 1, "incoming-fire: wounded victim dodges at -1D (control)")
+
+	# Back-compat: severity-only (no level) still falls back to -1D for any pure caller.
+	var s_state := ground.initial_state()
+	s_state["player_wound_severity"] = 2
+	var s := ground.resolve_incoming_fire_window(_rules, s_state, pools, incoming, 33445)
+	_assert_equal(_incoming_penalty(s), 1, "incoming-fire: severity-only victim falls back to -1D")
+
+# The player_wound_penalty_dice recorded on the first incoming attack result.
+func _incoming_penalty(window_result: Dictionary) -> int:
+	for inc in window_result.get("incoming", []):
+		return int((inc as Dictionary).get("player_wound_penalty_dice", -1))
+	return -1
+
+# --- Issue 2: heal/recovery treats a LIVE wounded_twice patient at its OWN difficulty (14) and heals it
+# one rung to 'wounded' — and the arena preserves the wounded_twice LEVEL STRING across a heal write-back
+# instead of collapsing it to 'wounded' via the severity-2 fallback. ---
+func _test_heal_preserves_wounded_twice() -> void:
+	# heal_check keys off the level string: wounded_twice -> difficulty 14 (Guide_19 par.3), heals to 'wounded'.
+	var pool: Dictionary = _rules.parse_pool("6D")  # high enough to pass 14 with this seed
+	var res: Dictionary = Recovery.heal_check(_make_rng(4242), pool, "wounded_twice")
+	print("  heal_check('wounded_twice'): difficulty=%d (expect 14)" % int(res.get("difficulty", -1)))
+	_assert_equal(int(res.get("difficulty", -1)), 14, "heal_check: wounded_twice difficulty is 14, not the collapsed 11")
+	# A wounded_twice patient must never be treated at the 'wounded' difficulty (11) — that is the collapse bug.
+	var wounded_diff: int = Recovery.heal_check(_make_rng(4242), pool, "wounded").get("difficulty", -1)
+	_assert_equal(wounded_diff, 11, "heal_check: wounded difficulty is 11 (control)")
+
+	# Arena round-trip: set_player_combat with the wounded_twice level string preserves it (does not collapse).
+	var data := _combat_data()
+	var arena := CombatArena.new(_rules, data)
+	arena.register_player(2, "Patient", {"attributes": {"dexterity": "3D", "strength": "2D"}, "skills": {"blaster": "1D"}})
+	arena.set_player_combat(2, {"player_wound_severity": 2, "player_wound_level": "wounded_twice"})
+	_assert_equal(String(arena.player_state(2).get("player_wound_level", "")), "wounded_twice",
+		"arena: set_player_combat preserves the wounded_twice level string")
+	# The healed write-back (severity 2 + explicit level 'wounded') writes 'wounded', NOT re-collapsed.
+	arena.set_player_combat(2, {"player_wound_severity": 2, "player_wound_level": "wounded"})
+	_assert_equal(String(arena.player_state(2).get("player_wound_level", "")), "wounded",
+		"arena: heal write-back with explicit level records 'wounded'")
+
+func _make_rng(seed_value: int) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	return rng
 
 # The wound_penalty_dice recorded on the player_attack event of the first envelope, or -1 if absent.
 func _player_attack_penalty(window_result: Dictionary) -> int:
