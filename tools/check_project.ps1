@@ -135,6 +135,8 @@ Invoke-GodotStep "Economy model edge smoke:" @("--headless", "--path", $projectR
 
 Invoke-GodotStep "Economy flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/economy_flow_smoke.gd")
 
+Invoke-GodotStep "Harvest model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/harvest_model_smoke.gd")
+
 Invoke-GodotStep "Vendor zone flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/vendor_zone_flow_smoke.gd")
 
 Invoke-GodotStep "Death penalty model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/death_penalty_model_smoke.gd")
