@@ -5,7 +5,9 @@
 # with fast windows (--combat-window 1 --director-tick 0.5), launches
 # -NumBots headless clients with a deterministic mix of the REAL headless
 # affordances parsed by scripts/net/net_world.gd (--account/--secret/--name/
-# --species/--quickstart/--autowalk/--autofire/--fire-nearest/--travel),
+# --species/--quickstart/--autowalk/--autofire/--fire-nearest/--travel,
+# plus the Wave F economy one-shots --buy/--sell/--vendor-list/--buy-insurance
+# so soaks exercise vendor/credit flow, not just combat + movement),
 # samples process memory/CPU + log health every 30s for -DurationMinutes,
 # then kills everything and writes a PASS/FAIL report.
 #
@@ -106,10 +108,26 @@ Write-Host "[soak] server listening."
 
 # --- 2. Launch the bots ------------------------------------------------------
 # Deterministic mix built ONLY from flags parsed in scripts/net/net_world.gd:
-#   all bots:      --connect --account --secret --name --species --quickstart --autowalk
-#   every 2nd bot: --autofire (WEG action-window load)
-#   every 4th bot: --fire-nearest (PvP target selection on top of autofire)
-#   every 5th bot: --travel <zone> (cross-zone routing load, rotating zones)
+#   all bots:       --connect --account --secret --name --species --quickstart --autowalk
+#   every 2nd bot:  --autofire (WEG action-window load)
+#   every 3rd bot:  --buy power_pack (economy SINK: vendor buy path + telemetry "buy")
+#   every 4th bot:  --fire-nearest (PvP target selection on top of autofire)
+#   every 5th bot:  --travel <zone> (cross-zone routing load, rotating zones)
+#   every 6th bot:  --buy-insurance (death-insurance sink, DIV-0006)
+#   every 7th bot:  --vendor-list (read path: server-priced stock RPC)
+#   every 10th bot: --sell hold_out_blaster (economy INFLOW: vendor buy-back at 40%)
+#
+# ECONOMY MIX NOTES (keys/credits verified against the code, 2026-07-03):
+#   * quickstart chargen grants EconomyModel.STARTING_CREDITS = 1000.
+#   * power_pack = AmmoModel.PACK_ITEM_KEY, list 25cr (PACK_COST); BUY_MARKUP is 1.0,
+#     so even with the zone Director multiplier a pack stays pocket change.
+#   * insurance = DeathPenalty.INSURANCE_PREMIUM = 500cr flat.
+#     Worst-stacked bot (i % 6 == 0: pack + policy) spends ~525 of 1000 -- affordable.
+#   * hold_out_blaster (list 275cr, sells for 110cr) is in ChargenModel.STARTER_INVENTORY
+#     but NOT in the equipped slots (blaster_pistol/blast_vest), so EconomyModel.can_sell
+#     (rejects only not_owned/equipped) reliably accepts it from a fresh quickstart kit.
+#   * the client fires these one-shots ~3.5s after registration settles (net_world.gd
+#     _econ_accum), so they compose safely with --autowalk/--autofire/--travel.
 $speciesMix = @("human", "rodian", "twilek", "bothan", "duros", "sullustan", "trandoshan", "wookiee", "mon_calamari")
 $travelZones = @("tatooine.mos_eisley.port_fringe", "tatooine.mos_eisley.market_district", "tatooine.dune_sea")
 
@@ -122,11 +140,15 @@ for ($i = 1; $i -le $NumBots; $i++) {
     $species = $speciesMix[($i - 1) % $speciesMix.Count]
     $flags = "--connect 127.0.0.1 --account bot$tag --secret soak$tag --name Bot$tag --species $species --quickstart --autowalk"
     if (($i % 2) -eq 0) { $flags = "$flags --autofire" }
+    if (($i % 3) -eq 0) { $flags = "$flags --buy power_pack" }
     if (($i % 4) -eq 0) { $flags = "$flags --fire-nearest" }
     if (($i % 5) -eq 0) {
         $zone = $travelZones[(($i / 5) - 1) % $travelZones.Count]
         $flags = "$flags --travel $zone"
     }
+    if (($i % 6) -eq 0) { $flags = "$flags --buy-insurance" }
+    if (($i % 7) -eq 0) { $flags = "$flags --vendor-list" }
+    if (($i % 10) -eq 0) { $flags = "$flags --sell hold_out_blaster" }
 
     $botCmd = '"{0}" --headless --path "{1}" res://scenes/net_world.tscn -- {2} > "{3}" 2>&1' -f $GodotConsole, $projectRoot, $flags, $botLog
     Write-Host "[soak] launching bot$tag ($flags)"
