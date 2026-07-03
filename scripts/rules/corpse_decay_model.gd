@@ -119,3 +119,30 @@ static func loot_for_third_party(manifest, security_tier: String, elapsed_second
 		reason = "looted"
 		items = _items(manifest)
 	return {"looted": reason == "looted", "items": items, "credits": 0, "reason": reason}
+
+# What the OWNER receives retrieving their OWN corpse right now (DIV-0006 "contested = decays,
+# owner-retrieval only"). This is the counterpart to loot_for_third_party: a NON-full-loot corpse
+# (contested) within its decay window is the owner's to reclaim, so the owner gets their dropped set
+# back; a FULL-LOOT corpse (lawless) is FORFEIT — the DIV-0019 death penalty stands, the set is up for
+# grabs by third parties and the owner gets no protected self-recovery. Returns:
+#   { retrieved: bool, items: Array, credits: int, reason: String }
+#     reason: "no_corpse"  (null/empty manifest — secured/insured/empty-inventory death, nothing dropped)
+#             "expired"    (past the decay window -> the body despawned, the drop is gone)
+#             "forfeit"    (full-loot / lawless corpse -> no owner self-recovery; the penalty stands)
+#             "retrieved"  (non-full-loot / contested corpse within window -> hands the owner their set)
+# credits is ALWAYS 0 (DIV-0006 credits KEPT on the sheet). Never mutates the manifest. Without this the
+# contested drop is unrecoverable by ANYONE (third party -> "protected", owner -> blocked) and silently
+# decays -> permanent item deletion (the composition bug the integration audit flagged).
+static func loot_for_owner(manifest, security_tier: String, elapsed_seconds: int) -> Dictionary:
+	var reason := ""
+	var items: Array = []
+	if not has_corpse(manifest):
+		reason = "no_corpse"
+	elif is_expired(security_tier, elapsed_seconds):
+		reason = "expired"
+	elif _manifest_full_loot(manifest, security_tier):
+		reason = "forfeit"   # lawless full-loot: the owner cannot self-recover (DIV-0019 penalty)
+	else:
+		reason = "retrieved"
+		items = _items(manifest)
+	return {"retrieved": reason == "retrieved", "items": items, "credits": 0, "reason": reason}

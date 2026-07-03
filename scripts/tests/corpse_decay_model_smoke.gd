@@ -114,6 +114,32 @@ func _init() -> void:
 	loot_items.append("tampered")
 	_assert_equal((lawless_corpse["items"] as Array), ["blast_helmet", "knife"], "looting does not mutate the source manifest")
 
+	# --- OWNER-retrieval (loot_for_owner): the counterpart to third-party loot (audit fix 2026-07-03) ---
+	# CONTESTED: the owner RECLAIMS their own dropped set within the 2h window (the case third parties get
+	# "protected" for). Without this the contested drop was unrecoverable by anyone -> silently deleted.
+	var own_contested := Corpse.loot_for_owner(contested_corpse, "contested", 0)
+	_assert_equal(bool(own_contested["retrieved"]), true, "owner CAN retrieve their own contested corpse (owner-retrieval only)")
+	_assert_equal(String(own_contested["reason"]), "retrieved", "contested owner-retrieval reason = retrieved")
+	_assert_equal((own_contested["items"] as Array), ["stimpack"], "owner gets their full dropped set back from a contested corpse")
+	_assert_equal(int(own_contested["credits"]), 0, "owner-retrieval credits always 0 (kept on the sheet)")
+	# mid-window contested is still retrievable; at/after expiry it is gone.
+	_assert_equal(bool(Corpse.loot_for_owner(contested_corpse, "contested", 7199)["retrieved"]), true, "owner can retrieve up to the last second of the 2h window")
+	_assert_equal(String(Corpse.loot_for_owner(contested_corpse, "contested", 7200)["reason"]), "expired", "at the 2h boundary the contested corpse has decayed -> expired")
+	# LAWLESS: the owner CANNOT self-recover a full-loot corpse — the DIV-0019 penalty stands (forfeit).
+	var own_lawless := Corpse.loot_for_owner(lawless_corpse, "lawless", 0)
+	_assert_equal(bool(own_lawless["retrieved"]), false, "owner CANNOT self-recover a lawless full-loot corpse")
+	_assert_equal(String(own_lawless["reason"]), "forfeit", "lawless owner-retrieval -> forfeit (penalty stands, third parties race for it)")
+	_assert_equal((own_lawless["items"] as Array).size(), 0, "a forfeited lawless corpse yields the owner nothing")
+	# SECURED / null / empty: nothing to retrieve.
+	_assert_equal(String(Corpse.loot_for_owner(null, "secured", 0)["reason"]), "no_corpse", "secured/null -> no_corpse to retrieve")
+	_assert_equal(String(Corpse.loot_for_owner({}, "contested", 0)["reason"]), "no_corpse", "empty manifest -> no_corpse")
+	# A stamped full_loot=false in a lawless zone is retrievable by the owner (stamp is authoritative).
+	_assert_equal(bool(Corpse.loot_for_owner({"items": ["knife"], "full_loot": false}, "lawless", 0)["retrieved"]), true, "explicit full_loot=false -> owner may retrieve even in a lawless zone (stamp wins)")
+	# owner-retrieval likewise never mutates the source manifest.
+	var own_items := Corpse.loot_for_owner(contested_corpse, "contested", 0)["items"] as Array
+	own_items.append("tampered")
+	_assert_equal((contested_corpse["items"] as Array), ["stimpack"], "owner-retrieval does not mutate the source manifest")
+
 	if _failures.is_empty():
 		print("corpse_decay_model_smoke: OK")
 		quit(0)

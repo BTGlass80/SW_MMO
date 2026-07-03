@@ -2015,19 +2015,27 @@ func submit_loot_corpse(target_character_id: String) -> void:
 	if looter_id == "":
 		return
 	var target := target_character_id.strip_edges()
-	# Self-loot guard (verify: gating-safety, HIGH): compare CANONICAL record identity, not raw ids.
-	# Records/corpses are keyed by the sanitized filename, but account_id is only strip_edges'd at
-	# registration — so two distinct raw ids can resolve to the SAME record file. A raw-string check
-	# ("target == looter_id") is bypassable: a player could name a target that sanitizes to their own
-	# corpse and recover their own full-loot drops, defeating the DIV-0006/0019 death penalty.
-	if target == "" or store.record_path(target) == store.record_path(looter_id):
+	if target == "":
 		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "no_corpse", "items": [], "target": target})
 		return
-	var victim := _cached_load(target)
-	if victim.is_empty():
+	# Owner-retrieval vs third-party loot (DIV-0006/0019, audit fix 2026-07-03). A SELF-loot is NO LONGER
+	# rejected outright — it routes to CorpseDecay.loot_for_owner: a CONTESTED corpse ("decays, owner-
+	# retrieval only") is the owner's to reclaim within the 2h window; a LAWLESS full-loot corpse is FORFEIT
+	# (the DIV-0019 penalty stands, up for grabs by third parties); secured drops no body. Identity is
+	# compared on the CANONICAL record path, not raw ids (two distinct raw ids can sanitize to the SAME file
+	# — a raw-string check would be bypassable), but loot_for_owner forfeits full-loot corpses so the self
+	# path can never be abused to self-recover a lawless drop. Without this the contested drop was
+	# unrecoverable by ANYONE (third party -> "protected", owner -> blocked) and silently decayed = deleted.
+	var is_self := store.record_path(target) == store.record_path(looter_id)
+	# The corpse manifest lives on the CORPSE OWNER's record: the looter's OWN record for a self-retrieval
+	# (target sanitizes to looter_id's file), else the target's. Loading via the canonical owner id keeps the
+	# self case a SINGLE record (looter == owner) so the grant + manifest-null never race two cached copies.
+	var owner_id := looter_id if is_self else target
+	var owner_rec := _cached_load(owner_id)
+	if owner_rec.is_empty():
 		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "no_corpse", "items": [], "target": target})
 		return
-	var world_hooks: Dictionary = victim.get("world_hooks", {})
+	var world_hooks: Dictionary = owner_rec.get("world_hooks", {})
 	var manifest = world_hooks.get("corpse", null)
 	if typeof(manifest) != TYPE_DICTIONARY:
 		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "no_corpse", "items": [], "target": target})
@@ -2039,29 +2047,36 @@ func submit_loot_corpse(target_character_id: String) -> void:
 	if not _within_loot_range(sender, manifest):
 		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "out_of_range", "items": [], "target": target})
 		return
-	# The pure model is the ONLY authority on WHETHER + WHAT a third party may take.
-	var tier := _corpse_tier(target, manifest)
+	# The pure model is the ONLY authority on WHETHER + WHAT may be taken — by tier, elapsed, and who asks.
+	var tier := _corpse_tier(owner_id, manifest)
 	var elapsed := int(Time.get_unix_time_from_system() - float((manifest as Dictionary).get("decay_unix", 0.0)))
-	var result: Dictionary = CorpseDecay.loot_for_third_party(manifest, tier, elapsed)
-	if not bool(result.get("looted", false)):
+	var result: Dictionary = CorpseDecay.loot_for_owner(manifest, tier, elapsed) if is_self else CorpseDecay.loot_for_third_party(manifest, tier, elapsed)
+	if not (bool(result.get("retrieved", false)) or bool(result.get("looted", false))):
 		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": String(result.get("reason", "")), "items": [], "target": target})
 		return
 	var items: Array = result.get("items", [])
-	# Transfer the dropped set into the looter's inventory. credits is ALWAYS 0 (DIV-0006) — never moved.
+	# Transfer the dropped set into the LOOTER's inventory (credits ALWAYS 0 — DIV-0006 keeps them). For a
+	# self-retrieval owner_id == looter_id, so owner_rec IS this same cached record: grant + null on the ONE
+	# record and save once. For a third party, grant on the looter, then null the victim's manifest separately.
 	var looter := _cached_load(looter_id)
 	if looter.is_empty():
 		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "no_corpse", "items": [], "target": target})
 		return
 	looter["sheet"] = EconomyModel.grant_items(looter.get("sheet", {}), items)
-	_cached_save(looter_id, looter)
-	# NULL the victim manifest + de-index so a second attempt sees no_corpse (single-threaded per tick).
-	world_hooks["corpse"] = null
-	victim["world_hooks"] = world_hooks
-	_cached_save(target, victim)
-	_corpses.erase(target)
+	if is_self:
+		var lh: Dictionary = looter.get("world_hooks", {})
+		lh["corpse"] = null
+		looter["world_hooks"] = lh
+		_cached_save(looter_id, looter)
+	else:
+		_cached_save(looter_id, looter)
+		world_hooks["corpse"] = null
+		owner_rec["world_hooks"] = world_hooks
+		_cached_save(owner_id, owner_rec)
+	_corpses.erase(owner_id)
 	_push_sheet(sender, looter)  # refresh the looter's sheet panel with the transferred items
-	print("[corpse] peer %d (%s) looted %s's lawless corpse: %d item(s) %s" % [sender, looter_id, target, items.size(), str(items)])
-	loot_corpse_result.rpc_id(sender, {"ok": true, "reason": "looted", "items": items, "target": target})
+	print("[corpse] peer %d (%s) %s %s corpse (%s): %d item(s) %s" % [sender, looter_id, ("retrieved own" if is_self else "looted"), tier, String(result.get("reason", "")), items.size(), str(items)])
+	loot_corpse_result.rpc_id(sender, {"ok": true, "reason": String(result.get("reason", "")), "items": items, "target": target})
 
 # server -> client: the outcome of a corpse-loot attempt (reasons: looted / no_corpse / protected /
 # expired / out_of_range).
