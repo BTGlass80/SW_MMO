@@ -1,7 +1,7 @@
 extends SceneTree
 ## Drift guard: data/schemas/player_persistence.schema.json must declare EVERY top-level key the live
 ## save path can write (the root is additionalProperties:false). This caught real drift: the code
-## persists top-level `zone` (submit_change_zone, DIV-0014) + `account_secret` (register_account, E26)
+## persists top-level `zone` (submit_change_zone, DIV-0014) + `secret_salt`/`secret_hash` (register_account, G8)
 ## that the schema previously forbade. The test fails the gate if a future field is added to the
 ## record without being declared in the schema, OR if a schema-required root field is dropped from
 ## default_record — keeping the persistence contract honest until the planned accounts/SQLite shape.
@@ -35,7 +35,8 @@ func _init() -> void:
 	var store = PersistenceStore.new("user://schema_test")
 	var record: Dictionary = store.default_record("char_x", "acct_x", "Tester", Vector3(1, 1.2, 2))
 	record["zone"] = "tatooine.dune_sea"               # submit_change_zone (DIV-0014)
-	record["account_secret"] = "abc123"                # register_account (E26)
+	record["secret_salt"] = "0011223344556677"         # register_account (G8 salted-hash-at-rest)
+	record["secret_hash"] = "deadbeef"                 # register_account (G8 salted-hash-at-rest)
 	record["last_saved_unix"] = 0.0                    # stamped on save (F56 atomic write)
 	record["org"] = {"faction_id": "org_hutt_cartel"}  # build.org / loaded membership
 	record["city_role"] = null                         # loaded city role (may be null)
@@ -47,9 +48,13 @@ func _init() -> void:
 	# Every top-level key the code produced MUST be declared in the schema (additionalProperties:false).
 	for key in record:
 		_assert_true(declared.has(key), "live record key '%s' is declared in the schema" % String(key))
-	# The two fields that drifted are explicitly covered.
+	# The fields the live save path writes are explicitly covered.
 	_assert_true(declared.has("zone"), "schema declares the live `zone` field")
-	_assert_true(declared.has("account_secret"), "schema declares the `account_secret` field")
+	_assert_true(declared.has("secret_salt"), "schema declares the `secret_salt` field (G8)")
+	_assert_true(declared.has("secret_hash"), "schema declares the `secret_hash` field (G8)")
+	# The pre-G8 plaintext field is kept in the schema (deprecated) for legacy-record validation,
+	# but the current server NEVER writes it — assert the live record does not carry it.
+	_assert_true(not record.has("account_secret"), "live record no longer writes plaintext account_secret (G8)")
 
 	# Every schema-required root key MUST be produced by a fresh default_record (a new char conforms).
 	var base: Dictionary = store.default_record("char_y", "acct_y", "Base", Vector3.ZERO)

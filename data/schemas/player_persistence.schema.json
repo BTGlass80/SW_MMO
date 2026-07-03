@@ -20,11 +20,13 @@
   "properties": {
     "schema_version": {"type": "integer", "const": 1},
     "character_id": {"type": "string", "description": "Stable character id (primary key)."},
-    "account_id": {"type": "string", "description": "Owning account. One account may own multiple characters. Account auth WILL live in a separate accounts table; until then the bound secret is stored here as account_secret (E26 deviation)."},
+    "account_id": {"type": "string", "description": "Owning account. One account may own multiple characters. Account auth WILL live in a separate accounts table; until then the bound secret is stored here as a salted hash (secret_salt/secret_hash, G8; pre-G8 records used plaintext account_secret)."},
     "name": {"type": "string", "description": "Display name. Matches world_state.gd player['name'].", "examples": ["Spacer-12", "Vask Tann"]},
     "species": {"type": "string", "examples": ["Human", "Twi'lek", "Rodian"]},
     "zone": {"type": "string", "description": "Live CURRENT zone (last-traveled). Updated by submit_change_zone and restored on login (DIV-0014); position.zone_id remains the chargen/default spawn zone. Distinct from position.zone_id until the planned accounts/zone refactor unifies them.", "examples": ["tatooine.dune_sea"]},
-    "account_secret": {"type": "string", "description": "E26 single-file-persistence deviation: the bound account secret (set on first claim, checked on re-auth). Properly belongs in the accounts table (see PERSISTENCE_DESIGN); stored on the character record until that table exists."},
+    "account_secret": {"type": "string", "deprecated": true, "description": "DEPRECATED (pre-G8 plaintext). Legacy records may still carry the bound account secret in plaintext; the current server NEVER writes this field — on the first successful login it is verified once, then migrated in place to the salted-hash pair (secret_salt/secret_hash) and erased. Kept in the schema only so pre-migration legacy records still validate."},
+    "secret_salt": {"type": "string", "description": "G8 salted-hash-at-rest: per-account random salt (lowercase hex) drawn by the server's Crypto CSPRNG on first claim. Paired with secret_hash; replaces the plaintext account_secret. Properly belongs in the accounts table (see PERSISTENCE_DESIGN); stored on the character record until that table exists."},
+    "secret_hash": {"type": "string", "description": "G8 salted-hash-at-rest: lowercase-hex SHA-256(secret_salt + account secret), checked on re-auth by recompute-and-compare. Never the plaintext secret. Set on first claim of a non-empty secret and on the one-time legacy-plaintext migration."},
     "position": {
       "type": "object",
       "description": "Last authoritative position. Server owns truth (world_state.gd never trusts client position). On login the server spawns the character here (or at a safe fallback if the zone is unavailable).",

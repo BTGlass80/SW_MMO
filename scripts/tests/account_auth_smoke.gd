@@ -1,23 +1,28 @@
 extends SceneTree
-## Headless smoke for the pure account-auth + rate-limit helpers (E26). Verifies the
-## ownership-secret guard (claim/match/mismatch/backward-compat) and the token-bucket
-## refill+consume with an explicit clock.
+## Headless smoke for the pure account-auth + rate-limit helpers (E26; salted-hash-at-rest G8).
+## Verifies the ownership-secret guard on the G8 `verify` API (claim/match/mismatch/backward-compat,
+## no plaintext at rest) and the token-bucket refill+consume with an explicit clock. The dedicated
+## hash+verify+migration coverage lives in auth_hash_smoke.
 
 const Auth := preload("res://scripts/net/account_auth_model.gd")
 
 var _failures: Array[String] = []
 
 func _init() -> void:
-	# --- check_secret ---
-	var claim: Dictionary = Auth.check_secret("", "tok123")
-	_assert_true(bool(claim["ok"]) and String(claim["secret"]) == "tok123", "unsecured account is claimed by the provided secret")
-	var match_ok: Dictionary = Auth.check_secret("tok123", "tok123")
-	_assert_true(bool(match_ok["ok"]) and String(match_ok["secret"]) == "tok123", "matching secret accepted, secret preserved")
-	var mismatch: Dictionary = Auth.check_secret("tok123", "wrong")
+	# --- verify: claim / match / mismatch / backward-compat, salted-hash-at-rest ---
+	var claim: Dictionary = Auth.verify({}, "tok123")
+	_assert_true(bool(claim["ok"]) and bool(claim["changed"]), "unsecured account is claimed by the provided secret (and upgraded)")
+	var fields: Dictionary = claim["fields"]
+	_assert_true(String(fields.get("secret_salt", "")) != "" and String(fields.get("secret_hash", "")) != "", "claim stores a salt + hash, not plaintext")
+	_assert_true(String(fields.get("secret_hash", "")) != "tok123", "stored digest is not the plaintext secret")
+	var secured := {"secret_salt": String(fields["secret_salt"]), "secret_hash": String(fields["secret_hash"])}
+	var match_ok: Dictionary = Auth.verify(secured, "tok123")
+	_assert_true(bool(match_ok["ok"]) and not bool(match_ok["changed"]), "matching secret accepted, no rewrite")
+	var mismatch: Dictionary = Auth.verify(secured, "wrong")
 	_assert_true(not bool(mismatch["ok"]) and String(mismatch["reason"]) == "bad_secret", "wrong secret rejected (bad_secret)")
-	var open_acct: Dictionary = Auth.check_secret("", "")
-	_assert_true(bool(open_acct["ok"]) and String(open_acct["secret"]) == "", "unsecured + no secret stays open (backward compatible)")
-	var secured_no_secret: Dictionary = Auth.check_secret("tok123", "")
+	var open_acct: Dictionary = Auth.verify({}, "")
+	_assert_true(bool(open_acct["ok"]) and (open_acct["fields"] as Dictionary).is_empty() and not bool(open_acct["changed"]), "unsecured + no secret stays open (backward compatible)")
+	var secured_no_secret: Dictionary = Auth.verify(secured, "")
 	_assert_true(not bool(secured_no_secret["ok"]), "a secured account rejects an empty secret")
 
 	# --- consume_token (token bucket) ---

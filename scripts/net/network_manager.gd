@@ -221,6 +221,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	_server_rng.randomize()
 	_telemetry = TelemetryLog.new()  # Wave G/Seam 5: one server-owned JSONL writer under user://telemetry/events.jsonl
 	print("[net] server listening on port %d (combat window %.1fs)" % [port, combat_window_seconds])
+	print("[net] DEV TRANSPORT: unencrypted ENet — LAN/playtest only, do not expose to the internet")
 	server_started.emit(port)
 	return OK
 
@@ -301,6 +302,7 @@ func _on_peer_disconnected(id: int) -> void:
 func _on_connected() -> void:
 	connected = true
 	print("[net] connected to server as peer %d" % local_peer_id())
+	print("[net] DEV TRANSPORT: unencrypted ENet — LAN/playtest only, do not expose to the internet")
 	client_connected.emit()
 
 func _on_connection_failed() -> void:
@@ -407,11 +409,12 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 	var character_id := account_id.strip_edges()
 	if character_id == "":
 		character_id = "peer_%d" % sender
-	# E26 ownership guard: present the matching account_secret (if the record has one)
-	# BEFORE loading/overwriting this character. An unsecured account is claimed by the
-	# provided secret; a wrong secret is rejected without touching the character.
+	# E26 ownership guard (G8: salted-hash-at-rest): present the matching account secret (if the
+	# record has one) BEFORE loading/overwriting this character. An unsecured account is claimed by
+	# the provided secret; a wrong secret is rejected without touching the character. A legacy
+	# plaintext record verifies once then upgrades in place to a salted hash (auth["changed"]).
 	var record := _cached_load(character_id)
-	var auth: Dictionary = Auth.check_secret(String(record.get("account_secret", "")), String(build.get("secret", "")))
+	var auth: Dictionary = Auth.verify(record, String(build.get("secret", "")))
 	if not bool(auth["ok"]):
 		print("[auth] peer %d denied for %s (%s)" % [sender, character_id, String(auth["reason"])])
 		auth_result.rpc_id(sender, {"ok": false, "reason": String(auth["reason"]), "account_id": character_id})
@@ -466,10 +469,12 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 		record = _create_character(character_id, chosen_name, build)  # new char: run chargen
 	else:
 		record["name"] = chosen_name
-	# E26: bind/persist the account secret on the record (the first claim writes it).
-	var new_secret := String(auth["secret"])
-	if String(record.get("account_secret", "")) != new_secret:
-		record["account_secret"] = new_secret
+	# E26/G8: bind/persist the account secret on the record as a SALTED HASH (never plaintext).
+	# `changed` is true on the first claim of an unsecured account with a non-empty secret AND on
+	# the one-time legacy-plaintext -> salted-hash migration; apply_auth also strips any legacy
+	# `account_secret` field so plaintext never survives a write.
+	if bool(auth.get("changed", false)):
+		Auth.apply_auth(record, auth.get("fields", {}))
 		_cached_save(character_id, record)
 	# Optional org membership (TEST-ONLY affordance on the build dict, gated by allow_test_org):
 	# set the persisted record.org and seed the org's territory influence in the player's current

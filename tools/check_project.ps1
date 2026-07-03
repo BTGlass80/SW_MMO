@@ -269,6 +269,8 @@ Invoke-GodotStep "Named NPC flow smoke:" @("--headless", "--path", $projectRoot,
 
 Invoke-GodotStep "Dialogue NPC smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/dialogue_npc_smoke.gd")
 
+Invoke-GodotStep "Auth hash smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/auth_hash_smoke.gd")
+
 # Not-before-live invariant (owner ruling 2026-07-03): pure models + design docs for
 # siege / player-cities / server-space are PERMITTED (they live in scripts/rules + docs);
 # their HOT wiring (files or preloads in scripts/net) is PARKED until the ground loop

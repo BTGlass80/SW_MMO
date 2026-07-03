@@ -26,9 +26,9 @@ func _register(st: Dictionary, sender: int, character_id: String, build: Diction
 	st["budgets"][sender] = rl["budget"]
 	if not bool(rl["allowed"]):
 		return {"ok": false, "reason": "rate_limited"}
-	# 2. auth: present the matching secret BEFORE loading/overwriting/binding.
+	# 2. auth: present the matching secret BEFORE loading/overwriting/binding (G8 salted-hash-at-rest).
 	var record: Dictionary = (st["records"].get(character_id, {}) as Dictionary).duplicate(true)
-	var auth: Dictionary = Auth.check_secret(String(record.get("account_secret", "")), String(build.get("secret", "")))
+	var auth: Dictionary = Auth.verify(record, String(build.get("secret", "")))
 	if not bool(auth["ok"]):
 		return {"ok": false, "reason": String(auth["reason"])}
 	# 3. single-session lock: another CONNECTED peer must not already own this character.
@@ -39,9 +39,10 @@ func _register(st: Dictionary, sender: int, character_id: String, build: Diction
 	#     (else A's live position/combat, persisted only by _save_peer keyed on peer_characters, is lost).
 	if st["peer_characters"].has(sender) and String(st["peer_characters"][sender]) != character_id:
 		_save_peer(st, sender)
-	# 4. bind + persist secret.
+	# 4. bind + persist secret as a SALTED HASH (never plaintext); migrate a legacy record in place.
 	st["peer_characters"][sender] = character_id
-	record["account_secret"] = String(auth["secret"])
+	if bool(auth.get("changed", false)):
+		Auth.apply_auth(record, auth.get("fields", {}))
 	# Optional org from the build (test affordance); else the record keeps whatever it loaded.
 	var build_org: Dictionary = build.get("org", {})
 	if not build_org.is_empty() and String(build_org.get("faction_id", "")) != "":
@@ -80,20 +81,30 @@ func _init() -> void:
 
 	# --- Auth precedence ---
 	var st: Dictionary = _fresh_state()
-	# Fresh unsecured account is claimed by the provided secret, which is bound to the record.
+	# Fresh unsecured account is claimed by the provided secret, bound to the record as a SALTED
+	# HASH (G8) — no plaintext at rest, and the digest is not the plaintext secret.
 	_assert_true(bool(_register(st, 10, "alice", {"secret": "swordfish"}, 0)["ok"]), "fresh unsecured claim -> ok")
-	_assert_equal(String((st["records"]["alice"] as Dictionary).get("account_secret", "")), "swordfish", "secret bound on first claim")
-	# A later session with the WRONG secret is denied bad_secret and does NOT bind the peer.
+	var alice_rec: Dictionary = st["records"]["alice"]
+	_assert_true(not alice_rec.has("account_secret"), "no plaintext account_secret stored on first claim (G8)")
+	_assert_true(String(alice_rec.get("secret_salt", "")) != "" and String(alice_rec.get("secret_hash", "")) != "", "salt + hash bound on first claim")
+	_assert_true(String(alice_rec.get("secret_hash", "")) != "swordfish", "stored digest is not the plaintext secret")
+	# A later session with the WRONG secret re-verifies against the stored hash, is denied
+	# bad_secret, and does NOT bind the peer.
 	var bad: Dictionary = _register(st, 11, "alice", {"secret": "guess"}, 0)
 	_assert_equal(String(bad["reason"]), "bad_secret", "wrong secret -> bad_secret")
 	_assert_true(not st["peer_characters"].has(11), "denied auth never binds the peer")
 
-	# --- Auth BEFORE the single-session lock: a wrong secret reports bad_secret even when a
-	#     session conflict also exists (auth is checked first). ---
+	# --- LEGACY plaintext migration + auth BEFORE the single-session lock: a legacy plaintext record
+	#     verifies once against the plaintext, then upgrades in place to a salted hash; and a wrong
+	#     secret reports bad_secret even when a session conflict also exists (auth is checked first). ---
 	var st2: Dictionary = _fresh_state()
-	(st2["records"] as Dictionary)["vault"] = {"account_secret": "key"}
-	_assert_true(bool(_register(st2, 20, "vault", {"secret": "key"}, 0)["ok"]), "owner binds secured char")
+	(st2["records"] as Dictionary)["vault"] = {"account_secret": "key"}  # pre-G8 legacy record on disk
+	_assert_true(bool(_register(st2, 20, "vault", {"secret": "key"}, 0)["ok"]), "legacy plaintext verifies once")
+	var vault_rec: Dictionary = st2["records"]["vault"]
+	_assert_true(not vault_rec.has("account_secret"), "legacy plaintext ERASED after first successful login (G8 migration)")
+	_assert_true(String(vault_rec.get("secret_salt", "")) != "" and String(vault_rec.get("secret_hash", "")) != "", "legacy record upgraded to salt + hash")
 	_assert_equal(String(_register(st2, 21, "vault", {"secret": "nope"}, 0)["reason"]), "bad_secret", "auth precedes lock (bad_secret, not already_logged_in)")
+	_assert_true(bool(_register(st2, 20, "vault", {"secret": "key"}, 0)["ok"]), "migrated record still accepts the right secret via the hash path")
 
 	# --- Single-session lock (BUG #2) ---
 	var st3: Dictionary = _fresh_state()
