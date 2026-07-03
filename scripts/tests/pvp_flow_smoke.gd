@@ -53,6 +53,12 @@ func _init() -> void:
 	_assert_true(b_max >= CombatArena.DISABLED_SEVERITY, "PvP drives the victim PAST the sparring cap (>= 3) — the clamp is bypassed")
 	_assert_true(saw_pvp, "a PvP shot yields a pvp-tagged envelope")
 	_assert_true(saw_casualty and casualty_sev >= CombatArena.DISABLED_SEVERITY, "a downed/killed victim is reported as a casualty")
+	# G2 wiring proof (DIV-0006/0019): the victim was driven down THROUGH the WEG ladder — the escalate()
+	# seam populated a real disabled-tier LEVEL string on the player's live state. The old highest-hit-wins
+	# path never wrote player_wound_level, so this asserts the new accumulation code path actually ran.
+	var victim_level := String(a.player_state(3).get("player_wound_level", ""))
+	_assert_true(victim_level in ["incapacitated", "mortally_wounded", "dead"],
+		"a downed PvP victim carries a disabled-tier wound LEVEL from escalate() (got '%s')" % victim_level)
 
 	# 19: resolve-time gate DROPS an unauthorized shot — B is untouched AND it does NOT fall through to the dummy.
 	var g := _arena()
