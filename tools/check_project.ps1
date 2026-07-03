@@ -123,6 +123,8 @@ Invoke-GodotStep "Quest model smoke:" @("--headless", "--path", $projectRoot, "-
 
 Invoke-GodotStep "Quest model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/quest_model_edge_smoke.gd")
 
+Invoke-GodotStep "Quest live-flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/quest_live_flow_smoke.gd")
+
 Invoke-GodotStep "Creature spawn model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_spawn_model_smoke.gd")
 
 Invoke-GodotStep "Vendor model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/vendor_model_smoke.gd")

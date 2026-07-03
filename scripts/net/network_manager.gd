@@ -35,6 +35,7 @@ const CreatureSpawn := preload("res://scripts/rules/creature_spawn_model.gd") # 
 const DeathPenalty := preload("res://scripts/rules/death_penalty_model.gd")   # DIV-0006: death penalty + respawn
 const ForceAwaken := preload("res://scripts/rules/force_awakening_model.gd")   # DIV-0011: SWG-Village earned unlock
 const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")            # DIV-0019: zone-based PvP consent gate
+const QuestModel := preload("res://scripts/rules/quest_model.gd")              # DIV-0020: accepted quests + progress + reward
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -43,6 +44,7 @@ const ARMOR_DATA_PATH := "res://data/armor_clone_wars.json"
 const CREATURES_DATA_PATH := "res://data/creatures_clone_wars.json"
 const VENDOR_STOCK_PATH := "res://data/vendor_stock_by_zone.json"  # per-zone vendor variety (overnight C1)
 const NPCS_DATA_PATH := "res://data/npcs_clone_wars.json"  # named NPCs (overnight C1) placed per zone
+const QUESTS_DATA_PATH := "res://data/quests_clone_wars.json"  # DIV-0020: quest defs — notice board + rewards
 const HOSTILE_DISTANCE := 10.0  # DIV-0017: nominal engagement range for a spawned hostile creature
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 const DISABLE_INFLUENCE := 5  # Director zone-influence a disable feeds to the shooter's faction axis (owner-tunable)
@@ -90,6 +92,8 @@ signal died(notice: Dictionary)             # DIV-0006: this client was killed +
 signal insurance_replied(result: Dictionary) # DIV-0006: buy-insurance outcome
 signal force_awakened_replied(notice: Dictionary) # DIV-0011: this client's Force sensitivity awakened
 signal fire_rejected(result: Dictionary)    # DIV-0019: a PvP fire intent was refused (zone/consent)
+signal quests_updated(quests: Dictionary)   # DIV-0020: this client's live quest progress changed
+signal quest_catalog_received(defs: Dictionary) # DIV-0020: the available-quest catalog (notice board)
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -107,6 +111,7 @@ var _creature_spawn = null            # server only (CreatureSpawn instance: see
 var _creatures_data := {}             # server only (creatures container for the spawner)
 var _vendor_stock_by_zone := {}       # server only (zone_id -> {item_keys:[...]}) per-zone vendor variety
 var _named_npcs_by_zone := {}         # server only (zone_id -> [named-NPC snapshot entries w/ deterministic pos])
+var _quest_defs := {}                 # server only (DIV-0020: quest_id -> def; the notice-board catalog)
 var force_hostile_key := ""           # TEST-ONLY: force this creature key to spawn in lethal zones (--force-hostile)
 var force_awaken_now := false         # TEST-ONLY: force a connected latent to awaken next Director tick (--force-awaken)
 var _visited_zones := {}              # DIV-0011: character_id -> {zone_id:true} for the distinct-zones awakening signal
@@ -127,6 +132,8 @@ var _armor_catalog := {}              # server only (armor key -> stats; for equ
 var last_snapshot: Dictionary = {}    # client view of the world
 var last_wallet: Dictionary = {}      # client view of its own CP wallet
 var last_credits: int = 0             # client view of its own credit balance (Wave F economy)
+var last_quests: Dictionary = {}      # client view of its own quest progress (DIV-0020)
+var quest_catalog: Dictionary = {}    # client view of the quest catalog / notice board (DIV-0020)
 var connected: bool = false           # client: handshake complete
 
 var _server_accum := 0.0
@@ -189,6 +196,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	_creatures_data = _load_json_root(CREATURES_DATA_PATH)  # DIV-0017: hostile spawn source
 	_vendor_stock_by_zone = _load_json_container(VENDOR_STOCK_PATH, "vendor_stock_by_zone")  # per-zone vendor variety
 	_load_named_npcs()  # named NPCs placed per zone (broadcast in the snapshot for client rendering)
+	_quest_defs = QuestModel.defs_from_data(_load_json_root(QUESTS_DATA_PATH))  # DIV-0020: notice-board quest catalog
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
@@ -479,6 +487,7 @@ func register_account(account_id: String, display_name: String = "", build: Dict
 		String((record.get("sheet", {}) as Dictionary).get("equipment", {}).get("weapon", "?"))])
 	_push_sheet(sender, record)  # F24: send the character sheet to the client's sheet panel
 	apply_credits.rpc_id(sender, int((record.get("sheet", {}) as Dictionary).get("credits", 0)))  # Wave F: show the wallet on login
+	_push_quests(sender, record)  # DIV-0020: quest catalog (notice board) + this player's live progress
 
 func send_register(account_id: String, display_name: String = "", build: Dictionary = {}) -> void:
 	if mode == Mode.CLIENT and connected:
@@ -506,6 +515,7 @@ func _create_character(character_id: String, display_name: String, build: Dictio
 		sheet["wound_state"] = start_wound
 	record["sheet"] = sheet
 	record["species"] = species_key
+	record["quests"] = QuestModel.initial_quests()  # DIV-0020: empty accepted-quest block
 	_cached_save(character_id, record)
 	print("[chargen] created %s species=%s dex=%s cp=%d" % [
 		character_id, species_key,
@@ -797,6 +807,7 @@ func submit_change_zone(zone_id: String) -> void:
 	if not record.is_empty():
 		record["zone"] = zone_id  # persist so the next login restores this zone
 		_cached_save(character_id, record)
+	_feed_quest_event(sender, {"type": "travel", "zone_id": zone_id})  # DIV-0020: reach_zone objectives
 	_refresh_peer_hostility(sender)  # DIV-0017: engage/disengage the destination zone's hostile immediately
 	if not _visited_zones.has(character_id):
 		_visited_zones[character_id] = {}
@@ -1097,6 +1108,8 @@ func _award_credits(peer_id: int, amount: int) -> void:
 		apply_credits.rpc_id(peer_id, credits)
 		_push_sheet(peer_id, record)
 	print("[credits] peer %d %+d -> %d" % [peer_id, amount, credits])
+	if amount > 0:
+		_feed_quest_event(peer_id, {"type": "credits", "amount": amount})  # DIV-0020: earn_credits objectives
 
 # server -> client: the player's authoritative credit balance
 @rpc("authority", "call_remote", "reliable")
@@ -1264,6 +1277,118 @@ func _award_cp(peer_id: int, track: String, amount: int) -> void:
 	print("[cp] peer %d +%d %s (wallet g=%d r=%d)" % [peer_id, amount, track, int(wallet.get("gameplay_cp", 0)), int(wallet.get("rp_cp", 0))])
 	apply_wallet.rpc_id(peer_id, wallet)
 	_push_sheet(peer_id, record)  # F30: keep the character sheet panel's CP wallet current after a CP award
+
+# --- DIV-0020: quests (accept / progress / claim) -----------------------------------------------
+# record["quests"] (quest_id -> {progress, complete, claimed}) is the live state; QuestModel is the
+# pure, non-mutating authority. Progress is fed from live play (hostile disables, zone travel, credit
+# gains). Every mutator uses QuestModel's RETURN value (the model duplicates, never aliases the arg).
+
+# The player's quest block, backfilling a legacy record that predates quests so returning players get it.
+func _record_quests(record: Dictionary) -> Dictionary:
+	var q: Variant = record.get("quests", null)
+	return q if typeof(q) == TYPE_DICTIONARY else QuestModel.initial_quests()
+
+# Feed one play EVENT into a peer's accepted quests; persist + push only if something actually changed.
+func _feed_quest_event(peer_id: int, event: Dictionary) -> void:
+	if store == null or _quest_defs.is_empty():
+		return
+	var character_id := String(_peer_characters.get(peer_id, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var before: Dictionary = _record_quests(record)
+	var after: Dictionary = QuestModel.record_event(before, _quest_defs, event)
+	if after == before:
+		return  # nothing accepted cares about this event — no write, no push
+	record["quests"] = after
+	_cached_save(character_id, record)
+	if mode == Mode.SERVER:
+		apply_quests.rpc_id(peer_id, after)
+
+# Send the quest catalog (notice board) + this player's live progress on login/register.
+func _push_quests(peer_id: int, record: Dictionary) -> void:
+	if mode != Mode.SERVER:
+		return
+	apply_quest_catalog.rpc_id(peer_id, _quest_defs)
+	apply_quests.rpc_id(peer_id, _record_quests(record))
+
+# client -> server: accept a quest from the notice board (idempotent — keeps existing progress).
+@rpc("any_peer", "call_remote", "reliable")
+func submit_accept_quest(quest_id: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	if not _quest_defs.has(quest_id):
+		return  # unknown quest id — ignore
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var after: Dictionary = QuestModel.accept(_record_quests(record), quest_id)
+	record["quests"] = after
+	_cached_save(character_id, record)
+	print("[quest] peer %d accepted %s" % [sender, quest_id])
+	apply_quests.rpc_id(sender, after)
+
+# client -> server: claim a COMPLETED quest's one-time reward (credits + CP).
+@rpc("any_peer", "call_remote", "reliable")
+func submit_claim_quest(quest_id: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var result: Dictionary = QuestModel.claim(_record_quests(record), _quest_defs, quest_id)
+	if not bool(result.get("ok", false)):
+		return  # not complete / already claimed / unknown — no-op (no double reward)
+	# Persist the CLAIM first, THEN award — each award does its own load/save on the persisted record,
+	# so nothing clobbers a stale copy (the claimed quest is already `claimed`, so a credit-reward feed
+	# skips it and only advances OTHER accepted earn_credits quests).
+	record["quests"] = result.get("quests", {})
+	_cached_save(character_id, record)
+	var reward: Dictionary = result.get("reward", {})
+	var cp := int(reward.get("cp", 0))
+	var credits := int(reward.get("credits", 0))
+	if cp > 0:
+		_award_cp(sender, "gameplay", cp)   # quest reward -> gameplay CP track
+	if credits > 0:
+		_award_credits(sender, credits)     # quest reward -> wallet (may advance earn_credits quests)
+	print("[quest] peer %d claimed %s (+%d cr, +%d cp)" % [sender, quest_id, credits, cp])
+	# Push the FINAL state (reload — the credit reward's feed may have advanced other quests).
+	apply_quests.rpc_id(sender, _record_quests(_cached_load(character_id)))
+
+# server -> client: the full quest catalog (notice-board content: id/name/description/objective/reward/giver).
+@rpc("authority", "call_remote", "reliable")
+func apply_quest_catalog(defs: Dictionary) -> void:
+	quest_catalog = defs
+	quest_catalog_received.emit(defs)
+
+# server -> client: this client's authoritative quest progress (login + on change).
+@rpc("authority", "call_remote", "reliable")
+func apply_quests(quests: Dictionary) -> void:
+	last_quests = quests
+	quests_updated.emit(quests)
+
+# client -> server senders
+func send_accept_quest(quest_id: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_accept_quest.rpc_id(1, quest_id)
+
+func send_claim_quest(quest_id: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_claim_quest.rpc_id(1, quest_id)
 
 # E24: accrue Director zone-influence from a player action onto the player's faction
 # axis in their current zone. Buffered in _pending_zone_influence (the E8 model) and
@@ -1896,6 +2021,8 @@ func _resolve_combat_window() -> void:
 					_award_credits(shooter, loot_credits)
 				print("[loot] peer %d looted %s: %d credits (%d + salvage %d)" % [
 					shooter, String(spawn.get("name", tkey)), loot_credits, int(loot.get("credits", 0)), int(loot.get("salvage_credits", 0))])
+				# DIV-0020: a disabled HOSTILE creature advances disable objectives (creature_key narrows the targeted ones).
+				_feed_quest_event(shooter, {"type": "disable", "creature_key": String(spawn.get("creature_key", ""))})
 				arena.remove_hostile_target(tkey)  # a fresh hostile may spawn next Director tick
 		# A LETHAL hit that took the SHOOTER out (creature or PvP return fire) is a death.
 		if bool(envelope.get("lethal", false)) and arena.has_player(shooter):

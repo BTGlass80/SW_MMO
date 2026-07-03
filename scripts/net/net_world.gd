@@ -89,6 +89,12 @@ var _heal_accum := 0.0
 var _travel := ""            # headless DIV-0014 test: travel to this zone_id once after connecting
 var _travel_sent := false
 var _travel_accum := 0.0
+var _accept_quest := ""      # headless DIV-0020: accept this quest_id once after connecting (before travel)
+var _accept_quest_sent := false
+var _claim_quest := ""       # headless DIV-0020: claim this quest_id once, late (after the objective completes)
+var _claim_quest_sent := false
+var _quest_accum := 0.0
+var _prev_quests: Dictionary = {}   # DIV-0020: last-seen quest block, to toast complete/claim transitions
 var _zone_list: Array = []   # DIV-0014: loaded zones from the snapshot (for the T travel key)
 var _travel_idx := 0
 var _last_zone_name := ""    # log zone CHANGES only
@@ -166,6 +172,8 @@ func _ready() -> void:
 	Net.insurance_replied.connect(_on_insurance_replied)
 	Net.force_awakened_replied.connect(_on_force_awakened)
 	Net.fire_rejected.connect(_on_fire_rejected)
+	Net.quests_updated.connect(_on_quests_updated)          # DIV-0020: live quest progress
+	Net.quest_catalog_received.connect(_on_quest_catalog)   # DIV-0020: notice-board catalog
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -234,6 +242,8 @@ func _parse_args() -> void:
 	_vendor_list_req = args.has("--vendor-list")  # headless Wave F: request the vendor stock once
 	_buy_insurance_req = args.has("--buy-insurance")  # headless Wave F: buy a death-insurance policy once
 	_talk_probe = args.has("--talk")  # headless: talk to the first named NPC once (verifies dialogue)
+	_accept_quest = _arg_value("--accept-quest")  # headless DIV-0020: accept a quest once after connecting
+	_claim_quest = _arg_value("--claim-quest")    # headless DIV-0020: claim a quest once, late
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -299,6 +309,18 @@ func _process(delta: float) -> void:
 		if _travel_accum >= 3.0:  # after register, travel to the requested zone once
 			_travel_sent = true
 			Net.send_change_zone(_travel)
+	# DIV-0020 headless: accept a quest EARLY (before the 3.0s travel arms its reach_zone objective),
+	# then claim it LATE (after the objective completes + the server pushes it back complete).
+	if (_accept_quest != "" or _claim_quest != "") and Net.connected:
+		_quest_accum += delta
+		if _accept_quest != "" and not _accept_quest_sent and _quest_accum >= 2.5:
+			_accept_quest_sent = true
+			Net.send_accept_quest(_accept_quest)
+			print("[quest] client accepting %s" % _accept_quest)
+		if _claim_quest != "" and not _claim_quest_sent and _quest_accum >= 7.0:
+			_claim_quest_sent = true
+			Net.send_claim_quest(_claim_quest)
+			print("[quest] client claiming %s" % _claim_quest)
 	if _say != "" and not _say_sent and Net.connected:
 		_say_accum += delta
 		if _say_accum >= 3.0:  # after register, send one free-text chat line via parse_input
@@ -1139,6 +1161,25 @@ func _on_credits_updated(credits: int) -> void:
 		print("[credits] balance=%d" % credits)
 	if _shop_open and _shop_title != null:  # keep the open shop's credit line live
 		_shop_title.text = "Vendor — Credits: %d" % credits
+
+# DIV-0020: the notice-board quest catalog arrived (login). Client stores it in Net.quest_catalog.
+func _on_quest_catalog(defs: Dictionary) -> void:
+	print("[quest] notice board: %d quests available" % defs.size())
+
+# DIV-0020: this client's authoritative quest progress changed. Toast complete/claim transitions and
+# print a greppable per-quest state line (the full quest panel is a follow-up presentation slice).
+func _on_quests_updated(quests: Dictionary) -> void:
+	for qid in quests:
+		var st: Dictionary = quests[qid]
+		var was: Dictionary = _prev_quests.get(qid, {})
+		var qname := String((Net.quest_catalog.get(qid, {}) as Dictionary).get("name", qid))
+		if bool(st.get("complete", false)) and not bool(was.get("complete", false)):
+			_toast("Quest complete: %s" % qname, Color(0.95, 0.85, 0.35))
+		if bool(st.get("claimed", false)) and not bool(was.get("claimed", false)):
+			_toast("Quest reward claimed: %s" % qname, Color(0.55, 0.90, 0.48))
+		print("[quest] %s progress=%d complete=%s claimed=%s" % [
+			qid, int(st.get("progress", 0)), str(bool(st.get("complete", false))), str(bool(st.get("claimed", false)))])
+	_prev_quests = quests.duplicate(true)
 
 # Wave F economy: the vendor's priced stock. Logs it + shows a compact line on the status bar.
 func _on_vendor_listed(payload: Dictionary) -> void:
