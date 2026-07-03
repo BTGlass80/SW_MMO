@@ -309,17 +309,34 @@ collapse evaluated: CANNOT collapse (different cadence: every-window vs intent-o
 (intended onboarding sparring), **ZERO `Training Silhouette` hits after entering `tatooine.dune_sea`**,
 with live Acklay combat in the log as the positive control. Runtime-error check clean.
 
-### G14 — wounded_twice fights at −1D live; comments claim −2D `[PAR]` — IN FLIGHT (worktree + adversarial verify)
-Level-string penalty plumbing into `resolve_exchange`/`_resolve_return_fire`/G3 defender path
-(`penalty_dice_for_level`, severity-int fallback only where no level exists); live-penalty smoke asserting
-`player_wound_penalty_dice == 2` at wounded_twice; fix the three lying comments; DIV-0008 sentence.
+### G14 — wounded_twice −2D made LIVE `[PAR]` — **DONE (merged `92e255d`+`6c01b62`, adversarially verified)**
+Level-string penalty plumbing at EVERY live derivation site: `resolve_exchange` (player+target),
+`_resolve_full_dodge_exchange`, `_resolve_return_fire` (both sides), the G3 PvP defender path — **plus two
+the adversarial verifier forced**: the G4 incoming-fire path (`resolve_incoming_fire_window`, a wounded_twice
+victim of unprovoked hostile fire now dodges at −2D) and the **heal/recovery seams** (`_live_wound_state`
+level-first, so First Aid treats live wounded_twice at Guide_19 difficulty **14**, not the collapsed 11; the
+natural-recovery write-back no longer re-collapses the tier). `wound_penalty_level_smoke` proves the level
+string is load-bearing (severity int = 2 in every row; only the level moves the penalty 1→2). Three lying
+comments fixed; DIV-0008 updated. **Verifier advisories (follow-up notes):** (a) `resolve_hostile_aggression`
+only refreshes `player_wound_level` when severity strictly advances — an equal-severity unprovoked hit doesn't
+escalate wounded→wounded_twice on that path (the PvP defender path does); fold into the DIV-0008 escalate
+follow-up. (b) solo-space `_crew_wound_penalty_dice` is severity-int only — fine while space is parked; needs
+the same sweep if space ever goes live. (c) no end-to-end NetworkManager First-Aid-at-14 test yet.
 
-### G15 — G12 re-tune to pass its own acceptance instrument `[PAR]` — IN FLIGHT (worktree + adversarial verify)
-Per delta §4 (a–e): lethality-derived tiers (t1 <0.5% out/window, t2 <3%, t3 <20%, t4 ≥20% → acklay/
-mutant_acklay leave default ambient); merdeth-class = boss/event channel, NEVER ambient under any alert;
-kill the loot scale double-dip (one axis: base band × tier mult); `LOOT_TIER_MULT` set so probe cr/min is
-monotone non-decreasing in tier; unknown-alert fail-safe clamp to the safest band + warning; keep the
-probe `_spawn()` threat_tier patch. **Acceptance = a fresh probe table pasted in the drop notes.** DIV-0028 update.
+### G15 — G12 re-tune, probe-accepted `[PAR]` — **DONE (merged `5ef7ae2`+`980ab45`, adversarially verified)**
+All of delta §4 (a–e) landed with the probe RUN as acceptance (full table in the merge commit `107b7bc`):
+20 tier changes from measured lethality (acklay/mutant_acklay → t4, out of default ambient); merdeth/
+krayt_dragon/rancor = t5 `boss:true`, never ambient; ONE loot axis (scale gone from credits);
+`LOOT_TIER_MULT {1,1,3,8,10}` → per-tier mean cr/min monotone (185.6 → 251.4 → 416.0); unknown-alert
+clamps to t2 fail-safe. The verifier's blocking find — the "boss channel" was a documented phantom that
+silently killed `q_krayt_bounty`/`q_rancor_sighting` — was fixed by LANDING the channel: quest-driven
+opt-in `boss_spawn` via `_advance_hostiles` (`boss_spawn_channel_smoke` guards every shipped boss bounty
+end-to-end, anti-vacuous). **Verifier advisories (follow-up notes):** boss spawns are zone-scoped
+(bystanders exposed — acceptable in lethal zones, or a future per-player instance); an active boss bounty
+preempts ambient spawns in that zone; `_active_boss_quest_target_in_zone` reads disk not `_cached_load`
+(correct today, fragile later); draagax/acklay bounties now need escalated alerts; per-creature cr/min is
+non-monotone within tiers (svaper t4 824 cr/min is the outlier — next tuning pass); `_forced_spawn`
+(test-only) doesn't carry threat_tier.
 
 ### G16 — the G6 doc-hygiene tick, for real `[PAR]`
 Gate **prints** smoke + RPC counts (docs say "see gate output" — kills the 59/66/72/111 drift class);
@@ -343,10 +360,10 @@ session log.
    smoke/RPC counts; not-before-live invariant is mechanical — and found `siege_state_model.gd`
    misfiled in `scripts/net` on day one, moved to `scripts/rules`; `tools/telemetry_tally.py` +
    tests; CLAUDE.md/README/SESSION_HANDOFF de-drifted).
-2. **G14 + G15 — IN FLIGHT, CLAIMED by the attended 2026-07-03 session** (parallel worktrees →
-   serial integration on main). **Cron ticks: do NOT start new `[HOT]` work while this claim
-   stands** (G14 touches `combat_arena`/`network_manager`; one-HOT-at-a-time applies across
-   drivers). Small `[PAR]`-only work or nothing.
-3. **PT1 prep track (owner-approved 2026-07-03):** G8 auth/crypto bundle `[HOT]` (salted hash at rest —
-   un-gated by the ruling; DTLS or a "dev transport" banner decision still sized separately), server
-   watchdog, 20-bot headless soak, envelope replay tool. The **PT1 date remains owner-gated.**
+2. ~~G14 + G15~~ **DONE — merged serially (`bf27f1e`, `107b7bc`), gate green each, claim released.**
+3. **PT1 prep track (owner-approved 2026-07-03) — the ACTIVE queue:** G8 auth/crypto bundle `[HOT]`
+   (salted hash at rest — un-gated by the ruling; DTLS or a "dev transport" banner decision still sized
+   separately), server watchdog, 20-bot headless soak, envelope replay tool. The **PT1 date remains
+   owner-gated.** Also queued: the G14/G15 verifier-advisory follow-ups noted above (equal-severity
+   escalation on the hostile-aggression path; a NetworkManager-level wounded_twice First-Aid-at-14 test;
+   `_active_boss_quest_target_in_zone` → `_cached_load`; svaper cr/min outlier).
