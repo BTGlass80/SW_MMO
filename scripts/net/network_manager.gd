@@ -1762,8 +1762,16 @@ func _refresh_peer_hostility(peer_id: int) -> void:
 	if lethal_here and arena.has_hostile_target(zone_id):
 		arena.set_player_target(peer_id, zone_id)
 		arena.set_player_lethal(peer_id, true)
+	elif zone_id == _default_zone and not lethal_here:
+		# G13/G10: the shared training dummy is the SPAWN/spaceport (secured) practice aid — the auto-
+		# fallback ONLY here. Fire on it is capped-CP sparring, no economy faucet (see _resolve_combat_window).
+		arena.set_player_target(peer_id, "")   # "" = the shared training dummy
+		arena.set_player_lethal(peer_id, false)
 	else:
-		arena.set_player_target(peer_id, "")
+		# G13/G10: any OTHER zone with no live hostile -> HOLD FIRE (no target, no dummy fallback). A lawless
+		# zone between hostile spawns is empty: autofire connects with nothing until the Director spawns one,
+		# so a cross-zone autofire bot can no longer farm the spaceport dummy (Fable: 20 hits in 45s).
+		arena.set_player_target(peer_id, CombatArena.HOLD_TARGET)
 		arena.set_player_lethal(peer_id, false)
 
 # G4 (DIV-0017): UNPROVOKED hostile aggression. Runs every COMBAT WINDOW: each ENGAGED, still-alive
@@ -2640,10 +2648,17 @@ func _resolve_combat_window() -> void:
 		var tkey := String(envelope.get("target_key", ""))
 		var target_down := (tkey == "" and dummy_disabled) or (tkey != "" and bool(envelope.get("target_disabled", false)))
 		if target_down:
+			# G13/G10: the shared training dummy is INFINITE sparring practice, NOT a faucet. It pays the
+			# capped gameplay CP (progression practice, bounded by the dual-track cap) and NOTHING that feeds
+			# the world economy — no zone/territory influence, no Force progress. Only a REAL hostile disable
+			# (tkey != "") drives the Director economy, so a cross-zone autofire bot can't farm influence /
+			# territory / Force off the spaceport dummy (Fable measured 20 dummy hits in 45s doing exactly that).
 			_award_cp(shooter, "gameplay", COMBAT_CP_REWARD)
-			_accrue_zone_influence(shooter, DISABLE_INFLUENCE)  # E24: play feeds faction influence
-			_accrue_territory_influence(shooter, KILL_TERRITORY_INFLUENCE)  # earn org territory influence
-			_feed_force_signal(shooter, "disables", 1)  # DIV-0011: a combat disable nudges the track
+			var is_hostile_disable := tkey != ""
+			if is_hostile_disable:
+				_accrue_zone_influence(shooter, DISABLE_INFLUENCE)  # E24: play feeds faction influence
+				_accrue_territory_influence(shooter, KILL_TERRITORY_INFLUENCE)  # earn org territory influence
+				_feed_force_signal(shooter, "disables", 1)  # DIV-0011: a combat disable nudges the track
 			# DIV-0018: a disabled HOSTILE creature drops loot credits (the training dummy is CP-only). Despawn it.
 			if tkey != "" and not looted.has(tkey):
 				looted[tkey] = true

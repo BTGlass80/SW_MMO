@@ -26,6 +26,11 @@ const DISABLED_SEVERITY := 3
 # wound(2) a player but NEVER incapacitate(3+) — keeping them out of the owner-gated death/respawn
 # band (DIV-0006) and inside the healable, self-recoverable tiers (DIV-0012/0013).
 const SPARRING_MAX_SEVERITY := 2
+# G13/G10: a player-target sentinel meaning "no target — HOLD FIRE". Distinct from "" (the shared
+# training dummy) and from a registered hostile key. A shooter set to HOLD_TARGET has their queued shot
+# DROPPED in resolve_window (no exchange, no dummy fallback), so a player in a zone with no live hostile
+# — outside the spaceport training zone — connects with nothing instead of farming the cross-zone dummy.
+const HOLD_TARGET := "__hold__"
 
 var _rules: Object
 var _ground := GroundCombatModel.new()
@@ -55,6 +60,8 @@ var _hostile_targets: Dictionary = {} # target_key -> {state, pools(target_*), p
 # only advances on windows that HAD queued intents, via resolve_window), this advances EVERY window because
 # tick_status_effects is called unconditionally by the net layer — so a poison schedule's absolute rounds
 # count REAL elapsed windows (honoring onset) even across idle windows where no one fired.
+# G13 note: this is a genuinely DIFFERENT cadence, not a workaround for the (now-fixed) _window_index reset
+# — it cannot collapse onto _window_index, which would freeze poison ticks during no-intent windows.
 var _status_window := 0
 
 func _init(rules: Object, combat_data: Dictionary, target_id: String = "b1_training_silhouette", weapon_catalog: Dictionary = {}, armor_catalog: Dictionary = {}) -> void:
@@ -103,7 +110,9 @@ func reset_target() -> void:
 		"armor_quality_pips": 0,
 		"name": String(_target_profile.get("name", "B1 Training Remote")),
 	}
-	_window_index = 0
+	# G13/G10: _window_index is NOT reset here. It is a MONOTONIC combat-window counter (telemetry
+	# window_resolve + envelope window numbers depend on it advancing forever); resetting it whenever the
+	# shared dummy respawned corrupted that count. Resetting the dummy's wound state must not rewind time.
 
 func register_player(peer_id: int, display_name: String = "", sheet: Dictionary = {}) -> void:
 	_players[peer_id] = {
@@ -264,19 +273,26 @@ func hostile_target_spawn(target_key: String) -> Dictionary:
 func hostile_target_disabled(target_key: String) -> bool:
 	return int(((_hostile_targets.get(target_key, {}) as Dictionary).get("state", {}) as Dictionary).get("wound_severity", 0)) >= DISABLED_SEVERITY
 
-## Despawn a hostile target; any player still pointed at it falls back to the shared training dummy.
+## Despawn a hostile target; any player still pointed at it HOLDS FIRE (G13/G10 — NOT the shared dummy).
+## Hostiles only ever exist in LETHAL zones (the Director never spawns one in a secured/training zone), so
+## a player whose hostile just died is in a lethal zone with no live target -> hold fire until the next
+## _refresh_peer_hostility re-points them at a fresh spawn. This closes the "hit the dummy between crab
+## respawns" faucet Fable measured (20 dummy hits in 45s) — the disabled-hostile default no longer leaks.
 func remove_hostile_target(target_key: String) -> void:
 	_hostile_targets.erase(target_key)
 	for pid in _player_target.keys():
 		if String(_player_target[pid]) == target_key:
-			_player_target.erase(pid)
+			_player_target[pid] = HOLD_TARGET
 
-## Point a player at a hostile target (must be registered) or, with "", back to the shared dummy.
+## Point a player at a hostile target (registered key), HOLD_TARGET (hold fire — no target), or, with
+## "" / an unknown key, back to the shared training dummy (the erased default).
 func set_player_target(peer_id: int, target_key: String) -> void:
-	if target_key != "" and _hostile_targets.has(target_key):
+	if target_key == HOLD_TARGET:
+		_player_target[peer_id] = HOLD_TARGET      # G13: explicit hold-fire (no dummy fallback)
+	elif target_key != "" and _hostile_targets.has(target_key):
 		_player_target[peer_id] = target_key
 	else:
-		_player_target.erase(peer_id)
+		_player_target.erase(peer_id)              # "" / unknown -> the shared training dummy (default)
 
 func player_target_key(peer_id: int) -> String:
 	return String(_player_target.get(peer_id, ""))
@@ -365,6 +381,13 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 		# A named PvP target that FAILED the resolve-time gate (fled / zone-flipped / gone): DROP the
 		# shot. It never falls through to the shared dummy.
 		if target_peer != 0 and not is_pvp:
+			i += 1
+			continue
+		# G13/G10: a HOLD-FIRE shooter (no PvP target and assigned HOLD_TARGET — i.e. a live zone with no
+		# hostile, outside the training zone) has nothing to shoot. DROP the shot BEFORE _apply_intent so no
+		# CP/FP/aim is consumed and it never falls through to the shared dummy — autofire in an empty lawless
+		# zone connects with nothing (the G10 acceptance: a lawless bot logs zero training-dummy hits).
+		if target_peer == 0 and String(_player_target.get(peer_id, "")) == HOLD_TARGET:
 			i += 1
 			continue
 		record["state"] = _apply_intent(record["state"], intent)

@@ -299,10 +299,11 @@ func _init() -> void:
 	_assert_true(hunt.hostile_target_disabled("womp"), "hostile_target_disabled reflects the kill")
 	_assert_equal(int(hunt.hostile_target_spawn("womp").get("pack_size", 0)), 3, "the creature spawn (loot source) is retained on the target")
 
-	# Despawn: removing a hostile target frees the player back to the shared training dummy (non-lethal).
+	# Despawn: G13/G10 — removing a hostile target drops the player to HOLD FIRE, NOT the shared dummy
+	# (hostiles only live in lethal zones, so a despawn = no live target -> hold until _refresh re-points).
 	hunt.remove_hostile_target("womp")
 	_assert_true(not hunt.has_hostile_target("womp"), "remove_hostile_target despawns it")
-	_assert_equal(hunt.player_target_key(42), "", "a player pointed at a despawned target falls back to the shared dummy")
+	_assert_equal(hunt.player_target_key(42), CombatArena.HOLD_TARGET, "a player pointed at a despawned hostile HOLDS FIRE (not the dummy) — closes the between-respawns dummy faucet")
 
 	# Regression: a player with NO hostile target and NO lethal flag is byte-identical sparring — the
 	# default resolve still caps at 2 and tags the envelope target_key "" / lethal false.
