@@ -38,7 +38,8 @@
         "to_hit_skill": "brawling",
         "damage": "1D"
       },
-      "source": "COTG §2.1 (WEG40080)"
+      "source": "COTG §2.1 (WEG40080)",
+      "threat_tier": 1
     },
     "glim_worm": {
       "id": "glim_worm",
@@ -86,7 +87,8 @@
           "note": "Adhesive coils; opposed brawling/STR to break free."
         }
       },
-      "source": "COTG §2.1 (WEG40080). Damage code cleaned to a machine-parseable STR+1D baseline bite (source text listed only the opposed brawling/STR escape-roll for the grapple hold, which is not a strike code and parsed to 0D); the escape mechanic is unchanged in special_attack.restraint. Mirrors the rock_wart cleanup pattern."
+      "source": "COTG §2.1 (WEG40080). Damage code cleaned to a machine-parseable STR+1D baseline bite (source text listed only the opposed brawling/STR escape-roll for the grapple hold, which is not a strike code and parsed to 0D); the escape mechanic is unchanged in special_attack.restraint. Mirrors the rock_wart cleanup pattern.",
+      "threat_tier": 2
     },
     "hitcher_crab": {
       "id": "hitcher_crab",
@@ -140,7 +142,8 @@
         "resource": "chemical",
         "note": "Internal water sacs are a desert survival/sale good; field-dressed on kill."
       },
-      "source": "COTG §2.1 (WEG40080)"
+      "source": "COTG §2.1 (WEG40080)",
+      "threat_tier": 2
     },
     "magus": {
       "id": "magus",
@@ -188,7 +191,8 @@
         "resource": "organic",
         "note": "Armour-tough hide is a commercially hunted good; field-dressed on kill."
       },
-      "source": "COTG §2.1 (WEG40080)"
+      "source": "COTG §2.1 (WEG40080)",
+      "threat_tier": 1
     },
     "stalker_lizard": {
       "id": "stalker_lizard",
@@ -241,7 +245,8 @@
         "resource": "organic",
         "note": "Thick constrictor hide; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG §2.1 (WEG40080)"
+      "source": "COTG §2.1 (WEG40080)",
+      "threat_tier": 3
     },
     "yeomet": {
       "id": "yeomet",
@@ -280,7 +285,8 @@
         "Disease transmission: a bite forces a Moderate stamina (or STR) roll.",
         "Gnaws through cables/conduits — an infrastructure/electrical-fire hazard."
       ],
-      "source": "COTG §2.4 (WEG40080)"
+      "source": "COTG §2.4 (WEG40080)",
+      "threat_tier": 1
     },
     "borcatu": {
       "id": "borcatu",
@@ -321,7 +327,8 @@
         "Claws STR+1; rock-hard digging claws (burrows).",
         "Bites anything that grabs it."
       ],
-      "source": "COTG §2.4 (WEG40080)"
+      "source": "COTG §2.4 (WEG40080)",
+      "threat_tier": 1
     },
     "tymp": {
       "id": "tymp",
@@ -364,7 +371,8 @@
         "resource": "organic",
         "note": "Tough urban-beast hide; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG §2.4 (WEG40080)"
+      "source": "COTG §2.4 (WEG40080)",
+      "threat_tier": 2
     },
     "spor_crawler": {
       "id": "spor_crawler",
@@ -418,7 +426,8 @@
         "difficulty": 10,
         "note": "Black-market venom; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG §2.4 (WEG40080). Damage code cleaned to a machine-parseable STR+1D baseline sting (source text listed 'Poison 5D', which duplicated the special_attack.poison damage as a prose-wrapped strike code); the 5D lethal venom is unchanged in special_attack.poison. Mirrors the rock_wart cleanup pattern."
+      "source": "COTG §2.4 (WEG40080). Damage code cleaned to a machine-parseable STR+1D baseline sting (source text listed 'Poison 5D', which duplicated the special_attack.poison damage as a prose-wrapped strike code); the 5D lethal venom is unchanged in special_attack.poison. Mirrors the rock_wart cleanup pattern.",
+      "threat_tier": 3
     },
     "somago": {
       "id": "somago",
@@ -463,7 +472,8 @@
           "note": "Engulfs the head and chokes for +3D/round once it has a grip."
         }
       },
-      "source": "COTG §2.4 (WEG40080), origin recast (engineered, debated)"
+      "source": "COTG §2.4 (WEG40080), origin recast (engineered, debated)",
+      "threat_tier": 3
     },
     "voroos": {
       "id": "voroos",
@@ -515,7 +525,8 @@
         "yield": 2,
         "note": "Bulk hide/flesh from a large beast; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG §3 (WEG40080)"
+      "source": "COTG §3 (WEG40080)",
+      "threat_tier": 3
     },
     "shredder_bat": {
       "id": "shredder_bat",
@@ -558,7 +569,8 @@
         "Eyeless; hunts by hearing, detecting prey to ~15km.",
         "Dive-strikes the artery; attacks in packs."
       ],
-      "source": "COTG §3 (WEG40080)"
+      "source": "COTG §3 (WEG40080)",
+      "threat_tier": 2
     },
     "wrix": {
       "id": "wrix",
@@ -606,7 +618,8 @@
         "resource": "organic",
         "note": "Pack-carnivore pelt; field-dressed on kill (Lane A Phase C)."
       },
-      "source": "COTG §3 (WEG40080)"
+      "source": "COTG §3 (WEG40080)",
+      "threat_tier": 3
     },
     "winged_xendrite": {
       "id": "winged_xendrite",
@@ -644,7 +657,8 @@
         "Eyesight +2D — a pinpoint hunter of smaller insects.",
         "Harmless individually; the hazard is an overpopulation swarm."
       ],
-      "source": "COTG §3 (WEG40080)"
+      "source": "COTG §3 (WEG40080)",
+      "threat_tier": 1
     },
     "acklay": {
       "id": "acklay",
@@ -693,7 +707,8 @@
         "good": "acklay_chitin",
         "note": "Arena armourers buy intact chitin plate; NOT wired (no creature-harvest runtime path yet)."
       },
-      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box."
+      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box.",
+      "threat_tier": 3
     },
     "mutant_acklay": {
       "id": "mutant_acklay",
@@ -739,7 +754,8 @@
         "+1D vs radiation and toxin (acclimated to the poisoned sea).",
         "Bite STR+1D. D6 stub re-statted from WotC lore; calibrate on the dev box."
       ],
-      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box."
+      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box.",
+      "threat_tier": 3
     },
     "merdeth": {
       "id": "merdeth",
@@ -794,7 +810,8 @@
         "good": "merdeth_shell",
         "note": "The glittering post-flood shells are a salvage good; NOT wired (no creature-harvest runtime path yet)."
       },
-      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box."
+      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box.",
+      "threat_tier": 4
     },
     "mip_swarm": {
       "id": "mip_swarm",
@@ -833,7 +850,8 @@
         "Screens and scouts for its host merdeth; disperses if the host dies.",
         "Auto-damage: the 2D natural_attack code applies to anything sharing its space, with no to-hit roll required (the swarm is everywhere at once); calibrate the auto-hit rule on the dev box."
       ],
-      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box. Damage code cleaned to a flat 2D (source text was '2D auto-damage to anything sharing its space (no to-hit...)'; the auto-hit/no-roll flavor now lives in the special[] note so combat-pool resolution parses cleanly)."
+      "source": "Geonosis & Outer Rim (WotC d20) §1.8 — D6 re-stat from scratch; calibrate on dev box. Damage code cleaned to a flat 2D (source text was '2D auto-damage to anything sharing its space (no to-hit...)'; the auto-hit/no-roll flavor now lives in the special[] note so combat-pool resolution parses cleanly).",
+      "threat_tier": 2
     },
     "dewback": {
       "id": "dewback",
@@ -873,7 +891,8 @@
         "Riding beast: an orneriness-coded mount in WEG; the spawn path uses it only as fauna.",
         "Thick scaled hide turns light blows (flavor; creature-armour soak is not wired in the spawn path)."
       ],
-      "source": "WEG D6 dewback (Galaxy Guide 1 / Creatures of the Galaxy); the block is not in the on-box WEG40120 PDF, so stats are calibrated to the statted R&E pack-beast family in WEG40120 ch. Creatures (bantha STR 8D, Ukian torbull STR 4D + tough hide, tauntaun STR 4D). Confirm on the dev box if the GG1 block is recovered."
+      "source": "WEG D6 dewback (Galaxy Guide 1 / Creatures of the Galaxy); the block is not in the on-box WEG40120 PDF, so stats are calibrated to the statted R&E pack-beast family in WEG40120 ch. Creatures (bantha STR 8D, Ukian torbull STR 4D + tough hide, tauntaun STR 4D). Confirm on the dev box if the GG1 block is recovered.",
+      "threat_tier": 2
     },
     "tusken_warrior": {
       "id": "tusken_warrior",
@@ -919,7 +938,8 @@
         "Carries a stolen slugthrower (cycler rifle) as a ranged option; modelled as flavor — the spawn fights with the gaderffii.",
         "Hunts in coordinated bands; the war party (4-6) is a deep-desert, Contested-Marches+ threat."
       ],
-      "source": "D6 stats from scratch per docs/design/secrets_of_tatooine_extraction_v1.md (SoT is d20; that block is discarded under the WEG-only invariant). Calibrated to the R&E NPC-template conventions in WEG40120 (e.g. the trained-trooper template: DEX 3D, STR 3D+1, brawling 4D+1)."
+      "source": "D6 stats from scratch per docs/design/secrets_of_tatooine_extraction_v1.md (SoT is d20; that block is discarded under the WEG-only invariant). Calibrated to the R&E NPC-template conventions in WEG40120 (e.g. the trained-trooper template: DEX 3D, STR 3D+1, brawling 4D+1).",
+      "threat_tier": 3
     },
     "maze_predator": {
       "id": "maze_predator",
@@ -960,7 +980,8 @@
         "Pack hunter: maze predators attack in coordinated packs (3-5); isolating one is the only mercy.",
         "Ambush from darkness: undetected approach is their advantage (flavor; calibrate on the dev box)."
       ],
-      "source": "Bespoke Coruscant Underworld creature (D6 from scratch). Anchored to the in-repo anomaly canon (engine/wilderness_anomalies.py maze_predator_outbreak / maze_predator_apex — the T2/T3 escalations) and the R&E predator conventions in WEG40120 ch. Creatures (ghest/wampa family)."
+      "source": "Bespoke Coruscant Underworld creature (D6 from scratch). Anchored to the in-repo anomaly canon (engine/wilderness_anomalies.py maze_predator_outbreak / maze_predator_apex — the T2/T3 escalations) and the R&E predator conventions in WEG40120 ch. Creatures (ghest/wampa family).",
+      "threat_tier": 3
     },
     "underworld_thug": {
       "id": "underworld_thug",
@@ -1005,7 +1026,8 @@
         "Armed: blaster pistol (4D) with a vibroblade backup; gangs travel 2-4 strong.",
         "Black Sun / Pyke street-level muscle — the canonical Frontier-tier underworld hostile."
       ],
-      "source": "D6 stats from scratch — R&E NPC-template conventions in WEG40120 (trained-trooper / pirate-sentry templates: DEX 3D, STR 3D, blaster 3D+1, brawling 3D+2). Flavor from GG11 Criminal Organizations + the Coruscant underworld lore."
+      "source": "D6 stats from scratch — R&E NPC-template conventions in WEG40120 (trained-trooper / pirate-sentry templates: DEX 3D, STR 3D, blaster 3D+1, brawling 3D+2). Flavor from GG11 Criminal Organizations + the Coruscant underworld lore.",
+      "threat_tier": 2
     },
     "bantha": {
       "id": "bantha",
@@ -1044,7 +1066,8 @@
         "Orneriness 2D - rideable by the Tusken Raiders; the spawn path uses this template as ambient fauna only.",
         "Wild bantha herds are guarded at distance by Tusken outriders; an encounter with a herd is a warning of Tusken proximity."
       ],
-      "source": "WEG40120 p.215 (Bantha stat block, confirmed via sidecar WEG40120.txt lines 20353-20381): DEX 2D, PER 2D, STR 8D, horns STR+1D, trample STR, Move 5, Size 2-3m, Orneriness 2D. Non-intelligent: KNO/MEC/TEC = 0D per WEG40120 p.214 creature convention."
+      "source": "WEG40120 p.215 (Bantha stat block, confirmed via sidecar WEG40120.txt lines 20353-20381): DEX 2D, PER 2D, STR 8D, horns STR+1D, trample STR, Move 5, Size 2-3m, Orneriness 2D. Non-intelligent: KNO/MEC/TEC = 0D per WEG40120 p.214 creature convention.",
+      "threat_tier": 2
     },
     "gornt": {
       "id": "gornt",
@@ -1086,7 +1109,8 @@
         "resource": "organic",
         "note": "Frontier livestock; field-dressed on kill for meat and hide."
       },
-      "source": "COTG sec.4 exotic appendix (WEG40080). Verified stat block: DEX 1D+2, PER 1D, STR 1D, bite STR+2, Move 6. DEX raised to 3D (faster prey-animal reflex) to match role; STR and damage faithful to source."
+      "source": "COTG sec.4 exotic appendix (WEG40080). Verified stat block: DEX 1D+2, PER 1D, STR 1D, bite STR+2, Move 6. DEX raised to 3D (faster prey-animal reflex) to match role; STR and damage faithful to source.",
+      "threat_tier": 1
     },
     "scurrier": {
       "id": "scurrier",
@@ -1132,7 +1156,8 @@
         "resource": "organic",
         "note": "Jawa subsistence food; field-dressed on kill."
       },
-      "source": "D6 re-stat from scratch per secrets_of_tatooine_extraction_v1.md sec.10 (SoT WTC11839 is WotC d20; d20 block discarded per WEG-only invariant). Calibrated to R&E small-creature conventions in WEG40120: gornt DEX 1D+2, PER 1D, STR 1D (0.5m prey animal). Scurrier is faster and sharper-eyed (colony-alarm animal, 10-25cm) at DEX 4D+1, PER 3D, STR 1D."
+      "source": "D6 re-stat from scratch per secrets_of_tatooine_extraction_v1.md sec.10 (SoT WTC11839 is WotC d20; d20 block discarded per WEG-only invariant). Calibrated to R&E small-creature conventions in WEG40120: gornt DEX 1D+2, PER 1D, STR 1D (0.5m prey animal). Scurrier is faster and sharper-eyed (colony-alarm animal, 10-25cm) at DEX 4D+1, PER 3D, STR 1D.",
+      "threat_tier": 1
     },
     "rock_wart": {
       "id": "rock_wart",
@@ -1181,7 +1206,8 @@
           "note": "Paralytic sting: Moderate STR or incapacitated for 1D rounds; egg-incubation risk on extended paralysis."
         }
       },
-      "source": "D6 re-stat from scratch per secrets_of_tatooine_extraction_v1.md sec.10 (SoT WTC11839 is WotC d20; d20 block discarded per WEG-only invariant). Calibrated to R&E small-predator conventions in WEG40120: hitcher crab STR 1D (1.3m, venomous), spor crawler STR 0D+2 (8cm, lethal venom). Damage code cleaned to a flat STR+1 (source text listed 'STR+1 (plus venom below)'; the venom rider now lives entirely in special_attack.poison so combat-pool resolution parses cleanly)."
+      "source": "D6 re-stat from scratch per secrets_of_tatooine_extraction_v1.md sec.10 (SoT WTC11839 is WotC d20; d20 block discarded per WEG-only invariant). Calibrated to R&E small-predator conventions in WEG40120: hitcher crab STR 1D (1.3m, venomous), spor crawler STR 0D+2 (8cm, lethal venom). Damage code cleaned to a flat STR+1 (source text listed 'STR+1 (plus venom below)'; the venom rider now lives entirely in special_attack.poison so combat-pool resolution parses cleanly).",
+      "threat_tier": 1
     },
     "canyon_womp_rat": {
       "id": "canyon_womp_rat",
@@ -1228,7 +1254,8 @@
         "resource": "organic",
         "note": "Coarse banded hide; field-dressed on kill."
       },
-      "source": "D6 re-stat from scratch per secrets_of_tatooine_extraction_v1.md sec.10 (SoT WTC11839 is WotC d20; d20 block discarded per WEG-only invariant). Calibrated to R&E creature family in WEG40120: wrix STR 3D (2.5m pack carnivore), gornt STR 1D (0.5m prey). Canyon womp rat at ~2m sits between them at STR 2D+2."
+      "source": "D6 re-stat from scratch per secrets_of_tatooine_extraction_v1.md sec.10 (SoT WTC11839 is WotC d20; d20 block discarded per WEG-only invariant). Calibrated to R&E creature family in WEG40120: wrix STR 3D (2.5m pack carnivore), gornt STR 1D (0.5m prey). Canyon womp rat at ~2m sits between them at STR 2D+2.",
+      "threat_tier": 2
     },
     "draagax": {
       "id": "draagax",
@@ -1288,7 +1315,8 @@
         "difficulty": 10,
         "note": "The fang gland holds paralytic toxin; field-dressed on kill."
       },
-      "source": "COTG sec.2.3 (WEG40080). Verified stat block: DEX 4D, PER 3D, STR 4D, dodge 5D, running 6D, sneak 5D, brawling 5D, climbing/jumping 5D, Move 12 / berserk 28, infrared vision, poisoned fangs (Moderate stamina or incapacitated)."
+      "source": "COTG sec.2.3 (WEG40080). Verified stat block: DEX 4D, PER 3D, STR 4D, dodge 5D, running 6D, sneak 5D, brawling 5D, climbing/jumping 5D, Move 12 / berserk 28, infrared vision, poisoned fangs (Moderate stamina or incapacitated).",
+      "threat_tier": 3
     },
     "arqet": {
       "id": "arqet",
@@ -1339,7 +1367,8 @@
         "resource": "composite",
         "note": "The carapace plate is a commercial armour blank; field-dressed on kill."
       },
-      "source": "COTG sec.2.3 (WEG40080). Verified stat block: DEX 3D+2, PER 3D, STR 3D, sneak 5D, armor +2D phys/energy, horns STR+2D, claws STR+2, teeth STR+1D, Move 9/12 charge."
+      "source": "COTG sec.2.3 (WEG40080). Verified stat block: DEX 3D+2, PER 3D, STR 3D, sneak 5D, armor +2D phys/energy, horns STR+2D, claws STR+2, teeth STR+1D, Move 9/12 charge.",
+      "threat_tier": 3
     },
     "preying_makthier": {
       "id": "preying_makthier",
@@ -1398,7 +1427,8 @@
           "note": "Paralytic stinger: 2D physical (natural_attack) + 4D stun per round for 5 rounds; Moderate stamina to resist each tick."
         }
       },
-      "source": "COTG sec.2.3 (WEG40080). Verified stat block: DEX 3D+1, PER 2D+1, STR 3D+1, search 4D, sneak 4D+2, lifting 5D+1, sonic motion detection +1D+2 search, constriction 1D/round -2D DEX, paralyzing stinger 2D + 4D stun x5 rounds, Move 10 fly, 1.2-2.7m long 2m wingspan. Geonosis-origin creature; Ebon Sea / badlands framing fits the Outer Rim contested-wilderness tier alongside the already-imported acklay/merdeth set."
+      "source": "COTG sec.2.3 (WEG40080). Verified stat block: DEX 3D+1, PER 2D+1, STR 3D+1, search 4D, sneak 4D+2, lifting 5D+1, sonic motion detection +1D+2 search, constriction 1D/round -2D DEX, paralyzing stinger 2D + 4D stun x5 rounds, Move 10 fly, 1.2-2.7m long 2m wingspan. Geonosis-origin creature; Ebon Sea / badlands framing fits the Outer Rim contested-wilderness tier alongside the already-imported acklay/merdeth set.",
+      "threat_tier": 3
     },
     "rancor": {
       "id": "rancor",
@@ -1442,7 +1472,8 @@
         "Thick hide: blasters and most hand-held melee weapons barely mark a rancor (see armor).",
         "Rare and difficult to keep in captivity; Jabba the Hutt's palace pit on Tatooine is the only confirmed captive specimen in Hutt space."
       ],
-      "source": "WEG Star Wars D6 Revised & Expanded (WEG40120), Creatures chapter, R&E core rulebook (docs/sourcebooks/WEG40120.txt local extraction, page 217, sidecar lines ~20556-20580). Type: Gigantic predator; DEX 4D, PER 1D (search: tracking 3D), STR 7D; Armor +3D physical/energy; Claws STR+3D; Teeth STR+5D; Move 20; Size 5m tall. Faithful transcription (not a re-stat) of the R&E core rulebook, this project's mechanics source of truth per data/manifests/read_only_sources.md. Not previously present in C:\\SW_MUSH\\data\\npcs_creatures.yaml."
+      "source": "WEG Star Wars D6 Revised & Expanded (WEG40120), Creatures chapter, R&E core rulebook (docs/sourcebooks/WEG40120.txt local extraction, page 217, sidecar lines ~20556-20580). Type: Gigantic predator; DEX 4D, PER 1D (search: tracking 3D), STR 7D; Armor +3D physical/energy; Claws STR+3D; Teeth STR+5D; Move 20; Size 5m tall. Faithful transcription (not a re-stat) of the R&E core rulebook, this project's mechanics source of truth per data/manifests/read_only_sources.md. Not previously present in C:\\SW_MUSH\\data\\npcs_creatures.yaml.",
+      "threat_tier": 4
     },
     "krayt_dragon": {
       "id": "krayt_dragon",
@@ -1500,7 +1531,8 @@
         "difficulty": 15,
         "note": "The iconic gizzard pearl - a fortune to the right buyer; NOT wired (no creature-harvest runtime path yet), latent economy hook like acklay_chitin / merdeth_shell."
       },
-      "source": "WEG Star Wars D6 Revised & Expanded, Creatures chapter (canyon krayt dragon, the smaller/common Tatooine variety, distinct from the greater krayt). Authored from the WEG R&E canonical krayt dragon stat block; NOTE: the local extraction (docs/sourcebooks/WEG40120.txt) is not present in this worktree, so no verified page/sidecar-line citation is claimed here - the mush-content-porter should reconcile this entry against the local source of truth and add the citation. Type: Gigantic desert predator; DEX 2D, PER 2D (search: tracking 3D), STR 9D; brawling 4D; Armor +2D physical/energy; Claws STR+2D; Teeth STR+3D; Move 21; Size ~5m long (canyon variety). Added to make the pre-existing q_krayt_bounty quest completable and to give the Dune Sea a legendary apex encounter. Not previously present in C:\\SW_MUSH\\data\\npcs_creatures.yaml."
+      "source": "WEG Star Wars D6 Revised & Expanded, Creatures chapter (canyon krayt dragon, the smaller/common Tatooine variety, distinct from the greater krayt). Authored from the WEG R&E canonical krayt dragon stat block; NOTE: the local extraction (docs/sourcebooks/WEG40120.txt) is not present in this worktree, so no verified page/sidecar-line citation is claimed here - the mush-content-porter should reconcile this entry against the local source of truth and add the citation. Type: Gigantic desert predator; DEX 2D, PER 2D (search: tracking 3D), STR 9D; brawling 4D; Armor +2D physical/energy; Claws STR+2D; Teeth STR+3D; Move 21; Size ~5m long (canyon variety). Added to make the pre-existing q_krayt_bounty quest completable and to give the Dune Sea a legendary apex encounter. Not previously present in C:\\SW_MUSH\\data\\npcs_creatures.yaml.",
+      "threat_tier": 4
     },
     "keejin": {
       "id": "keejin",
@@ -1540,7 +1572,8 @@
         "Near-blind: hunts by vibration and air-pressure, not vision.",
         "Flees bright light; a rare larger variant does not flee and drops from above instead."
       ],
-      "source": "COTG §2.3 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.3. Verified stat block: DEX 3D, PER 2D, STR 2D+1, camouflage +2 difficulty to spot, clinging (walls/ceilings), Move 5, 1-2m. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; cave/rock creature recast from Geonosis-only framing to fit the Jundland Wastes canyon overhangs and old rock cisterns (COTG notes it is 'found on countless worlds')."
+      "source": "COTG §2.3 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.3. Verified stat block: DEX 3D, PER 2D, STR 2D+1, camouflage +2 difficulty to spot, clinging (walls/ceilings), Move 5, 1-2m. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; cave/rock creature recast from Geonosis-only framing to fit the Jundland Wastes canyon overhangs and old rock cisterns (COTG notes it is 'found on countless worlds').",
+      "threat_tier": 1
     },
     "raen_sovra": {
       "id": "raen_sovra",
@@ -1593,7 +1626,8 @@
         "difficulty": 9,
         "note": "The accumulated-alloy shell segments are a salvage good; field-dressed on kill."
       },
-      "source": "COTG §2.5 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.5. Verified stat block: DEX 4D+2, PER 1D, STR 2D+2, electricity sense (+3D PER), electrocution 5D+2 (contact), space survival, Move 5. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; Kuat-orbital/station framing recast to Mos Eisley's spaceport hangar bays - the same infrastructure-pest niche, era-clean (no Imperial framing)."
+      "source": "COTG §2.5 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.5. Verified stat block: DEX 4D+2, PER 1D, STR 2D+2, electricity sense (+3D PER), electrocution 5D+2 (contact), space survival, Move 5. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; Kuat-orbital/station framing recast to Mos Eisley's spaceport hangar bays - the same infrastructure-pest niche, era-clean (no Imperial framing).",
+      "threat_tier": 3
     },
     "svaper": {
       "id": "svaper",
@@ -1642,7 +1676,8 @@
           "note": "Spine-lodge: anything grappling the svaper takes STR+3D+2 from lodging spines; Moderate STR to remove each."
         }
       },
-      "source": "COTG §2.2 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.2. Verified stat block: DEX 4D, PER 2D, STR 2D, Bite STR+3D, Spines STR+3D+2 (lodge in skin), Tough skin +2D (not gills), Move 20 swim (land Move calibrated to 13, matching the C:\\SW_MUSH underworld precedent). Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; aquatic Kamino/Nar Shaddaa framing recast to Mos Eisley's own moisture-reclamation cisterns and smugglers' disposal tanks."
+      "source": "COTG §2.2 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.2. Verified stat block: DEX 4D, PER 2D, STR 2D, Bite STR+3D, Spines STR+3D+2 (lodge in skin), Tough skin +2D (not gills), Move 20 swim (land Move calibrated to 13, matching the C:\\SW_MUSH underworld precedent). Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; aquatic Kamino/Nar Shaddaa framing recast to Mos Eisley's own moisture-reclamation cisterns and smugglers' disposal tanks.",
+      "threat_tier": 3
     },
     "syndicate_enforcer": {
       "id": "syndicate_enforcer",
@@ -1687,7 +1722,8 @@
         "Works in pairs when available; does not break and run - fights until the contract says otherwise.",
         "Hutt cartel or organized-crime retainer - better trained and more professional than street gang muscle."
       ],
-      "source": "D6 stats from scratch - anchored to WEG40120 p.199 Extras NPC conventions (Guards: DEX 3D, blaster 3D+1, STR 3D+1 as floor; pirate sentry DEX 4D, blaster 5D+2 as ceiling). Enforcer sits between at DEX 3D+1, blaster 4D. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml (Coruscant underworld 'syndicate_enforcer'); recast to Mos Eisley's Hutt-cartel fringe districts. Era-clean: no Imperial/Rebel affiliation."
+      "source": "D6 stats from scratch - anchored to WEG40120 p.199 Extras NPC conventions (Guards: DEX 3D, blaster 3D+1, STR 3D+1 as floor; pirate sentry DEX 4D, blaster 5D+2 as ceiling). Enforcer sits between at DEX 3D+1, blaster 4D. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml (Coruscant underworld 'syndicate_enforcer'); recast to Mos Eisley's Hutt-cartel fringe districts. Era-clean: no Imperial/Rebel affiliation.",
+      "threat_tier": 2
     },
     "drain_lurker": {
       "id": "drain_lurker",
@@ -1731,7 +1767,8 @@
         "Ambushes from below: erupts from grates and drainage openings; first attack has +1D from surprise if not detected beforehand.",
         "Noxious odor: Moderate stamina roll for anyone within 2m of a freshly-killed lurker."
       ],
-      "source": "Original (D6-statted from scratch), ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml. Bespoke drainage-sump predator recast from Coruscant's mid-levels to Mos Eisley's own moisture-reclamation sumps - the same ecological niche, era-clean. Calibrated between the tymp (STR 1D+1, brawling flavor) and the maze_predator (STR 4D, min_band 3); STR 2D+2 + brawling 4D produces a credible Frontier-tier threat for a starting character."
+      "source": "Original (D6-statted from scratch), ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml. Bespoke drainage-sump predator recast from Coruscant's mid-levels to Mos Eisley's own moisture-reclamation sumps - the same ecological niche, era-clean. Calibrated between the tymp (STR 1D+1, brawling flavor) and the maze_predator (STR 4D, min_band 3); STR 2D+2 + brawling 4D produces a credible Frontier-tier threat for a starting character.",
+      "threat_tier": 2
     },
     "slimy_nonakara": {
       "id": "slimy_nonakara",
@@ -1778,7 +1815,8 @@
           "note": "Caustic slime coat on contact; an Easy STR roll avoids it."
         }
       },
-      "source": "COTG §3 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §3. Verified stat block: DEX 2D+2, PER 1D+1, STR 2D, slime (Easy STR or 1D/round on contact), teeth STR+1D, larval implantation (1-in-6 in an infested pool, drains STR over days), Move 10 swim / 2 crawl, 20cm-4m. Any-water cross-biome hazard placed at Tatooine's Dune Sea oases and moisture-farm catch-basins alongside the already-imported gornt herd."
+      "source": "COTG §3 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §3. Verified stat block: DEX 2D+2, PER 1D+1, STR 2D, slime (Easy STR or 1D/round on contact), teeth STR+1D, larval implantation (1-in-6 in an infested pool, drains STR over days), Move 10 swim / 2 crawl, 20cm-4m. Any-water cross-biome hazard placed at Tatooine's Dune Sea oases and moisture-farm catch-basins alongside the already-imported gornt herd.",
+      "threat_tier": 1
     },
     "thanu": {
       "id": "thanu",
@@ -1824,7 +1862,8 @@
           "note": "Entangling tentacles; opposed brawling/STR to break free."
         }
       },
-      "source": "COTG §2.3 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.3. Verified stat block: DEX 3D, PER 1D+2, STR 2D, heat immunity (+1D STR vs blaster; any-temperature surfaces), tentacles (STR dmg + entangle), teeth STR+2D, Move 4, 1.1m tall. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; volcanic/heat-adapted analog to the Geonosis/Ebon Sea set already imported (acklay, merdeth, mip_swarm, arqet, draagax, preying_makthier), placed as superheated-terrain Outer-Rim fauna rather than pinned to one world, matching COTG's own note that it is 'volcanic rather than strictly Geonosian.'"
+      "source": "COTG §2.3 (WEG40080), creatures_of_the_galaxy_extraction_v1.md §2.3. Verified stat block: DEX 3D, PER 1D+2, STR 2D, heat immunity (+1D STR vs blaster; any-temperature surfaces), tentacles (STR dmg + entangle), teeth STR+2D, Move 4, 1.1m tall. Ported from C:\\SW_MUSH\\data\\npcs_creatures.yaml; volcanic/heat-adapted analog to the Geonosis/Ebon Sea set already imported (acklay, merdeth, mip_swarm, arqet, draagax, preying_makthier), placed as superheated-terrain Outer-Rim fauna rather than pinned to one world, matching COTG's own note that it is 'volcanic rather than strictly Geonosian.'",
+      "threat_tier": 2
     }
   }
 }

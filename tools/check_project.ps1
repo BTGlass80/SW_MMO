@@ -137,6 +137,8 @@ Invoke-GodotStep "Quest live-flow smoke:" @("--headless", "--path", $projectRoot
 
 Invoke-GodotStep "Creature spawn model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_spawn_model_smoke.gd")
 
+Invoke-GodotStep "Creature spawn threat smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_spawn_threat_smoke.gd")
+
 Invoke-GodotStep "Creature special-attack model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_special_attack_model_smoke.gd")
 
 Invoke-GodotStep "Creature combat smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_combat_smoke.gd")
