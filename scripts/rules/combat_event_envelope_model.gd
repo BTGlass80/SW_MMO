@@ -2,6 +2,7 @@ extends RefCounted
 
 const ENVELOPE_VERSION := 1
 const MESSAGE_TYPE := "combat.exchange.resolved"
+const REPLAY_INPUTS_VERSION := 1
 
 static func envelope_for_result(result: Dictionary, exchange_kind: String = "ground_range", channel: String = "local") -> Dictionary:
 	var events: Array = result.get("events", [])
@@ -23,6 +24,35 @@ static func envelope_for_result(result: Dictionary, exchange_kind: String = "gro
 		"encounter_state": _encounter_state_summary(result.get("encounter_state", {})),
 		"flags": _result_flags(result),
 	}
+
+# PT1 replay prep: OPTIONAL, purely ADDITIVE block a producer CAN attach so the exchange is
+# re-runnable later from the envelope alone (dev debugging / player-dispute resolution). These are
+# the EXACT arguments the producer passed to ground_combat_model.resolve_exchange[_with_action_window]
+# BEFORE resolution (pre-exchange state/target/pools), plus the envelope's own exchange_seed — the
+# server owns all RNG, so seed+inputs fully determine the outcome. Every pre-existing envelope field
+# stays byte-identical (this returns a COPY with one new key); an envelope without the block still
+# flows everywhere unchanged, and the replay tool (tools/envelope_replay.gd via
+# scripts/rules/envelope_replay_model.gd) degrades to PARTIAL consistency checks for it.
+static func attach_replay_inputs(envelope: Dictionary, state: Dictionary, target_state: Dictionary, pools: Dictionary, distance: float, target_cover_level: int, defender_defense_stance: String = "none", action_window: Dictionary = {}) -> Dictionary:
+	var out := envelope.duplicate(true)
+	out["replay_inputs"] = {
+		"present": true,
+		"version": REPLAY_INPUTS_VERSION,
+		"state": state.duplicate(true),
+		"target_state": target_state.duplicate(true),
+		"pools": pools.duplicate(true),
+		"distance": distance,
+		"target_cover_level": target_cover_level,
+		"defender_defense_stance": defender_defense_stance,
+		"action_window": action_window.duplicate(true),
+	}
+	return out
+
+static func has_replay_inputs(envelope: Dictionary) -> bool:
+	var inputs: Variant = envelope.get("replay_inputs", {})
+	if typeof(inputs) != TYPE_DICTIONARY:
+		return false
+	return bool((inputs as Dictionary).get("present", false))
 
 static func _action_window_summary(action_window: Dictionary) -> Dictionary:
 	if action_window.is_empty():
