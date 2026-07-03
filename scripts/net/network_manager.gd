@@ -38,6 +38,7 @@ const PvpRules := preload("res://scripts/rules/pvp_rules_model.gd")            #
 const DOWNED := preload("res://scripts/rules/downed_model.gd")                 # DIV-0027: death tiering + downed escape hatch
 const QuestModel := preload("res://scripts/rules/quest_model.gd")              # DIV-0020: accepted quests + progress + reward
 const HarvestModel := preload("res://scripts/rules/harvest_model.gd")          # DIV-0023: a disabled creature -> a sellable field-dressed good
+const CorpseDecay := preload("res://scripts/rules/corpse_decay_model.gd")       # DIV-0025: player-corpse decay + third-party full-loot (lawless)
 const COMBATANT_DATA_PATH := "res://data/prototype_combatants.json"
 const SPECIES_DATA_PATH := "res://data/species_clone_wars.json"
 const SKILL_CATALOG_PATH := "res://data/weg_skill_catalog.json"
@@ -49,6 +50,7 @@ const NPCS_DATA_PATH := "res://data/npcs_clone_wars.json"  # named NPCs (overnig
 const QUESTS_DATA_PATH := "res://data/quests_clone_wars.json"  # DIV-0020: quest defs — notice board + rewards
 const HARVEST_VALUES_PATH := "res://data/harvest_values_clone_wars.json"  # DIV-0023: per-good/per-resource harvest credit values (Option A)
 const HOSTILE_DISTANCE := 10.0  # DIV-0017: nominal engagement range for a spawned hostile creature
+const CORPSE_LOOT_RADIUS := 12.0  # DIV-0025: how close a third party must stand to loot a player's corpse
 const COMBAT_CP_REWARD := 3   # gameplay CP for disabling the training target (prototype-tunable)
 const DISABLE_INFLUENCE := 5  # Director zone-influence a disable feeds to the shooter's faction axis (owner-tunable)
 const KILL_TERRITORY_INFLUENCE := Territory.KILL_TERRITORY_INFLUENCE  # F63: defined in territory_model (co-located with the claim floor)
@@ -100,6 +102,7 @@ signal fire_rejected(result: Dictionary)    # DIV-0019: a PvP fire intent was re
 signal quests_updated(quests: Dictionary)   # DIV-0020: this client's live quest progress changed
 signal quest_catalog_received(defs: Dictionary) # DIV-0020: the available-quest catalog (notice board)
 signal harvested(notice: Dictionary)        # DIV-0023: this client field-dressed a disabled creature into a sellable good
+signal loot_corpse_replied(result: Dictionary) # DIV-0025: outcome of looting another player's corpse
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -162,6 +165,7 @@ var _peer_rpc_budget := {}            # E26: peer_id -> {tokens, last_ms} reliab
 var _ambient := {}                    # E27: zone_id -> ambient NPC roster (Director-advanced)
 var _heal_treated := {}               # DIV-0013: target_peer -> wound level last First-Aided (retry gate)
 var _downed := {}                     # DIV-0027: peer -> {severity:int, killer:int, name:String, rounds:int} — server-only downed-in-field state (rebuilt on login from persisted wound_state)
+var _corpses := {}                    # DIV-0025: character_id -> {zone_id, pos:{x,y,z}, decay_unix:float, security_tier:String} — server-only corpse index (rebuilt from records on boot)
 var _zone_list_cache: Array = []      # DIV-0014: cached [{id, name}] travel list (zones are static)
 var _server_rng := RandomNumberGenerator.new()
 var _local_move := Vector2.ZERO
@@ -196,6 +200,7 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	# F58/F59: restore the persisted world (faction influence + pending + org claims) over the
 	# seeded roster. AFTER territory/pending are created so their state can be restored too.
 	_load_world_state()
+	_scan_corpses()  # DIV-0025: rebuild the corpse registry from persisted records so bodies survive a restart
 	_derived = DerivedStats.new()
 	_vendor = VendorModel.new()
 	_reputation = ReputationModel.new()
@@ -1726,14 +1731,20 @@ func _handle_player_death(peer_id: int, killer_name: String, killer_peer: int = 
 	var outcome: Dictionary = DeathPenalty.apply_death(sheet, tier)
 	var new_sheet: Dictionary = outcome["sheet"]  # wound_state=wounded, durability loss, drops removed, insurance consumed
 	var dropped: Array = outcome["dropped"]
-	# Corpse manifest -> record.world_hooks.corpse. In LAWLESS the corpse is FULL-LOOT (DIV-0019, other
-	# players may loot it — the loot RPC is a follow-up; the manifest + full_loot flag are written now).
+	# Corpse manifest -> record.world_hooks.corpse. In LAWLESS the corpse is FULL-LOOT (DIV-0019/DIV-0025):
+	# submit_loot_corpse lets a third party take the dropped set within the DIV-0006 decay window. The SERVER
+	# owns the clock — stamp decay_unix now (wall-clock, so the body keeps aging across a restart) and index
+	# the corpse in _corpses so the loot RPC + the despawn tick can find it without scanning every record.
 	var world_hooks: Dictionary = record.get("world_hooks", {})
 	if not dropped.is_empty():
 		var dpos: Vector3 = state.get_player(peer_id).get("pos", WorldState.SPAWN_POINT) if state != null else WorldState.SPAWN_POINT
-		world_hooks["corpse"] = {"zone_id": zone_id, "pos": {"x": dpos.x, "y": dpos.y, "z": dpos.z}, "items": dropped, "decay_unix": 0.0, "full_loot": PvpRules.is_full_loot(tier)}
+		var decay_unix := Time.get_unix_time_from_system()
+		var pos_dict := {"x": dpos.x, "y": dpos.y, "z": dpos.z}
+		world_hooks["corpse"] = {"zone_id": zone_id, "pos": pos_dict, "items": dropped, "decay_unix": decay_unix, "full_loot": PvpRules.is_full_loot(tier)}
+		_corpses[character_id] = {"zone_id": zone_id, "pos": pos_dict, "decay_unix": decay_unix, "security_tier": tier}
 	else:
 		world_hooks["corpse"] = null
+		_corpses.erase(character_id)  # a fresh no-drop death overwrites any prior corpse for this character
 	record["world_hooks"] = world_hooks
 	record["sheet"] = new_sheet
 	# Respawn at the secured spaceport med bay (WorldState.SPAWN_POINT), default zone.
@@ -1779,6 +1790,155 @@ func _credit_takedown(killer_peer: int) -> void:
 		_accrue_zone_influence(killer_peer, DISABLE_INFLUENCE)
 		_accrue_territory_influence(killer_peer, KILL_TERRITORY_INFLUENCE)
 		_feed_force_signal(killer_peer, "disables", 1)
+
+# ============================================================================================
+# DIV-0025 (Seam 3) — corpse decay + third-party looting. The pure CorpseDecay model owns EVERY gate
+# (lawless-only full-loot per DIV-0019, contested owner-protected, secured no-corpse, and the DIV-0006
+# decay windows / expiry); the server only supplies the clock (elapsed) + the position gate and performs
+# the item transfer + manifest null-out. Credits are NEVER on a corpse (DIV-0006 credits KEPT).
+# ============================================================================================
+
+# Rebuild the RAM-only corpse registry from persisted records on boot so a corpse survives a server
+# restart (decay_unix is wall-clock, so it keeps aging). Scans each character's world_hooks.corpse.
+func _scan_corpses() -> void:
+	if store == null:
+		return
+	_corpses.clear()
+	for cid in store.list_character_ids():
+		var record := store.load_record(String(cid))
+		if record.is_empty():
+			continue
+		var manifest = (record.get("world_hooks", {}) as Dictionary).get("corpse", null)
+		if typeof(manifest) != TYPE_DICTIONARY:
+			continue
+		_corpses[String(cid)] = {
+			"zone_id": String((manifest as Dictionary).get("zone_id", "")),
+			"pos": (manifest as Dictionary).get("pos", {}),
+			"decay_unix": float((manifest as Dictionary).get("decay_unix", 0.0)),
+			"security_tier": _tier_from_manifest(manifest),
+		}
+	if not _corpses.is_empty():
+		print("[corpse] registry restored: %d corpse(s) on boot" % _corpses.size())
+
+# The decay tier for a corpse: the registry-stored death tier when indexed, else derived from the
+# manifest's own full_loot stamp (full_loot <-> lawless, otherwise contested). secured never writes a
+# corpse body, so those are the only two tiers a real corpse can carry.
+func _tier_from_manifest(manifest) -> String:
+	return "lawless" if (typeof(manifest) == TYPE_DICTIONARY and bool((manifest as Dictionary).get("full_loot", false))) else "contested"
+
+func _corpse_tier(character_id: String, manifest) -> String:
+	if _corpses.has(character_id):
+		return String((_corpses[character_id] as Dictionary).get("security_tier", "contested"))
+	return _tier_from_manifest(manifest)
+
+# True when the looting peer is standing within CORPSE_LOOT_RADIUS of the corpse's fallen position. The
+# server owns positions (state.get_player). When there is no world state (headless composition), the
+# spatial gate is skipped — the same-zone gate in the RPC still applies.
+func _within_loot_range(peer_id: int, manifest: Dictionary) -> bool:
+	if state == null:
+		return true
+	var player: Dictionary = state.get_player(peer_id)
+	if player.is_empty():
+		return false
+	var cp: Dictionary = manifest.get("pos", {})
+	var corpse_pos := Vector3(float(cp.get("x", 0.0)), float(cp.get("y", 0.0)), float(cp.get("z", 0.0)))
+	var looter_pos: Vector3 = player.get("pos", corpse_pos)
+	return looter_pos.distance_to(corpse_pos) <= CORPSE_LOOT_RADIUS
+
+# client -> server: a THIRD PARTY loots another player's corpse. Gated ENTIRELY by
+# CorpseDecay.loot_for_third_party — lawless full-loot only (DIV-0019), contested owner-protected, secured
+# no body, nothing past the decay window (DIV-0006). On success the dropped set transfers into the looter's
+# inventory (EconomyModel.grant_items, same append shape as buy) and the victim manifest is NULLED +
+# de-indexed so it can never be double-looted. Credits are ALWAYS 0 here (DIV-0006) — never transferred.
+@rpc("any_peer", "call_remote", "reliable")
+func submit_loot_corpse(target_character_id: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var looter_id := String(_peer_characters.get(sender, ""))
+	if looter_id == "":
+		return
+	var target := target_character_id.strip_edges()
+	# Self-loot guard (verify: gating-safety, HIGH): compare CANONICAL record identity, not raw ids.
+	# Records/corpses are keyed by the sanitized filename, but account_id is only strip_edges'd at
+	# registration — so two distinct raw ids can resolve to the SAME record file. A raw-string check
+	# ("target == looter_id") is bypassable: a player could name a target that sanitizes to their own
+	# corpse and recover their own full-loot drops, defeating the DIV-0006/0019 death penalty.
+	if target == "" or store.record_path(target) == store.record_path(looter_id):
+		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "no_corpse", "items": [], "target": target})
+		return
+	var victim := _cached_load(target)
+	if victim.is_empty():
+		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "no_corpse", "items": [], "target": target})
+		return
+	var world_hooks: Dictionary = victim.get("world_hooks", {})
+	var manifest = world_hooks.get("corpse", null)
+	if typeof(manifest) != TYPE_DICTIONARY:
+		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "no_corpse", "items": [], "target": target})
+		return
+	# Same-zone + in-range gate (server owns positions).
+	if String(_peer_zones.get(sender, _default_zone)) != String((manifest as Dictionary).get("zone_id", "")):
+		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "out_of_range", "items": [], "target": target})
+		return
+	if not _within_loot_range(sender, manifest):
+		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "out_of_range", "items": [], "target": target})
+		return
+	# The pure model is the ONLY authority on WHETHER + WHAT a third party may take.
+	var tier := _corpse_tier(target, manifest)
+	var elapsed := int(Time.get_unix_time_from_system() - float((manifest as Dictionary).get("decay_unix", 0.0)))
+	var result: Dictionary = CorpseDecay.loot_for_third_party(manifest, tier, elapsed)
+	if not bool(result.get("looted", false)):
+		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": String(result.get("reason", "")), "items": [], "target": target})
+		return
+	var items: Array = result.get("items", [])
+	# Transfer the dropped set into the looter's inventory. credits is ALWAYS 0 (DIV-0006) — never moved.
+	var looter := _cached_load(looter_id)
+	if looter.is_empty():
+		loot_corpse_result.rpc_id(sender, {"ok": false, "reason": "no_corpse", "items": [], "target": target})
+		return
+	looter["sheet"] = EconomyModel.grant_items(looter.get("sheet", {}), items)
+	_cached_save(looter_id, looter)
+	# NULL the victim manifest + de-index so a second attempt sees no_corpse (single-threaded per tick).
+	world_hooks["corpse"] = null
+	victim["world_hooks"] = world_hooks
+	_cached_save(target, victim)
+	_corpses.erase(target)
+	_push_sheet(sender, looter)  # refresh the looter's sheet panel with the transferred items
+	print("[corpse] peer %d (%s) looted %s's lawless corpse: %d item(s) %s" % [sender, looter_id, target, items.size(), str(items)])
+	loot_corpse_result.rpc_id(sender, {"ok": true, "reason": "looted", "items": items, "target": target})
+
+# server -> client: the outcome of a corpse-loot attempt (reasons: looted / no_corpse / protected /
+# expired / out_of_range).
+@rpc("authority", "call_remote", "reliable")
+func loot_corpse_result(result: Dictionary) -> void:
+	loot_corpse_replied.emit(result)
+
+# client helper: loot another player's corpse by character id
+func send_loot_corpse(target_character_id: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_loot_corpse.rpc_id(1, target_character_id)
+
+# DIV-0025: reap corpses whose DIV-0006 decay window has elapsed. Runs on the Director cadence (coarse is
+# fine — CorpseDecay.is_expired's boundary is inclusive). Nulls the manifest on the persisted record and
+# de-indexes so the body no longer exists / is not lootable.
+func _despawn_expired_corpses() -> void:
+	if _corpses.is_empty():
+		return
+	var now := Time.get_unix_time_from_system()
+	for cid in _corpses.keys().duplicate():  # duplicate: the loop erases from _corpses
+		var entry: Dictionary = _corpses[cid]
+		var elapsed := int(now - float(entry.get("decay_unix", 0.0)))
+		if CorpseDecay.is_expired(String(entry.get("security_tier", "contested")), elapsed):
+			var record := _cached_load(String(cid))
+			if not record.is_empty():
+				var wh: Dictionary = record.get("world_hooks", {})
+				wh["corpse"] = null
+				record["world_hooks"] = wh
+				_cached_save(String(cid), record)
+			_corpses.erase(cid)
+			print("[corpse] despawned %s's expired corpse (elapsed %ds)" % [cid, elapsed])
 
 # DIV-0027: the tiered NON-lethal outcome for sev 3-4. NO DeathPenalty, NO respawn, NO zone move — the
 # player stays where they fell (the arena DISABLED guard already freezes them from acting). Records the
@@ -2132,6 +2292,7 @@ func _physics_process(delta: float) -> void:
 					zones.director_tick()
 					_advance_ambient()  # E27: advance the ambient NPC roster per zone
 					_advance_hostiles()  # DIV-0017: (re)spawn + engage hostile creatures in lethal zones
+					_despawn_expired_corpses()  # DIV-0025: reap player corpses past their DIV-0006 decay window
 					_save_world_state()  # F58: persist the advanced territory so it survives a restart
 				_recover_wounds()  # DIV-0012: natural wound recovery for connected players
 				_feed_tense_ticks()  # DIV-0011: tense-zone participation feeds the awakening track

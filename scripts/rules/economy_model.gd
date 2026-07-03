@@ -123,6 +123,20 @@ static func sell(sheet: Dictionary, item_key: String, price: int) -> Dictionary:
 	next["inventory"] = inv
 	return {"ok": true, "reason": "", "sheet": next}
 
+# Grant owned items into the sheet's inventory (materializing from equipped if there was none), dupes
+# allowed = stackable ownership — the same append shape as buy(). NON-mutating: returns a new sheet.
+# Used by the DIV-0025 corpse-loot transfer (a third party receives a lawless corpse's dropped set) and
+# any future item grant. Credits are handled separately (DIV-0006: credits are NEVER on a corpse).
+static func grant_items(sheet: Dictionary, items: Array) -> Dictionary:
+	if items.is_empty():
+		return sheet
+	var next := sheet.duplicate(true)
+	var inv := _owned_list(next)
+	for it in items:
+		inv.append(String(it))
+	next["inventory"] = inv
+	return next
+
 # Loot from a disabled creature spawn (creature_spawn_model.roll_spawn shape). Hostile-only;
 # scale-tiered credits x pack_size + a chance-gated salvage bundle. Seed is server-owned.
 static func roll_loot(spawn: Dictionary, seed: int) -> Dictionary:

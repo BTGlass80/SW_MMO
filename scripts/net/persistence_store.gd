@@ -35,6 +35,23 @@ func has_record(character_id: String) -> bool:
 func load_record(character_id: String) -> Dictionary:
 	return _load_recovering(record_path(character_id))
 
+# List every persisted character id (the sanitized basename of each <id>.json under the root). Used by
+# the server boot scan that rebuilds RAM-only indexes from disk — e.g. the DIV-0025 corpse registry, so a
+# corpse survives a server restart and is still lootable/reapable. Excludes the world_state.dat record.
+func list_character_ids() -> Array:
+	var ids: Array = []
+	var dir := DirAccess.open(_root)
+	if dir == null:
+		return ids
+	dir.list_dir_begin()
+	var fname := dir.get_next()
+	while fname != "":
+		if not dir.current_is_dir() and fname.ends_with(".json"):
+			ids.append(fname.trim_suffix(".json"))
+		fname = dir.get_next()
+	dir.list_dir_end()
+	return ids
+
 # Read a JSON file, falling back to a surviving .tmp if the live file is missing/corrupt (a crash
 # in save's rename window left the freshly-written copy under .tmp).
 func _load_recovering(path: String) -> Dictionary:

@@ -164,6 +164,8 @@ Invoke-GodotStep "Death flow smoke:" @("--headless", "--path", $projectRoot, "--
 
 Invoke-GodotStep "Corpse decay model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/corpse_decay_model_smoke.gd")
 
+Invoke-GodotStep "Corpse loot wire smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/corpse_loot_wire_smoke.gd")
+
 Invoke-GodotStep "Hostile NPC model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/hostile_npc_model_smoke.gd")
 
 Invoke-GodotStep "Hostile NPC model edge smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/hostile_npc_model_edge_smoke.gd")
