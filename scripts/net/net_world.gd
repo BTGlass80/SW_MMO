@@ -735,7 +735,7 @@ func _build_hud() -> void:
 
 	var controls := Label.new()
 	controls.position = Vector2(18, 40)
-	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · T travel · B shop · V sheet · Enter chat · Esc release"
+	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · E talk · T travel · B shop · V sheet · Enter chat · Esc release"
 	controls.add_theme_font_size_override("font_size", 14)
 	controls.modulate = Color(0.09, 0.08, 0.06)
 	layer.add_child(controls)
@@ -1530,7 +1530,7 @@ func _dispatch_command(cmd: String, arg: String) -> void:
 			var help := ChatModel.command_help()
 			# F54: /help also lists the KEYBINDS — none of these (H heal, K raise, X/Z/G defense,
 			# T travel, V sheet) are otherwise discoverable, so a new player can't find them.
-			var keys := "Keys: WASD move · Space jump · LMB fire · RMB aim · X cover · Z dodge · G full-dodge · C CP · F Force Point · H heal ally · K raise Blaster · V sheet · T travel · B shop · Enter chat"
+			var keys := "Keys: WASD move · Space jump · LMB fire · RMB aim · X cover · Z dodge · G full-dodge · C CP · F Force Point · H heal ally · E talk to NPC · K raise Blaster · V sheet · T travel · B shop · Enter chat"
 			_set_status(keys)
 			print("[help] %s" % help)
 			print("[help] %s" % keys)
