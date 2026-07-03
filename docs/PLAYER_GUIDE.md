@@ -2,413 +2,376 @@
 
 *Clone Wars-era (20 BBY) Mos Eisley · West End Games Star Wars D6 R&E · Godot 4.6.3*
 
-Written 2026-07-02 against HEAD `7746019` (Wave F). This is a **living prototype**, not a
-finished game — so this manual does two things at once: it tells you how to *play* what
-exists today, and it is honest about what is **built but not yet reachable** so you always
-know where the edges are. Every mechanic below was read straight out of the current source,
-not the older design docs.
+Written 2026-07-02, **reconciled 2026-07-03 to HEAD `62ded70`** (Wave G in progress). This is a
+**living prototype** under active daily development — so this manual does two things at once: it tells
+you how to *play* what exists today, and it is honest about what is **built but not yet reachable at
+the keyboard** so you always know where the edges are. Every mechanic below was read straight out of
+the current source, not the older design docs.
 
 A quick legend used throughout:
 
-- **[LIVE]** — works in normal play right now.
+- **[LIVE]** — works in normal keyboard play right now.
 - **[PARTIAL]** — works, but capped, half-wired, or only through a narrow path.
-- **[LATENT]** — the code and rules exist and are unit-tested, but nothing in live play calls them.
-- **[GATED]** — deliberately blocked behind an owner decision (faction access, siege numbers…).
+- **[LATENT]** — the code and rules exist and are unit-tested, but you can't reach them at the keyboard
+  (usually server-wired with no client button/command yet).
+- **[GATED]** — deliberately blocked behind an owner decision.
+
+> **The recurring theme of this build:** *the backend keeps landing ahead of the client input.* Many
+> systems below are fully wired server-side and verified by tests, but have no keybind, command, or
+> screen yet — so they're **[LATENT]** for a keyboard player. Where that's true, this guide says so
+> plainly.
 
 ---
 
-## 0. What landed most recently (Wave F, latest)
+## 0. What changed recently (Wave F → Wave G)
 
-Since the first draft of this guide, the dev loop shipped a batch that mostly closes the gap
-between "the backend does it" and "you can *see* it happen":
+Since the last edition, the dev loop shipped a large batch. The headline changes:
 
-- **A presentation pass made the MMO systems visible.** Combat targets are now **rendered as
-  low-poly monster/remote meshes** in front of you (not invisible server entities); the shop is a
-  **real on-screen panel with Buy/Sell buttons**; death shows a **full-screen death card**; and
-  you get **muzzle flashes, hit sparks, floating damage numbers, and toast pop-ups** for loot,
-  credit changes, buys/sells, and Force awakenings. The backend was ahead of what was on screen —
-  this catches the visuals up.
-- **Zone-based PvP is now wired on the server** (lawless zones only, no consent handshake — DIV-0019).
-  The combat/death/full-loot plumbing is live, **but there is still no interactive way to target
-  another player** — player-vs-player fire is currently reachable only through headless test flags,
-  so for a keyboard player PvP isn't playable yet. Details in §6.
-- **The space bridge got an isometric 3D tactical view** and a fix for a bug that could trap you in
-  the overlay (§13).
-- **A quest/mission model landed as pure logic** (starter quests like "cull three Dune Sea beasts" —
-  DIV-0020), but it is **not yet wired into the server**, so there's no notice board to accept
-  quests from in live play. It's groundwork (§15).
+- **Death is now tiered — you don't instantly die anymore.** A takeout puts you **downed-in-field**
+  (recoverable) at Incapacitated/Mortally-Wounded; only a *killing* hit actually kills. New **`Y`** key
+  to yield, and First Aid now revives the downed. (§6 — the biggest change.)
+- **Hostiles now shoot first.** In lawless/contested zones a spawned creature attacks idle players
+  unprovoked every combat window. The old "if you never fire, nothing hits you" rule is **gone.** (§5)
+- **New PvE kill vectors:** creature **venom and restraint/grapple** now tick real damage that
+  *accumulates*, and **threat tiers** mean apex predators (krayt dragon, rancor, merdeth) only appear
+  in escalated/dangerous zones. (§5–§6)
+- **Kills now pay** — **harvest** (field-dressing) credits on top of loot, and loot **scales with the
+  creature's danger tier.** Shops now **stock different gear per zone.** (§6–§7)
+- **Named NPCs you can talk to** (press **`E`**), 22 of them across the zones, plus a cantina-plaza
+  landmark. (§9)
+- **Quests exist and track** (20 of them; completion pops a toast) — but there's still no board or
+  command to *accept/turn in* one at the keyboard. (§15)
+- **Content grew:** 39 creatures · 46 weapons · 31 armor · 20 quests · 22 named NPCs.
+- Under the hood: corpse-looting, armor repair, cumulative PvP wounds, and PvP defender-dodge are all
+  wired server-side but not yet reachable by keyboard (§15).
 
 ---
 
 ## 1. The single most important thing: there are two different games in this repo
 
-When you launch the project the normal way (double-click / plain run), you get the **SOLO
-scene** — `scenes/main.tscn`. That is what `project.godot` sets as the run scene. It is a
-single-player **blaster training range** plus a **2.5D space "bridge" tactical drill**. It is
-*not* the MMO, has no accounts, no persistence, and no economy — it's a hand-authored WEG-rules
-sandbox.
+A normal launch (double-click / plain run) opens the **SOLO scene** — `scenes/main.tscn` — the single-
+player **blaster training range** + a **2.5D space "bridge" tactical drill**. It's a WEG-rules
+sandbox: no accounts, no persistence, no economy.
 
-The actual **server-authoritative MMO** lives in a *different* scene — `scenes/net_world.tscn`
-— and is **only reachable from the command line**. There is no menu button that takes you there.
-This is where chargen, progression, the lethal PvE loop, credits, chat, travel, healing, and the
-Force live.
+The actual **server-authoritative MMO** lives in `scenes/net_world.tscn` and is **only reachable from
+the command line**. Everything below is about the MMO unless it says "solo."
 
-> ⚠️ **The same keys mean different things in the two scenes.** In the solo range `H` opens
-> your character sheet and `F` is a full-dodge; in the MMO `H` is *First Aid* and `F` is a
-> *Force Point*. Don't carry muscle memory between them. Full keymaps are in §11.
-
-The rest of this manual is mostly about the **MMO** (net world), because that's the direction of
-the project. The solo drills get their own section (§10).
+> ⚠️ **The same keys mean different things in the two scenes.** In the solo range `H` opens the sheet
+> and `F` is a full-dodge; in the MMO `H` is First Aid and `F` is a Force Point. Full keymaps in §14.
 
 ---
 
-## 2. Quickstart — your first 10 minutes in the MMO
+## 2. Quickstart — your first 15 minutes in the MMO
 
-You need **two terminals**: one for the server, one for your client. Paths are the stock Windows
-install locations from the repo.
+Two terminals: one server, one client.
 
-**Terminal 1 — start the authoritative server (headless):**
-
+**Terminal 1 — server (headless):**
 ```powershell
 & "C:\Godot 4\Godot_v4.6.3-stable_win64_console.exe" --headless --path . res://scenes/net_world.tscn -- --server
 ```
+Wait for `[net] server listening on port 24555` (port is hard-coded).
 
-Wait for it to print `[net] server listening on port 24555`. (The port is hard-coded — there is
-no `--port` flag.)
-
-**Terminal 2 — start your client (GUI) with a unique account name:**
-
+**Terminal 2 — client (GUI), unique account name:**
 ```powershell
 & "C:\Godot 4\Godot_v4.6.3-stable_win64.exe" --path . res://scenes/net_world.tscn -- --connect 127.0.0.1 --account alice --name Alice --species human
 ```
+`--account` is required (your character's identity; each player needs a distinct one). `--species` /
+`--quickstart` are optional. Species: `human, bothan, duros, mon_calamari, rodian, sullustan,
+trandoshan, twilek, wookiee`. (Heads-up: canonical Star Wars names are silently rejected — see §3.)
 
-- `--account` is the one flag you must not omit — it's your character's identity, and it's what a
-  re-login loads. Every player on a server needs a **distinct** `--account` (a single-session lock
-  rejects two peers on the same character with `already_logged_in`).
-- `--species` and `--quickstart` are **optional** — a bare `--account alice` already gives you a
-  deterministic human quick-start character. Species choices: `human, bothan, duros, mon_calamari,
-  rodian, sullustan, trandoshan, twilek, wookiee`.
-
-Then, in the client window:
-
-1. **You spawn first-person at Docking Bay 94** in the *secured* Mos Eisley Spaceport, mouse
-   captured. `WASD` move, mouse looks, `Space` jumps, `Esc` frees the cursor (click to recapture).
-   The top-right HUD shows Zone / CP wallet / Condition / **Credits: 1000**.
-2. **Earn your first Character Points — safely.** You start with **0 spendable CP** (see §4), so
-   walk up to the **B1 Training Silhouette** and `LMB` to fire. Shots resolve on the server every
-   **5 seconds**. Tap `RMB` up to 3× first for +1D aim each. The dummy shoots back but return fire
-   here is **capped at Wounded** — you cannot die in the spaceport. Every time you disable it you
-   get **+3 CP** and it respawns. This is a legitimate, no-risk CP farm.
-3. **Spend CP.** Press `V` to open your character sheet and watch the CP wallet. A skill raise
-   costs the *number of dice* in the skill's current pool (≈3–4 CP for Blaster to start). Press `K`
-   to raise Blaster one pip, or press `Enter` and type `/raise dodge` (or `/raise first_aid`,
-   `/raise bargain`, …) to raise **any** WEG skill. `/help` prints every command and keybind.
-4. **Insure yourself before you risk death.** Press `B` (or `/shop`) to list vendor stock, then
-   `Enter` → `/insure` to buy a policy: **500 credits = 3 covered deaths**. (Buying *gear* is not
-   worth it yet — see the equip caveat in §5/§12.)
-5. **Go lethal.** Press `T` to cycle-travel until the zone label reads **"The Dune Sea"**, or
-   `/travel tatooine.dune_sea`. The lawless Dune Sea reliably spawns a hostile creature within one
-   Director tick (~30s).
-6. **Fight the creature.** It appears ~10m away and becomes your `LMB` target. Here return fire is
-   **real and uncapped.** Disable it for **+3 CP and loot credits** (watch the Credits HUD).
-7. **Die & recover.** If a hit takes you to *Incapacitated*, you respawn **Wounded** back at the
-   spaceport med bay — **credits kept**, some gear durability lost, half your loose inventory
-   dropped (nothing dropped if insured). The Wounded state heals on its own over Director ticks, or
-   an ally can `/heal` you. There are no healing potions.
+Then, in the client:
+1. **You spawn first-person at Docking Bay 94** in the *secured* Mos Eisley Spaceport, mouse captured.
+   `WASD` move, mouse look, `Space` jump, `Esc` frees the cursor. HUD shows Zone / CP / Condition /
+   Credits (1000).
+2. **Farm your first CP — safely.** You start with **0 spendable CP**, so `LMB`-fire the **B1 Training
+   Silhouette**. Shots resolve every **5 seconds**; tap `RMB` (up to 3×) for aim. The dummy is capped
+   non-lethal here — you can't die in the spaceport. Each disable = **+3 CP**, and it respawns.
+3. **Spend CP.** `V` opens your sheet; `K` raises Blaster (or `/raise <skill>` for any skill).
+4. **Meet the locals.** Walk up to a **named NPC** and press **`E`** to talk. Wander east to the
+   **cantina plaza** (around world x≈40). `/who` lists players in your zone; `/help` prints everything.
+5. **Insure before you risk it.** `B` (or `/shop`) opens the vendor; `/insure` = 500 cr for 3 covered
+   deaths. Note the shop stocks different gear in each zone.
+6. **Go dangerous.** `T` to travel until the zone reads **"The Dune Sea"** (lawless), or
+   `/travel tatooine.dune_sea`. **Now you're at risk even standing still** — a spawned creature will
+   fire on you.
+7. **Fight — or get dropped.** Disable the creature for **+3 CP, loot credits (scaled by its danger
+   tier), and auto-harvest credits**. If *it* drops *you*: a hit to **Incapacitated** now puts you
+   **DOWNED** (an amber "You are DOWN" banner), not dead. **Wait for an ally's First Aid, or press `Y`
+   to yield** (accept death → respawn at the spaceport, credits kept). Only a true killing blow (or
+   bleeding out while Mortally Wounded) actually kills you.
 
 That loop — **farm CP in the spaceport → raise skills → insure → travel to a lethal zone → kill for
-loot / die and respawn** — is the current heart of the game.
+loot/harvest, or get downed and yield/revive** — is the current heart of the game.
 
 ---
 
 ## 3. Characters & species
 
-- **Quick-start build [LIVE].** On first login for an account, the server builds a WEG character:
-  every attribute starts at the species minimum, then the remaining pips fill round-robin until
-  exactly **18D (54 pips)** are spent, all within species min/max. No skills are pre-trained. The
-  sheet is persisted as JSON and immediately drives combat.
-- **Nine species [LIVE].** Each has per-attribute min/max dice and a WEG **Move** rate that becomes
-  real-time speed (`speed = 6.5 × species_move / 10`). Wookiees are fastest (Move 11 → ~7.15) and
-  have the highest Strength range (up to 6D); Mon Calamari are slower on land (Move 9). Species
-  *special abilities* (Wookiee rage, Trandoshan regeneration, etc.) are **flavor data only** —
-  not mechanically applied yet.
-- **Starting kit [LIVE].** Equipped: `blaster_pistol` (4D energy) + `blast_vest` (+1D energy/+1D
-  physical, torso). In inventory: a spare pistol & vest, a `hold_out_blaster` (3D+1), a
-  `blast_helmet`. Plus **1000 credits** and **1 Force Point**.
-- **Custom point-buy [LATENT].** The server's `register_account` fully validates a custom
-  `{attributes, skills}` build (18D attributes, up to 7D of skills over their attribute), but the
-  shipped client only ever sends a quick-start. There is **no in-game attribute/skill allocator UI**,
-  and species is chosen only via the `--species` flag — no interactive picker.
-- **Character sheet [LIVE].** `V` toggles a panel: species, the six attributes (DEX/KNO/MEC/PER/STR/
-  TEC), your trained skills, equipped weapon/armor, credits, CP wallet, and a "(Force-sensitive)"
-  tag once/if you ever awaken. Note it shows *equipped* gear only — **it does not list your
-  inventory** (a known gap; see §12).
+- **Quick-start build [LIVE].** First login builds a WEG character: 18D (54 pips) of attributes at
+  species min/max, no pre-trained skills. Persisted as JSON, drives combat immediately.
+- **Nine species [LIVE].** Each has attribute ranges and a WEG **Move** rate that sets real-time speed
+  (Wookiee fastest at ~7.15, Mon Calamari slower). Special abilities are flavor data, not yet applied.
+- **Starting kit [LIVE].** Equipped `blaster_pistol` (4D) + `blast_vest`; a spare pistol/vest,
+  `hold_out_blaster`, and `blast_helmet` in inventory; **1000 credits**; **1 Force Point**.
+- **Reserved names [LIVE].** ~48 canonical Star Wars names (Kenobi, Skywalker, Ahsoka, Rex, Grievous,
+  Vader, Boba…) are **silently rejected** at registration — your character quietly loads under your
+  account id instead (no on-screen message yet). Made-up names like "Kenobiwan" pass.
+- **Custom point-buy [LATENT].** The server validates a full custom `{attributes, skills}` build, but
+  the client only ever sends a quick-start — no in-game allocator UI, and no interactive species picker
+  (species is the `--species` flag).
+- **Character sheet [LIVE].** `V` toggles a panel: species, the six attributes, trained skills,
+  equipped weapon/armor, credits, CP wallet, and a "(Force-sensitive)" tag if you ever awaken. It shows
+  *equipped* gear only — **no inventory list** (a known gap).
 
 ---
 
 ## 4. Progression — Character Points & skills
 
-This is a **dual-track CP** system (divergence DIV-0007): a fast *gameplay* track and a slow
-*prestige/RP* track, both spendable on skill raises (gameplay drained first).
+A **dual-track CP** system (DIV-0007): fast *gameplay* CP + a slow *prestige/RP* track, both spent on
+skill raises (gameplay first).
 
-- **You start with 0 spendable CP. [IMPORTANT]** The sheet writes a legacy `character_points: 5`
-  field, but the spendable wallet the raise code reads is separate and starts at **0/0**. So a brand
-  new character pressing `K` immediately gets `Raise failed: insufficient_cp` — you must **earn CP
-  first** by disabling a target.
-- **Earning CP [LIVE].** The only live earner is **+3 gameplay CP per combat disable** — and that
-  includes the safe training dummy in the spaceport, so you never have to risk death to start
-  progressing. The prestige/RP track has no wired earner yet.
-- **Raising a skill [LIVE].** Cost = the number of *dice* in the skill's current total pool, so the
-  price steps up at each die boundary (4D→4D+1 costs 4 CP; 5D→5D+1 costs 5). Raises apply to combat
-  immediately and persist.
-  - `K` = raise **Blaster** one pip (hardcoded shortcut).
-  - `/raise <skill>` = raise **any** of the ~75 WEG skills by its key: `/raise dodge`,
-    `/raise first_aid`, `/raise brawling`, `/raise bargain`, etc. Skill keys are lower_snake_case
-    (the server even accepts an unknown key and defaults its governing attribute to Dexterity).
-  - Training `first_aid` makes you a better medic; `bargain` earns you shop discounts;
-    `dodge`/`brawling`/`melee_combat` improve defense and melee — all through this one path.
+- **You start with 0 spendable CP.** A fresh character can't raise anything until it earns CP —
+  pressing `K` immediately fails. Disable a target (even the safe spaceport dummy) for **+3 CP**.
+- **Earning CP [LIVE].** +3 per combat disable is the live earner. Quest rewards *also* grant CP
+  (2–8 each) — but see §15 on why quests aren't keyboard-claimable yet. Prestige track has no earner.
+- **Raising a skill [LIVE].** Cost = the number of *dice* in the skill's current pool (steps up at
+  each die boundary). `K` = raise Blaster (shortcut); **`/raise <skill>`** raises any of ~75 WEG skills
+  (`/raise dodge`, `/raise first_aid`, `/raise bargain`, `/raise survival`…). Applies immediately.
 
 ---
 
 ## 5. Combat — the WEG action window
 
-Every ground fight is **server-authoritative WEG D6**. You press keys to *stage* a shot, then
-`LMB` to submit a **fire intent**; the server collects everyone's intents and resolves them
-together every **5 seconds** (the "action window"), owning all dice and seeds.
+Every ground fight is **server-authoritative WEG D6**. You stage a shot with keys, then `LMB` to submit
+a **fire intent**; the server resolves all intents together every **5 seconds** (the "action window").
 
-**The dice core [LIVE]:** a pool `ND+P` rolls N-1 plain d6 + one **Wild Die**. The Wild Die
-**explodes** on a 6 (re-roll and add, uncapped) and is a **complication** on a 1 (contributes 0 and
-you drop your highest plain die). Difficulties: Very Easy 5 / Easy 10 / Moderate 15 / Difficult 20 /
-Very Difficult 25 / Heroic 30. Initiative each window is a **Perception** roll.
+**Dice core [LIVE]:** a pool `ND+P` rolls N-1 plain d6 + a **Wild Die** (explodes on 6, complication on
+1). Difficulties: Very Easy 5 / Easy 10 / Moderate 15 / Difficult 20 / Very Difficult 25 / Heroic 30.
+Initiative each window is a Perception roll.
 
-**Staging your shot (before you press LMB):**
+**Staging your shot (before `LMB`):**
 
 | Key | Effect |
 |-----|--------|
-| `RMB` | **Aim** +1D per press, **max +3D** |
-| `C`   | Cycle staged **Character Points** 0→5 (each is an exploding bonus die added to the attack) |
-| `F`   | **Force Point** — doubles *all* your dice for the window (attack, dodge, soak, **and damage**) |
-| `X`   | Toggle **1/4 cover** (raises the difficulty of incoming return fire) |
-| `Z`   | **Active dodge** — you still attack (at −1D for the second action) but add a dodge roll to incoming difficulty |
-| `G`   | **Full dodge** — forgo your attack this window for a maximum defensive roll |
-| `LMB` | **Fire** (submits everything staged, then resets aim/CP/FP/cover/dodge) |
+| `RMB` | **Aim** +1D per press, max +3D |
+| `C`   | Cycle staged **Character Points** 0→5 (exploding bonus dice) |
+| `F`   | **Force Point** — doubles all your dice for the window (one-shot; no regen) |
+| `X`   | Toggle **1/4 cover** (raises incoming difficulty) |
+| `Z`   | **Active dodge** — attack at −1D but add a dodge roll to incoming difficulty |
+| `G`   | **Full dodge** — forgo your attack for a maximum defensive roll |
+| `LMB` | **Fire** (submits, then resets aim/CP/FP/cover/dodge) |
 
-**Resolution [LIVE]:** attack pool (DEX + equipped-weapon skill) + aim − penalties, vs a
-range/cover/dodge difficulty; then weapon **damage vs soak** (Strength + armor). The damage-minus-
-soak margin maps to the wound ladder:
+**Resolution [LIVE]:** attack (DEX + weapon skill) + aim − penalties vs a range/cover/dodge difficulty;
+then damage vs soak (Strength + armor). Margin maps to the wound ladder: ≤0 none · 1–3 Stunned · 4–8
+Wounded · 9–12 Incapacitated · 13–15 Mortally Wounded · 16+ Killed.
 
-| Margin | Result |
-|--------|--------|
-| ≤0 | No damage |
-| 1–3 | Stunned |
-| 4–8 | Wounded |
-| 9–12 | Incapacitated *(out — can't act)* |
-| 13–15 | Mortally Wounded *(out)* |
-| 16+ | Killed |
+### What's new and important in combat
 
-**Wound penalties [LIVE]:** Stunned −1D, Wounded −1D, Wounded-Twice −2D; Incapacitated and worse are
-"out" (can neither move nor fire until healed). Armor adds soak on the energy channel, has a hit-
-location coverage table, and **degrades one pip per damaging hit** (two if the hit was severe).
-
-**Combat notes & current edges:**
-
-- **Force Points don't regenerate.** You start with exactly 1 and nothing in the combat loop grants
-  more, so FP-doubling is effectively a **one-shot**. FP is also mutually exclusive with staged CP —
-  if any CP is staged, the Force Point silently no-ops (CP wins).
-- **Cover** only exposes 1/4 via `X`; the 1/2, 3/4, and full (targeting-blocking) levels exist in
-  the rules but aren't bound to a key.
-- **Defensive CP** (spending CP on soak) and **cross-scale** (vehicle/walker) combat are coded and
-  tested but **[LATENT]** — no live path uses them; ground play is character-vs-character.
-- There's **no reticle or target-picking** in the MMO — `LMB` always fires at the server-chosen
-  shared target (the training dummy, or the one zone hostile). Where you walk doesn't change who you
-  shoot.
-- **Combat is now visually legible [LIVE].** The target renders as a low-poly monster/remote mesh in
-  front of you, and each resolved exchange throws **muzzle flashes, hit sparks, and floating damage
-  numbers**, so you can read the fight without watching the console log.
+- **⚠️ Hostiles now initiate [LIVE].** In a **lawless or contested** zone, a spawned creature fires an
+  unprovoked, **real** (uncapped) shot at *every same-zone player who didn't shoot that window* — every
+  5 seconds. **Standing still no longer keeps you safe.** (The old "a hostile only hurts you as return
+  fire" rule is dead.) Secured zones stay safe.
+- **Venom & restraint [LIVE].** Some creatures inject a **venom** rider (ticks real damage vs *bare*
+  Strength — armor doesn't help — on a schedule) or a **restraint/grapple** (an opposed Strength break
+  check each window; failure crushes you). Both **accumulate** and can down or kill you over time. A
+  re-bite refreshes venom rather than stacking it.
+- **Cumulative wounds — partial [PARTIAL/LATENT].** Wounds now climb the WEG ladder cumulatively
+  (`escalate()`) on the **PvP** path and for **venom/restraint** riders (so two sub-lethal ticks can
+  stack you to Incapacitated, and the Wounded-Twice −2D tier is now real). **Plain creature gunfire is
+  still highest-single-hit-wins** — two glancing blaster hits don't stack. (PvP itself is not
+  keyboard-reachable yet — §15.)
+- **Threat tiers [LIVE].** Creatures are graded tier 1–4. Spawns are **banded by zone alert**: calm/
+  secured zones cap at tier 2; a standard lawless/contested frontier reaches tier 3; only an *escalated*
+  alert (lockdown/high-alert/unrest/underworld) unlocks **tier-4 apex** creatures. So **krayt dragons,
+  rancors, and the merdeth are never ambient** — they require a dangerous, escalated zone.
+- **Force Points** still don't regenerate (1 per character, effectively one-shot), and are ignored if
+  you've staged CP the same window (CP wins). **Cover** only exposes 1/4 via `X`. **Range is still a
+  fixed nominal distance** (12m PvP / 10m creature) — where you actually stand doesn't change the hit
+  difficulty yet.
+- There's still **no reticle or player-target picking** at the keyboard — `LMB` fires at the server-
+  chosen shared target (the dummy, or your zone's one hostile).
 
 ---
 
-## 6. Death, respawn, loot & insurance — the lethal loop *(Wave F)*
+## 6. Getting dropped — downed, death, respawn, loot *(Wave G)*
 
-This is the newest system and the reason combat now has stakes.
+This is the section that changed the most. **Being taken out is no longer an instant death.**
 
-- **Where death happens [LIVE].** Only in **lethal zones**: the two *contested* zones (Spaceport
-  Fringe, Market District) and the *lawless* Dune Sea. The **secured spaceport is hard-safe** —
-  no hostiles spawn and all return fire is capped non-lethal. You must deliberately `T`/`/travel`
-  out to be at risk. (A zone can also transiently slip one tier more dangerous if Hutt influence
-  gets very high.)
-- **Hostiles [LIVE].** Each Director tick (~30s) the server keeps every lethal zone that has players
-  stocked with **one seeded hostile creature** (from a roster of ~16 — glim worms, stalker lizards,
-  Tusken warriors, up to an acklay). All players in the zone share/fight the same one. The lawless
-  Dune Sea *always* arms a hostile; contested zones only do when the random roll lands on one.
-  - **Gotcha:** a hostile only hurts you as **return fire inside your own 5s window** — if you never
-    fire at it, it never hits you.
-- **Dying [LIVE].** A hit that takes you to **Incapacitated (severity 3)** kills you (v1 skips the
-  mortally-wounded grace roll). You get a **full-screen death card**, then:
-  - **Credits are always kept.**
-  - Equipped gear loses **10% durability** (uninsured).
-  - **Half** of your *unequipped* inventory drops (equipped items never drop).
-  - You respawn **Wounded** at the secured spaceport med bay.
-- **Insurance [LIVE].** `/insure` = 500 credits for **3 covered deaths**. A covered death drops
-  **nothing** and takes only **3%** durability.
-- **Loot [LIVE].** Downing a hostile pays the killer **15–45 credits × pack size** (40–90 for
-  human-scale enemies) plus a 25% chance of a 20–60 salvage bundle — on top of the +3 CP. Rewards
-  now pop up as on-screen **toasts**.
-- **Player-vs-Player [PARTIAL].** The PvP backend is now wired (DIV-0019): fire aimed at another
-  player is server-gated to **lawless zones only** (secured and contested reject it — no consent
-  handshake, purely zone-based), re-checked at resolution to close a mid-window tier flip, and it
-  reuses the same lethal combat + death path. In a lawless zone a PvP kill is **full-loot** and your
-  client lights up a floating **"TARGET" marker** over whoever is being shot. **The catch:** the
-  interactive client has **no way to select a player as your target** — the normal `LMB` still fires
-  at the shared PvE target, and player-targeting is currently reachable only through headless test
-  flags (`--fire-target`, `--fire-nearest`). So PvP mechanically works but **is not yet playable at
-  the keyboard**; a target-selection UI is the missing piece.
-- **Corpse looting [PARTIAL].** Your dropped items are written to a corpse manifest, but **no one can
-  pick them up yet** — dropped loot is effectively gone until a corpse-pickup RPC lands.
+**The three tiers** (a takeout only happens in a lethal zone — creatures in lawless/contested, PvP in
+lawless; secured zones are always non-lethal):
+
+- **Incapacitated (severity 3) → DOWNED [LIVE].** You're frozen where you fell (can't act), but
+  **stable — you never auto-die.** An amber banner reads *"You are DOWN — press Y to yield & respawn,
+  or wait for a medic."* You wait for either.
+- **Mortally Wounded (severity 4) → DOWNED, bleeding out [LIVE].** Same downed state, but each 5-second
+  window the server rolls to see if you bleed out (2D vs rounds elapsed — **death becomes certain by
+  ~13 windows / ~1 minute** if untreated). A First Aid that lifts you back to Incapacitated **stops the
+  bleed-out.**
+- **Killed (severity 5) → DEATH [LIVE].** Only a true killing blow triggers the death penalty below.
+
+**Two ways out of a downed state:**
+- **`Y` — Yield [LIVE].** Accept death → respawn. Always available while downed (works at sev 3 or 4).
+  *This key is only shown on the amber downed banner, not the normal controls line.*
+- **A medic's First Aid [LIVE].** An ally presses **`H`** near you; success drops your wound one level.
+  Dropping you below Incapacitated **revives** you ("A medic revived you."). First Aid difficulty is
+  steep at these tiers (Incapacitated 16, Mortally Wounded 21), so a trained `first_aid` medic matters.
+
+**The death penalty (severity 5, or after you yield) [LIVE]:**
+- **Credits are always kept.**
+- Respawn **Wounded** at the secured spaceport med bay.
+- Equipped gear loses **10% durability** (3% if insured).
+- **~half** your *unequipped* inventory drops to a corpse (nothing drops if insured, or if you somehow
+  died in a secured zone).
+- Logging out while downed is **not** a softlock — the state is restored on next login.
+
+**Insurance [LIVE].** `/insure` = 500 credits for **3 covered deaths** (no drop, only 3% durability).
+
+**Kills pay you [LIVE].** Downing a hostile gives the killer **+3 CP**, **loot credits scaled by the
+creature's threat tier** (×1.0 up to ×3.0 — a riskier kill is worth more), plus **auto-harvest credits**
+(§7). A tier-4 apex head can pay ~270 cr + harvest.
+
+**Corpse looting [LATENT].** The server fully supports a third party looting your dropped corpse in
+lawless zones (within 12m, before it decays; credits never drop) — but there is **no keybind, command,
+or UI to do it yet**, so in practice dropped loot is still unrecoverable at the keyboard.
+
+**PvP [LATENT].** All the lethal machinery (zone-gated to lawless, cumulative wounds, defender dodge,
+full-loot corpses) is wired server-side, but **you can't target another player from the keyboard** —
+player-targeting is headless-CLI-only. So players can't yet duel at the keyboard.
 
 ---
 
-## 7. Economy — credits, vendors, buy/sell
+## 7. Economy — credits, vendors, harvest
 
-A WEG-anchored credit layer (DIV-0018), separate from your CP wallet.
+A WEG-anchored credit layer (DIV-0018), separate from your CP wallet. **Kills are now a genuine credit
+faucet**, not just a sink.
 
-- **Earning:** loot from kills (§6), or selling gear back to a vendor.
-- **The shop [LIVE].** `B` (or `/shop`) now opens a **real on-screen panel** with the 12 priced items
-  — 10 blasters + 2 armor pieces — each with its own **Buy / Sell buttons** and your current
-  credits / reputation / price multiplier shown at the top. There's no physical vendor NPC; "the shop"
-  is a global command that works from any zone. Prices are WEG list values (blaster pistol 500, heavy
-  blaster pistol 750, vibroblade 250, blast vest 300…).
-- **Buying [LIVE]:** click **Buy** on the panel, or type `/buy <item_key>`. The **sink**: you buy at
-  list price and sell back at only **40%**.
-  - ⚠️ The `/buy` text hint prints `/buy heavy_blaster`, but that key doesn't exist — the real key is
-    **`heavy_blaster_pistol`** (the panel buttons use the correct key, so clicking is safer than
-    typing the hint).
-- **Selling [LIVE]:** `/sell <item_key>` — but only for **owned, unequipped** items, so you can't
-  sell your starting loadout.
-- **Discounts:** a **Bargain** skill discounts buy prices (3% per die, and yes — `/raise bargain`
-  trains it in normal play). Reputation-tier discounts (friendly 5% / allied 10%) are coded but
-  **[LATENT]** because they require an org you can't join yet. Director events (`trade_boom`,
-  `merchant_arrival`) also cheapen goods temporarily.
+- **Earning:** loot from kills (**tier-scaled**, §6) + **harvest [LIVE]**: killing a *harvestable*
+  creature (~15 of the 39 carry a harvest good — krayt pearl 300 cr, acklay chitin 60, various meats
+  12–14…) auto-field-dresses it and pays the value as instant credits on top of loot. No command — it's
+  automatic on the killing blow. (The client doesn't pop a harvest toast yet; you just see the wallet
+  tick up.) You can also `/sell` owned, unequipped gear back at 40%.
+- **The shop [LIVE].** `B` (or `/shop`) opens a panel of priced items with Buy/Sell buttons.
+  **Stock now varies by zone:** Spaceport (secured) = legal sidearms; Port Fringe / Market District
+  (contested) = mid-tier + civilian variety; Dune Sea (lawless) = heavy hardware. `/buy <item_key>`,
+  `/sell <item_key>`. Prices shift with the zone security tier, Director events, your Bargain skill,
+  and reputation.
+- **No more buy→sell exploit [LIVE].** The discount floor is now clamped strictly above the 40%
+  buy-back, so you can never bargain a purchase below its own resale value (that arbitrage is closed).
+- **Armor can break [LATENT input].** A damaging hit degrades armor quality; at the bottom (−6 pips)
+  it's **"broken" and its soak is halved** until repaired. The server has a **repair** action (priced
+  off the buy-back dial), but there's **no repair command or armor-condition readout in the client
+  yet**.
+- **Catalog vs buyable:** 46 weapons + 31 armor exist, but only ~12 are vendor-stocked and split across
+  zones; the rest are contraband/faction data that never appears in a shop.
 
-> **Reality check (see §12):** because there is **no equip command** in live play, weapons/armor you
-> buy go into an inventory you also can't view, and can never be wielded. Today the only meaningful
-> thing to spend credits on is **insurance**. The earn side (loot) is real; the spend side is a stub.
+> **The honest catch (still true):** because there's **no equip command, keybind, or inventory screen**
+> at the keyboard, weapons/armor you `/buy` go into an inventory you can't view and **can't wield**. The
+> server *fully* supports equipping (it drives combat) — it's just reachable only via a headless
+> `--equip` test flag. So the earn side (loot + harvest) is now rich, but the *gear* side of spending
+> is still a stub. The one clearly useful sink is **insurance**.
 
 ---
 
 ## 8. Wounds & healing — the medical loop
 
-You get hurt only through combat. Two ways back to health, both grounded in WEG Guide 19:
+You get hurt only in combat (or from venom/restraint). Recovery, both grounded in WEG Guide 19:
 
-- **Natural recovery [LIVE].** Every Director tick (~30s), each connected wounded character rolls its
-  own **Strength** vs a difficulty (Stunned 8 / Wounded 11) and, on success, heals one step.
-- **First Aid [LIVE].** `H` (or `/heal`) makes you a medic: it auto-targets the **nearest wounded
-  ally in your zone** and rolls your **Technical + First Aid** skill vs their wound difficulty; success
-  drops their wound one step. Untrained you roll a raw 2D (only reliably clears Stunned) — `/raise
-  first_aid` to treat worse wounds. You can't heal yourself this way, and there's a per-target retry
-  gate so you can't spam it.
-- **HUD support [LIVE].** Your own condition is a color-coded HUD line; other players show their wound
-  tier on their nameplate so a medic can spot who's hurt.
-- **No consumables.** There is no bacta, medpac, stimpack, or medical droid. "Med bay" is just the
-  respawn label. Several deeper recovery rules (stun auto-clear, the mortally-wounded death roll, a
-  post-death −1D debuff timer) exist in the model but are **[LATENT]** — not called in live play.
+- **Natural recovery [LIVE].** Each Director tick (~30s), a connected wounded character rolls its own
+  **Strength** vs a difficulty and, on success, heals one step. (Applies to the "can still act" tiers.)
+- **First Aid [LIVE].** `H` (or `/heal`) auto-targets the **nearest wounded ally in your zone** and
+  rolls your **Technical + First Aid** vs their wound difficulty; success drops it one level. This is
+  now also the **revive path for downed players** (§6) and can **stop a bleed-out**. You can't self-heal
+  this way; there's a retry gate against spamming.
+- **The mortally-wounded death roll is now LIVE** (it used to be a latent rule): a downed Mortally-
+  Wounded player bleeds out over time unless treated.
+- **Still no consumables** — no bacta, medpac, stimpack, or medical droid. Healing is the Strength tick,
+  a medic's First Aid, or (for the downed) yielding.
 
 ---
 
-## 9. The world — zones, travel, the Director
+## 9. The world — zones, travel, NPCs, the Director
 
-- **Four Tatooine zones [LIVE]:** Mos Eisley **Spaceport** (secured, your spawn), **Spaceport
-  Fringe** (contested), **Market District** (contested), and **The Dune Sea** (lawless).
-- **Travel [LIVE]:** `T` cycles to the next zone; `/travel <zone_id>` jumps to a specific one. It's
-  instant command fast-travel — no routes, fuel, or distance. Your zone persists across logins.
-- **Zone-scoped everything [LIVE]:** you only see players, ambient NPCs, local chat, and combat in
-  *your current* zone.
-- **The Director [LIVE]:** a slow autonomous world-sim tick (~30s) that decays faction influence,
-  derives an **alert level** and a **security overlay**, fires **world events** from a 12-event menu
-  (Republic crackdowns, bounty surges, sandstorms, trade booms — each with a Clone Wars headline shown
-  on your NEWS banner), advances a small **ambient NPC** roster (decorative crowd — clone troopers,
-  Jawas, smugglers — not yet interactable), respawns hostiles, runs wound recovery, and **persists the
-  whole mutable world so it survives a server restart.**
+- **Four Tatooine zones [LIVE]:** Mos Eisley **Spaceport** (secured, your spawn), **Spaceport Fringe**
+  and **Market District** (contested), **The Dune Sea** (lawless). `T` cycles zones; `/travel <id>`
+  jumps. Instant fast-travel; your zone persists across logins.
+- **Named NPCs you can talk to [LIVE].** 22 hand-authored Clone Wars locals (Wuher, Chalmun, clone
+  troopers, Hutt enforcers, a back-alley medic, Jawa traders…) populate the zones as distinct low-poly
+  figures with name/role plates. Walk within ~6m and press **`E`** to hear a rotating dialogue line.
+  *(They're flavor: even though quest data lists some as "givers," talking does not open or turn in
+  quests, and the vendor-flagged NPCs don't open a shop on talk.)*
+- **A cantina plaza landmark [LIVE]** sits east of Spaceport Row (world x≈40) — a domed cantina with
+  bar, booths, storage huts, stalls, and vaporators. Pure set-dressing (solid collision, no interaction).
+- **The old ambient crowd [LIVE]** still exists as muted capsule markers (clone troopers, Jawas,
+  smugglers) — decorative, *not* talkable. Two layers coexist.
+- **The Director [LIVE].** A ~30s world-sim tick: decays faction influence, derives an **alert level**
+  and **security overlay**, fires **world events** (12-event menu with Clone Wars headlines on your NEWS
+  banner), advances ambient NPCs, **spawns tier-banded hostiles** in lethal zones, runs recovery, and
+  **persists the whole world across restarts.** Alert level now also gates which creature tiers spawn.
 
 ---
 
 ## 10. Factions, orgs & territory — *mostly gated*
 
-A complete faction/guild/territory economy exists end-to-end — org membership, **`/claim`** and
-**`/release`** of territory nodes, treasury income, rank authority, faction-influence-through-play,
-faction tags on nameplates, and cross-zone **`/org`** chat.
+A complete faction/guild/territory economy exists end-to-end — org membership, `/claim` and `/release`
+of territory nodes, treasury income, rank authority, faction tags, cross-zone `/org` chat — **but there
+is still no way to *join* a faction in normal play** (owner-gated faction-join isn't implemented). So
+for a normal player this all rejects with `no_org`; it's reachable only via the test-only
+`--allow-test-org` server flag. Treat the whole layer as **[GATED]**.
 
-**But there is no way to *join* a faction in live play** — membership is meant to originate from an
-owner-gated faction-join flow that isn't implemented. So for a normal player all of this rejects with
-`no_org`. It's reachable only via the **test-only** `--allow-test-org` server flag + client self-grant
-flags, for headless verification. Treat this whole layer as **[GATED]** — built and tested, waiting on
-your access-policy decision. (Siege/hostile-takeover of territory is deliberately not built at all,
-pending owner rulings on durations and capture thresholds.)
+**Org sieges** (a full declared→muster→assault→resolution takeover state machine) and **PvP consent**
+(opt-in duels + funded bounties) are **[LATENT]** — coded and tested as pure models, but not wired into
+live netcode. No one can declare a siege, place a bounty, or accept a duel yet.
 
 ---
 
-## 11. The Force — *earned, rare, and currently cosmetic*
+## 11. The Force — *earned, rare, and still cosmetic*
 
-The access policy is the **SWG "Village" model** (DIV-0011): you can't pick Force-sensitivity at
-chargen and you can't buy it. Instead every character carries a hidden, dormant **awakening track**
-that silently accrues "attunement" from ordinary play — exploring new zones (weight ×3), disabling
-foes, healing allies, surviving danger. Once attuned, a **rare** per-tick roll (~2%) can begin a
-4-phase awakening; clearing all phases plus a final ~10% roll flips you Force-sensitive and prints
-*"You feel the Force awaken within you."* It's deliberately hard to reach (soft server cap of ~8
-latents), and only progresses while you're connected.
+Access is the **SWG "Village" model** (DIV-0011): not chargen-selectable, not buyable. A hidden dormant
+**awakening track** silently accrues attunement from play (exploring, disabling foes, healing, surviving
+danger); a rare per-tick roll can begin a 4-phase awakening that eventually flips you Force-sensitive
+and prints *"You feel the Force awaken within you."* It's deliberately hard to reach (soft cap ~8).
 
-> **Set expectations:** awakening today is **essentially a cosmetic status flag.** It seeds the three
-> WEG Force skills (Control/Sense/Alter) at 0D but there is **no power list, no way to invoke them,
-> and no Dark Side economy** — Force powers remain owner-gated. So even a fully awakened character
-> can't yet *do* anything with the Force.
+> **Set expectations:** awakening is still **essentially a cosmetic flag.** It seeds the three WEG Force
+> skills at 0D but there's **no power list, no way to invoke them, no Dark Side economy** — Force powers
+> remain owner-gated. Even a fully awakened character can't yet *do* anything with the Force.
 
-Separately, the **Force Point** (`F` key in combat, §5) is a normal WEG resource everyone has,
-unrelated to being Force-sensitive — don't confuse the two.
+The **Force Point** (`F` in combat) is a separate universal resource, unrelated to Force-sensitivity.
 
 ---
 
 ## 12. Chat & social
 
-Press `Enter` to open the chat/command bar (`Esc` cancels). It parses game commands first, otherwise
-treats your text as chat.
+`Enter` opens the chat/command bar (`Esc` cancels). Game commands parse first, else it's chat.
 
-- **Channels:** `/say` (`/s`, or just plain text) = local to your zone · `/ooc` (`/o`) = galaxy-wide ·
-  `/emote` (`/em`, `/me`, `/e`) = local action pose · `/org` (`/g`) = your org, cross-zone (needs an
-  org, so gated). Text is sanitized and clamped to 256 chars.
-- **`/who`** lists players in your zone with their condition and faction tag; **`/help`** prints the
-  full command + keybind list.
+- **Channels:** `/say` (`/s`, or plain text) = local · `/ooc` (`/o`) = galaxy-wide · `/emote`
+  (`/em`, `/me`, `/e`) = local action · `/org` (`/g`) = your org, cross-zone (gated). Clamped to 256 chars.
+- **`/who`** lists players in your zone with condition + faction tag; **`/help`** prints the full
+  command + keybind list.
 
 ---
 
 ## 13. The solo drills (default scene, `main.tscn`)
 
-If you just run the project without CLI flags, this is what you get — two self-contained,
-single-player WEG sandboxes on the Mos Eisley set. No accounts, no persistence, no economy; RNG is
-*not* seeded here so outcomes vary each run.
+A plain run opens this — two single-player WEG sandboxes on the Mos Eisley set (no accounts/persistence;
+RNG unseeded, so outcomes vary):
 
-- **Blaster training range [LIVE].** You spawn at the firing line facing five WEG targets (static,
-  laterally-moving, behind cover at increasing range, and a walker-scale plate). `LMB` fires from a
-  real crosshair (the MMO has none); `RMB` aims. Stage the round with `C` cover, `Q` dodge, `F` full
-  dodge, `P`/`O` attack/soak CP, `G` Force Point. Remotes fire back on a live 6-second clock (`Z`
-  pauses, `V` forces a volley now), with a rich behavior state machine (suppression, pinning, peeking,
-  flanking, morale, fallback) shown as floating badges. `E` inspects any target for a full dossier;
-  `H` opens a demo character sheet; `R` resets the drill.
-- **2.5D space "bridge" [LIVE].** `M` toggles a full-screen tactical overlay of the Mos Eisley
-  approach lane — now with an **isometric 3D tactical view** — with five scripted contacts and range
-  rings (a recent fix also cleared a bug that could trap you in the overlay). Run WEG **ship** actions
-  as single keys: `N` sensor sweep, `I` identify, `X` comms hail, `B` gunnery (with counterfire), `J`
-  shields, `K` damage-control repair, `Y` astrogation, `L` maneuver (with a live route/hazard
-  preview), `U` crew-station assists. `T` pauses the live traffic clock, `;` steps it one tick,
-  `Tab`/`,`/`.` cycle the selected contact. There's a hidden hostile ("Sensor Shadow") that builds a
-  firing solution and shoots you if you don't out-maneuver or out-shoot it.
+- **Blaster training range [LIVE].** Spawn at the firing line facing five WEG targets (static, moving,
+  behind cover, a walker plate). `LMB` fires from a real crosshair; `RMB` aims; stage the round with `C`
+  cover, `Q` dodge, `F` full dodge, `P`/`O` attack/soak CP, `G` Force Point. Remotes fire back on a live
+  clock with a rich behavior state machine. `E` inspects a target; `H` opens a demo sheet; `R` resets.
+- **2.5D space "bridge" [LIVE].** `M` toggles a tactical overlay (now with an **isometric 3D view**) of
+  the Mos Eisley approach with five contacts. Run WEG ship actions as single keys: `N` sensors, `I` id,
+  `X` hail, `B` gunnery, `J` shields, `K` repair, `Y` astrogation, `L` maneuver, `U` crew assists; `T`
+  pauses the traffic clock, `;` steps it, `Tab`/`,`/`.` cycle contacts. A hidden hostile builds a firing
+  solution and shoots you if you don't out-fly or out-shoot it.
 
-None of this solo content exists in the MMO scene, and none of it links to your MMO character.
+None of the solo content exists in the MMO scene, and it doesn't link to your MMO character.
 
 ---
 
 ## 14. Controls reference
 
-**⚠️ Two different keymaps — same letters, different meaning. Keys are hardcoded and not rebindable.**
+**⚠️ Two different keymaps — same letters, different meaning. Keys are hardcoded, not rebindable.**
 
 | Key | MMO (`net_world.tscn`) | Solo range (`main.tscn`) |
 |-----|------------------------|--------------------------|
@@ -416,87 +379,91 @@ None of this solo content exists in the MMO scene, and none of it links to your 
 | `LMB` | fire (server target) | fire at crosshair target |
 | `RMB` | aim +1D | aim +1D |
 | `C` | cycle staged CP 0–5 | toggle cover |
-| `F` | Force Point (double dice) | full dodge |
+| `F` | Force Point | full dodge |
 | `X` | toggle 1/4 cover | — |
 | `Z` | active dodge | pause/resume remotes |
 | `G` | full-dodge stance | Force Point |
 | `Q` | — | declare dodge |
 | `P` / `O` | — | queue attack CP / soak CP |
-| `V` | **character sheet** | force an incoming volley |
-| `H` | **First Aid nearest ally** | **character sheet** |
-| `E` | — | inspect target |
+| `V` | character sheet | force an incoming volley |
+| `H` | **First Aid / revive nearest ally** | character sheet |
+| `E` | **talk to nearest named NPC** (within ~6m) | inspect target |
+| `Y` | **yield (only while downed)** | — |
 | `K` | raise Blaster (spend CP) | *(space: repair)* |
 | `T` | travel to next zone | *(space: pause traffic)* |
 | `B` | open shop | *(space: gunnery)* |
 | `M` | — | open/close space bridge |
-| `N I X J Y L U` `;` `Tab , .` | — | space-bridge actions (see §13) |
+| `N I X J Y L U` `;` `Tab , .` | — | space-bridge actions (§13) |
 | `Enter` | open chat/command bar | — |
-| `Esc` | release mouse / cancel chat | release mouse |
+| `Esc` | release mouse / cancel | release mouse |
 
-**MMO slash commands:** `/raise <skill>` · `/travel <zone>` · `/heal` · `/shop` · `/buy <item>` ·
-`/sell <item>` · `/insure` · `/who` · `/help` · `/claim <node>` · `/release <node>` *(orgs gated)* ·
-`/say /ooc /org /emote`.
+**MMO slash commands** (unchanged set): `/raise <skill>` · `/travel <zone>` · `/heal` · `/shop` ·
+`/buy <item>` · `/sell <item>` · `/insure` · `/who` · `/help` · `/claim <node>` · `/release <node>`
+*(orgs gated)* · `/say /ooc /org /emote`. **There is no quest, equip, repair, or loot command yet.**
 
-**Key launch flags** (everything after the bare `--`): server → `--server`, `--combat-window <s>`,
+**Key launch flags** (after the bare `--`): server → `--server`, `--combat-window <s>`,
 `--director-tick <s>`, `--resource-tick <s>`; client → `--connect <host>`, `--account <id>`,
-`--name <n>`, `--species <k>`, `--quickstart`, `--secret <s>`, `--zone <id>`. There are also many
-headless one-shot automation flags (`--autofire`, `--raise-skill`, `--buy`, `--travel`, `--equip`,
-`--say`, …) and test-only flags (`--allow-test-org`, `--force-hostile`, `--force-awaken`) intended for
-scripted two-process verification, not interactive play.
+`--name <n>`, `--species <k>`, `--quickstart`, `--secret <s>`, `--zone <id>`. Many headless one-shot
+test flags exist (`--autofire`, `--accept-quest`, `--claim-quest`, `--equip`, `--talk`, `--yield`,
+`--buy`, …) — these drive the not-yet-keyboard-reachable systems for automated tests, not play.
 
 ---
 
-## 15. Known limitations — what is *not* playable yet
+## 15. Known limitations — what is *not* keyboard-playable yet
 
-Being upfront so nothing surprises you:
+The build's backend consistently runs ahead of its client input. Fully-working server systems you still
+can't reach at the keyboard:
 
-1. **You cannot equip gear in normal play.** There is no `/equip` command and no keybind — equipping
-   is reachable only via the headless `--equip` test flag. So anything you `/buy` lands in an
-   inventory you also **can't view**, and can never be wielded. **Net effect: the only real credit
-   sink today is `/insure`.** The loot/credit loop and the CP loop are coherent; the *gear* loop is a
-   stub.
-2. **No inventory screen** — the `V` sheet shows equipped items only.
-3. **PvP has no target-selection UI** — the server-side PvP loop is wired (lawless-only, DIV-0019),
-   but the interactive client can't aim at another player; `LMB` still hits the shared PvE target, and
-   player-targeting only works through headless test flags. So players can't yet fight each other at
-   the keyboard.
-4. **No quest board yet** — a quest/mission model with starter quests exists (DIV-0020) but isn't
-   wired to a giver/notice board or fed live events, so quests can't be accepted or completed in play.
-5. **Corpse loot is unrecoverable** — dropped items are gone; no one can pick them up.
-6. **Factions/orgs/territory are gated** — no way to join a faction, so `/claim`, `/org`, treasuries,
-   and faction tags are unreachable without a test flag.
-7. **The Force is cosmetic** — awakening flips a flag but grants no usable powers.
-8. **No custom chargen UI** — you always get the deterministic quick-start; the point-buy builder is
-   server-side only.
-9. **Force Points don't regenerate** — 1 per character, effectively single-use.
-10. **No matchmaking/menu for the MMO** — it's CLI-launch only; a plain run opens the solo range.
+1. **You cannot equip gear** — no `/equip`, keybind, or inventory screen (server RPC works; `--equip`
+   test flag only). Bought gear can't be wielded. **Insurance is still the one clearly useful credit
+   sink.**
+2. **No inventory screen** — the `V` sheet shows equipped items only; `/sell` needs item keys you can't
+   browse.
+3. **Quests are server-live but not keyboard-playable [PARTIAL].** 20 quests load, objectives auto-track
+   (kill N / reach zone / earn credits), and completion pops a toast — but **accepting and claiming are
+   CLI-only** (`--accept-quest`/`--claim-quest`); there's no quest board, command, or NPC hand-in. So
+   nothing tracks unless a quest was accepted via CLI.
+4. **PvP has no target UI** — the full PvP loop (lawless-gated, cumulative wounds, defender dodge,
+   full-loot corpses) is wired server-side, but you can't target another player at the keyboard.
+5. **Corpse looting** works server-side (lawless, 12m) but has **no client trigger** — dropped loot is
+   unrecoverable in practice.
+6. **Armor repair** works server-side (armor can break → soak halved), but there's **no repair command
+   or armor-condition readout**.
+7. **Factions/orgs/territory are gated** (no faction-join); **sieges and duels/bounties are latent**
+   (coded, unwired).
+8. **Positional range is latent** — combat still uses fixed 12m/10m distances; moving doesn't change hit
+   difficulty.
+9. **The Force is cosmetic** — awakening flips a flag but grants no usable powers.
+10. **No custom chargen UI, no matchmaking/menu for the MMO** (CLI-launch only), **Force Points don't
+    regenerate**, and reserved-name rejection is **silent** (no message).
 
 ---
 
 ## 16. Why it works this way — design notes
 
-The mechanics above follow WEG D6 R&E as the authority, with deliberate, documented divergences
-recorded in `docs/DIVERGENCE_LEDGER.md`. The ones you'll actually feel in play:
+Mechanics follow WEG D6 R&E as the authority, with documented divergences in
+`docs/DIVERGENCE_LEDGER.md`. The ones you'll feel:
 
-- **DIV-0006** death penalty: partial loss + insurance, **credits always kept** (a mainstream-MMO
-  retention choice over hardcore full-loot).
-- **DIV-0007** dual-track CP: fast gameplay progression plus a slow prestige/RP track.
-- **DIV-0016 / DIV-0017** lethality: the secured spaceport is a non-lethal **sparring** zone (return
-  fire capped at Wounded) so the wound/medical loop is safe to learn; travel to contested/lawless
-  zones lifts the cap for real, lethal creature combat and the death loop.
-- **DIV-0018** economy: WEG list prices are the buy anchor; the 40% sell buy-back is the money sink.
+- **DIV-0006 / DIV-0027** death: partial loss + insurance, **credits always kept**; and the new **tiered
+  downed-in-field** model (incapacitated is stable, mortally-wounded bleeds out, `Y` to yield, First Aid
+  revives) — the owner-decided "true tiering."
+- **DIV-0017 / DIV-0024** PvE lethality: hostiles initiate unprovoked in lawless/contested; venom &
+  restraint are real accumulating kill vectors.
+- **DIV-0016** the secured spaceport stays a non-lethal **sparring** zone so you can learn the loop safely.
+- **DIV-0018 / DIV-0023 / DIV-0026** economy: WEG list prices, 40% sell sink, per-zone stock, **harvest**
+  as a kill-faucet, and an **armor-repair** sink; the buy→sell arbitrage floor is closed.
+- **DIV-0019** PvP: zone-based (lawless) open PvP with cumulative wounds and reaction dodge (wired
+  server-side; no keyboard targeting yet). Duels/bounties (DIV-0022) and sieges (DIV-0021) are designed
+  but latent.
+- **DIV-0020** quests: a MUD/MMO objective-and-reward layer (server-live, no client board yet).
 - **DIV-0011** Force: the earned, rare "SWG Village" unlock instead of chargen-selectable Jedi.
-- **DIV-0019** PvP: zone-based (lawless-only) open PvP with **no consent handshake**, reusing the
-  same combat + death loop; full-loot in lawless.
-- **DIV-0020** quests: a MUD/MMO objective-and-reward translation (WEG has no formal quest rule),
-  rewards reusing the existing credit + CP tracks. Pure model today; live wiring is a follow-up.
 
-For the current build state, roadmap, and what's queued next, see `docs/SESSION_HANDOFF.md`,
-`docs/WAVE_F_HANDOFF.md`, and `docs/UNATTENDED_BACKLOG.md`.
+For the current build state, the active work queue, and what's next, see `docs/WAVE_G_BACKLOG.md`,
+`docs/OVERNIGHT_QUEUE.md`, and the divergence ledger.
 
 ---
 
-*This guide reflects the code at HEAD `7746019`. The build is under active development and moves
-under you — as Wave F continues (a PvP target UI, equip/inventory UI, corpse looting, a quest board,
-faction access), the [PARTIAL]/[LATENT]/[GATED] items above are the most likely to flip to [LIVE].
-Check the divergence ledger and handoffs for the current frontier.*
+*This guide reflects the code at HEAD `62ded70`. The build changes daily under active development —
+the most likely near-term flips from [LATENT] to [LIVE] are a quest board + accept/claim commands, an
+equip/inventory UI, a PvP target selector, and corpse-loot/repair commands (the client-input catch-up).
+Check the divergence ledger and the Wave G backlog for the current frontier.*
