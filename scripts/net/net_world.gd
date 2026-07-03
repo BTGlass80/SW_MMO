@@ -753,8 +753,8 @@ func _spawn_npc(npc_id: String, kind: String, pos: Vector3) -> Node3D:
 	label.font_size = 22
 	label.modulate = Color(0.20, 0.18, 0.14)
 	root.add_child(label)
+	add_child(root)  # must be in the tree BEFORE global_position (else !is_inside_tree() spam)
 	root.global_position = pos
-	add_child(root)
 	return root
 
 func _build_camera() -> void:
@@ -762,8 +762,8 @@ func _build_camera() -> void:
 	_camera.name = "Camera3D"
 	_camera.fov = 74
 	_camera.current = true
+	add_child(_camera)  # must be in the tree BEFORE global_position (else !is_inside_tree() spam)
 	_camera.global_position = Vector3(-20, 1.75, -6)
-	add_child(_camera)
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
