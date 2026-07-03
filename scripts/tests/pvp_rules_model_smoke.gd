@@ -37,8 +37,13 @@ func _init() -> void:
 	_assert_equal(bool(dpools["target_stun_mode"]), false, "PvP deals REAL damage (stun_mode false)")
 
 	# --- defender state projection ---
+	# G14 (DIV-0008): a defender with no wound_level yet projects wound_level "" (severity fallback).
 	_assert_equal(Pvp.defender_target_state({"player_wound_severity": 4, "player_armor_quality_pips": 1}, "B"),
-		{"wound_severity": 4, "armor_quality_pips": 1, "name": "B"}, "defender live state -> target_state shape")
+		{"wound_severity": 4, "wound_level": "", "armor_quality_pips": 1, "name": "B"}, "defender live state -> target_state shape")
+	# G14: the wound LEVEL STRING carries so a wounded_twice defender's reaction penalty can reach -2D
+	# (the severity int collapses wounded/wounded_twice to 2 and could only ever yield -1D).
+	_assert_equal(Pvp.defender_target_state({"player_wound_severity": 2, "player_wound_level": "wounded_twice"}, "C"),
+		{"wound_severity": 2, "wound_level": "wounded_twice", "armor_quality_pips": 0, "name": "C"}, "defender wound_level carries into target_state")
 
 	# --- kill threshold + full-loot tier (DIV-0027: is_kill is THE routing predicate) ---
 	# sev 5 -> _handle_player_death (full DIV-0006 penalty + respawn); sev 3-4 -> _handle_player_downed

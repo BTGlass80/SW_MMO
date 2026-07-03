@@ -208,6 +208,8 @@ Invoke-GodotStep "Wound ladder model smoke:" @("--headless", "--path", $projectR
 
 Invoke-GodotStep "Wound escalation flow smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/wound_escalation_flow_smoke.gd")
 
+Invoke-GodotStep "Wound penalty level smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/wound_penalty_level_smoke.gd")
+
 Invoke-GodotStep "Recovery model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/recovery_model_smoke.gd")
 
 Invoke-GodotStep "Force skills model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/force_skills_model_smoke.gd")

@@ -96,7 +96,7 @@ func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary
 	if String(next_state.get("player_defense", DEFENSE_NONE)) == DEFENSE_FULL_DODGE:
 		return _resolve_full_dodge_exchange(rules, next_state, next_target, pools, distance, rng, round_num, exchange_seed)
 
-	var player_wound_penalty := _wound_penalty_dice(int(next_state.get("player_wound_severity", 0)))
+	var player_wound_penalty := _wound_penalty_for(String(next_state.get("player_wound_level", "")), int(next_state.get("player_wound_severity", 0)))
 	var force_point_spent := _consume_force_point(next_state)
 	var aim_bonus := int(next_state.get("aim_bonus_dice", 0))
 	var aim_pool := {"dice": aim_bonus, "pips": 0}
@@ -125,7 +125,7 @@ func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary
 	var target_damage := {}
 	var target_wound := {}
 	var target_disabled := false
-	var target_wound_penalty := _wound_penalty_dice(target_severity)
+	var target_wound_penalty := _wound_penalty_for(String(target_state.get("wound_level", "")), target_severity)
 	if bool(attack["success"]):
 		var target_armor_profile: Dictionary = pools.get("target_armor", {})
 		var target_hit_location := ArmorConditionModel.hit_location_for_attack(attack, String(pools.get("target_hit_location_override", "")))
@@ -178,7 +178,7 @@ func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary
 	# false so every existing caller (dummy/creature/incoming) is byte-identical; a passive PvP victim
 	# (no queued intent) leaves it false and still reaction-fires once.
 	if not target_disabled and not bool(pools.get("suppress_return_fire", false)):
-		return_fire = _resolve_return_fire(rules, next_state, pools, distance, rng, target_severity, force_point_spent)
+		return_fire = _resolve_return_fire(rules, next_state, pools, distance, rng, target_severity, force_point_spent, String(next_target.get("wound_level", "")))
 		events.append(_return_fire_event(round_num, exchange_seed, return_fire))
 		next_state["player_wound_severity"] = maxi(
 			int(next_state.get("player_wound_severity", 0)),
@@ -217,10 +217,10 @@ func resolve_exchange(rules: Object, state: Dictionary, target_state: Dictionary
 	}
 
 func _resolve_full_dodge_exchange(rules: Object, state: Dictionary, target_state: Dictionary, pools: Dictionary, distance: float, rng: RandomNumberGenerator, round_num: int, exchange_seed: int) -> Dictionary:
-	var player_wound_penalty := _wound_penalty_dice(int(state.get("player_wound_severity", 0)))
+	var player_wound_penalty := _wound_penalty_for(String(state.get("player_wound_level", "")), int(state.get("player_wound_severity", 0)))
 	var force_point_spent := _consume_force_point(state)
 	var target_wound_severity := int(target_state.get("wound_severity", 0))
-	var return_fire := _resolve_return_fire(rules, state, pools, distance, rng, target_wound_severity, force_point_spent)
+	var return_fire := _resolve_return_fire(rules, state, pools, distance, rng, target_wound_severity, force_point_spent, String(target_state.get("wound_level", "")))
 	state["player_wound_severity"] = maxi(
 		int(state.get("player_wound_severity", 0)),
 		int(return_fire.get("player_wound_severity", 0))
@@ -271,9 +271,12 @@ func _resolve_full_dodge_exchange(rules: Object, state: Dictionary, target_state
 		"target_state": target_state,
 	}
 
-func _resolve_return_fire(rules: Object, state: Dictionary, pools: Dictionary, distance: float, rng: RandomNumberGenerator, target_wound_severity: int = 0, force_point_active: bool = false) -> Dictionary:
-	var player_wound_penalty := _wound_penalty_dice(int(state.get("player_wound_severity", 0)))
-	var target_wound_penalty := _wound_penalty_dice(target_wound_severity)
+func _resolve_return_fire(rules: Object, state: Dictionary, pools: Dictionary, distance: float, rng: RandomNumberGenerator, target_wound_severity: int = 0, force_point_active: bool = false, target_wound_level: String = "") -> Dictionary:
+	# G14 (DIV-0008): both sides' penalties are LEVEL-first (see _wound_penalty_for). The player's level
+	# rides on state["player_wound_level"]; the target's level is threaded from the caller (empty for a
+	# dummy/hostile whose single-hit severity is authoritative, set for a PvP defender).
+	var player_wound_penalty := _wound_penalty_for(String(state.get("player_wound_level", "")), int(state.get("player_wound_severity", 0)))
+	var target_wound_penalty := _wound_penalty_for(target_wound_level, target_wound_severity)
 	var player_armor_profile: Dictionary = pools.get("player_armor", {})
 	var target_armor: Dictionary = pools.get("target_armor", {})
 	var player_scale := String(pools.get("attacker_scale", "character"))
@@ -384,7 +387,9 @@ func resolve_incoming_fire_window(rules: Object, state: Dictionary, pools: Dicti
 	var rng := _rng_for_exchange(exchange_seed)
 	var next_state := state.duplicate(true)
 	var round_num := int(next_state.get("round", 1))
-	var player_wound_penalty := _wound_penalty_dice(int(next_state.get("player_wound_severity", 0)))
+	# G14 (DIV-0008): the victim's dodge penalty is LEVEL-first — the arena threads player_wound_level
+	# through vstate, so an UNPROVOKED wounded_twice victim dodges at -2D, not the severity-collapsed -1D.
+	var player_wound_penalty := _wound_penalty_for(String(next_state.get("player_wound_level", "")), int(next_state.get("player_wound_severity", 0)))
 	var force_point_spent := _consume_force_point(next_state)
 	var player_armor: Dictionary = pools.get("player_armor", {})
 	var dodge_pool: Dictionary = rules.apply_wound_penalty(
@@ -424,7 +429,8 @@ func resolve_incoming_fire_window(rules: Object, state: Dictionary, pools: Dicti
 			rng,
 			int(incoming.get("wound_severity", 0)),
 			force_point_spent,
-			defense
+			defense,
+			String(incoming.get("wound_level", ""))
 		)
 		result["source_id"] = String(incoming.get("source_id", "incoming_%d" % i))
 		result["source_name"] = String(incoming.get("source_name", result["source_id"]))
@@ -457,9 +463,12 @@ func resolve_incoming_fire_window(rules: Object, state: Dictionary, pools: Dicti
 		"state": next_state,
 	}
 
-func _resolve_single_incoming_attack(rules: Object, state: Dictionary, pools: Dictionary, distance: float, cover_level: int, rng: RandomNumberGenerator, target_wound_severity: int, force_point_active: bool, defense: Dictionary) -> Dictionary:
-	var player_wound_penalty := _wound_penalty_dice(int(state.get("player_wound_severity", 0)))
-	var target_wound_penalty := _wound_penalty_dice(target_wound_severity)
+func _resolve_single_incoming_attack(rules: Object, state: Dictionary, pools: Dictionary, distance: float, cover_level: int, rng: RandomNumberGenerator, target_wound_severity: int, force_point_active: bool, defense: Dictionary, target_wound_level: String = "") -> Dictionary:
+	# G14 (DIV-0008): both penalties LEVEL-first (see _wound_penalty_for). The victim's level rides on
+	# state["player_wound_level"] (arena-threaded); the attacker's level is passed from the incoming dict
+	# (empty for a pure caller that supplies only severity -> byte-identical severity fallback).
+	var player_wound_penalty := _wound_penalty_for(String(state.get("player_wound_level", "")), int(state.get("player_wound_severity", 0)))
+	var target_wound_penalty := _wound_penalty_for(target_wound_level, target_wound_severity)
 	var player_armor_profile: Dictionary = pools.get("player_armor", {})
 	var target_armor: Dictionary = pools.get("target_armor", {})
 	var player_scale := String(pools.get("attacker_scale", "character"))
@@ -634,9 +643,23 @@ func _wound_penalty_dice(severity: int) -> int:
 	# Delegate to the canonical WEG wound ladder (DIV-0008). Single-hit severities map:
 	# sev 0->0, 1->1 (stunned), 2->1 (wounded), 3->0, 4->0, 5->0 — the "out" tiers
 	# (incapacitated/mortally/dead) carry NO penalty because a downed character can't act
-	# (Guide_19 §1 / Guide_01 §7). The -2D tier belongs to wounded_twice, which is reached
-	# ONLY cumulatively via WoundLadderModel.escalate() and never from a single-hit severity.
+	# (Guide_19 §1 / Guide_01 §7). This SEVERITY int deliberately collapses wounded/wounded_twice
+	# to 2 (severity_for_level), so it can NEVER express the -2D tier: a wounded_twice combatant
+	# routed through here reads as -1D. The -2D tier is reached only cumulatively (escalate()) and
+	# is expressed via the wound LEVEL STRING — see _wound_penalty_for below, which callers prefer.
 	return WoundLadderModel.penalty_dice_for_severity(severity)
+
+# G14 (DIV-0008): the LIVE wound penalty for a combatant, LEVEL-first. The wound LEVEL STRING is the
+# cross-window source of truth that distinguishes wounded (-1D) from wounded_twice (-2D); the single-hit
+# severity int collapses both to 2 and cannot express -2D. So when a level is present (the arena threads
+# `player_wound_level` / target `wound_level` through state), the penalty derives from it via
+# penalty_dice_for_level. An EMPTY level falls back to the severity int for pure callers that pass only
+# severity (back-compat: byte-identical to the old severity-keyed path). Never cross the severity<->level
+# boundary via raw ints — they diverge at 3 (level_for_severity(3)=incapacitated but LEVELS[3]=wounded_twice).
+func _wound_penalty_for(level: String, severity: int) -> int:
+	if level != "":
+		return WoundLadderModel.penalty_dice_for_level(level)
+	return _wound_penalty_dice(severity)
 
 # G3 (DIV-0019): assemble a DEFENDER player's reaction dodge vs an incoming primary attack. Mirrors
 # _resolve_return_fire's penalization of the dodge pool (defender wound penalty + armor Dexterity
@@ -646,7 +669,7 @@ func _wound_penalty_dice(severity: int) -> int:
 func _build_defender_reaction(rules: Object, pools: Dictionary, target_state: Dictionary, defense_stance: String, rng: RandomNumberGenerator) -> Dictionary:
 	if defense_stance != DEFENSE_DODGE and defense_stance != DEFENSE_FULL_DODGE:
 		return {}
-	var defender_wound_penalty := _wound_penalty_dice(int(target_state.get("wound_severity", 0)))
+	var defender_wound_penalty := _wound_penalty_for(String(target_state.get("wound_level", "")), int(target_state.get("wound_severity", 0)))
 	var defender_armor: Dictionary = pools.get("target_armor", {})
 	var attacker_scale := String(pools.get("attacker_scale", "character"))
 	var defender_scale := String(pools.get("target_scale", "character"))

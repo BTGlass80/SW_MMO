@@ -3,8 +3,10 @@ extends RefCounted
 #
 # Canonical WEG Star Wars D6 Revised & Expanded CUMULATIVE wound ladder, including
 # the "Wounded Twice" tier (-2D) that the prototype's ground_combat penalty table had
-# silently collapsed. Pure + stateless (every function is `static func`); no nodes,
-# no RNG, no rendering. See docs/DIVERGENCE_LEDGER.md DIV-0008.
+# silently collapsed. G14: that -2D is now LIVE in resolved exchanges — ground_combat keys
+# every combatant's penalty off the wound LEVEL STRING via penalty_dice_for_level (the
+# severity int collapses wounded/wounded_twice to 2 and can only yield -1D). Pure + stateless
+# (every function is `static func`); no nodes, no RNG, no rendering. See DIV-0008.
 #
 # Grounding (read-only reference):
 #   - C:\SW_MUSH\docs\design\Guide_01_WEG_D6_Core_Mechanics.md §7 (Wound Penalties,
@@ -85,14 +87,16 @@ static func level_for_severity(severity: int) -> String:
 				return "healthy"
 			return "dead"
 
-# Penalty dice for a single-hit severity. The actable wound tiers route through the
-# ladder (wounded_twice now yields -2D via escalate(), where ground_combat's old
-# _wound_penalty_dice silently returned 0D). Per WEG canon (Guide_19 §1 / Guide_01 §7
-# L393) the "out" tiers carry NO penalty — a downed character takes no actions, so the
-# penalty is moot:
-#   sev 0 -> 0D  (healthy)        — UNCHANGED from old ground_combat
-#   sev 1 -> 1D  (stunned)        — UNCHANGED
-#   sev 2 -> 1D  (wounded)        — UNCHANGED
+# Penalty dice for a single-hit SEVERITY int. This path CANNOT express the wounded_twice -2D tier:
+# level_for_severity collapses to the single-hit levels (2 -> "wounded"), so severity 2 always yields
+# -1D. The -2D tier is reached only cumulatively (escalate()) and is expressed via the LEVEL STRING —
+# callers that want the live wounded_twice penalty must go through penalty_dice_for_level (which
+# ground_combat_model._wound_penalty_for prefers, keeping this severity path a back-compat fallback).
+# Per WEG canon (Guide_19 §1 / Guide_01 §7 L393) the "out" tiers carry NO penalty — a downed character
+# takes no actions, so the penalty is moot:
+#   sev 0 -> 0D  (healthy)
+#   sev 1 -> 1D  (stunned)
+#   sev 2 -> 1D  (wounded — NOT wounded_twice; the int collapses the two)
 #   sev 3 -> 0D  (incapacitated, out/moot — can't act)
 #   sev 4 -> 0D  (mortally, out/moot — can't act)
 #   sev 5 -> 0D  (dead, moot)

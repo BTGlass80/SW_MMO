@@ -44,6 +44,8 @@ func _init() -> void:
 	_assert_equal(int(empty_state["wound_severity"]), 0, "an empty defender_state defaults wound_severity to 0")
 	_assert_equal(int(empty_state["armor_quality_pips"]), 0, "an empty defender_state defaults armor_quality_pips to 0")
 	_assert_equal(String(empty_state["name"]), "Nobody", "display_name passes through untouched")
+	# G14 (DIV-0008): an empty defender_state has no wound_level -> "" (severity fallback in the exchange).
+	_assert_equal(String(empty_state["wound_level"]), "", "an empty defender_state defaults wound_level to empty")
 
 	_finish()
 
