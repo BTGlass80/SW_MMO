@@ -65,12 +65,13 @@ func _init() -> void:
 	_assert_equal(((s2["sheet"] as Dictionary)["inventory"] as Array).size(), 0, "no instances remain after selling both")
 	_assert_equal(String(EconomyModel.can_sell(s2["sheet"], "knife")["reason"]), "not_owned", "a third sell attempt correctly reports not_owned")
 
-	# --- roll_loot: "character" scale band + a distinct seed changes the roll (seed actually matters) ---
-	# No threat_tier -> DEFAULT_LOOT_TIER (2) = x1.5 (Wave G / G12), so the character band [40,90] x pack 1
-	# scales to [60,135] (was [40,90] before the tier weight).
+	# --- roll_loot: scale no longer feeds credits (G15) + a distinct seed changes the roll ---
+	# G15 (DIV-0028): the character-scale band is GONE — every hostile uses the single base band [15,45].
+	# No threat_tier -> DEFAULT_LOOT_TIER (2) = x1.0, so a "character" spawn pays [15,45] x pack 1, same as
+	# any creature (the double-dip that made character-scale kills the best income is removed).
 	var char_spawn := {"hostile": true, "scale": "character", "pack_size": 1}
 	var loot_char: Dictionary = EconomyModel.roll_loot(char_spawn, 42)
-	_assert_true(int(loot_char["credits"]) >= 60 and int(loot_char["credits"]) <= 135, "character-scale loot in [40,90] x tier-2 default (x1.5) = [60,135] for pack 1")
+	_assert_true(int(loot_char["credits"]) >= 15 and int(loot_char["credits"]) <= 45, "character-scale loot in the SINGLE base band [15,45] x tier-2 default (x1.0) = [15,45] for pack 1 (no scale bonus)")
 	var loot_other_seed: Dictionary = EconomyModel.roll_loot(char_spawn, 4242)
 	# not asserting inequality of a single field (small band could coincide) -- assert the pair of
 	# (credits, salvage_credits) tuples differ across enough distinct seeds to prove determinism-by-seed.
@@ -84,27 +85,29 @@ func _init() -> void:
 	_assert_true(distinct_found, "different seeds produce different loot rolls (seed actually drives the RNG)")
 
 	# --- roll_loot: missing pack_size defaults to (and floors at) 1, no crash on scale 0 / negative ---
-	# threat_tier absent -> tier 2 (x1.5): creature band [15,45] x pack 1 -> round([22.5,67.5]) = [23,68].
+	# threat_tier absent -> tier 2 (x1.0): single base band [15,45] x pack 1 = [15,45].
 	var no_pack := {"hostile": true, "scale": "creature"}
 	var loot_no_pack: Dictionary = EconomyModel.roll_loot(no_pack, 9)
-	_assert_true(int(loot_no_pack["credits"]) >= 23 and int(loot_no_pack["credits"]) <= 68, "a missing pack_size defaults to pack 1 ([15,45] x tier-2 default x1.5 = [23,68])")
+	_assert_true(int(loot_no_pack["credits"]) >= 15 and int(loot_no_pack["credits"]) <= 45, "a missing pack_size defaults to pack 1 ([15,45] x tier-2 default x1.0 = [15,45])")
 	var neg_pack := {"hostile": true, "scale": "creature", "pack_size": -3}
 	var loot_neg_pack: Dictionary = EconomyModel.roll_loot(neg_pack, 9)
-	_assert_true(int(loot_neg_pack["credits"]) >= 23 and int(loot_neg_pack["credits"]) <= 68, "a negative pack_size floors at 1, does not invert/crash ([23,68])")
+	_assert_true(int(loot_neg_pack["credits"]) >= 15 and int(loot_neg_pack["credits"]) <= 45, "a negative pack_size floors at 1, does not invert/crash ([15,45])")
 
-	# --- roll_loot threat-tier weighting edge cases (Wave G / G12) ---
-	# An out-of-band threat_tier on the SPAWN is clamped like the helper: tier 0 -> x1, tier 99 -> x3 cap.
+	# --- roll_loot threat-tier weighting edge cases (Wave G / G15) ---
+	# An out-of-band threat_tier on the SPAWN is clamped like the helper: tier 0 -> x1 (t1), tier 99 -> x10
+	# (t5 boss cap). Note: the AMBIENT spawner never emits a boss, but roll_loot must still grade a boss
+	# fought via the event channel, so an above-range tier clamps to the boss band, not tier 4.
 	var lo_tier := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 0}
 	var hi_tier := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 99}
 	var t1_spawn := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 1}
-	var t4_spawn := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 4}
+	var t5_spawn := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 5}
 	for seed in [3, 17, 500, 90210]:
 		_assert_equal(int(EconomyModel.roll_loot(lo_tier, seed)["credits"]), int(EconomyModel.roll_loot(t1_spawn, seed)["credits"]), "a below-range spawn threat_tier clamps to the x1 tier-1 reward (seed %d)" % seed)
-		_assert_equal(int(EconomyModel.roll_loot(hi_tier, seed)["credits"]), int(EconomyModel.roll_loot(t4_spawn, seed)["credits"]), "an above-range spawn threat_tier clamps to the x3 tier-4 apex cap (seed %d)" % seed)
+		_assert_equal(int(EconomyModel.roll_loot(hi_tier, seed)["credits"]), int(EconomyModel.roll_loot(t5_spawn, seed)["credits"]), "an above-range spawn threat_tier clamps to the x10 tier-5 boss cap (seed %d)" % seed)
 	# salvage is tier-INDEPENDENT: the salvage bundle for a fixed seed is identical across tiers (only
 	# the credit figure is tier-weighted) -- proves the tier weight is a pure post-multiply on credits.
 	for seed2 in [3, 17, 500, 90210]:
-		_assert_equal(int(EconomyModel.roll_loot(t1_spawn, seed2)["salvage_credits"]), int(EconomyModel.roll_loot(t4_spawn, seed2)["salvage_credits"]), "salvage is unchanged by threat_tier for a fixed seed (seed %d)" % seed2)
+		_assert_equal(int(EconomyModel.roll_loot(t1_spawn, seed2)["salvage_credits"]), int(EconomyModel.roll_loot(t5_spawn, seed2)["salvage_credits"]), "salvage is unchanged by threat_tier for a fixed seed (seed %d)" % seed2)
 
 	# --- discount_for_tier: unknown tier defaults to no discount ---
 	_assert_equal(EconomyModel.discount_for_tier("nonexistent_tier"), 0.0, "an unrecognized rep tier gets no discount")

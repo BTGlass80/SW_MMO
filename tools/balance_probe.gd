@@ -12,6 +12,7 @@ const Chargen := preload("res://scripts/rules/chargen_model.gd")
 const Ladder := preload("res://scripts/rules/wound_ladder_model.gd")
 const EconomyModel := preload("res://scripts/rules/economy_model.gd")
 const GroundCombatModel := preload("res://scripts/rules/ground_combat_model.gd")  # regime: direct soak-pool ladder
+const CreatureSpawn := preload("res://scripts/rules/creature_spawn_model.gd")  # G15: tier banding + spawn mix
 
 const IID_WINDOWS := 2000       # per creature/profile: fresh-state exchanges for the severity histogram
 const CAMPAIGNS := 300          # campaigns per creature/profile/model
@@ -132,6 +133,10 @@ func _init() -> void:
 		var cr_min := loot_mean / wpk * (60.0 / WINDOW_SECONDS)
 		print("  offense: %d kills / %d windows -> %.1f windows/kill | loot %.0f cr/kill -> ~%.0f cr/min farming" % [
 			kills, windows, wpk, loot_mean, cr_min])
+
+	# G15 (DIV-0028): the NAMED acceptance instrument — full-roster lethality->tier table, per-tier
+	# cr/min monotonicity, and a seeded 6k-roll spawn mix per alert band.
+	_g15_acceptance(arena, creatures)
 
 	# NEW (DIV-0026): sweep the broken-armor regime alongside the pristine probe above.
 	_armor_condition_regime(arena, creatures, sheet, armors, profiles)
@@ -270,6 +275,148 @@ func _armor_condition_regime(arena: Object, creatures: Dictionary, base_sheet: D
 		print("    %-22s died %3d/%d   median windows-to-out %-7s (~%s)" % [
 			String(v[0]), c["deaths"], REGIME_CAMPAIGNS, _fmt(c["median"]), _mins(c["median"])])
 
+# ---------------------------------------------------------------------------------------------------
+# G15 (DIV-0028) ACCEPTANCE: measured-lethality tiers, cr/min monotonicity, per-alert spawn mix.
+# ---------------------------------------------------------------------------------------------------
+
+const G15_IID := 2000        # windows per creature for the P(out)/window measurement
+const G15_KILL := 400        # windows per creature for the windows-per-kill measurement
+const G15_MIX_ROLLS := 6000  # seeded spawn rolls per alert scenario
+
+func _g15_acceptance(arena: Object, creatures: Dictionary) -> void:
+	print("\n################  G15 ACCEPTANCE (DIV-0028): lethality-derived tiers + loot-by-tier  ################")
+	print("# green quickstart profile (aim 0 / cover 0 / no dodge). Tier bands: t1<0.5%%  t2<3%%  t3<20%%  t4>=20%%")
+	print("# boss(t5)>=~90%% or a named apex-legendary. HOSTILE creatures return fire (measured); NON-HOSTILE")
+	print("# fauna are NEVER a lethal target in the live path (network_manager skips them) -> in-play P(out)=0.")
+
+	var green := {"aim": 0, "cover": 0, "dodge": false}
+	var keys: Array = creatures.keys()
+	keys.sort()
+	# per (data) tier: accumulate cr/min for the monotonicity summary (hostile creatures only).
+	var tier_crmin := {1: [], 2: [], 3: [], 4: [], 5: []}
+	print("\n-- (A) full-roster table: creature | scale | hostile | data_tier | measured_tier | P(out)/win | wpk | cr/min --")
+	for key in keys:
+		var c: Dictionary = creatures[key]
+		var scale := String(c.get("scale", "creature"))
+		var hostile := bool(c.get("hostile", false))
+		var data_tier := int(c.get("threat_tier", 2))
+		if not hostile:
+			print("  %-20s %-9s hostile=false data_t%d  (non-hostile fauna — not a lethal target; in-play P(out)=0, cr/min=0)" % [key, scale, data_tier])
+			continue
+		var spawn := _spawn(creatures, key)
+		var pools: Dictionary = HostileNpc.attack_pools_from_creature(rules, spawn)
+		# P(out)/window
+		var hist := [0, 0, 0, 0, 0, 0]
+		var seed_base := hash(key + "g15")
+		for i in range(G15_IID):
+			_reset_player(arena, 0)
+			_engage(arena, key, pools, spawn)
+			hist[clampi(_one_window(arena, seed_base + i * 13, green), 0, 5)] += 1
+		var p_out := 100.0 * float(hist[3] + hist[4] + hist[5]) / G15_IID
+		# windows per kill
+		var kills := 0
+		var windows := 0
+		for i in range(G15_KILL):
+			_reset_player(arena, 0)
+			if not arena.has_hostile_target(key):
+				_engage(arena, key, pools, spawn)
+			_one_window(arena, hash(key) + 6000000 + i * 17, green)
+			windows += 1
+			if arena.hostile_target_disabled(key):
+				kills += 1
+				arena.remove_hostile_target(key)
+		if arena.has_hostile_target(key):
+			arena.remove_hostile_target(key)
+		var wpk := float(windows) / maxf(kills, 1.0)
+		# loot expectation (exercises EconomyModel.roll_loot's tier multiplier via _spawn's threat_tier)
+		var loot_total := 0
+		for i in range(LOOT_SAMPLES):
+			var l: Dictionary = EconomyModel.roll_loot(spawn, hash(key) + 20000 + i)
+			loot_total += int(l["credits"]) + int(l["salvage_credits"])
+		var loot_mean := float(loot_total) / LOOT_SAMPLES
+		var cr_min := loot_mean / wpk * (60.0 / WINDOW_SECONDS)
+		var meas := _g15_band(p_out)
+		var flag := "" if meas == data_tier else "   <-- data_tier %d vs measured %d" % [data_tier, meas]
+		tier_crmin[clampi(data_tier, 1, 5)].append(cr_min)
+		print("  %-20s %-9s hostile=true  t%d          t%d           %6.2f%%    %6.2f   %7.1f%s" % [
+			key, scale, data_tier, meas, p_out, wpk, cr_min, flag])
+
+	print("\n-- (B) per-DATA-tier mean cr/min (must be MONOTONE NON-DECREASING across ambient tiers t1->t4) --")
+	var prev := -1.0
+	var monotone := true
+	for t in [1, 2, 3, 4]:
+		var arr: Array = tier_crmin[t]
+		if arr.is_empty():
+			print("    t%d: (no hostile creatures at this tier)" % t)
+			continue
+		var mean := 0.0
+		for v in arr:
+			mean += float(v)
+		mean /= arr.size()
+		if mean + 0.001 < prev:
+			monotone = false
+		print("    t%d: n=%d  mean cr/min = %.1f" % [t, arr.size(), mean])
+		prev = mean
+	var boss_arr: Array = tier_crmin[5]
+	if not boss_arr.is_empty():
+		var bmean := 0.0
+		for v in boss_arr:
+			bmean += float(v)
+		bmean /= boss_arr.size()
+		print("    t5(boss): n=%d  mean cr/min = %.1f  (event channel — outside the ambient monotone requirement)" % [boss_arr.size(), bmean])
+	print("    => ambient cr/min monotone non-decreasing t1->t4: %s" % ("YES" if monotone else "NO -- FAILED"))
+
+	_g15_spawn_mix(creatures)
+
+func _g15_band(p_out: float) -> int:
+	if p_out >= 90.0: return 5
+	if p_out >= 20.0: return 4
+	if p_out >= 3.0: return 3
+	if p_out >= 0.5: return 2
+	return 1
+
+func _g15_spawn_mix(creatures: Dictionary) -> void:
+	var model := CreatureSpawn.new()
+	var data := {"creatures": creatures}
+	print("\n-- (C) seeded %d-roll spawn mix per alert band (must show: no ambient P(out)>=20%% at DEFAULT," % G15_MIX_ROLLS)
+	print("       and NO boss-class ambient at ANY alert) --")
+	var scenarios := [
+		["secured        (max t2)", "standard", "secured"],
+		["lax/lawless     (max t2)", "lax", "lawless"],
+		["standard/lawless DEFAULT (max t3)", "standard", "lawless"],
+		["high_alert/lawless (max t4)", "high_alert", "lawless"],
+		["lockdown/contested (max t4)", "lockdown", "contested"],
+		["unknown 'calm'/lawless FAIL-SAFE (max t2)", "calm", "lawless"],
+	]
+	for sc in scenarios:
+		var label := String(sc[0])
+		var alert := String(sc[1])
+		var security := String(sc[2])
+		var counts := {}
+		var max_tier := 0
+		var boss_hits := 0
+		# The unknown-alert fail-safe fires a push_warning per roll — keep that scenario's loop small so
+		# the acceptance log isn't buried under thousands of identical warnings (the clamp still shows).
+		var rolls := 50 if alert == "calm" else G15_MIX_ROLLS
+		for s in range(rolls):
+			var pick := String(model.roll_spawn(data, alert, security, s).get("creature_key", ""))
+			if pick == "":
+				continue
+			counts[pick] = int(counts.get(pick, 0)) + 1
+			var t := int((creatures.get(pick, {}) as Dictionary).get("threat_tier", 2))
+			max_tier = maxi(max_tier, t)
+			if model.is_boss(creatures.get(pick, {})):
+				boss_hits += 1
+		var mix_keys: Array = counts.keys()
+		mix_keys.sort_custom(func(a, b): return int(counts[a]) > int(counts[b]))
+		print("\n  [%s]  alert=%s security=%s  rolls=%d  -> max tier seen: %d  boss ambient: %d" % [label, alert, security, rolls, max_tier, boss_hits])
+		var line := ""
+		for k in mix_keys:
+			var t := int((creatures.get(k, {}) as Dictionary).get("threat_tier", 2))
+			line += "%s(t%d):%.1f%%  " % [k, t, 100.0 * float(counts[k]) / rolls]
+		print("     " + line)
+	# model is a RefCounted — it auto-frees when this scope ends; nothing to free explicitly.
+
 func _sev_for_key(k: String) -> int:
 	match k:
 		"stunned", "stunned_unconscious": return 1
@@ -298,8 +445,10 @@ func _spawn(creatures: Dictionary, key: String) -> Dictionary:
 	var c: Dictionary = creatures.get(key, {})
 	if c.is_empty():
 		return {}
+	# G15 (reviewer's one-line patch): carry threat_tier so EconomyModel.roll_loot's tier multiplier is
+	# actually exercised in the probe (without it, every probed kill defaulted to the tier-2 x1.0 band).
 	return {"creature_key": key, "name": String(c.get("name", key)), "scale": String(c.get("scale", "creature")),
-		"hostile": bool(c.get("hostile", true)), "pack_size": 1,
+		"hostile": bool(c.get("hostile", true)), "pack_size": 1, "threat_tier": int(c.get("threat_tier", 2)),
 		"char_sheet": c.get("char_sheet", {}), "natural_attack": c.get("natural_attack", {})}
 
 func _species(data: Dictionary, key: String) -> Dictionary:
