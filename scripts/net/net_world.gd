@@ -19,6 +19,7 @@ const MonsterBuilder := preload("res://scripts/world/monster_builder.gd")
 const NpcBuilder := preload("res://scripts/world/npc_builder.gd")
 const LandmarkBuilder := preload("res://scripts/world/landmark_builder.gd")  # signature Mos Eisley landmark
 const DialogueModel := preload("res://scripts/rules/dialogue_model.gd")
+const PlayerStatusBadgeModel := preload("res://scripts/rules/player_status_badge_model.gd")  # venom/restraint/wound status readout
 
 var _builder: WorldBuilder
 var _is_server := false
@@ -113,7 +114,7 @@ var _vendor_list_req := false      # headless: --vendor-list requests the stock 
 var _buy_insurance_req := false    # headless: --buy-insurance buys a death-insurance policy once
 var _econ_accum := 0.0
 var _condition_label: Label
-var _last_condition := "healthy"   # so we log condition CHANGES only
+var _last_condition := "healthy|0|false"   # composite (wound|poison|held) so we log status CHANGES only
 var _target_label: Label           # F47: at-a-glance target status (companion to the condition HUD)
 var _last_target := ""             # so we log target-status CHANGES only
 var _org_label: Label
@@ -554,9 +555,10 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 			root.global_position = pos
 			record["seen"] = true
 		# Show OTHER players' wound condition on their nameplate (so a medic can see who's hurt)
-		# + faction allegiance (F36).
+		# + faction allegiance (F36) + live venom/restraint status (surfaced from the snapshot;
+		# the status fields are absent when inactive, so read them null-safe with .get()).
 		if id != _local_id:
-			_update_nameplate(record, id, String(entry.get("name", "")), String(entry.get("wound", "healthy")), String(entry.get("axis", "")))
+			_update_nameplate(record, id, String(entry.get("name", "")), String(entry.get("wound", "healthy")), String(entry.get("axis", "")), int(entry.get("status_poison_rounds_left", 0)), bool(entry.get("status_restrained", false)))
 	for id in _avatars.keys():
 		if not seen.has(id):
 			(_avatars[id]["root"] as Node3D).queue_free()
@@ -608,7 +610,7 @@ func _on_snapshot(snapshot: Dictionary) -> void:
 		_last_news = headline
 		print("[news] %s" % headline)
 	var you: Dictionary = snapshot.get("you", {})
-	_update_condition(String(you.get("wound", "healthy")), int(you.get("wound_penalty", 0)))
+	_update_condition(String(you.get("wound", "healthy")), int(you.get("wound_penalty", 0)), int(you.get("status_poison_rounds_left", 0)), bool(you.get("status_restrained", false)))
 	_update_boost(int(you.get("cp", 0)), int(you.get("fp", 0)))
 	_update_org(snapshot.get("territory", {}))
 
@@ -651,20 +653,24 @@ func _color_for_peer(peer_id: int) -> Color:
 	var hue := fposmod(float(peer_id) * 0.6180339887, 1.0)
 	return Color.from_hsv(hue, 0.55, 0.72)
 
-# Show a remote player's wound condition on their nameplate (so a medic can see who's hurt
-# and target First Aid). Healthy -> just the name; wounded -> "Name — Condition" tinted.
-func _update_nameplate(record: Dictionary, peer_id: int, display_name: String, wound: String, axis: String = "") -> void:
+# Show a remote player's live status on their nameplate (so a medic can see who's hurt/held/
+# poisoned and target First Aid). Healthy + un-poisoned + un-held -> just the name (identical
+# to before); any active status -> "Name — <combined status>" tinted to the TOP status. The
+# poison/restraint params default to no-status so any legacy caller renders byte-identically.
+func _update_nameplate(record: Dictionary, peer_id: int, display_name: String, wound: String, axis: String = "", poison_rounds_left: int = 0, restrained: bool = false) -> void:
 	var label := (record["root"] as Node3D).get_node_or_null("Nameplate") as Label3D
 	var base := display_name if display_name != "" else "Spacer-%d" % peer_id
 	if axis != "":
 		base += " [%s]" % _axis_pretty(axis)  # F36: faction allegiance
+	var badge := PlayerStatusBadgeModel.badge_for(wound, poison_rounds_left, restrained)
 	if label != null:
-		if wound == "healthy":
+		if not bool(badge.get("active", false)):
+			# healthy + clean: unchanged from the pre-status build
 			label.text = base
 			label.modulate = Color(0.09, 0.08, 0.06)
 		else:
-			label.text = "%s — %s" % [base, _condition_pretty(wound)]
-			label.modulate = _condition_color(wound)
+			label.text = "%s — %s" % [base, String(badge.get("combined", ""))]
+			label.modulate = _status_color(String(badge.get("color_key", "healthy")))
 	if String(record.get("wound", "healthy")) != wound:
 		record["wound"] = wound
 		print("[nameplate] %s is %s" % [base, _condition_pretty(wound)])
@@ -1060,16 +1066,41 @@ func _on_combat_envelope(envelope: Dictionary) -> void:
 
 # Update the player's own condition readout from the snapshot's "you" block. Reflects combat
 # damage, natural recovery (DIV-0012), and First Aid (DIV-0013) as the server changes the wound.
-func _update_condition(wound: String, penalty: int = 0) -> void:
+func _update_condition(wound: String, penalty: int = 0, poison_rounds_left: int = 0, restrained: bool = false) -> void:
 	var label := _condition_pretty(wound)
 	if penalty > 0:
 		label += " (-%dD to actions)" % penalty  # F46: the WEG wound penalty — why a wounded character fights worse
+	# Surface live venom/restraint on the local readout too (the wound + its penalty are already
+	# shown, so append only the non-wound extras: "Held" / "Poisoned (n)"). Blank when clean.
+	var extra := PlayerStatusBadgeModel.extra_status_text(poison_rounds_left, restrained)
+	if extra != "":
+		label += " · " + extra
+	# Tint toward the TOP active status (poison/held can outrank the wound); healthy + clean
+	# keeps the legacy green.
+	var badge := PlayerStatusBadgeModel.badge_for(wound, poison_rounds_left, restrained)
+	var col := _condition_color(wound)
+	if bool(badge.get("active", false)):
+		col = _status_color(String(badge.get("color_key", "healthy")))
 	if _condition_label != null:
 		_condition_label.text = "Condition: %s" % label
-		_condition_label.modulate = _condition_color(wound)
-	if wound != _last_condition:
-		_last_condition = wound
-		print("[condition] you=%s penalty=-%dD" % [wound, penalty])
+		_condition_label.modulate = col
+	var key := "%s|%d|%s" % [wound, poison_rounds_left, str(restrained)]
+	if key != _last_condition:
+		_last_condition = key
+		print("[condition] you=%s penalty=-%dD%s" % [wound, penalty, (" " + extra) if extra != "" else ""])
+
+# Map a PlayerStatusBadgeModel color_key -> the on-screen Color. The wound keys reproduce
+# _condition_color exactly (so a lone-wound nameplate/HUD is byte-identical), with distinct
+# tints for the new venom/restraint statuses.
+func _status_color(color_key: String) -> Color:
+	match color_key:
+		"stunned": return Color(0.62, 0.58, 0.20)       # matches _condition_color("stunned")
+		"wounded": return Color(0.70, 0.42, 0.16)        # matches _condition_color("wounded"/"wounded_twice")
+		"downed": return Color(0.72, 0.20, 0.16)         # matches _condition_color(incapacitated+)
+		"restrained": return Color(0.42, 0.62, 0.95)     # held — cold blue
+		"poisoned": return Color(0.45, 0.78, 0.32)       # venom — sickly green
+		"healthy": return Color(0.30, 0.62, 0.30)        # matches _condition_color("healthy")
+		_: return Color(0.30, 0.62, 0.30)
 
 # Update the in-combat Character-Point / Force-Point pool readout (the resource the C/F keys
 # spend, F5) from the snapshot's "you" block, so a player can see how much they can spend

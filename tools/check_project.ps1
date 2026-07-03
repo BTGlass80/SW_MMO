@@ -73,6 +73,8 @@ Invoke-GodotStep "Range hit feedback model smoke:" @("--headless", "--path", $pr
 
 Invoke-GodotStep "Range state badge model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/range_state_badge_model_smoke.gd")
 
+Invoke-GodotStep "Player status badge model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/player_status_badge_model_smoke.gd")
+
 Invoke-GodotStep "Range target model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/range_target_model_smoke.gd")
 
 Invoke-GodotStep "Positional range model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/positional_range_model_smoke.gd")
@@ -173,8 +175,6 @@ Invoke-GodotStep "Death flow smoke:" @("--headless", "--path", $projectRoot, "--
 Invoke-GodotStep "Corpse decay model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/corpse_decay_model_smoke.gd")
 
 Invoke-GodotStep "Corpse loot wire smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/corpse_loot_wire_smoke.gd")
-
-Invoke-GodotStep "Creature status wire smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/creature_status_wire_smoke.gd")
 
 Invoke-GodotStep "Hostile NPC model smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/hostile_npc_model_smoke.gd")
 
