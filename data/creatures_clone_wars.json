@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "era": "20 BBY Clone Wars",
-  "source_policy": "Derived one-way from READ-ONLY C:\\SW_MUSH. SW_MUSH remains read-only. WEG Star Wars D6 R&E; Clone Wars era (20 BBY). Source: data/npcs_creatures.yaml (era-neutral wildlife/fauna).",
-  "source_note": "Content drop 2 (2026-06-24).",
+  "source_policy": "Derived one-way from READ-ONLY C:\\SW_MUSH. SW_MUSH remains read-only. WEG Star Wars D6 R&E; Clone Wars era (20 BBY). Sources: data/npcs_creatures.yaml (era-neutral wildlife/fauna) and docs/sourcebooks/WEG40120.txt (R&E core rulebook Creatures chapter, for the rancor).",
+  "source_note": "Content drop 2 (2026-06-24). Creature variety drop 3 (2026-07-02): +9 Tatooine/Outer-Rim creatures (bantha, gornt, scurrier, rock_wart, canyon_womp_rat, draagax, arqet, preying_makthier, rancor) curated from C:\\SW_MUSH\\data\\npcs_creatures.yaml plus the WEG40120 R&E core rulebook (rancor, not previously in SW_MUSH).",
   "creatures": {
     "worrt": {
       "id": "worrt",
@@ -1003,6 +1003,443 @@
         "Black Sun / Pyke street-level muscle \u2014 the canonical Frontier-tier underworld hostile."
       ],
       "source": "D6 stats from scratch \u2014 R&E NPC-template conventions in WEG40120 (trained-trooper / pirate-sentry templates: DEX 3D, STR 3D, blaster 3D+1, brawling 3D+2). Flavor from GG11 Criminal Organizations + the Coruscant underworld lore."
+    },
+    "bantha": {
+      "id": "bantha",
+      "name": "Bantha",
+      "species": "Bantha",
+      "scale": "creature",
+      "size": "2-3m at the shoulder",
+      "hostile": false,
+      "pack_count": [
+        4,
+        8
+      ],
+      "description": "A massive shaggy quadruped with huge spiral horns and small, bright eyes that betray surprising curiosity for a creature that weighs as much as a landspeeder. Wild banthas move in herds across the Dune Sea, following ancient migration paths that predate any settlement on Tatooine. A herd of them means Tusken bands are not far - the Sand People depend on the bantha for everything: food, hide, transport, and ceremony. The ground shakes as they pass. Standing between a bantha and where it intends to go is not recommended.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "2D",
+          "perception": "2D",
+          "strength": "8D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 5,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "horns and trample",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D"
+      },
+      "special": [
+        "Trample: STR damage (no to-hit modifier; area-effect charge against anything directly in the path).",
+        "Orneriness 2D - rideable by the Tusken Raiders; the spawn path uses this template as ambient fauna only.",
+        "Wild bantha herds are guarded at distance by Tusken outriders; an encounter with a herd is a warning of Tusken proximity."
+      ],
+      "source": "WEG40120 p.215 (Bantha stat block, confirmed via sidecar WEG40120.txt lines 20353-20381): DEX 2D, PER 2D, STR 8D, horns STR+1D, trample STR, Move 5, Size 2-3m, Orneriness 2D. Non-intelligent: KNO/MEC/TEC = 0D per WEG40120 p.214 creature convention."
+    },
+    "gornt": {
+      "id": "gornt",
+      "name": "Gornt",
+      "species": "Gornt",
+      "scale": "creature",
+      "size": "~0.5m at shoulder",
+      "hostile": false,
+      "pack_count": [
+        4,
+        8
+      ],
+      "description": "A stubby, round-bodied herbivore the height of a knee, the gornt is the desert's modest promise: where they drink, the water is clean; where they gather, there is enough growth to sustain them and therefore something to eat. Gornts are hunted everywhere they are found, are not especially fast, and have no defenses to speak of beyond a reflexive bite that closes on whatever is closest when they panic. Moisture farmers on Tatooine keep small herds for meat and hide, and the feral populations that water at isolated oases are the best survey markers in the deep desert.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D",
+          "perception": "2D",
+          "strength": "1D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {},
+        "move": 10,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "bite",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2"
+      },
+      "special": [
+        "Prey animal: the gornt's defensive bite is reflexive and largely ineffective against adults."
+      ],
+      "harvest": {
+        "good": "gornt_meat",
+        "resource": "organic",
+        "note": "Frontier livestock; field-dressed on kill for meat and hide."
+      },
+      "source": "COTG sec.4 exotic appendix (WEG40080). Verified stat block: DEX 1D+2, PER 1D, STR 1D, bite STR+2, Move 6. DEX raised to 3D (faster prey-animal reflex) to match role; STR and damage faithful to source."
+    },
+    "scurrier": {
+      "id": "scurrier",
+      "name": "Scurrier",
+      "species": "Scurrier",
+      "scale": "creature",
+      "size": "10-25cm",
+      "hostile": false,
+      "pack_count": [
+        4,
+        8
+      ],
+      "description": "A small, fast-footed lizard-like creature with a plated back and a fidgeting, anxious head on a neck that seems always in motion. Scurriers live in colonies of twenty or more, nesting in rock crevices and scrub thickets at the edge of the Jundland canyons. They are harmless - they scatter at any loud noise or quick movement - and they make reasonable eating in a survival situation, which is why Jawas and moisture farm children have caught them for generations. A colony moving suddenly and in the same direction is worth paying attention to.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "4D+1",
+          "perception": "3D",
+          "strength": "1D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "sneak": "4D",
+          "running": "5D"
+        },
+        "move": 14,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "bite",
+        "to_hit_skill": "brawling",
+        "damage": "STR"
+      },
+      "special": [
+        "Scatter reflex: the whole colony bolts simultaneously at a threat; warning signal to observers.",
+        "Prey animal: the bite is reflexive; a scurrier flees before it fights."
+      ],
+      "harvest": {
+        "good": "scurrier_meat",
+        "resource": "organic",
+        "note": "Jawa subsistence food; field-dressed on kill."
+      },
+      "source": "D6 re-stat from scratch per secrets_of_tatooine_extraction_v1.md sec.10 (SoT WTC11839 is WotC d20; d20 block discarded per WEG-only invariant). Calibrated to R&E small-creature conventions in WEG40120: gornt DEX 1D+2, PER 1D, STR 1D (0.5m prey animal). Scurrier is faster and sharper-eyed (colony-alarm animal, 10-25cm) at DEX 4D+1, PER 3D, STR 1D."
+    },
+    "rock_wart": {
+      "id": "rock_wart",
+      "name": "Rock Wart",
+      "species": "Rock Wart",
+      "scale": "creature",
+      "size": "20-35cm",
+      "hostile": false,
+      "pack_count": [
+        1,
+        3
+      ],
+      "description": "Flat as a scale and sand-coloured as the stone it flattens itself against, the rock wart is nearly impossible to see until it stings you. It haunts the shadowed undersides of boulders and the cool clefts in the canyon face - anywhere a warm hand might reach. Its sting delivers a paralysing venom, and the females of the species locate paralysed prey not as a meal but as a nursery: they lay eggs just below the skin. Healers on Tatooine know the signs and the treatment; the settlers who lose animals to them do not usually realise what happened until the larvae emerge.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "2D",
+          "perception": "1D+2",
+          "strength": "1D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "sneak": "4D"
+        },
+        "move": 3,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "sting",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1"
+      },
+      "special": [
+        "Camouflage: nearly impossible to see against rock; +3 difficulty to spot.",
+        "Paralytic venom: Moderate STR roll or paralysed 1D rounds per sting.",
+        "Egg incubation: paralysed prey at risk of larval implantation (1-in-3 chance; field-treatable with a Moderate first_aid roll within 1 hour; larvae emerge 3-5 days later)."
+      ],
+      "special_attack": {
+        "poison": {
+          "damage": "0D",
+          "rounds": 2,
+          "onset": 0,
+          "note": "Paralytic sting: Moderate STR or incapacitated for 1D rounds; egg-incubation risk on extended paralysis."
+        }
+      },
+      "source": "D6 re-stat from scratch per secrets_of_tatooine_extraction_v1.md sec.10 (SoT WTC11839 is WotC d20; d20 block discarded per WEG-only invariant). Calibrated to R&E small-predator conventions in WEG40120: hitcher crab STR 1D (1.3m, venomous), spor crawler STR 0D+2 (8cm, lethal venom). Damage code cleaned to a flat STR+1 (source text listed 'STR+1 (plus venom below)'; the venom rider now lives entirely in special_attack.poison so combat-pool resolution parses cleanly)."
+    },
+    "canyon_womp_rat": {
+      "id": "canyon_womp_rat",
+      "name": "Canyon Womp Rat",
+      "species": "Womp Rat",
+      "scale": "creature",
+      "size": "~2m long",
+      "hostile": true,
+      "pack_count": [
+        3,
+        6
+      ],
+      "description": "Lean and low-slung with a ridged spine and a long, naked tail, the canyon womp rat grows to almost two metres along the body - large enough that a pack of them can harry a full-grown bantha calf to a standstill. They nest in crevices and boulder fields and hunt by harrying their prey in relay shifts, one pack biting from the front while the rest arc around. The Jundland settlers drive their young in skyhoppers to run and pick them off from the air; the womp rats have learned to scatter into the rocks at the sound of a repulsor engine.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "2D+1",
+          "perception": "2D",
+          "strength": "2D+2",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "brawling": "3D+2",
+          "sneak": "3D",
+          "running": "3D"
+        },
+        "move": 12,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "bite",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D"
+      },
+      "special": [
+        "Pack relay attack: one womp rat bites from the front while others arc around.",
+        "Scatter reflex: at repulsorlift engine sound, pack breaks and hides in rocks."
+      ],
+      "harvest": {
+        "good": "womp_rat_pelt",
+        "resource": "organic",
+        "note": "Coarse banded hide; field-dressed on kill."
+      },
+      "source": "D6 re-stat from scratch per secrets_of_tatooine_extraction_v1.md sec.10 (SoT WTC11839 is WotC d20; d20 block discarded per WEG-only invariant). Calibrated to R&E creature family in WEG40120: wrix STR 3D (2.5m pack carnivore), gornt STR 1D (0.5m prey). Canyon womp rat at ~2m sits between them at STR 2D+2."
+    },
+    "draagax": {
+      "id": "draagax",
+      "name": "Draagax",
+      "species": "Draagax",
+      "scale": "creature",
+      "size": "1.6-2.0m tall",
+      "hostile": true,
+      "pack_count": [
+        3,
+        6
+      ],
+      "description": "In the deep rock of the badlands there are plants that grow in the crevices: a low, dark shrub with small blue berries. The draagax eat them. A draagax that has not eaten the berries is a fast pack hunter with paralyzing fangs, hunting by the heat of its prey. A draagax that has eaten them is something else - something that sprints at the edge of what is possible, that the rest of the pack races to keep up with. You will know one is berserk before you see it: the sound of it coming across rock is very loud, and it does not slow down.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "4D",
+          "perception": "3D",
+          "strength": "4D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "dodge": "5D",
+          "running": "6D",
+          "sneak": "5D",
+          "brawling": "5D",
+          "climbing": "5D"
+        },
+        "move": 12,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "fangs",
+        "to_hit_skill": "brawling",
+        "damage": "STR+1D"
+      },
+      "special": [
+        "Infrared vision: hunts by body heat, unimpaired by darkness.",
+        "Berserk sprint: Move 28 after eating a local narcotic plant.",
+        "Paralytic fangs: Moderate stamina or incapacitated (flavor).",
+        "Pack coordination: attacks in coordinated groups of 3-6."
+      ],
+      "special_attack": {
+        "poison": {
+          "damage": "0D",
+          "rounds": 3,
+          "onset": 0,
+          "note": "Draagax fang neurotoxin: Moderate STR or incapacitated for 3 rounds."
+        }
+      },
+      "harvest": {
+        "good": "draagax_fang",
+        "resource": "chemical",
+        "difficulty": 10,
+        "note": "The fang gland holds paralytic toxin; field-dressed on kill."
+      },
+      "source": "COTG sec.2.3 (WEG40080). Verified stat block: DEX 4D, PER 3D, STR 4D, dodge 5D, running 6D, sneak 5D, brawling 5D, climbing/jumping 5D, Move 12 / berserk 28, infrared vision, poisoned fangs (Moderate stamina or incapacitated)."
+    },
+    "arqet": {
+      "id": "arqet",
+      "name": "Arqet",
+      "species": "Arqet",
+      "scale": "creature",
+      "size": "1.8-2.4m long, 2m tall",
+      "hostile": true,
+      "pack_count": [
+        1,
+        2
+      ],
+      "description": "The rock ahead has too many edges. The arqet is a patience predator - it colour-shifts to match the stone around it and sits absolutely still, watching through plated eyes, until the prey closes to the worst possible range. Then the horns come out of what you thought was a boulder, and they come fast. Its carapace turns a blaster bolt almost as reliably as the rock it was mimicking.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D+2",
+          "perception": "3D",
+          "strength": "3D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "sneak": "5D",
+          "brawling": "4D"
+        },
+        "move": 9,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "horns",
+        "to_hit_skill": "brawling",
+        "damage": "STR+2D"
+      },
+      "armor": {
+        "note": "+2D physical and energy - carapace armour."
+      },
+      "special": [
+        "Camouflage: colour-shifts to rock; adds to sneak rolls while stationary.",
+        "Feigned immobility: sits motionless until prey is in close range, then charges.",
+        "Claws: STR+2 follow-through after the horn charge.",
+        "Teeth: STR+1D as a final pin attack."
+      ],
+      "harvest": {
+        "good": "arqet_carapace",
+        "resource": "composite",
+        "note": "The carapace plate is a commercial armour blank; field-dressed on kill."
+      },
+      "source": "COTG sec.2.3 (WEG40080). Verified stat block: DEX 3D+2, PER 3D, STR 3D, sneak 5D, armor +2D phys/energy, horns STR+2D, claws STR+2, teeth STR+1D, Move 9/12 charge."
+    },
+    "preying_makthier": {
+      "id": "preying_makthier",
+      "name": "Preying Makthier",
+      "species": "Preying Makthier",
+      "scale": "creature",
+      "size": "1.2-2.7m long, 2m wingspan",
+      "hostile": true,
+      "pack_count": [
+        5,
+        10
+      ],
+      "description": "What sounds like wind through a crevice is not wind - it is the sonar clicks of something navigating in the dark below the rim. The preying makthier roosts in glassed crevices and structural voids, a cave flyer that hunts by ultrasonic echo in total darkness. It masses in dozens when the heat drives its prey to the surface, and the tail it drags behind it - barbed, sucking, jointed - is both a strangling weapon and a venom delivery system. The first one that hits you will not be the last one.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "3D+1",
+          "perception": "2D+1",
+          "strength": "3D+1",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "search": "4D",
+          "sneak": "4D+2",
+          "lifting": "5D+1",
+          "brawling": "4D+1"
+        },
+        "move": 10,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "tail stinger",
+        "to_hit_skill": "brawling",
+        "damage": "2D"
+      },
+      "special": [
+        "Sonic motion detection: +1D+2 to search rolls; hunts unimpaired in total darkness.",
+        "Constriction: 1D/round while holding; target loses 2D DEX while constricted (Moderate brawling or STR to break free).",
+        "Paralytic stinger: 2D physical + 4D stun; stun repeats every round for 5 rounds (Moderate stamina to resist each).",
+        "Masses 5-10+ for coordinated attacks; isolating targets is their primary tactic."
+      ],
+      "special_attack": {
+        "restraint": {
+          "kind": "grapple",
+          "hold_damage": "1D",
+          "dex_penalty": "2D",
+          "note": "Constricting tail; Moderate brawling or STR roll to break free."
+        },
+        "poison": {
+          "damage": "4D",
+          "rounds": 5,
+          "onset": 0,
+          "note": "Paralytic stinger: 2D physical (natural_attack) + 4D stun per round for 5 rounds; Moderate stamina to resist each tick."
+        }
+      },
+      "source": "COTG sec.2.3 (WEG40080). Verified stat block: DEX 3D+1, PER 2D+1, STR 3D+1, search 4D, sneak 4D+2, lifting 5D+1, sonic motion detection +1D+2 search, constriction 1D/round -2D DEX, paralyzing stinger 2D + 4D stun x5 rounds, Move 10 fly, 1.2-2.7m long 2m wingspan. Geonosis-origin creature; Ebon Sea / badlands framing fits the Outer Rim contested-wilderness tier alongside the already-imported acklay/merdeth set."
+    },
+    "rancor": {
+      "id": "rancor",
+      "name": "Rancor",
+      "species": "Rancor",
+      "scale": "creature",
+      "size": "5 meters tall",
+      "hostile": true,
+      "pack_count": [
+        1,
+        1
+      ],
+      "description": "One of the largest land predators known to survive in an oxygen atmosphere: bipedal, dripping-fanged, with long claws and a hide so thick that blasters and most melee weapons barely mark it. Rancors are vanishingly rare and savagely difficult to keep in captivity; on Tatooine, the only confirmed specimen lives in a pit beneath Jabba the Hutt's palace, fed on whatever offends the Hutt that week. A wild or escaped rancor is an apex-predator emergency, not a nuisance encounter.",
+      "char_sheet": {
+        "attributes": {
+          "dexterity": "4D",
+          "perception": "1D",
+          "strength": "7D",
+          "knowledge": "0D",
+          "mechanical": "0D",
+          "technical": "0D"
+        },
+        "skills": {
+          "search": "3D"
+        },
+        "move": 20,
+        "force_points": 0,
+        "character_points": 0,
+        "dark_side_points": 0
+      },
+      "natural_attack": {
+        "name": "claws",
+        "to_hit_skill": "brawling",
+        "damage": "STR+3D"
+      },
+      "armor": {
+        "note": "+3D protection against physical and energy attacks."
+      },
+      "special": [
+        "Teeth: STR+5D damage - the finishing bite once prey is within claw range.",
+        "Thick hide: blasters and most hand-held melee weapons barely mark a rancor (see armor).",
+        "Rare and difficult to keep in captivity; Jabba the Hutt's palace pit on Tatooine is the only confirmed captive specimen in Hutt space."
+      ],
+      "source": "WEG Star Wars D6 Revised & Expanded (WEG40120), Creatures chapter, R&E core rulebook (docs/sourcebooks/WEG40120.txt local extraction, page 217, sidecar lines ~20556-20580). Type: Gigantic predator; DEX 4D, PER 1D (search: tracking 3D), STR 7D; Armor +3D physical/energy; Claws STR+3D; Teeth STR+5D; Move 20; Size 5m tall. Faithful transcription (not a re-stat) of the R&E core rulebook, this project's mechanics source of truth per data/manifests/read_only_sources.md. Not previously present in C:\\SW_MUSH\\data\\npcs_creatures.yaml."
     }
   }
 }

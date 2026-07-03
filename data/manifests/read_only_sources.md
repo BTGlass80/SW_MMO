@@ -166,3 +166,65 @@ JSON. Both files carry `source_policy` provenance.
   `vendor_stock_by_zone.json` is drawn only from weapons/armor already marked
   `vendor_stocked:true` in the existing catalogs (12 items total); no
   `vendor_stocked:false` or contraband item is unlocked for any zone.
+
+## Imported — Creature Variety Drop 3 (2026-07-02)
+
+Nine additional Tatooine/Outer-Rim creatures extracted READ-ONLY into the existing
+`data/creatures_clone_wars.json` (additive; no existing entries removed or
+renumbered). `source_policy`/`source_note` at the top of the file updated to
+record both sources.
+
+### Sources consumed
+
+| Source file | Destination |
+|---|---|
+| `C:\SW_MUSH\data\npcs_creatures.yaml` (bantha, gornt, scurrier, rock_wart, canyon_womp_rat, draagax, arqet, preying_makthier blocks) | `data/creatures_clone_wars.json` |
+| `C:\SW_MUSH\docs\sourcebooks\WEG40120.txt` (R&E core rulebook, Creatures chapter, p.217, rancor stat block — not present anywhere in `C:\SW_MUSH\data\npcs_creatures.yaml`) | `data/creatures_clone_wars.json` |
+
+### Creatures added
+
+| id | hostile | notes |
+|---|---|---|
+| `bantha` | false | STR 8D herd megafauna; iconic Tatooine pack/riding beast |
+| `gornt` | false | STR 1D weak prey animal / oasis livestock |
+| `scurrier` | false | STR 1D weak colony vermin, fast (DEX 4D+1) |
+| `rock_wart` | false | STR 1D ambush stinger; damage code cleaned to a flat `STR+1` (source text was `"STR+1 (plus venom below)"`, which does not parse under `hostile_npc_model._resolve_damage`) — the venom rider stays in `special_attack.poison` |
+| `canyon_womp_rat` | true | STR 2D+2 mid-tier pack predator (Jundland Wastes) |
+| `draagax` | true | STR 4D pack predator with a berserk/paralytic-fang rider (Geonosis) |
+| `arqet` | true | STR 3D armoured ambush predator (Geonosis) |
+| `preying_makthier` | true | STR 3D+1 pack aerial hunter with constriction + paralytic-stinger riders (Geonosis/Ebon Sea) |
+| `rancor` | true | STR 7D dangerous megafauna, armor +3D, claws STR+3D — faithfully transcribed from the WEG40120 R&E core rulebook (not from SW_MUSH; Jabba the Hutt's captive specimen is the in-fiction Tatooine anchor) |
+
+### Curation decisions
+
+- **Damage-code cleanup**: `rock_wart`'s source damage string
+  (`"STR+1 (plus venom below)"`) was trimmed to a clean `"STR+1"` so
+  `hostile_npc_model._resolve_damage` parses it; the trailing venom note is
+  preserved verbatim in `special_attack.poison`, not lost.
+  All nine new entries use only the parseable `STR`, `STR+nD[+p]`, or flat
+  `nD[+p]` damage forms (no free-text like the old `"opposed (...)"`/
+  `"Poison 5D"` patterns already present on a couple of the drop-2 entries).
+- **Coruscant-only creatures excluded**: `svaper`, `syndicate_enforcer`, and
+  `drain_lurker` from `npcs_creatures.yaml` were left out of this drop — they
+  are explicitly Coruscant Underworld consumers in the source file and this
+  prototype's lawless/contested zones are Tatooine/Mos Eisley, not Coruscant.
+  `raen_sovra` (also Coruscant Underworld-flavored) was excluded for the same
+  reason. `keejin` was left out to keep this drop at nine entries; it remains
+  available in the source file for a future pass.
+  Coruscant-set entries already in `creatures_clone_wars.json` from drop 2
+  (`maze_predator`, `underworld_thug`) predate this drop and were not touched.
+- **Rancor is not from `npcs_creatures.yaml`**: it does not exist anywhere in
+  SW_MUSH's data tree. It is transcribed directly from the WEG Star Wars D6
+  Revised & Expanded core rulebook (`WEG40120.txt`, already an approved
+  reference source per this manifest's "WEG Source Material" section), which
+  this project treats as the mechanics source of truth. This is a faithful
+  transcription, not an invented stat block. Jabba the Hutt's rancor pit
+  beneath his Tatooine palace is established film canon and the Hutt cartel is
+  active on Tatooine during the Clone Wars era, so the creature is
+  era-appropriate.
+- A krayt dragon was considered (it is the other marquee Tatooine megafauna
+  named in `docs/design/secrets_of_tatooine_extraction_v1.md` as "already
+  D6-statted in the R&E core appendix") but no krayt dragon stat block exists
+  in the locally available `WEG40120.txt` extraction (only a single incidental
+  mention, no stats) or anywhere else in `C:\SW_MUSH`, so it was NOT added —
+  curation does not invent numbers absent a source.
