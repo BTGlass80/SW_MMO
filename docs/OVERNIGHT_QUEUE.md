@@ -19,6 +19,10 @@ Self-imposed guardrail: **local/deterministic only — no paid/external/LLM-in-t
    `tools/fetch_assets.py`, `tools/asset_sources.json`, `docs/ASSET_*.md`) + commit (message via `-F` file
    to avoid quote-parsing). Mark the item DONE (+hash) here. On RED: `git checkout -- <your paths>`, mark BLOCKED.
 6. Keep replies terse. Don't create new crons / don't ScheduleWakeup — THIS cron is the driver.
+7. **NEVER HOLD / never idle** (owner 2026-07-02): if every item below is DONE/BLOCKED, REPLENISH the
+   queue — append new valuable slices (deeper presentation, more content, the next system, harder tests,
+   real polish) across the four areas and keep shipping verified slices. Always leave the queue with
+   unblocked work for the next tick. Quality bar stays: gate-green + verified + scoped commit.
 
 ## A. Presentation / playable feel  [PAR-heavy: new client modules + minimal net_world hooks]
 - [ ] A1  Inventory/equipment panel (I key): list `sheet.inventory`, equip via click (`Net.send_equip`), show equipped.
