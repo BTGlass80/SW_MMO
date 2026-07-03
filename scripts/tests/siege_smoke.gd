@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless smoke for the pure siege state machine (scripts/net/siege_state_model.gd, DIV-0021).
+## Headless smoke for the pure siege state machine (scripts/rules/siege_state_model.gd, DIV-0021).
 ## Drives, on the compressed PROTOTYPE profile: config defaults + snapshot immunity, declaration
 ## validation (every reject reason), a FULL siege through every phase (capture at the final tally),
 ## an EARLY capture (hold-for-duration short-circuit), a REPEL (final tally < 75), an ABORT with
@@ -7,7 +7,7 @@ extends SceneTree
 ## re-derived), a control-bleed span, and a mustering-only ally commit. NO RNG is required; if any
 ## were added it would be seeded. Everything is deterministic wall-clock math.
 
-const Siege := preload("res://scripts/net/siege_state_model.gd")
+const Siege := preload("res://scripts/rules/siege_state_model.gd")
 
 const T0 := 1_000_000  # base wall-clock (epoch seconds) for every scenario
 

@@ -1,5 +1,5 @@
 extends SceneTree
-## HARDENING smoke for the pure siege state machine (scripts/net/siege_state_model.gd). Adversarial
+## HARDENING smoke for the pure siege state machine (scripts/rules/siege_state_model.gd). Adversarial
 ## coverage beyond siege_smoke.gd: a confirmed declare()-collision data-corruption bug (regression
 ## below), full to_dict()/apply_persisted() round-trip fidelity (incl. _seq continuity so a restored
 ## server never mints a colliding auto-id), control-meter clamp at both bounds + peak tracking across
@@ -8,7 +8,7 @@ extends SceneTree
 ## "open" intervention_mode window (siege_smoke.gd only exercises "mustering_only"). No RNG (the
 ## model has none); everything is deterministic wall-clock math.
 
-const Siege := preload("res://scripts/net/siege_state_model.gd")
+const Siege := preload("res://scripts/rules/siege_state_model.gd")
 
 const T0 := 2_000_000
 

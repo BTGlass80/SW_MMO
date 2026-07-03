@@ -1,4 +1,24 @@
 extends Node
+## WEG D6 R&E dice core (autoload `D6Rules`). HOUSE RULES documented per the Fable review
+## (G6/P2-5/P2-6) — each line below states what the code DOES, verified at the cited site:
+##
+## 1. WILD DIE 1 = the HARSHEST R&E option, always: the wild die contributes 0 AND the
+##    highest normal die is removed (`_roll_wild_die` + the `complication` branch in
+##    `roll_pool`). R&E offers the GM a menu (complication only / subtract / remove
+##    highest); this engine has no GM, so it always applies both value effects.
+## 2. FORCE POINT doubling (`apply_force_point`) doubles the wound/armor-penalized BASE
+##    pool BEFORE the multi-action penalty and BEFORE the aim bonus are applied — MAP and
+##    aim are NOT doubled (see `ground_combat_model.resolve_ranged_attack`). A MELEE
+##    Force-Point damage roll doubles only the STR portion, not the weapon bonus
+##    (`damage_pool_fp`, precomputed by the arena).
+## 3. `roll_pool` FLOORS a rolled total at 1 when at least one die is rolled (a
+##    complication can strip the pool but a roll never totals <= 0); a PIP-ONLY pool
+##    (0D) floors at 0 instead.
+## 4. PIP-DROP convention: the subtractive penalty helpers (`apply_multi_action_penalty`,
+##    `apply_wound_penalty`) ZERO the pips when the dice hit 0 (a fully-penalized pool is
+##    0D+0, not 0D+2), while `subtract_pools` works in total pips and PRESERVES the
+##    remainder. Penalties use the former; pool arithmetic the latter. Do not "fix" one
+##    to match the other without re-seeding every combat smoke.
 
 const DIFFICULTIES = {
 	"very_easy": 5,

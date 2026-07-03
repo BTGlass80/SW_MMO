@@ -4,6 +4,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+$script:smokeCount = 0  # counted at runtime so docs can say "see the gate output" (kills count drift)
 
 function Invoke-GodotStep {
     param(
@@ -11,6 +12,7 @@ function Invoke-GodotStep {
         [string[]]$Arguments
     )
 
+    if ($Arguments -contains "--script") { $script:smokeCount++ }
     Write-Host "`n$Label"
     $output = & $GodotConsole @Arguments 2>&1
     $exitCode = $LASTEXITCODE
@@ -261,4 +263,21 @@ Invoke-GodotStep "Named NPC flow smoke:" @("--headless", "--path", $projectRoot,
 
 Invoke-GodotStep "Dialogue NPC smoke:" @("--headless", "--path", $projectRoot, "--script", "res://scripts/tests/dialogue_npc_smoke.gd")
 
-Write-Host "`nAll checks passed."
+# Not-before-live invariant (owner ruling 2026-07-03): pure models + design docs for
+# siege / player-cities / server-space are PERMITTED (they live in scripts/rules + docs);
+# their HOT wiring (files or preloads in scripts/net) is PARKED until the ground loop
+# has real players. A new siege_*/city_*/space_* file in scripts/net, or a HOT-file
+# preload of one, fails the gate until the CLAUDE.md list changes.
+$parkedFiles = Get-ChildItem "$projectRoot\scripts\net" -File | Where-Object { $_.Name -match '^(siege_|city_|space_)' }
+if ($parkedFiles) {
+    throw "Not-before-live invariant: parked wiring in scripts/net: $(($parkedFiles | ForEach-Object { $_.Name }) -join ', ')"
+}
+$hotFiles = @("$projectRoot\scripts\net\network_manager.gd", "$projectRoot\scripts\net\net_world.gd")
+$parkedPreloads = Select-String -Path $hotFiles -Pattern 'preload\(.*(siege_|city_)' -ErrorAction SilentlyContinue
+if ($parkedPreloads) {
+    throw "Not-before-live invariant: HOT file preloads a parked model: $(($parkedPreloads | ForEach-Object { "$($_.Filename):$($_.LineNumber)" }) -join ', ')"
+}
+
+$rpcCount = (Select-String -Path "$projectRoot\scripts\net\network_manager.gd" -Pattern '@rpc\(').Count
+Write-Host "`nWired GDScript smokes run: $script:smokeCount | RPC surface (@rpc in network_manager.gd): $rpcCount"
+Write-Host "All checks passed."

@@ -484,7 +484,7 @@ the `pvp_kill` scoring source waits on the PvP unlock.
 
 Design is complete; the following are the build steps. **Order matters.**
 
-1. **`[PAR]` Pure `scripts/net/siege_state_model.gd` + smoke.** A RefCounted,
+1. **`[PAR]` Pure `scripts/rules/siege_state_model.gd` + smoke.** A RefCounted,
    socket-free, RNG-free state machine (the gameplay truth), headlessly unit-
    testable, mirroring the shape of `territory_model.gd` / `zone_state.gd`. It
    owns: declaration validation (rank / influence / treasury / concurrency /

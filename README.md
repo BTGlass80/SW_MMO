@@ -6,23 +6,38 @@ Standalone Godot prototype for a Clone Wars-era, WEG Star Wars D6-grounded succe
 
 ## Current Slice
 
-- Godot 4.6.x target.
-- Generated 3D Mos Eisley-style settlement scene with blocky, Minecraft-styled forms.
-- Player controller for walking and looking around the settlement.
-- `D6Rules` autoload containing the initial WEG-style dice pool and Wild Die resolver.
-- First tactical prototype: live-pressure blaster range, cover, target-specific moving target patterns, target inspection with current/next live behavior explanation, in-world live remote-state badges, in-world hit-location feedback, persistent body-part damage tinting and scorch/impact marks, staggered remote-fire cadence, coordinated remote fire-team holds, peeking/tucked remote behavior, near-miss pinning, flanking/repositioning holds, reload/weapon-cycle holds, covering-fire holds, morale hesitation, wounded-remote fallback, hit suppression, damage, and soak against B1-style training targets.
-- Live range telemetry shows model-derived remote-pressure countdown, armed/next/suppressed/pinned/covered/fallback/coordinating/flanking/reloading/hesitating/covering return-fire source counts, cover, defense, CP/FP queues, wound state, automatic-volley count, and the latest combat audit summary with compact pressure and hit-location/armor coverage hints from the recorded envelope.
-- WEG armor with hit-location/partial-coverage soak, torso-only training blast vest coverage, persistent armor-quality degradation, scale, CP, FP, action-window scaffolding, packet-driven combat resolution, server-style combat event envelopes with range-pressure snapshots, and capped local combat audit logs covered by smoke tests.
-- Prototype character sheet data/model/overlay: attributes, skill bonuses over attributes, gear lookup, CP, FP, wound state, armor coverage, and live armor-quality pips.
-- 2.5D space mode with opaque modal presentation, paused ground controls/pressure/HUD/character-sheet overlay/target motion, cursor control, a model-formatted bridge-mode status line with current maneuver difficulty and named hazard preview, state-aware bridge action buttons with compact maneuver difficulty/hazard-count cues that refresh after piloting maneuvers, a model-formatted bridge crew/station strip with commander station, banked-assist requested-alias and station-round visibility, and crew-wound visibility, D6 crew-wound penalties on station actions including ship-aware sensor sweeps/contact identification with wound callouts in action readouts, clickable/selectable contacts, clickable approach hazards, logged target/hazard selection, a live traffic clock with manual traffic stepping, live tactical telemetry with known/hidden contact counts, latest automatic hostile-fire summaries, model-formatted contact labels, selected-contact detail readout with range-aware lock state, WEG scale posture, defensive posture, hull/shield soak posture, weapon posture, crew wound posture, systems posture, model-formatted bridge cue with action hotkeys, movement posture, hostile-fire readiness, counterfire posture, destroyed-weapon-aware and custom data-preserving field-repair options/routing with visible data-driven difficulty labels and yard-only-aware automatic targeting, and targeting-penalty preview, capped recent-action log, sensor sweep, contact identification, communications hail, traffic tick, gunnery action, confidence-modified hidden-target gunnery, gunnery targeting, lock-disruption, counterfire, automatic hostile-fire, ship-condition, shield-reroute, station-assist action, damage-control action with WEG difficulty-name callouts and yard-only field-repair wording, astrogation plot action, maneuver action, assist-replacement, maneuver-hazard, maneuver-collision, crew-wound, and break-lock readouts that report tracks, newly revealed contacts, current known/hidden totals, consumed sensor assists, movement, movement blocks, range holds, authoritative current weapon-solution pressure, data-driven successful-hail lock delays and failed-hail lock pressure with ready-lock callouts, ready hostile-fire opportunities, automatic hostile shots, resulting player ship condition, spent/cleared hostile locks, return-fire results, condition countdown changes, and hazard details, banked crew-assist target and station-round visibility with preserved requested target aliases, consumed assist callouts with requested-alias context across player station actions, replacement-aware station assist banking with requested-alias replacement text, helm/fire-control/shield/sensor/communications/engineering/navigation-family station-assist aliases for evasive/weapon-solution/deflector/identification/targeting/hailing/field-repair/route-plot support, commander tactical-coordination assists routed through sensor targeting, and preserved requested assist targets in station audit text, persistent hull-severity status, system-damage flags, deduplicated field-repair counts that exclude yard-only systems, and crew-wound counts, deterministic sensors with persistent revealed contacts, per-sweep new-contact callouts, margin-based track confidence, selected-contact identification profiles, and selected-contact comms dispositions with lock-delay/pressure context, confidence-annotated gunnery targeting context, combined track/weapon-solution engagement summaries in action and status readouts plus confidence-aware lock fallback telemetry, server-style tactical accounting ticks, moving and player-tracking contacts with destroyed/drives-disabled/control-locked movement-block reasons, hostile engagement ranges, live hostile fire from ready weapon-solution clocks, blocked-fire stale-lock cleanup for disabled/destroyed hostiles and destroyed player ships, same-tick destroyed-player fire blocking, consumed-lock telemetry cleanup, weapon-solution-gated counterfire with spent-lock telemetry, evasive and gunnery lock disruption, visible approach hazards with clickable difficulty/collision detail and current-maneuver crossing/avoidance preview, seeded gunnery, scale, heading-derived shield arcs, shield rerouting, rotating crew-station assists, piloting maneuvers, navigator astrogation plotting, data-driven approach hazards, failed-maneuver collision damage, starship damage/system/passenger/crew-wound results, player-prioritized damage control with formatted before/after condition changes, data-driven per-system repair difficulty overrides demonstrated on visible traffic, repair time/cost quotes, readable deduplicated condition summaries, and ship condition persistence that affects later exchanges.
-- Bay 94 range includes static B1 remotes, a sine-sweeping B1 remote, peeking/tucked covered B1 remotes with near-miss pinning, coordinated fire-team holds, flanking/repositioning windows, reload/weapon-cycle holds, covering-fire holds, morale hesitation for wounded/stunned remotes, wounded-remotes fallback timers, and an inert patrol-pattern walker-scale armor target for cross-scale combat checks; only armed remotes contribute live return fire, automatic pressure uses per-remote cadence/phase/pinning/peek/fallback/coordination/flanking/reload/covering/morale metadata, live state badges show each target's current model-derived behavior state above the target, target inspection explains the current and next live behavior state, successful hits can briefly suppress active remotes, and close misses can briefly pin configured remotes.
-- Mos Eisley Spaceport Row / Docking Bay 94 source-mapping note in `docs/MOS_EISLEY_SLICE.md`.
-- Combat behavior source trace in `docs/COMBAT_SOURCE_TRACE.md`.
-- Real-time WEG D6 MMO translation note in `docs/REALTIME_D6_TRANSLATION.md`.
-- First 2.5D space tactical overlay note in `docs/SPACE_SLICE.md`.
-- Unattended durable-loop tooling note in `docs/UNATTENDED_LOOP.md`.
-- Current continuation notes in `docs/NIGHTLY_HANDOFF.md`.
-- Design docs for phased development, fidelity policy, architecture, and source references.
+The repo holds two things (Godot 4.6.x, GDScript, WEG D6 mechanics throughout):
+
+**1. A playable server-authoritative MMO slice** (`scenes/net_world.tscn`) — shared,
+persistent, restart-durable Clone Wars Mos Eisley:
+
+- Account auth → character generation (9 species, 76 skills) → dual-track CP progression.
+- WEG ~5s action-window combat off the real sheet + equipped gear: CP/FP, cover, dodge,
+  Perception initiative, hit-location armor, cumulative wound escalation.
+- Full wound/medical loop (natural recovery + First Aid), true death tiering (sev 5 = death,
+  sev 3–4 = downed-in-field with bleed-out/yield/medic-revive), death penalty + insurance.
+- Economy: WEG-anchored vendors (buy/sell/bargain/reputation), creature loot + harvest,
+  armor repair sink, full-loot corpses in lawless zones.
+- Persistent player-driven world: multi-zone travel, zone-security Director with alert
+  levels + world events, org territory claims + treasuries, faction influence loops,
+  ambient + named NPCs with dialogue, quests, hostile creatures that attack unprovoked
+  in lawless zones (threat-tiered, alert-banded spawns).
+- Chat (say/ooc/org/emote) + a slash-command bar, character sheet + condition/territory
+  HUDs, nameplates with wound/status badges, JSONL telemetry.
+
+**2. A deep SOLO tactical sandbox** (`scenes/main.tscn`, the original slice — unchanged):
+
+- The generated low-poly Mos Eisley settlement + the Bay 94 live-pressure blaster range
+  vs B1 training remotes (cover, aim, dodge, CP/FP, wounds, armor hit-location, rich
+  remote AI behaviors). Detail: `docs/MOS_EISLEY_SLICE.md` + `docs/COMBAT_SOURCE_TRACE.md`.
+- A 2.5D space bridge mode: sensors/identification/comms, gunnery + counterfire, shield
+  arcs, crew stations + assists, astrogation, hazards, damage control. Detail:
+  `docs/SPACE_SLICE.md`. **Space stays SOLO until the ground loop has real players**
+  (owner ruling 2026-07-03 — see `CLAUDE.md` program posture).
+
+Design canon: `docs/REALTIME_D6_TRANSLATION.md` (the real-time WEG translation thesis),
+`docs/MULTIPLAYER_FOUNDATION.md` (roadmap), `docs/NIGHTLY_HANDOFF.md` (session notes),
+`docs/DIVERGENCE_LEDGER.md` (every WEG/MUSH divergence, documented before implementation).
 
 ## Open In Godot
 
@@ -55,35 +70,17 @@ input intents and render authoritative snapshots.
 
 ## CLI Checks
 
-After `C:\Godot 4` is on PATH:
+The full gate (python tests + import + launch + every wired GDScript smoke + the
+not-before-live invariant; it prints the wired smoke + RPC counts):
 
 ```powershell
-godot-console --headless --path . --import --quit
-godot-console --headless --path . --script res://scripts/tests/rules_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/ground_combat_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/armor_condition_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/action_window_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/range_action_window_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/combat_event_envelope_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/combat_event_log_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/range_controller_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/range_status_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/range_inspection_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/range_hit_feedback_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/range_state_badge_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/range_target_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/moving_target_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/modal_overlay_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/space_overlay_layout_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/space_overlay_mode_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/space_station_strip_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/space_contact_selection_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/space_action_log_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/space_tactical_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/space_overlay_live_clock_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/space_status_model_smoke.gd
-godot-console --headless --path . --script res://scripts/tests/data_smoke.gd
-.\tools\check_project.ps1
+.\tools\check_project.ps1 -GodotConsole "C:\Godot 4\Godot_v4.6.3-stable_win64_console.exe"
+```
+
+Run a single smoke (any `scripts/tests/*.gd`):
+
+```powershell
+& "C:\Godot 4\Godot_v4.6.3-stable_win64_console.exe" --headless --path . --script res://scripts/tests/rules_smoke.gd
 ```
 
 ## Controls

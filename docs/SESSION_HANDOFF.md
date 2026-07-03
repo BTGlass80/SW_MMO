@@ -5,9 +5,12 @@ taking over **unattended, all-day, parallelized** development of the SW_MMO prot
 Read this top to bottom, then execute **§1 First actions**. You should not need to ask
 the owner anything to begin — the work is queued and the guardrails are explicit.
 
-Written 2026-06-25 after a full 5-reader codebase audit; **reconciled through follow-up
-F65** (Wave E + F1–F65 complete, RPC surface 21, 59 smokes, DIV-0001..0016). If git HEAD has
-moved past the F65 commit, trust the code + `docs/UNATTENDED_BACKLOG.md` Log over this file.
+Written 2026-06-25 after a full 5-reader codebase audit; reconciled through follow-up F65.
+**UPDATE 2026-07-03: Waves F and G have since landed. The ACTIVE queue is
+`docs/WAVE_G_BACKLOG.md` § Delta follow-ups (G14–G18 + the PT1 prep track), and the gate
+PRINTS the wired smoke + RPC counts — trust the gate output and the git log over any count
+or status literal below.** If git HEAD has moved past what this file describes, trust the
+code + `docs/WAVE_G_BACKLOG.md` + `docs/OVERNIGHT_QUEUE.md` Log over this file.
 
 ---
 
@@ -105,11 +108,14 @@ moved past the F65 commit, trust the code + `docs/UNATTENDED_BACKLOG.md` Log ove
    **CronCreate** with the contract in **§2** (cron `6,16,26,36,46,56 * * * *` ≈ every
    10 min, idle-only, `recurring:true`, `durable:false`). Recurring crons auto-expire
    after 7 days — re-arm if this runs that long.
-4. **Check the queue.** **Wave E (E1–E27) is COMPLETE** (see §0 + the backlog Log). If the
-   owner has added a NEW wave/items to `docs/UNATTENDED_BACKLOG.md`, take the top unblocked
-   batch and run it (the §3 playbook still applies: batch `[PAR]` pure-model+test slices via
-   the Workflow tool, do `[HOT]` slices one at a time, two-process-verify net slices). If the
-   backlog is still DRY of unblocked, non-owner-gated items, **do NOT invent scope** — go to 5.
+4. **Check the queue.** As of 2026-07-03 the ACTIVE queue is **`docs/WAVE_G_BACKLOG.md`
+   § Delta follow-ups** (G14–G18, then the owner-approved PT1 prep track: G8 auth bundle,
+   server watchdog, 20-bot soak, envelope replay). Take the top unblocked batch (the §3
+   playbook applies: batch `[PAR]` pure-model+test slices via the Workflow tool in
+   worktrees, do `[HOT]` slices one at a time, two-process-verify net slices; balance-
+   touching drops re-run `tools/balance_probe.gd` and paste the table into the drop
+   notes). If the queue is DRY of unblocked, non-owner-gated items, **do NOT invent
+   scope** — go to 5.
 5. **Keep going while there is unblocked, non-owner-gated work; otherwise HOLD.** Don't ask
    the owner questions. While the queue has unblocked items, ship one verified slice after
    another. When the queue is dry (the current state), confirm green and hold for an owner
@@ -122,8 +128,10 @@ moved past the F65 commit, trust the code + `docs/UNATTENDED_BACKLOG.md` Log ove
 
 > Unattended SW_MMO development tick — single driver for gameplay/netcode/rules/world-
 > sim/tests/docs. Read `docs/SESSION_HANDOFF.md` (parallelization playbook + guardrails)
-> and `docs/UNATTENDED_BACKLOG.md` (Wave E) before acting. Take the top unblocked,
-> non-owner-gated item(s). **Parallelize when it makes sense:** batch 2–4 `[PAR]` pure-
+> and `docs/WAVE_G_BACKLOG.md` § Delta follow-ups (the active queue) before acting. Take
+> the top unblocked, non-owner-gated item(s). Smokes assert what SHIPS — a deliberate
+> behavior change reddening an old smoke means UPDATE THE ASSERTION, never revert the fix.
+> Push `origin master` after each gate-green commit. **Parallelize when it makes sense:** batch 2–4 `[PAR]` pure-
 > model+test slices via the **Workflow** tool (ultracode is on); do `[HOT]` slices
 > (`network_manager.gd` / `net_world.gd`) **one at a time** on the main tree. Each slice:
 > honor the pure/presentation split; the **server owns all RNG/seeds**; document any
@@ -294,11 +302,14 @@ does NOT pre-decide any of these.)
 - **Two-process headless check (net slices):** start the server in the background
   (`res://scenes/net_world.tscn -- --server [--combat-window 1] [--director-tick 0.5]`),
   poll its log for `server listening` (use `ping -n 2 127.0.0.1` to wait — `sleep` is
-  blocked), run a client (`-- --client --host 127.0.0.1 --quit-after <n>` with
-  `--account/--name/--species/--quickstart/--autofire/--autowalk/--raise-skill` as
-  needed), grep the client log for the expected `[net]`/`[combat]`/`[news]` lines, then
-  stop the server (`Get-CimInstance Win32_Process | ? { $_.CommandLine -like
-  '*net_world.tscn*--server*' } | Stop-Process -Force`).
+  blocked), run a client in the background (`-- --client --host 127.0.0.1` with
+  `--account/--secret/--name/--species/--quickstart/--autofire/--autowalk/--travel/
+  --raise-skill` etc. as needed — there is NO `--quit-after` client flag; the client runs
+  until killed), wait the test duration with `ping -n <secs+1> 127.0.0.1`, grep the client
+  log for the expected `[net]`/`[combat]`/`[news]` lines, then stop BOTH processes
+  (`Get-CimInstance Win32_Process | ? { $_.CommandLine -like '*net_world.tscn*' -and
+  $_.Name -like '*Godot*' } | Stop-Process -Force`). Also grep both logs for
+  `SCRIPT ERROR|is_inside_tree` — the runtime-load check catches what the gate can't.
 - **Scratch files** go under the session scratchpad, never the repo.
 
 ---
