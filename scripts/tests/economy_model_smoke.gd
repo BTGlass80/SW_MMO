@@ -123,6 +123,41 @@ func _init() -> void:
 	_assert_equal(EconomyModel.loot_tier_multiplier(0), 1.0, "a below-range tier clamps to the x1 floor")
 	_assert_equal(EconomyModel.loot_tier_multiplier(9), 10.0, "an above-range tier clamps to the x10 boss cap")
 
+	# --- G16 (DIV-0028): OPTIONAL per-creature loot_mult wpk-variance dial (default 1.0) -------------
+	# loot_mult_of: absent -> 1.0; reads the value; clamps to [MIN_LOOT_MULT, MAX_LOOT_MULT] so a data
+	# typo can never zero out or invert a reward.
+	_assert_equal(EconomyModel.loot_mult_of({}), 1.0, "absent loot_mult defaults to 1.0")
+	_assert_equal(EconomyModel.loot_mult_of({"loot_mult": 0.35}), 0.35, "loot_mult read verbatim (svaper's shipped value)")
+	_assert_equal(EconomyModel.loot_mult_of({"loot_mult": 2.4}), 2.4, "loot_mult read verbatim (voroos' shipped >1 value)")
+	_assert_equal(EconomyModel.loot_mult_of({"loot_mult": 0.0}), EconomyModel.MIN_LOOT_MULT, "a zero/typo loot_mult clamps UP to MIN_LOOT_MULT (never a null reward)")
+	_assert_equal(EconomyModel.loot_mult_of({"loot_mult": -5.0}), EconomyModel.MIN_LOOT_MULT, "a negative loot_mult clamps UP to MIN_LOOT_MULT (never inverted)")
+	_assert_equal(EconomyModel.loot_mult_of({"loot_mult": 999.0}), EconomyModel.MAX_LOOT_MULT, "an over-range loot_mult clamps to MAX_LOOT_MULT")
+
+	# roll_loot applies loot_mult as a PURE post-multiply on the credit figure, ORDER unchanged: for a
+	# fixed seed a spawn's salvage is IDENTICAL regardless of loot_mult, and credits scale exactly with it.
+	# Use a tier-2 (x1) spawn so base*tier is an integer and integer loot_mults are exact.
+	var base_spawn := {"hostile": true, "scale": "creature", "pack_size": 1, "threat_tier": 2}
+	var m1 := base_spawn.duplicate(); m1["loot_mult"] = 1.0
+	var m2 := base_spawn.duplicate(); m2["loot_mult"] = 2.0
+	var m3 := base_spawn.duplicate(); m3["loot_mult"] = 3.0
+	var mhalf := base_spawn.duplicate(); mhalf["loot_mult"] = 0.5
+	for s in [1, 7, 99, 4242, 123456]:
+		var r0: Dictionary = EconomyModel.roll_loot(base_spawn, s)   # no loot_mult key -> default 1.0
+		var r1: Dictionary = EconomyModel.roll_loot(m1, s)           # explicit 1.0
+		var r2: Dictionary = EconomyModel.roll_loot(m2, s)
+		var r3: Dictionary = EconomyModel.roll_loot(m3, s)
+		var rh: Dictionary = EconomyModel.roll_loot(mhalf, s)
+		# absent loot_mult == explicit 1.0, byte-for-byte (credits AND salvage)
+		_assert_equal(int(r0["credits"]), int(r1["credits"]), "absent loot_mult == explicit 1.0 credits (seed %d)" % s)
+		# salvage is UNTOUCHED by loot_mult for a fixed seed (pure credit post-multiply, RNG order intact)
+		_assert_equal(int(r1["salvage_credits"]), int(r2["salvage_credits"]), "loot_mult leaves salvage_credits unchanged (seed %d)" % s)
+		_assert_equal(int(r1["salvage_credits"]), int(rh["salvage_credits"]), "a <1 loot_mult also leaves salvage unchanged (seed %d)" % s)
+		# credits scale EXACTLY with an integer loot_mult on a tier-2 (x1) spawn (base is an integer)
+		_assert_equal(int(r2["credits"]), 2 * int(r1["credits"]), "loot_mult 2.0 doubles credits exactly (seed %d)" % s)
+		_assert_equal(int(r3["credits"]), 3 * int(r1["credits"]), "loot_mult 3.0 triples credits exactly (seed %d)" % s)
+		# a <1 dial trims a fast-killer's per-kill credits (strictly below the un-dialed reward)
+		_assert_true(int(rh["credits"]) < int(r1["credits"]), "a loot_mult <1 trims credits below the un-dialed reward (seed %d)" % s)
+
 	_finish()
 
 func _finish() -> void:

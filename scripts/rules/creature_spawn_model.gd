@@ -261,6 +261,9 @@ func _build_spawn(key: String, c: Dictionary, rng: RandomNumberGenerator) -> Dic
 		# G12: carry the creature's threat_tier into the spawn so economy_model.roll_loot can grade the
 		# reward by risk (without this the loot side defaults every kill to tier 2 = a flat x1.5 bump).
 		"threat_tier": threat_tier_of(c),
+		# G16 (DIV-0028): carry the OPTIONAL per-creature loot_mult (default 1.0) so roll_loot's
+		# within-tier kill-speed correction is applied in the live path, not just in the probe.
+		"loot_mult": float(c.get("loot_mult", 1.0)),
 	}
 
 

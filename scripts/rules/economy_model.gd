@@ -48,6 +48,22 @@ const MIN_LOOT_TIER := 1
 const MAX_LOOT_TIER := 5            # tier 5 = boss/event channel (mirrors creature_spawn_model.BOSS_THREAT_TIER)
 const LOOT_TIER_MULT := {1: 1.0, 2: 1.0, 3: 3.0, 4: 8.0, 5: 10.0}
 
+# --- OPTIONAL per-creature wpk-variance correction dial (Wave G / G16, DIV-0028) ------------------
+# The threat_tier multiplier is FLAT across a tier, but within one tier kill-speed (windows-per-kill)
+# can vary ~8x: a glass-cannon (deadly enough to earn its tier, but dies in ~3-4 windows) farms many
+# more kills/minute than a bruiser of the SAME tier that soaks ~12-28 windows, so at a flat tier mult
+# the fast one's cr/min blows out (svaper measured ~824 cr/min vs its t4 mate voroos ~105 — a ~8x
+# within-tier spread the G15 re-probe flagged as the new farming meta). `loot_mult` is a per-creature
+# scalar (default 1.0) that corrects ONLY for that wpk variance: <1 trims a fast-killer's per-kill
+# credits back toward the tier norm, >1 lifts a genuine bruiser whose slow kill starves its cr/min.
+# It is NOT a new axis (no scale, no zone, no rarity) — it rides INSIDE the single tier axis as a pure
+# post-multiply, so risk still rides on threat_tier; this dial only flattens the kill-speed accident.
+# Applied to at-shipping only the handful of t4 creatures whose measured wpk deviates far from the tier
+# reference (~12.5 wpk): svaper/raen_sovra/arqet/stalker_lizard (fast, <1) and voroos (bruiser, >1).
+const DEFAULT_LOOT_MULT := 1.0
+const MIN_LOOT_MULT := 0.1          # sane clamp so a data typo can never zero out or invert a reward
+const MAX_LOOT_MULT := 10.0
+
 # Rep-tier -> buy discount (0.0 for hostile/neutral). Keyed on reputation_model.standing_tier().
 static func discount_for_tier(tier: String) -> float:
 	return float(REP_DISCOUNT.get(tier, 0.0))
@@ -165,13 +181,19 @@ static func loot_tier_multiplier(threat_tier: int) -> float:
 	var t := clampi(threat_tier, MIN_LOOT_TIER, MAX_LOOT_TIER)
 	return float(LOOT_TIER_MULT.get(t, 1.0))
 
+# Per-creature wpk-variance correction scalar (DIV-0028). Defaults to 1.0 when absent and is clamped
+# to [MIN,MAX]_LOOT_MULT so a data typo can never zero out or invert a reward. Static/pure.
+static func loot_mult_of(spawn: Dictionary) -> float:
+	return clampf(float(spawn.get("loot_mult", DEFAULT_LOOT_MULT)), MIN_LOOT_MULT, MAX_LOOT_MULT)
+
 # Loot from a disabled creature spawn (creature_spawn_model.roll_spawn shape). Hostile-only; the SINGLE
 # scale-independent base band x pack_size is then weighted by the creature's threat_tier (Wave G / G15,
-# DIV-0028) so a riskier kill pays more; a chance-gated (tier-independent) salvage bundle rides along.
-# Seed is server-owned. threat_tier is read off the spawn dict and defaults to DEFAULT_LOOT_TIER (2) when
-# absent so legacy / partial spawns never break. The RNG draw ORDER is unchanged (band roll, then salvage
-# chance, then salvage bundle) — the tier weight is a pure post-multiply on the credit figure, so a given
-# seed's salvage result is identical regardless of scale/tier; only the credit total is tier-scaled.
+# DIV-0028) so a riskier kill pays more, then by the OPTIONAL per-creature loot_mult (Wave G / G16) that
+# corrects for within-tier kill-speed variance; a chance-gated (tier-independent) salvage bundle rides
+# along. Seed is server-owned. threat_tier defaults to DEFAULT_LOOT_TIER (2) and loot_mult to 1.0 when
+# absent, so legacy / partial spawns never break. The RNG draw ORDER is unchanged (band roll, then salvage
+# chance, then salvage bundle) — both tier and loot_mult are pure post-multiplies on the credit figure, so
+# a given seed's salvage result is identical regardless of scale/tier/mult; only the credit total scales.
 static func roll_loot(spawn: Dictionary, seed: int) -> Dictionary:
 	if not bool(spawn.get("hostile", false)):
 		return {"credits": 0, "salvage_credits": 0}
@@ -180,7 +202,7 @@ static func roll_loot(spawn: Dictionary, seed: int) -> Dictionary:
 	var pack := maxi(int(spawn.get("pack_size", 1)), 1)
 	var base := rng.randi_range(int(LOOT_BASE[0]), int(LOOT_BASE[1])) * pack
 	var tier := int(spawn.get("threat_tier", DEFAULT_LOOT_TIER))
-	var credits := int(round(float(base) * loot_tier_multiplier(tier)))
+	var credits := int(round(float(base) * loot_tier_multiplier(tier) * loot_mult_of(spawn)))
 	var salvage := 0
 	if rng.randf() < SALVAGE_CHANCE:
 		salvage = rng.randi_range(int(SALVAGE_BUNDLE[0]), int(SALVAGE_BUNDLE[1]))
