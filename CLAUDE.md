@@ -20,6 +20,30 @@ actual server-authoritative, persistent, player-driven MMO.
 - Owner direction (2026-06-24): (1) multiplayer foundation first, (2) WEG
   action-window combat, (3) player-driven & persistent world, (4) private/fan IP.
 
+## Program posture (owner rulings 2026-07-03, from the Fable review)
+- **Launch posture: the MMO ships thin and iterates live; the MUSH ships complete.**
+  The MMO is a live-service genre — launch a tight loop and grow it. The persistence
+  layer is already migration-friendly (`schema_version`, JSON records, crash-safe writes).
+- **Not-before-live list** (do NOT build these before the ground loop has real players):
+  multiplayer space (the ~4k-line solo space model stays a SOLO mode until then — porting
+  it to the server is a project the size of everything built so far), sieges, player
+  cities, any runtime LLM.
+- **Two-games relationship = BOTH (option C), provisional — "see how they turn out."**
+  SW_MUSH is the RP/canon layer; SW_MMO is the gameplay layer; shared era + data. Content
+  flows ONE WAY only, out of read-only `C:\SW_MUSH`. Formalize a **scheduled weekly
+  `mush-content-porter` re-extraction** (quests/NPCs/creatures/skill deltas) with a
+  source-hash manifest diff, so MUSH content drift is an automated sync report, not a
+  review-time surprise. (Owner mirrors the reciprocal line in the MUSH's own CLAUDE.md;
+  this repo cannot touch it.)
+- **LLM policy = author-time, never runtime.** Keep the deterministic Director. AI flavor
+  (NPC barks, event headlines, quest text) ships as reviewed JSON batches generated offline
+  — never an API in the tick loop.
+- **PvP death = true tiering** (DIV-0019 fork A, decided 2026-07-03): sev 5 = death; sev 3–4
+  = downed-in-the-field (medic-relevant), NOT an instant kill. Requires the escape-hatch
+  bundle (Director-ticked `recovery_model.death_roll` + a yield/respawn command) or a downed
+  lawless player with no medic softlocks. Build it as ONE seam with the `escalate()` wiring,
+  escalate first. See `docs/WAVE_G_BACKLOG.md` G1/G2.
+
 ## Engine, language, validation
 - Godot 4.6.3 stable, GDScript only (C# deferred).
 - Headless console binary: `C:\Godot 4\Godot_v4.6.3-stable_win64_console.exe`.

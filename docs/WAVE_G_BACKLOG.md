@@ -25,7 +25,7 @@ go **one at a time on main** with a two-process check; document any mechanic div
 
 ## P0 — reconcile BEFORE building further on Wave F
 
-### G1 — PvP death tiering: docs, model, and wire disagree  `[PAR]` (may become `[HOT]` under fork A)
+### G1 — PvP death tiering — **DECIDED: true tiering (fork A), owner 2026-07-03**  `[HOT]` (depends on G2)
 **What:** `pvp_rules_model.PVP_DEATH_SEVERITY = 5` + `is_kill(sev>=5)` and the two
 `pvp_rules_model_smoke` asserts ("sev 3/4 is 'out', not dead") describe tiered death — but the live
 wire kills at `DISABLED_SEVERITY (3)`: `combat_arena.resolve_window` records a casualty at
@@ -34,11 +34,17 @@ wire kills at `DISABLED_SEVERITY (3)`: `combat_arena.resolve_window` records a c
 the opposite of shipped behavior.** A sev-3 PvP hit kills+respawns today.
 **Why:** a green test encoding unwired semantics is the worst phantom — it has a CI badge. Pick one
 truth and make model, smoke, wire, and DIV-0019 all say it.
-**How (recommended default = option B, safe & consistent):** declare **death-on-incapacitation** the
-v1 rule for PvP too (it already is for PvE per DIV-0006's v1 note). Delete or explicitly park
-`is_kill`/`PVP_DEATH_SEVERITY` with a comment pointing at the death-roll follow-up, fix the two smoke
-asserts to match the wire, and rewrite the DIV-0019 "casualties" sentence. **Owner fork** (option A =
-true tiering) is captured below — do not build A without the escape-hatch bundle it needs.
+**How (DECIDED = fork A, true tiering):** wire `is_kill`/`PVP_DEATH_SEVERITY` onto the live path so
+**sev 5 = death; sev 3–4 = downed-in-the-field** (medic-relevant, not an instant kill); fix the two
+`pvp_rules_model_smoke` asserts + the DIV-0019 "casualties" sentence to match. **Mandatory escape-hatch
+bundle** (without it a downed lawless player with no friendly medic is *softlocked* — DIV-0012 excludes
+incap/mortal from self-recovery and F32 blocks movement): (a) wire the built-but-unwired
+`recovery_model.death_roll` on the Director tick for `mortally_wounded`; (b) add a **yield/respawn**
+command for a downed (sev 3) player. **Build as one seam with G2, `escalate()` FIRST** — under
+`escalate()` most PvE/PvP outs arrive as *incapacitated-by-accumulation* (probe §D: 258/300 vs 197/300),
+which is exactly the "downed, medic-relevant" state this tiering keys on, so G2's distributions inform
+G1's tuning. This also applies to PvE death (DIV-0006) — reconcile both so a downed PvE player isn't
+softlocked either.
 **Files:** `scripts/rules/pvp_rules_model.gd`, `scripts/tests/pvp_rules_model_smoke.gd`,
 `docs/DIVERGENCE_LEDGER.md` (DIV-0019).
 **Verify:** smoke asserts what ships; gate green.
@@ -187,21 +193,17 @@ tactical escape hatch from an up-tier spawn.)*
 
 ## Owner forks — DO NOT auto-build (surface for a decision)
 
-1. **PvP death tiering (G1 fork A vs B).** Default **B** (death-on-incap, consistent, no softlock) is
-   safe to ship now. **A** (sev 5 = death; sev 3–4 = downed-in-field) is more WEG-faithful but
-   **requires an escape-hatch bundle** or a downed lawless player with no medic is *softlocked*: wire
-   the built-but-unwired `recovery_model.death_roll` on the Director + a "yield/respawn" command for
-   sev 3. Bundle A with G2's `escalate()` distributions in hand.
-2. **The two-games relationship (SW_MUSH ⇄ SW_MMO)** — one line in both CLAUDE.md files. (A) MUSH
-   launches first, MMO is successor; (B) MMO is the product, MUSH becomes design-lab/content-forge;
-   (C) both live, shared era+data. Content already flows one way (out of the read-only MUSH); this just
-   sets cadence/priority. A solo dev running two 80%-done multiplayer games is the standard failure mode
-   — the fix is an explicit answer, not more effort.
-3. **Launch posture (recommended, write it into `CLAUDE.md`):** *"The MMO ships thin and iterates live;
-   the MUSH ships complete."* Corollary **not-before-live list:** multiplayer space (the ~4k-line solo
-   space model stays solo until the ground loop has real players), sieges, player cities, any runtime
-   LLM. The persistence layer is already migration-friendly (`schema_version`, JSON, crash-safe writes),
-   so the live-service posture is supported.
+1. ✅ **DECIDED 2026-07-03 — PvP death tiering = fork A (true tiering).** sev 5 = death; sev 3–4 =
+   downed-in-field, with the mandatory escape-hatch bundle (Director `death_roll` + yield/respawn). Built
+   as one seam with G2 (escalate first). See G1/G2 above; recorded in `CLAUDE.md` program posture.
+2. ✅ **DECIDED 2026-07-03 — two-games relationship = both (option C), provisional ("see how they turn
+   out").** SW_MUSH = RP/canon layer; SW_MMO = gameplay layer; shared era+data; content flows one way out
+   of read-only SW_MUSH. Formalize the weekly `mush-content-porter` re-extraction cadence. Recorded in
+   `CLAUDE.md`. (Owner mirrors the reciprocal line in the MUSH's CLAUDE.md; this repo can't touch it.)
+3. ✅ **DECIDED 2026-07-03 — launch posture adopted.** *"The MMO ships thin and iterates live; the MUSH
+   ships complete."* + the not-before-live list (multiplayer space stays solo until the ground loop has
+   real players; sieges; player cities; runtime LLM). Written into `CLAUDE.md`. LLM policy also set:
+   author-time, never runtime.
 4. **First Strangers Night (PT1)** — the highest-information next milestone: 5–10 outside players for one
    evening running a scripted ~30-min loop (chargen → range → travel → Dune Sea fight → die/respawn →
    insure → buy/sell → lawless duel → org claim). Let PT1 *pull* priorities. Its ship list is small: the
@@ -271,7 +273,8 @@ tactical escape hatch from an up-tier spawn.)*
 
 ## Suggested execution order
 
-1. **G1, G2, G3** (the P0 seam — G2 before G1's tiering decision; G3 in parallel).
+1. **G2 → G1, plus G3** (the P0 seam): `escalate()` (G2) FIRST, then G1 true-tiering + the escape-hatch
+   bundle (they're one seam); G3 (PvP defender dodge) in parallel.
 2. **G10, G11** (de-fang the faucet + stop silent data rot — both cheap, both distort every other number).
 3. **G4** (hostile initiation — makes lawless actually dangerous), **G5** (floor guard), **G6/G7** (doc + name hygiene).
 4. **G12** (threat tiers + loot-by-tier), with `tools/balance_probe.gd` as acceptance.

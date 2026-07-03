@@ -7,7 +7,9 @@ Self-imposed guardrail: **local/deterministic only — no paid/external/LLM-in-t
 
 ## Per-tick contract (what each cron fire does)
 1. Read this file + `CLAUDE.md` + `docs/SESSION_HANDOFF.md` §3 playbook/§4 guardrails.
-2. Take the top 1–3 unblocked items (prefer independent ones; spread across areas over the night).
+2. Take the top 1–3 unblocked items. **Area G (Wave G) is TOP PRIORITY — drain it before areas A–D
+   and before replenishing** (respect its declared order: G2 before G1; heed the seam guard). After G,
+   prefer independent items spread across A–D.
 3. **Parallelize:** spin up a **Workflow** that fans out the `[PAR]` parts (new files: presentation
    modules, content JSON, pure models, tests, design) each in its own **worktree**; integrate the
    green ones serially on main. Do `[HOT]` wiring (`network_manager.gd`/`net_world.gd`/`combat_arena.gd`)
@@ -26,6 +28,50 @@ Self-imposed guardrail: **local/deterministic only — no paid/external/LLM-in-t
    queue — append new valuable slices (deeper presentation, more content, the next system, harder tests,
    real polish) across the four areas and keep shipping verified slices. Always leave the queue with
    unblocked work for the next tick. Quality bar stays: gate-green + verified + scoped commit.
+
+## G. Wave G — TOP PRIORITY (external Fable review, owner-steered 2026-07-03)
+**Work these BEFORE areas A–D and before any replenishment.** Full detail + files + verify in
+`docs/WAVE_G_BACKLOG.md`; the review itself is in `docs/fable/`. These are post-Wave-F **seam** fixes:
+Wave F shipped lethality + PvP, and three follow-ups became prerequisites. **Seam guard (mandatory):**
+the smoke must assert **what actually ships** (G1 is a shipped green smoke asserting the OPPOSITE of the
+wire — do not repeat that); after each `[HOT]` Wave-G slice do a doc↔model↔wire reconciliation before
+marking DONE. Owner decisions are baked in below — do NOT re-open them.
+- [ ] G2  `[HOT]` Wire `wound_ladder_model.escalate()` into the 3 live accumulation sites (resolve_exchange,
+      _resolve_return_fire, PvP defender write-back). Cross the severity↔level seam via **level strings**,
+      never raw ints (they diverge at 3). Re-seed affected smokes; update DIV-0008. **Land this FIRST** —
+      it and G1 are one seam.
+- [ ] G1  `[HOT]` **PvP death = TRUE TIERING (owner-decided fork A, 2026-07-03):** sev 5 = death; sev 3–4 =
+      downed-in-field. Requires the **escape-hatch bundle** or a downed lawless player softlocks: (a) wire
+      `recovery_model.death_roll` on the Director tick for mortally_wounded; (b) a **yield/respawn** command
+      for a downed (sev 3) player with no medic. Then wire `is_kill`/`PVP_DEATH_SEVERITY` on the live path,
+      fix the two `pvp_rules_model_smoke` asserts + DIV-0019 text to match. Depends on G2.
+- [ ] G3  `[HOT]` PvP defenders can't dodge — build defender defense from declared stance + `player_dodge_pool`
+      (wound/armor-penalized) into the `is_pvp` branch via `prepare_ranged_defense`; read cover from
+      persistent state. Smoke: dodge raises attacker difficulty; full-dodge defender skips own attack.
+- [ ] G10 `[HOT]` De-fang the dummy faucet: hostile-death fallback → no-target/hold-fire (not the global
+      dummy); dummy disables pay reduced/zero influence + drop the Force feed; move `_window_index = 0` out
+      of `reset_target()`.
+- [ ] G11 `[PAR]` Resolved-pool content smoke for every `hostile:true` creature (resolved atk/dmg ≥ 1D and
+      match listed); fix `glim_worm`(0D dmg!)/`mip_swarm`/`spor_crawler` prose stat strings to dice codes.
+- [ ] G4  `[HOT]` Hostiles never initiate — add a Director/window-tick unprovoked-attack path via the
+      already-built `ground_combat_model.resolve_incoming_fire_window` (lawless+contested). 2-proc: idle bot
+      in dune_sea takes fire and can die.
+- [ ] G5  `[PAR]` Economy floor guard: assert `MAX_TOTAL_DISCOUNT <= 1 - SELL_RATE - ε` + a catalog-wide smoke
+      `buy_floor(list) > sell_price(list)` (buy→sell arbitrage is one dial-turn away today).
+- [ ] G12 `[PAR]` `threat_tier` per creature + alert-banded spawn table (calm lawless = tiers 1–2; merdeth-class
+      = event/boss, never ambient) + loot-by-tier (risk currently anti-correlates with reward). Re-run
+      `tools/balance_probe.gd` as acceptance.
+- [ ] G6  `[PAR]` Doc-rot batch: fix `_wound_penalty_dice` stale comment; make `check_project.ps1` PRINT smoke
+      + RPC counts (docs say "see gate output", kills the 59/66/72 drift); rewrite README "Current Slice" as
+      bullets; DIV-0011 `force_sensitive` storage-divergence sentence; 3 `d6_rules` house-rule ledger lines.
+- [ ] G7  `[PAR]` Rename the "Ahsoka" fixture in `wire_roundtrip_smoke.gd`; add a chargen reserved/canonical-name
+      filter (port the MUSH name-policy list).
+- **Process (fold in as you go):** a **dead-symbol detector** in the gate (orphan public funcs/consts outside
+  their own smoke — would have caught G1's `is_kill`); structured **JSONL telemetry** from the existing print
+  sites (death/buy/sell/loot/travel/window-resolve) BEFORE any tuning; the weekly `mush-content-porter`
+  re-extraction cadence (CLAUDE.md program posture).
+- **Owner-gated (still PARK):** PT1 playtest scheduling; the auth/crypto bundle (before non-LAN playtest);
+  the positional-truth spike (G9, design doc first) — see `docs/WAVE_G_BACKLOG.md` owner-forks.
 
 ## A. Presentation / playable feel  [PAR-heavy: new client modules + minimal net_world hooks]
 - [ ] A1  Inventory/equipment panel (I key): list `sheet.inventory`, equip via click (`Net.send_equip`), show equipped.
