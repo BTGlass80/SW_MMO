@@ -68,8 +68,49 @@ const SKIN_TONES := [
 func build_npc(kind: String, display_name: String, faction_axis: String = "independent") -> Node3D:
 	var k := kind if KIND_LABELS.has(kind) else "civilian"
 
+	# Check for high-fidelity custom voxel actor scenes
+	var actor_path := ""
+	var name_lower := display_name.to_lower()
+	if name_lower.contains("stamp") or name_lower.contains("dust") or name_lower.contains("clone"):
+		actor_path = "res://assets/3d/generated/google/clone_commander_v1/clone_commander_actor.tscn"
+	elif name_lower.contains("chalmun") or name_lower.contains("wookiee"):
+		actor_path = "res://assets/3d/generated/google/wookiee_v1/wookiee_actor.tscn"
+	elif name_lower.contains("ruzz-tha") or name_lower.contains("jawa"):
+		actor_path = "res://assets/3d/generated/google/jawa_v1/jawa_actor.tscn"
+	elif name_lower.contains("greeshk") or name_lower.contains("weequay"):
+		actor_path = "res://assets/3d/generated/google/weequay_v1/weequay_actor.tscn"
+	elif name_lower.contains("djas puhr") or name_lower.contains("abyssinian"):
+		actor_path = "res://assets/3d/generated/google/abyssinian_v1/abyssinian_actor.tscn"
+	elif name_lower.contains("talon") or name_lower.contains("officer"):
+		actor_path = "res://assets/3d/generated/google/republic_officer_v1/republic_officer_actor.tscn"
+	elif name_lower.contains("b1") or name_lower.contains("battle droid"):
+		actor_path = "res://assets/3d/generated/google/droid_b1_character_v1/droid_b1_actor.tscn"
+
+
+	if actor_path != "" and ResourceLoader.exists(actor_path):
+		var root := Node3D.new()
+		root.name = "NPC_" + display_name.replace(" ", "_").replace("\"", "")
+		var actor: Node3D = load(actor_path).instantiate() as Node3D
+		actor.name = "Actor"
+		actor.position = Vector3(0, 0, 0)
+		root.add_child(actor)
+		
+		# Play default animations based on role/status
+		var anim_player: AnimationPlayer = actor.find_child("AnimationPlayer", true, false)
+		if anim_player != null:
+			if anim_player.has_animation("aim") and (name_lower.contains("guard") or name_lower.contains("patrol") or name_lower.contains("enforcer") or name_lower.contains("thug")):
+				anim_player.play("aim")
+			elif anim_player.has_animation("walk") and name_lower.contains("drifter"):
+				anim_player.play("walk")
+			else:
+				anim_player.stop()
+				
+		_nameplate(root, display_name, kind_pretty(k), 1.9)
+		return root
+
 	var root := Node3D.new()
 	root.name = "NPC_%s" % k.capitalize()
+
 
 	var body_col := faction_tint(faction_axis, display_name)
 	var skin_col := skin_tone(display_name)
@@ -241,6 +282,7 @@ func make_material(color: Color, roughness: float) -> StandardMaterial3D:
 	return material
 
 func _nameplate(root: Node3D, display_name: String, role_text: String, y: float) -> void:
+
 	var label := Label3D.new()
 	label.name = "Nameplate"
 	var name_text := display_name if display_name != "" else "Local"
@@ -249,4 +291,5 @@ func _nameplate(root: Node3D, display_name: String, role_text: String, y: float)
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.font_size = 24
 	label.modulate = Color(0.09, 0.08, 0.06)
+	label.visible = OS.get_cmdline_args().has("--debug-world-labels")
 	root.add_child(label)

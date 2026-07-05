@@ -1,0 +1,607 @@
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "free",
+		"box_uv": false
+	},
+	"codex_source": {
+		"schema": "gpt_blockbench_cubecraft_v0",
+		"pack_id": "blockbench_cantina_exterior_clutter_v1",
+		"asset_id": "cantina_dust_berm_v1",
+		"generator": "docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs"
+	},
+	"codex_palette": {
+		"sand_dust": "#b87938",
+		"sand_shadow": "#81562f",
+		"sand_light": "#d6a75b",
+		"rust_dark": "#5c3d26",
+		"soot_dark": "#211915",
+		"metal_mid": "#555d62",
+		"metal_dark": "#30363a",
+		"wire_dark": "#1f272b",
+		"lamp_amber": "#ffb14a",
+		"scanner_cyan": "#27d7ff",
+		"crate_wood": "#7b5631",
+		"crate_lid": "#a0713a",
+		"scrap_red": "#8f2e24",
+		"stone_gray": "#6a6256"
+	},
+	"name": "Cantina Dust Berm v1",
+	"model_identifier": "cantina_dust_berm_v1",
+	"visible_box": [
+		1,
+		1,
+		0
+	],
+	"variable_placeholders": "",
+	"resolution": {
+		"width": 48,
+		"height": 32
+	},
+	"elements": [
+		{
+			"name": "berm_main",
+			"uuid": "9e55f7a7-bbab-4e45-8e88-b47e68131476",
+			"from": [
+				-0.775,
+				0.009999999999999995,
+				-0.34
+			],
+			"to": [
+				0.775,
+				0.22999999999999998,
+				0.34
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 0,
+			"material_key": "sand_shadow",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "berm_top_light",
+			"uuid": "8f24878c-81b2-4e71-a8b1-2487d0a6ed6f",
+			"from": [
+				-0.6699999999999999,
+				0.21000000000000002,
+				-0.25
+			],
+			"to": [
+				0.31,
+				0.33,
+				0.16999999999999998
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 1,
+			"material_key": "sand_dust",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "berm_small_step",
+			"uuid": "943b6a6f-d91c-46e2-87ed-bd2d646754e3",
+			"from": [
+				0.24999999999999997,
+				0.16,
+				0.01999999999999999
+			],
+			"to": [
+				0.71,
+				0.28,
+				0.33999999999999997
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 2,
+			"material_key": "sand_light",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "left_rock",
+			"uuid": "5755b6b9-7850-4206-bd26-99d4f5e06146",
+			"from": [
+				-0.73,
+				0.24000000000000002,
+				-0.22
+			],
+			"to": [
+				-0.51,
+				0.44000000000000006,
+				-0.01999999999999999
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 3,
+			"material_key": "stone_gray",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "right_rock",
+			"uuid": "415b7a47-fb1d-468e-8ff4-36b10f809890",
+			"from": [
+				0.54,
+				0.24000000000000002,
+				-0.07
+			],
+			"to": [
+				0.8200000000000001,
+				0.42000000000000004,
+				0.15
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 3,
+			"material_key": "stone_gray",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "rust_scrap_half_buried",
+			"uuid": "ca5baf3a-2cea-4154-a329-9a3cdbbc2699",
+			"from": [
+				-0.08000000000000002,
+				0.30000000000000004,
+				-0.36
+			],
+			"to": [
+				0.32,
+				0.38,
+				-0.28
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 4,
+			"material_key": "rust_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "dark_gap_under_berm",
+			"uuid": "49a5b97c-1901-4eb0-a941-c702a3a874ff",
+			"from": [
+				-0.71,
+				0.0050000000000000044,
+				-0.16999999999999998
+			],
+			"to": [
+				0.71,
+				0.065,
+				0.33
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 5,
+			"material_key": "soot_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				}
+			}
+		}
+	],
+	"outliner": [
+		"9e55f7a7-bbab-4e45-8e88-b47e68131476",
+		"8f24878c-81b2-4e71-a8b1-2487d0a6ed6f",
+		"943b6a6f-d91c-46e2-87ed-bd2d646754e3",
+		"5755b6b9-7850-4206-bd26-99d4f5e06146",
+		"415b7a47-fb1d-468e-8ff4-36b10f809890",
+		"ca5baf3a-2cea-4154-a329-9a3cdbbc2699",
+		"49a5b97c-1901-4eb0-a941-c702a3a874ff"
+	],
+	"textures": [
+		{
+			"path": "textures/cantina_dust_berm_v1_palette.png",
+			"name": "cantina_dust_berm_v1_palette",
+			"folder": "",
+			"namespace": "",
+			"id": "0",
+			"particle": false,
+			"render_mode": "default",
+			"visible": true,
+			"mode": "bitmap",
+			"saved": true,
+			"uuid": "c9b224f3-7bae-4f4d-a029-e3cdded96ce4",
+			"source": "textures/cantina_dust_berm_v1_palette.png"
+		}
+	]
+}

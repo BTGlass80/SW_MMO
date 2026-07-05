@@ -1,0 +1,22 @@
+{
+  "space_routes": [
+    {
+      "route_id": "corellian_run_tatooine",
+      "name": "Corellian Run (Tatooine Spur)",
+      "origin": "tatooine_orbit",
+      "destination": "corellia_orbit",
+      "distance_parsecs": 12000,
+      "base_risk": 0.4,
+      "patrol_factions": ["hutt", "republic"]
+    },
+    {
+      "route_id": "triellus_trade_route",
+      "name": "Triellus Trade Route",
+      "origin": "tatooine_orbit",
+      "destination": "geonosis_orbit",
+      "distance_parsecs": 500,
+      "base_risk": 0.8,
+      "patrol_factions": ["cis", "hutt"]
+    }
+  ]
+}

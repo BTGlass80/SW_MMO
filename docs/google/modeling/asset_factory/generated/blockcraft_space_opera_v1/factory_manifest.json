@@ -1,0 +1,135 @@
+{
+	"asset_count": 11,
+	"assets": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_pawn_rifleman_02.png",
+			"category": "character_token",
+			"display_name": "Blockcraft Armored Rifleman 02",
+			"gameplay_role": "friendly infantry scale and silhouette test",
+			"id": "blockcraft_pawn_rifleman_02",
+			"prompt": "generic blocky white armored sci-fi rifleman with blue chest mark, backpack, shoulder pads, and black visor",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_pawn_rifleman_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_pawn_rifleman_02.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_pawn_commander_02.png",
+			"category": "character_token",
+			"display_name": "Blockcraft Armored Commander 02",
+			"gameplay_role": "friendly command pawn silhouette test",
+			"id": "blockcraft_pawn_commander_02",
+			"prompt": "generic blocky white armored command pawn with blue shoulder plate, antenna, and broader helmet",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_pawn_commander_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_pawn_commander_02.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_pawn_heavy_02.png",
+			"category": "character_token",
+			"display_name": "Blockcraft Armored Heavy 02",
+			"gameplay_role": "friendly heavy pawn silhouette test",
+			"id": "blockcraft_pawn_heavy_02",
+			"prompt": "generic blocky heavy white armored pawn with large backpack and boxy cannon",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_pawn_heavy_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_pawn_heavy_02.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_droid_rifleman_02.png",
+			"category": "character_token",
+			"display_name": "Blockcraft Tan Droid Rifleman 02",
+			"gameplay_role": "hostile droid infantry silhouette test",
+			"id": "blockcraft_droid_rifleman_02",
+			"prompt": "generic tan block droid rifleman with squared head, thin limbs, and orange sensor",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_droid_rifleman_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_droid_rifleman_02.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_droid_heavy_02.png",
+			"category": "character_token",
+			"display_name": "Blockcraft Heavy Droid 02",
+			"gameplay_role": "hostile heavy droid silhouette test",
+			"id": "blockcraft_droid_heavy_02",
+			"prompt": "generic blocky tan heavy droid with shield plate and orange weapon glow",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_droid_heavy_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_droid_heavy_02.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_modular_wall_gate_02.png",
+			"category": "settlement_module",
+			"display_name": "Blockcraft Modular Wall Gate 02",
+			"gameplay_role": "settlement wall kit piece with doorway and cover proportions",
+			"id": "blockcraft_modular_wall_gate_02",
+			"prompt": "blocky desert frontier wall gate with inset door, vents, cyan tech strips, and roof blocks",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_modular_wall_gate_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_modular_wall_gate_02.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_cover_and_terminal_02.png",
+			"category": "combat_cover",
+			"display_name": "Blockcraft Cover And Terminal 02",
+			"gameplay_role": "combat cover plus interaction terminal",
+			"id": "blockcraft_cover_and_terminal_02",
+			"prompt": "blocky waist-high sci-fi cover with crates, terminal, and cyan screen",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_cover_and_terminal_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_cover_and_terminal_02.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_frontier_encounter_slice_02.png",
+			"category": "scene_slice",
+			"display_name": "Blockcraft Frontier Encounter Slice 02",
+			"gameplay_role": "one-screen combat/social slice for judging the blockcraft MMO target",
+			"id": "blockcraft_frontier_encounter_slice_02",
+			"prompt": "blocky desert frontier encounter scene with gate, cover, terminal, armored pawns, droids, cargo, and clear movement space",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_frontier_encounter_slice_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_frontier_encounter_slice_02.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_iso_splitnose_fighter_03.png",
+			"category": "space_ship_token",
+			"display_name": "Blockcraft Isometric Splitnose Fighter 03",
+			"gameplay_role": "friendly flat-plane tactical fighter silhouette",
+			"id": "blockcraft_iso_splitnose_fighter_03",
+			"prompt": "generic blocky split-nose space fighter token with blue engine glow",
+			"review_camera": "space",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_iso_splitnose_fighter_03_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_iso_splitnose_fighter_03.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_iso_blockade_freighter_03.png",
+			"category": "space_ship_token",
+			"display_name": "Blockcraft Isometric Blockade Freighter 03",
+			"gameplay_role": "large flat-plane tactical freighter silhouette",
+			"id": "blockcraft_iso_blockade_freighter_03",
+			"prompt": "generic blocky cargo freighter token with side pods and orange engines",
+			"review_camera": "space",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_iso_blockade_freighter_03_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_iso_blockade_freighter_03.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/assets/blockcraft_iso_space_skirmish_slice_02.png",
+			"category": "space_scene_slice",
+			"display_name": "Blockcraft Isometric Space Skirmish Slice 02",
+			"gameplay_role": "proof of 2.5D flat tactical space readability",
+			"id": "blockcraft_iso_space_skirmish_slice_02",
+			"prompt": "blocky isometric tactical space slice with friendly fighter, enemy freighter, debris, sensor buoy, and target markers",
+			"review_camera": "space",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/review_scenes/blockcraft_iso_space_skirmish_slice_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_iso_space_skirmish_slice_02.tscn"
+		}
+	],
+	"captures": {
+		"all": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/contact_sheet_all.png",
+		"ground": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/contact_sheet_ground.png",
+		"space": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/captures/contact_sheet_space.png"
+	},
+	"display_name": "Blockcraft Space Opera Prototype Pack v1",
+	"generated_at_unix": 1783136557.841,
+	"pack_id": "blockcraft_space_opera_v1",
+	"schema": "gpt_asset_factory_v0"
+}

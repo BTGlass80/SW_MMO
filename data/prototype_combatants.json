@@ -57,6 +57,31 @@
       "soak": "4D",
       "scale": "walker",
       "source_note": "Prototype cross-scale target for character weapons versus walker-scale body."
+    },
+    "bantha_target": {
+      "name": "Wild Bantha",
+      "blaster": "0D",
+      "weapon": "walker_plate_tester",
+      "soak": "5D",
+      "scale": "character",
+      "source_note": "Massive sand quadruped target."
+    },
+    "dewback_target": {
+      "name": "Wild Dewback",
+      "blaster": "0D",
+      "weapon": "walker_plate_tester",
+      "soak": "4D",
+      "scale": "character",
+      "source_note": "Reptilian mount target."
+    },
+    "womp_rat_target": {
+      "name": "Wild Womp Rat",
+      "blaster": "0D",
+      "weapon": "walker_plate_tester",
+      "soak": "1D",
+      "scale": "character",
+      "source_note": "Desert pest target."
     }
   }
 }
+

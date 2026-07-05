@@ -1,0 +1,37 @@
+{
+  "blaster_pistol": {
+    "display_name": "Blaster Pistol",
+    "cell_size": 0.06,
+    "parts": {
+      "body": {"front": [16, 8], "side": [4, 8]}
+    }
+  },
+  "blaster_rifle": {
+    "display_name": "Blaster Rifle",
+    "cell_size": 0.06,
+    "parts": {
+      "body": {"front": [24, 8], "side": [4, 8]}
+    }
+  },
+  "bowcaster": {
+    "display_name": "Wookiee Bowcaster",
+    "cell_size": 0.07,
+    "parts": {
+      "body": {"front": [24, 10], "side": [6, 10]}
+    }
+  },
+  "lightsaber": {
+    "display_name": "Lightsaber",
+    "cell_size": 0.05,
+    "parts": {
+      "body": {"front": [6, 32], "side": [6, 32]}
+    }
+  },
+  "thermal_detonator": {
+    "display_name": "Thermal Detonator",
+    "cell_size": 0.05,
+    "parts": {
+      "body": {"front": [8, 8], "side": [8, 8]}
+    }
+  }
+}

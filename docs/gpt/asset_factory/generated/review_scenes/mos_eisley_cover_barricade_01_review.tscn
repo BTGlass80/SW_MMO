@@ -1,0 +1,113 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/scenes/mos_eisley_cover_barricade_01.tscn" id="1_883x5"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vhq8g"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_byere"]
+size = Vector3(8.5, 0.08, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qlw83"]
+albedo_color = Color(0.1882353, 0.20392157, 0.22745098, 1)
+metallic = 0.25
+roughness = 0.62
+
+[sub_resource type="BoxMesh" id="BoxMesh_cwfqu"]
+size = Vector3(3.2, 1.1, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wmhi4"]
+albedo_color = Color(0.72156864, 0.5529412, 0.34509805, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_5nhek"]
+size = Vector3(3.6, 0.35, 0.85)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4hdec"]
+albedo_color = Color(0.35686275, 0.27450982, 0.19215687, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_2qh62"]
+size = Vector3(0.8, 0.75, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_s20sd"]
+size = Vector3(0.9, 0.68, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w826v"]
+albedo_color = Color(0.14509805, 0.76862746, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14509805, 0.76862746, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_qt7by"]
+size = Vector3(0.52, 0.1, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cusbn"]
+albedo_color = Color(0.11764706, 0.52156866, 0.5372549, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.11764706, 0.52156866, 0.5372549, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="TorusMesh" id="TorusMesh_ulawo"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[node name="mos_eisley_cover_barricade_01_review" type="Node3D" unique_id=366616453]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=1164081227]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_vhq8g")
+mesh = SubResource("BoxMesh_byere")
+
+[node name="mos_eisley_cover_barricade_01" type="Node3D" parent="." unique_id=1432308507 instance=ExtResource("1_883x5")]
+metadata/asset_id = "mos_eisley_cover_barricade_01"
+metadata/display_name = "Mos Eisley Cover Barricade 01"
+metadata/category = "combat_cover"
+metadata/gameplay_role = "readable 1/4 to 1/2 cover object"
+metadata/prompt = "generic low-poly sci-fi desert barricade with crates and angled metal panels"
+
+[node name="main_slab" type="MeshInstance3D" parent="mos_eisley_cover_barricade_01" unique_id=1245740475]
+transform = Transform3D(0.9975641, 0.06975647, 0, -0.06975647, 0.9975641, 0, 0, 0, 1, 0, 0.55, 0)
+material_override = SubResource("StandardMaterial3D_qlw83")
+mesh = SubResource("BoxMesh_cwfqu")
+
+[node name="sand_base" type="MeshInstance3D" parent="mos_eisley_cover_barricade_01" unique_id=1307529088]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0.25)
+material_override = SubResource("StandardMaterial3D_wmhi4")
+mesh = SubResource("BoxMesh_5nhek")
+
+[node name="left_crate" type="MeshInstance3D" parent="mos_eisley_cover_barricade_01" unique_id=2021065104]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.45, 0.38, -0.55)
+material_override = SubResource("StandardMaterial3D_4hdec")
+mesh = SubResource("BoxMesh_2qh62")
+
+[node name="right_crate" type="MeshInstance3D" parent="mos_eisley_cover_barricade_01" unique_id=1722654025]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3, 0.34, -0.45)
+material_override = SubResource("StandardMaterial3D_4hdec")
+mesh = SubResource("BoxMesh_s20sd")
+
+[node name="warning_light" type="MeshInstance3D" parent="mos_eisley_cover_barricade_01" unique_id=2037950270]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.17, -0.25)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_qt7by")
+
+[node name="@MeshInstance3D@3" type="MeshInstance3D" parent="." unique_id=1528444237]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+material_override = SubResource("StandardMaterial3D_cusbn")
+mesh = SubResource("TorusMesh_ulawo")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=713829607]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=1002785214]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 8.0
+far = 120.0

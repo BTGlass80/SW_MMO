@@ -1,0 +1,64 @@
+{
+	"captures": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_layered_kit_v1/captures/layered_cantina_source_cards.png",
+			"description": "Two original semantic pixel cards. Top: floorplan/layout. Bottom: elevation/detail hooks for arches, frames, booth backs, pipes, sockets, lamps, signs, and raised platforms.",
+			"id": "layered_cantina_source_cards",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_layered_kit_v1/review_scenes/layered_cantina_source_cards.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_layered_kit_v1/captures/layered_cantina_v0_vs_v1.png",
+			"description": "Left: floorplan-only merged room kit. Right: layered floorplan plus detail/elevation card. Same room, one added semantic layer.",
+			"id": "layered_cantina_v0_vs_v1",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_layered_kit_v1/review_scenes/layered_cantina_v0_vs_v1.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_layered_kit_v1/captures/layered_cantina_v1_isometric.png",
+			"description": "Layered material-batched Cantina v1 from the isometric review camera.",
+			"id": "layered_cantina_v1_isometric",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_layered_kit_v1/review_scenes/layered_cantina_v1_isometric.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_layered_kit_v1/captures/layered_cantina_v1_closeup.png",
+			"description": "Close review of the added arches, frames, booth backs, lamps, pipes, sockets, and raised floor detail.",
+			"id": "layered_cantina_v1_closeup",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_layered_kit_v1/review_scenes/layered_cantina_v1_closeup.tscn"
+		}
+	],
+	"detail_source": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_layered_kit_v1/source_images/cantina_detail_elevation_48x32.png",
+	"floorplan_source": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_layered_kit_v1/source_images/cantina_floorplan_48x32.png",
+	"generator": "docs/gpt/asset_factory/scripts/godot_pixel_cantina_layered_kit_proof.gd",
+	"stats": {
+		"batched_mesh_nodes": 16,
+		"batched_node_reduction_vs_per_pixel": 98.6,
+		"batched_triangles_estimate": 1212,
+		"combined_greedy_rectangles": 101,
+		"combined_nonempty_pixels": 1107,
+		"detail_greedy_rectangles": 27,
+		"detail_nonempty_pixels": 141,
+		"floor_greedy_rectangles": 74,
+		"floor_nonempty_pixels": 966,
+		"grid_size": "48x32",
+		"per_pixel_nodes": 1107,
+		"per_pixel_triangles_estimate": 13284,
+		"rect_reduction_vs_per_pixel": 90.9,
+		"used_categories": [
+			"arch",
+			"bar",
+			"booth",
+			"booth_back",
+			"clutter",
+			"door",
+			"floor",
+			"frame",
+			"lamp",
+			"light",
+			"pipe",
+			"raised",
+			"sign",
+			"socket",
+			"table",
+			"wall"
+		]
+	}
+}

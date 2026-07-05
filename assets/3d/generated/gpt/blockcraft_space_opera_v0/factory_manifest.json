@@ -1,0 +1,135 @@
+{
+	"asset_count": 11,
+	"assets": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_desert_tile_4x4_01.png",
+			"category": "terrain_tile",
+			"display_name": "Blockcraft Desert Tile 4x4 01",
+			"gameplay_role": "repeatable desert ground tile with height-step readability",
+			"id": "blockcraft_desert_tile_4x4_01",
+			"prompt": "blocky desert ground tile with simple ledge, rocks, and panel scraps",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_desert_tile_4x4_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_desert_tile_4x4_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_frontier_gate_01.png",
+			"category": "settlement_module",
+			"display_name": "Blockcraft Frontier Gate 01",
+			"gameplay_role": "starter district threshold or checkpoint landmark",
+			"id": "blockcraft_frontier_gate_01",
+			"prompt": "blocky desert sci-fi settlement gate with blue light strips and squared arch",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_frontier_gate_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_frontier_gate_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_market_stall_01.png",
+			"category": "vendor_stall",
+			"display_name": "Blockcraft Market Stall 01",
+			"gameplay_role": "vendor, quest-giver, or repair terminal landmark",
+			"id": "blockcraft_market_stall_01",
+			"prompt": "blocky desert market stall with red canopy, crates, and glowing terminal",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_market_stall_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_market_stall_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_moisture_stack_01.png",
+			"category": "landmark_prop",
+			"display_name": "Blockcraft Moisture Stack 01",
+			"gameplay_role": "repair/harvest interaction prop",
+			"id": "blockcraft_moisture_stack_01",
+			"prompt": "blocky desert utility tower with square fins and cyan status lamps",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_moisture_stack_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_moisture_stack_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_white_armored_pawn_01.png",
+			"category": "character_token",
+			"display_name": "Blockcraft White Armored Pawn 01",
+			"gameplay_role": "generic friendly infantry pawn scale test",
+			"id": "blockcraft_white_armored_pawn_01",
+			"prompt": "blocky white armored sci-fi infantry pawn with blue unit marking and black visor",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_white_armored_pawn_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_white_armored_pawn_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_tan_service_droid_01.png",
+			"category": "character_token",
+			"display_name": "Blockcraft Tan Service Droid 01",
+			"gameplay_role": "generic neutral or hostile thin droid pawn scale test",
+			"id": "blockcraft_tan_service_droid_01",
+			"prompt": "blocky tan utility droid pawn with thin limbs and cyan sensor",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_tan_service_droid_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_tan_service_droid_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_hover_sled_01.png",
+			"category": "vehicle_prop",
+			"display_name": "Blockcraft Hover Sled 01",
+			"gameplay_role": "small vehicle prop, cargo escort objective, or travel pad marker",
+			"id": "blockcraft_hover_sled_01",
+			"prompt": "blocky hovering cargo sled with blue underside glow and stacked crates",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_hover_sled_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_hover_sled_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_frontier_micro_slice_01.png",
+			"category": "scene_slice",
+			"display_name": "Blockcraft Frontier Micro Slice 01",
+			"gameplay_role": "one-screen proof of the blockcraft MMO visual direction",
+			"id": "blockcraft_frontier_micro_slice_01",
+			"prompt": "small blocky desert sci-fi MMO slice with gate, market counter, utility stack, pawn, droid, and hover cargo",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_frontier_micro_slice_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_frontier_micro_slice_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_iso_fighter_02.png",
+			"category": "space_ship_token",
+			"display_name": "Blockcraft Isometric Fighter 02",
+			"gameplay_role": "flat-plane tactical ship token",
+			"id": "blockcraft_iso_fighter_02",
+			"prompt": "blocky generic space fighter token for isometric tactical space",
+			"review_camera": "space",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_iso_fighter_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_iso_fighter_02.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_iso_freighter_02.png",
+			"category": "space_ship_token",
+			"display_name": "Blockcraft Isometric Freighter 02",
+			"gameplay_role": "larger flat-plane tactical ship token",
+			"id": "blockcraft_iso_freighter_02",
+			"prompt": "blocky generic cargo freighter token for isometric tactical space",
+			"review_camera": "space",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_iso_freighter_02_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_iso_freighter_02.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/assets/blockcraft_iso_debris_field_01.png",
+			"category": "space_hazard",
+			"display_name": "Blockcraft Isometric Debris Field 01",
+			"gameplay_role": "flat-plane obstacle, cover, or sensor occlusion marker",
+			"id": "blockcraft_iso_debris_field_01",
+			"prompt": "blocky asteroid and wreckage debris field for isometric tactical space",
+			"review_camera": "space",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/review_scenes/blockcraft_iso_debris_field_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_iso_debris_field_01.tscn"
+		}
+	],
+	"captures": {
+		"all": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/contact_sheet_all.png",
+		"ground": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/contact_sheet_ground.png",
+		"space": "res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/captures/contact_sheet_space.png"
+	},
+	"display_name": "Blockcraft Space Opera Prototype Pack v0",
+	"generated_at_unix": 1783136044.675,
+	"pack_id": "blockcraft_space_opera_v0",
+	"schema": "gpt_asset_factory_v0"
+}

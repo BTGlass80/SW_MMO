@@ -19,6 +19,7 @@ var _camera: Camera3D
 var _plane_root: Node3D
 var _player_marker: Node3D
 var _contact_markers: Dictionary = {} # contact_id -> Node3D
+var _planet: Node3D
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -63,14 +64,13 @@ func _build_scene() -> void:
 	sun.light_color = Color(0.92, 0.95, 1.0)
 	_viewport.add_child(sun)
 
-	# Isometric-style framing: an elevated, angled Camera3D (~40 degrees down) rather than the
-	# old near-top-down flat map, so ships read with real perspective depth/parallax as they
-	# move across the plane (DIV-0004's "3D ships/camera" half of the design, not yet built).
+	# True Isometric Orthographic Camera: elevated and angled at 30° pitch, 45° yaw.
+	# Orthogonal projection ensures true scale matching without perspective distortions.
 	_camera = Camera3D.new()
-	_camera.projection = Camera3D.PROJECTION_PERSPECTIVE
-	_camera.fov = 46.0
+	_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+	_camera.size = 22.0
 	_viewport.add_child(_camera)
-	_camera.look_at_from_position(Vector3(15.0, 15.5, 15.0), Vector3.ZERO, Vector3.UP)
+	_camera.look_at_from_position(Vector3(18.0, 14.69, 18.0), Vector3.ZERO, Vector3.UP)
 
 	_plane_root = Node3D.new()
 	_viewport.add_child(_plane_root)
@@ -88,9 +88,39 @@ func _build_scene() -> void:
 	_add_axis_bar(Vector3(PLANE_HALF_X * WORLD_SCALE * 2.0, 0.015, 0.03))
 	_add_axis_bar(Vector3(0.03, 0.015, PLANE_HALF_Y * WORLD_SCALE * 2.0))
 
-	_player_marker = _build_ship_marker(HULL_COLOR, 1.15)
+	_player_marker = _build_ship_marker_tscn("freighter", HULL_COLOR, 1.15)
 	_plane_root.add_child(_player_marker)
 
+	# Load and add Meshy planet background model if available
+	var planet_path := "res://assets/3d/generated/gpt/meshy_space_planet_tatooine_v0/meshy_space_planet_tatooine_v0/model.glb"
+
+	if ResourceLoader.exists(planet_path):
+		var planet_scene := load(planet_path).instantiate() as Node3D
+		planet_scene.position = Vector3(-12.0, -4.5, -9.0)
+		planet_scene.scale = Vector3.ONE * 4.5
+		planet_scene.rotation_degrees = Vector3(15, -45, 10)
+		_plane_root.add_child(planet_scene)
+		_planet = planet_scene
+
+func set_system(system_name: String) -> void:
+	if _planet == null:
+		return
+	if system_name == "Corellia":
+		_planet.position = Vector3(-9.0, -3.5, -7.0)
+		_planet.scale = Vector3.ONE * 5.0
+		_planet.rotation_degrees = Vector3(45, 90, 0)
+	elif system_name == "Nar Shaddaa":
+		_planet.position = Vector3(-14.0, -5.5, -11.0)
+		_planet.scale = Vector3.ONE * 3.5
+		_planet.rotation_degrees = Vector3(-10, 180, 45)
+	elif system_name == "Kessel":
+		_planet.position = Vector3(-11.0, -6.0, -8.0)
+		_planet.scale = Vector3.ONE * 4.0
+		_planet.rotation_degrees = Vector3(90, 0, -30)
+	else:
+		_planet.position = Vector3(-12.0, -4.5, -9.0)
+		_planet.scale = Vector3.ONE * 4.5
+		_planet.rotation_degrees = Vector3(15, -45, 10)
 func _add_axis_bar(dims: Vector3) -> void:
 	var mesh_instance := MeshInstance3D.new()
 	var box := BoxMesh.new()
@@ -138,6 +168,44 @@ func _build_ship_marker(color: Color, scale_factor: float = 1.0) -> Node3D:
 
 	return root
 
+func _build_ship_marker_tscn(kind: String, color: Color, scale_factor: float = 1.0) -> Node3D:
+	var path := ""
+	match kind:
+		"freighter":
+			path = "res://assets/3d/generated/google/scenes/iso_space_freighter_01.tscn"
+		"patrol", "courier":
+			path = "res://assets/3d/generated/google/scenes/iso_space_fighter_01.tscn"
+		"unknown", "landing_beacon":
+			path = "res://assets/3d/generated/google/scenes/iso_space_fighter_01.tscn"
+		"asteroid":
+			path = "res://assets/3d/generated/gpt/meshy_space_asteroid_ore_v0/meshy_space_asteroid_ore_v0/model.glb"
+			if not ResourceLoader.exists(path):
+				path = "res://assets/3d/generated/google/scenes/iso_space_asteroid_cluster_01.tscn"
+
+		_:
+			path = "res://assets/3d/generated/google/scenes/iso_space_fighter_01.tscn"
+
+			
+	if ResourceLoader.exists(path):
+		var scene := load(path).instantiate() as Node3D
+		scene.scale = Vector3.ONE * scale_factor
+		
+		var sel_ring = scene.find_child("selection_ring", true, false)
+		if sel_ring != null:
+			sel_ring.visible = false
+			
+		var hull = scene.find_child("hull", true, false)
+		if hull != null and hull is MeshInstance3D and hull.material_override == null:
+			var mat = StandardMaterial3D.new()
+			mat.albedo_color = color
+			mat.roughness = 0.5
+			mat.metallic = 0.2
+			hull.material_override = mat
+			
+		return scene
+		
+	return _build_ship_marker(color, scale_factor)
+
 ## Mirrors space_map_overlay's contact list/visibility onto the 3D plane. Positions use
 ## the same absolute data-space coordinates + clamp window as _space_to_map (this view
 ## is a background twin of that 2D projection, not an independent source of truth).
@@ -154,7 +222,7 @@ func sync_contacts(contacts: Array, revealed: Array, selected_id: String) -> voi
 		seen[contact_id] = true
 		var marker: Node3D = _contact_markers.get(contact_id)
 		if marker == null:
-			marker = _build_ship_marker(_contact_color(String(contact.get("kind", ""))))
+			marker = _build_ship_marker_tscn(String(contact.get("kind", "")), _contact_color(String(contact.get("kind", ""))))
 			_plane_root.add_child(marker)
 			_contact_markers[contact_id] = marker
 		var pos: Dictionary = contact.get("position", {})
@@ -169,16 +237,28 @@ func sync_contacts(contacts: Array, revealed: Array, selected_id: String) -> voi
 			_contact_markers.erase(contact_id)
 
 func _style_marker(marker: Node3D, selected: bool, hidden: bool, kind: String) -> void:
-	var hull := marker.get_node_or_null("Hull") as MeshInstance3D
-	var nose := marker.get_node_or_null("Nose") as MeshInstance3D
+	var sel_ring = marker.find_child("selection_ring", true, false)
+	if sel_ring != null:
+		sel_ring.visible = selected
+		
+	var hull := marker.find_child("hull", true, false) as MeshInstance3D
+	var nose := marker.find_child("nose", true, false) as MeshInstance3D
 	var color := Color(0.30, 0.30, 0.28) if hidden else _contact_color(kind)
 	var alpha := 0.55 if hidden else 1.0
-	if hull != null and hull.material_override is StandardMaterial3D:
-		var hull_mat := hull.material_override as StandardMaterial3D
-		hull_mat.albedo_color = Color(color.r, color.g, color.b, alpha)
-	if nose != null and nose.material_override is StandardMaterial3D:
-		var nose_mat := nose.material_override as StandardMaterial3D
-		nose_mat.albedo_color = Color(color.r, color.g, color.b, alpha).lightened(0.12)
+	if hull != null:
+		if hull.material_override is StandardMaterial3D:
+			hull.material_override.albedo_color = Color(color.r, color.g, color.b, alpha)
+		else:
+			var mat = StandardMaterial3D.new()
+			mat.albedo_color = Color(color.r, color.g, color.b, alpha)
+			hull.material_override = mat
+	if nose != null:
+		if nose.material_override is StandardMaterial3D:
+			nose.material_override.albedo_color = Color(color.r, color.g, color.b, alpha).lightened(0.12)
+		else:
+			var mat = StandardMaterial3D.new()
+			mat.albedo_color = Color(color.r, color.g, color.b, alpha).lightened(0.12)
+			nose.material_override = mat
 	marker.scale = Vector3.ONE * (1.3 if selected else 1.0)
 
 func _contact_color(kind: String) -> Color:
@@ -193,6 +273,8 @@ func _contact_color(kind: String) -> Color:
 			return Color(0.74, 0.52, 0.86)
 		"unknown":
 			return Color(0.92, 0.36, 0.34)
+		"asteroid":
+			return Color(0.85, 0.55, 0.35)
 		_:
 			return Color(0.82, 0.84, 0.78)
 
@@ -200,3 +282,4 @@ func _space_to_world(pos: Vector2) -> Vector3:
 	var world_x := clampf(pos.x, -PLANE_HALF_X, PLANE_HALF_X) * WORLD_SCALE
 	var world_z := clampf(-pos.y, -PLANE_HALF_Y, PLANE_HALF_Y) * WORLD_SCALE
 	return Vector3(world_x, 0.0, world_z)
+

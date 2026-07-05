@@ -1,0 +1,1058 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_desert_tile_4x4_01.tscn" id="1_yn1k7"]
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_frontier_gate_01.tscn" id="2_53tum"]
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_market_stall_01.tscn" id="3_kunx0"]
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_moisture_stack_01.tscn" id="4_ty42v"]
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_white_armored_pawn_01.tscn" id="5_wx2j8"]
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_tan_service_droid_01.tscn" id="6_hgh58"]
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_hover_sled_01.tscn" id="7_iwtbh"]
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_frontier_micro_slice_01.tscn" id="8_7bi7y"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_urx7j"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_76egc"]
+size = Vector3(20.6, 0.08, 31.400002)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_svl3x"]
+albedo_color = Color(0.7254902, 0.50980395, 0.27058825, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_m36bh"]
+size = Vector3(4, 0.24, 4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4py3p"]
+albedo_color = Color(0.8745098, 0.7294118, 0.44705883, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.8745098, 0.7294118, 0.44705883, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_kusac"]
+size = Vector3(1.4, 0.45, 1.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eo0f2"]
+albedo_color = Color(0.47843137, 0.3372549, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_4aetf"]
+size = Vector3(0.18, 0.25, 1.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hpxnr"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_6t6ic"]
+size = Vector3(1.1, 0.08, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i3arq"]
+albedo_color = Color(0.46666667, 0.4392157, 0.42745098, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_vuext"]
+size = Vector3(0.38, 0.26, 0.32)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wmpan"]
+size = Vector3(0.28, 0.22, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xycf1"]
+albedo_color = Color(0.14117648, 0.84313726, 0.84313726, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14117648, 0.84313726, 0.84313726, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="TorusMesh" id="TorusMesh_xd0lq"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vlkwy"]
+albedo_color = Color(0.7254902, 0.50980395, 0.27058825, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_fki81"]
+size = Vector3(0.8, 1.5, 0.9)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hjqsv"]
+albedo_color = Color(0.8745098, 0.7294118, 0.44705883, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.8745098, 0.7294118, 0.44705883, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_fhcfh"]
+size = Vector3(1.05, 0.7, 1.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_chw4r"]
+size = Vector3(0.8, 1.5, 0.9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_51j5s"]
+size = Vector3(1.05, 0.7, 1.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3bh3a"]
+size = Vector3(4.7, 0.55, 0.75)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8d6qb"]
+albedo_color = Color(0.41960785, 0.2901961, 0.18431373, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_o53gm"]
+size = Vector3(2.7, 0.22, 0.86)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6rwxq"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_dwxjx"]
+size = Vector3(0.08, 1.05, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_l6cvx"]
+size = Vector3(0.08, 1.05, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8rxnk"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_1ipf8"]
+size = Vector3(1.5, 0.22, 0.08)
+
+[sub_resource type="TorusMesh" id="TorusMesh_rmgnl"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u78sw"]
+albedo_color = Color(0.7254902, 0.50980395, 0.27058825, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_g1ckq"]
+size = Vector3(3.9, 2, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8o7bj"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_diyqk"]
+size = Vector3(3.4, 1.1, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y5ng1"]
+albedo_color = Color(0.7254902, 0.2627451, 0.1882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_wgxle"]
+size = Vector3(4.8, 0.25, 2.45)
+
+[sub_resource type="BoxMesh" id="BoxMesh_vxlo4"]
+size = Vector3(0.18, 2, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_upd4u"]
+size = Vector3(0.18, 2, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qd6tx"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_d2ome"]
+size = Vector3(0.7, 0.75, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_t0ogg"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_241j4"]
+size = Vector3(0.48, 0.28, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_upu1v"]
+albedo_color = Color(0.47843137, 0.3372549, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_2bkv1"]
+size = Vector3(0.62, 0.62, 0.62)
+
+[sub_resource type="BoxMesh" id="BoxMesh_m5vkw"]
+size = Vector3(0.48, 0.48, 0.48)
+
+[sub_resource type="TorusMesh" id="TorusMesh_d8jhc"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pr3qi"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_5cl8g"]
+size = Vector3(0.95, 0.5, 0.95)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x8vdn"]
+albedo_color = Color(0.8745098, 0.7294118, 0.44705883, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.8745098, 0.7294118, 0.44705883, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_vku8y"]
+size = Vector3(0.35, 0.9, 0.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_h0jcr"]
+size = Vector3(0.28, 0.8, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kpiyd"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_lk3d8"]
+size = Vector3(0.78, 0.34, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5thon"]
+albedo_color = Color(0.18431373, 0.56078434, 0.8392157, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.18431373, 0.56078434, 0.8392157, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_tae80"]
+size = Vector3(1.35, 0.16, 0.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_kia5k"]
+size = Vector3(0.12, 1.15, 0.55)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pk2xn"]
+size = Vector3(0.12, 1.15, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3n4rn"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_54w7t"]
+size = Vector3(0.2, 0.18, 0.05)
+
+[sub_resource type="TorusMesh" id="TorusMesh_4esle"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6vemo"]
+albedo_color = Color(0.0627451, 0.078431375, 0.09803922, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_a7o44"]
+size = Vector3(0.68, 0.24, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_baa6c"]
+albedo_color = Color(0.68235296, 0.72156864, 0.73333335, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_opbsp"]
+size = Vector3(0.55, 0.7, 0.34)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vlwhm"]
+albedo_color = Color(0.9019608, 0.9254902, 0.92156863, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_usu4l"]
+size = Vector3(0.82, 0.72, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trtgl"]
+albedo_color = Color(0.18431373, 0.56078434, 0.8392157, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.18431373, 0.56078434, 0.8392157, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_rttrd"]
+size = Vector3(0.28, 0.3, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_oo52w"]
+size = Vector3(0.7, 0.52, 0.58)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xfjig"]
+size = Vector3(0.48, 0.14, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i17ko"]
+size = Vector3(0.24, 0.72, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_exhq3"]
+size = Vector3(0.24, 0.72, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l27eb"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_e4v8c"]
+size = Vector3(0.18, 0.16, 0.82)
+
+[sub_resource type="TorusMesh" id="TorusMesh_suulj"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lj8yl"]
+albedo_color = Color(0.7254902, 0.60784316, 0.3882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_uxxkj"]
+size = Vector3(0.55, 0.2, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ida8c"]
+size = Vector3(0.12, 0.75, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_46ijf"]
+size = Vector3(0.12, 0.75, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_f7vac"]
+size = Vector3(0.52, 0.7, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_k8bag"]
+size = Vector3(0.45, 0.32, 0.36)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_it1o6"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_xv0d4"]
+size = Vector3(0.22, 0.08, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bv6oi"]
+size = Vector3(0.1, 0.72, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_o0kee"]
+size = Vector3(0.1, 0.72, 0.12)
+
+[sub_resource type="TorusMesh" id="TorusMesh_wqtjl"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gmr5e"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_111mg"]
+size = Vector3(2.8, 0.35, 1.05)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nkgk6"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_il6yb"]
+size = Vector3(2.2, 0.24, 0.32)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k8rjw"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_uor2d"]
+size = Vector3(0.55, 0.08, 0.75)
+
+[sub_resource type="BoxMesh" id="BoxMesh_h53fx"]
+size = Vector3(0.55, 0.08, 0.75)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y48ca"]
+albedo_color = Color(0.47843137, 0.3372549, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_vx1ni"]
+size = Vector3(0.9, 0.55, 0.72)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4ui3s"]
+albedo_color = Color(0.41960785, 0.2901961, 0.18431373, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_bfn01"]
+size = Vector3(0.62, 0.42, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_itkkl"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_ku4qa"]
+size = Vector3(0.1, 0.7, 0.12)
+
+[sub_resource type="TorusMesh" id="TorusMesh_l00uj"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_05bps"]
+albedo_color = Color(0.7254902, 0.50980395, 0.27058825, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_k31ji"]
+size = Vector3(7.4, 0.16, 5.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b3etc"]
+albedo_color = Color(0.8745098, 0.7294118, 0.44705883, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.8745098, 0.7294118, 0.44705883, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_oyjgt"]
+size = Vector3(1.45, 0.42, 1.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pfvb6"]
+size = Vector3(0.58, 1.75, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jl6ru"]
+size = Vector3(0.58, 1.75, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3n60b"]
+size = Vector3(2.25, 0.42, 0.62)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nvu72"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_c7xsy"]
+size = Vector3(0.06, 0.72, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tcis4"]
+size = Vector3(0.06, 0.72, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8ibwt"]
+size = Vector3(2.2, 1.55, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iehhx"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_rxln4"]
+size = Vector3(2, 0.72, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x7ia7"]
+albedo_color = Color(0.7254902, 0.2627451, 0.1882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_qd71m"]
+size = Vector3(2.7, 0.2, 1.45)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fwdec"]
+size = Vector3(0.62, 0.55, 0.62)
+
+[sub_resource type="BoxMesh" id="BoxMesh_iashh"]
+size = Vector3(0.24, 0.86, 0.24)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mc4ys"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_oasxr"]
+size = Vector3(0.72, 0.28, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3um2s"]
+size = Vector3(0.28, 0.07, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c408l"]
+albedo_color = Color(0.9019608, 0.9254902, 0.92156863, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_rwhni"]
+size = Vector3(0.38, 0.72, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wn0xq"]
+size = Vector3(0.42, 0.34, 0.36)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l8uts"]
+albedo_color = Color(0.0627451, 0.078431375, 0.09803922, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_dlmgy"]
+size = Vector3(0.28, 0.08, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c06fl"]
+albedo_color = Color(0.18431373, 0.56078434, 0.8392157, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.18431373, 0.56078434, 0.8392157, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_oens6"]
+size = Vector3(0.18, 0.22, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k0swn"]
+albedo_color = Color(0.7254902, 0.60784316, 0.3882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_8e71d"]
+size = Vector3(0.26, 0.7, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_k4lqc"]
+size = Vector3(0.32, 0.24, 0.26)
+
+[sub_resource type="BoxMesh" id="BoxMesh_nwgal"]
+size = Vector3(0.16, 0.05, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8dl2r"]
+size = Vector3(1.55, 0.28, 0.72)
+
+[sub_resource type="BoxMesh" id="BoxMesh_oeu1c"]
+size = Vector3(0.9, 0.06, 0.48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kuwak"]
+albedo_color = Color(0.47843137, 0.3372549, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_c7wuj"]
+size = Vector3(0.5, 0.42, 0.48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r7fx7"]
+albedo_color = Color(0.41960785, 0.2901961, 0.18431373, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_a3ba4"]
+size = Vector3(0.42, 0.32, 0.4)
+
+[sub_resource type="TorusMesh" id="TorusMesh_rqeym"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[node name="AssetFactoryReview_ground" type="Node3D" unique_id=1935541938]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=926924549]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_urx7j")
+mesh = SubResource("BoxMesh_76egc")
+
+[node name="blockcraft_desert_tile_4x4_01" type="Node3D" parent="." unique_id=1265748367 instance=ExtResource("1_yn1k7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0, -10.200001)
+metadata/asset_id = "blockcraft_desert_tile_4x4_01"
+metadata/display_name = "Blockcraft Desert Tile 4x4 01"
+metadata/category = "terrain_tile"
+metadata/gameplay_role = "repeatable desert ground tile with height-step readability"
+metadata/prompt = "blocky desert ground tile with simple ledge, rocks, and panel scraps"
+
+[node name="base" type="MeshInstance3D" parent="blockcraft_desert_tile_4x4_01" unique_id=1291646966]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+material_override = SubResource("StandardMaterial3D_svl3x")
+mesh = SubResource("BoxMesh_m36bh")
+
+[node name="raised_corner" type="MeshInstance3D" parent="blockcraft_desert_tile_4x4_01" unique_id=2014680479]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 0.38, -1.15)
+material_override = SubResource("StandardMaterial3D_4py3p")
+mesh = SubResource("BoxMesh_kusac")
+
+[node name="step_shadow" type="MeshInstance3D" parent="blockcraft_desert_tile_4x4_01" unique_id=1001850822]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.24, -1.15)
+material_override = SubResource("StandardMaterial3D_eo0f2")
+mesh = SubResource("BoxMesh_4aetf")
+
+[node name="panel_scrap" type="MeshInstance3D" parent="blockcraft_desert_tile_4x4_01" unique_id=788617231]
+transform = Transform3D(0.9396926, 0, 0.34202012, 0, 1, 0, -0.34202012, 0, 0.9396926, 1, 0.28, 0.65)
+material_override = SubResource("StandardMaterial3D_hpxnr")
+mesh = SubResource("BoxMesh_6t6ic")
+
+[node name="small_rock_a" type="MeshInstance3D" parent="blockcraft_desert_tile_4x4_01" unique_id=2034408162]
+transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, -1.3, 0.34, 1.2)
+material_override = SubResource("StandardMaterial3D_i3arq")
+mesh = SubResource("BoxMesh_vuext")
+
+[node name="small_rock_b" type="MeshInstance3D" parent="blockcraft_desert_tile_4x4_01" unique_id=98906624]
+transform = Transform3D(0.95105654, 0, -0.309017, 0, 1, 0, 0.309017, 0, 0.95105654, 1.55, 0.31, -1.3)
+material_override = SubResource("StandardMaterial3D_i3arq")
+mesh = SubResource("BoxMesh_wmpan")
+
+[node name="@MeshInstance3D@24" type="MeshInstance3D" parent="." unique_id=1186238772]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0.02, -10.200001)
+material_override = SubResource("StandardMaterial3D_xycf1")
+mesh = SubResource("TorusMesh_xd0lq")
+
+[node name="blockcraft_frontier_gate_01" type="Node3D" parent="." unique_id=1472060134 instance=ExtResource("2_53tum")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0, -10.200001)
+metadata/asset_id = "blockcraft_frontier_gate_01"
+metadata/display_name = "Blockcraft Frontier Gate 01"
+metadata/category = "settlement_module"
+metadata/gameplay_role = "starter district threshold or checkpoint landmark"
+metadata/prompt = "blocky desert sci-fi settlement gate with blue light strips and squared arch"
+
+[node name="left_column_lower" type="MeshInstance3D" parent="blockcraft_frontier_gate_01" unique_id=498207100]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.85, 0.75, 0)
+material_override = SubResource("StandardMaterial3D_vlkwy")
+mesh = SubResource("BoxMesh_fki81")
+
+[node name="left_column_upper" type="MeshInstance3D" parent="blockcraft_frontier_gate_01" unique_id=342826535]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.85, 1.85, 0)
+material_override = SubResource("StandardMaterial3D_hjqsv")
+mesh = SubResource("BoxMesh_fhcfh")
+
+[node name="right_column_lower" type="MeshInstance3D" parent="blockcraft_frontier_gate_01" unique_id=479342651]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.85, 0.75, 0)
+material_override = SubResource("StandardMaterial3D_vlkwy")
+mesh = SubResource("BoxMesh_chw4r")
+
+[node name="right_column_upper" type="MeshInstance3D" parent="blockcraft_frontier_gate_01" unique_id=291380922]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.85, 1.85, 0)
+material_override = SubResource("StandardMaterial3D_hjqsv")
+mesh = SubResource("BoxMesh_51j5s")
+
+[node name="top_beam" type="MeshInstance3D" parent="blockcraft_frontier_gate_01" unique_id=2000062228]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.45, 0)
+material_override = SubResource("StandardMaterial3D_hjqsv")
+mesh = SubResource("BoxMesh_3bh3a")
+
+[node name="inner_shadow" type="MeshInstance3D" parent="blockcraft_frontier_gate_01" unique_id=869153828]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, 0.08)
+material_override = SubResource("StandardMaterial3D_8d6qb")
+mesh = SubResource("BoxMesh_o53gm")
+
+[node name="left_blue_strip" type="MeshInstance3D" parent="blockcraft_frontier_gate_01" unique_id=236353010]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.31, 1, -0.48)
+material_override = SubResource("StandardMaterial3D_6rwxq")
+mesh = SubResource("BoxMesh_dwxjx")
+
+[node name="right_blue_strip" type="MeshInstance3D" parent="blockcraft_frontier_gate_01" unique_id=1323042220]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.31, 1, -0.48)
+material_override = SubResource("StandardMaterial3D_6rwxq")
+mesh = SubResource("BoxMesh_l6cvx")
+
+[node name="sign_panel" type="MeshInstance3D" parent="blockcraft_frontier_gate_01" unique_id=851692308]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.48, -0.43)
+material_override = SubResource("StandardMaterial3D_8rxnk")
+mesh = SubResource("BoxMesh_1ipf8")
+
+[node name="@MeshInstance3D@25" type="MeshInstance3D" parent="." unique_id=2060557281]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0.02, -10.200001)
+material_override = SubResource("StandardMaterial3D_xycf1")
+mesh = SubResource("TorusMesh_rmgnl")
+
+[node name="blockcraft_market_stall_01" type="Node3D" parent="." unique_id=941395238 instance=ExtResource("3_kunx0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0, -3.4)
+metadata/asset_id = "blockcraft_market_stall_01"
+metadata/display_name = "Blockcraft Market Stall 01"
+metadata/category = "vendor_stall"
+metadata/gameplay_role = "vendor, quest-giver, or repair terminal landmark"
+metadata/prompt = "blocky desert market stall with red canopy, crates, and glowing terminal"
+
+[node name="back_wall" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=2028012677]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.8)
+material_override = SubResource("StandardMaterial3D_u78sw")
+mesh = SubResource("BoxMesh_g1ckq")
+
+[node name="counter" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=1942934136]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, -0.75)
+material_override = SubResource("StandardMaterial3D_8o7bj")
+mesh = SubResource("BoxMesh_diyqk")
+
+[node name="canopy" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=1436001659]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.35, -0.15)
+material_override = SubResource("StandardMaterial3D_y5ng1")
+mesh = SubResource("BoxMesh_wgxle")
+
+[node name="left_post" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=159194242]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.2, -1.15)
+material_override = SubResource("StandardMaterial3D_8o7bj")
+mesh = SubResource("BoxMesh_vxlo4")
+
+[node name="right_post" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=120403825]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.2, -1.15)
+material_override = SubResource("StandardMaterial3D_8o7bj")
+mesh = SubResource("BoxMesh_upd4u")
+
+[node name="terminal_body" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=1670019856]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.45, 0.85, -1.35)
+material_override = SubResource("StandardMaterial3D_qd6tx")
+mesh = SubResource("BoxMesh_d2ome")
+
+[node name="terminal_screen" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=1823473587]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.45, 1, -1.55)
+material_override = SubResource("StandardMaterial3D_t0ogg")
+mesh = SubResource("BoxMesh_241j4")
+
+[node name="crate_a" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=1766481744]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0.35, -1.28)
+material_override = SubResource("StandardMaterial3D_upu1v")
+mesh = SubResource("BoxMesh_2bkv1")
+
+[node name="crate_b" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=545546993]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0.25, -0.55)
+material_override = SubResource("StandardMaterial3D_upu1v")
+mesh = SubResource("BoxMesh_m5vkw")
+
+[node name="@MeshInstance3D@26" type="MeshInstance3D" parent="." unique_id=1512659398]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0.02, -3.4)
+material_override = SubResource("StandardMaterial3D_xycf1")
+mesh = SubResource("TorusMesh_d8jhc")
+
+[node name="blockcraft_moisture_stack_01" type="Node3D" parent="." unique_id=879154006 instance=ExtResource("4_ty42v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0, -3.4)
+metadata/asset_id = "blockcraft_moisture_stack_01"
+metadata/display_name = "Blockcraft Moisture Stack 01"
+metadata/category = "landmark_prop"
+metadata/gameplay_role = "repair/harvest interaction prop"
+metadata/prompt = "blocky desert utility tower with square fins and cyan status lamps"
+
+[node name="base" type="MeshInstance3D" parent="blockcraft_moisture_stack_01" unique_id=679479029]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+material_override = SubResource("StandardMaterial3D_pr3qi")
+mesh = SubResource("BoxMesh_5cl8g")
+
+[node name="shaft_lower" type="MeshInstance3D" parent="blockcraft_moisture_stack_01" unique_id=2113889267]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+material_override = SubResource("StandardMaterial3D_x8vdn")
+mesh = SubResource("BoxMesh_vku8y")
+
+[node name="shaft_upper" type="MeshInstance3D" parent="blockcraft_moisture_stack_01" unique_id=108487152]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+material_override = SubResource("StandardMaterial3D_x8vdn")
+mesh = SubResource("BoxMesh_h0jcr")
+
+[node name="top_block" type="MeshInstance3D" parent="blockcraft_moisture_stack_01" unique_id=586746117]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+material_override = SubResource("StandardMaterial3D_kpiyd")
+mesh = SubResource("BoxMesh_lk3d8")
+
+[node name="dish_bar" type="MeshInstance3D" parent="blockcraft_moisture_stack_01" unique_id=1336774365]
+transform = Transform3D(1, 0, 0, 0, 0.9781476, 0.2079117, 0, -0.2079117, 0.9781476, 0, 2.62, -0.42)
+material_override = SubResource("StandardMaterial3D_5thon")
+mesh = SubResource("BoxMesh_tae80")
+
+[node name="left_fin" type="MeshInstance3D" parent="blockcraft_moisture_stack_01" unique_id=1692595304]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.52, 1.25, 0)
+material_override = SubResource("StandardMaterial3D_kpiyd")
+mesh = SubResource("BoxMesh_kia5k")
+
+[node name="right_fin" type="MeshInstance3D" parent="blockcraft_moisture_stack_01" unique_id=555665158]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.52, 1.25, 0)
+material_override = SubResource("StandardMaterial3D_kpiyd")
+mesh = SubResource("BoxMesh_pk2xn")
+
+[node name="status_lamp" type="MeshInstance3D" parent="blockcraft_moisture_stack_01" unique_id=2136708425]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, -0.21)
+material_override = SubResource("StandardMaterial3D_3n4rn")
+mesh = SubResource("BoxMesh_54w7t")
+
+[node name="@MeshInstance3D@27" type="MeshInstance3D" parent="." unique_id=1170375745]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0.02, -3.4)
+material_override = SubResource("StandardMaterial3D_xycf1")
+mesh = SubResource("TorusMesh_4esle")
+
+[node name="blockcraft_white_armored_pawn_01" type="Node3D" parent="." unique_id=2102437082 instance=ExtResource("5_wx2j8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0, 3.4)
+metadata/asset_id = "blockcraft_white_armored_pawn_01"
+metadata/display_name = "Blockcraft White Armored Pawn 01"
+metadata/category = "character_token"
+metadata/gameplay_role = "generic friendly infantry pawn scale test"
+metadata/prompt = "blocky white armored sci-fi infantry pawn with blue unit marking and black visor"
+
+[node name="boots" type="MeshInstance3D" parent="blockcraft_white_armored_pawn_01" unique_id=1127152142]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+material_override = SubResource("StandardMaterial3D_6vemo")
+mesh = SubResource("BoxMesh_a7o44")
+
+[node name="legs" type="MeshInstance3D" parent="blockcraft_white_armored_pawn_01" unique_id=1271366010]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+material_override = SubResource("StandardMaterial3D_baa6c")
+mesh = SubResource("BoxMesh_opbsp")
+
+[node name="torso" type="MeshInstance3D" parent="blockcraft_white_armored_pawn_01" unique_id=1609766406]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+material_override = SubResource("StandardMaterial3D_vlwhm")
+mesh = SubResource("BoxMesh_usu4l")
+
+[node name="blue_chest_mark" type="MeshInstance3D" parent="blockcraft_white_armored_pawn_01" unique_id=1373749728]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.26, -0.24)
+material_override = SubResource("StandardMaterial3D_trtgl")
+mesh = SubResource("BoxMesh_rttrd")
+
+[node name="helmet" type="MeshInstance3D" parent="blockcraft_white_armored_pawn_01" unique_id=644494275]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+material_override = SubResource("StandardMaterial3D_vlwhm")
+mesh = SubResource("BoxMesh_oo52w")
+
+[node name="visor" type="MeshInstance3D" parent="blockcraft_white_armored_pawn_01" unique_id=956776790]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.79, -0.31)
+material_override = SubResource("StandardMaterial3D_6vemo")
+mesh = SubResource("BoxMesh_xfjig")
+
+[node name="left_arm" type="MeshInstance3D" parent="blockcraft_white_armored_pawn_01" unique_id=23681772]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.58, 1.08, 0)
+material_override = SubResource("StandardMaterial3D_vlwhm")
+mesh = SubResource("BoxMesh_i17ko")
+
+[node name="right_arm" type="MeshInstance3D" parent="blockcraft_white_armored_pawn_01" unique_id=858149176]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.58, 1.08, -0.05)
+material_override = SubResource("StandardMaterial3D_vlwhm")
+mesh = SubResource("BoxMesh_exhq3")
+
+[node name="blaster" type="MeshInstance3D" parent="blockcraft_white_armored_pawn_01" unique_id=1199527551]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 1.04, -0.45)
+material_override = SubResource("StandardMaterial3D_l27eb")
+mesh = SubResource("BoxMesh_e4v8c")
+
+[node name="@MeshInstance3D@28" type="MeshInstance3D" parent="." unique_id=640728677]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0.02, 3.4)
+material_override = SubResource("StandardMaterial3D_xycf1")
+mesh = SubResource("TorusMesh_suulj")
+
+[node name="blockcraft_tan_service_droid_01" type="Node3D" parent="." unique_id=193601437 instance=ExtResource("6_hgh58")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0, 3.4)
+metadata/asset_id = "blockcraft_tan_service_droid_01"
+metadata/display_name = "Blockcraft Tan Service Droid 01"
+metadata/category = "character_token"
+metadata/gameplay_role = "generic neutral or hostile thin droid pawn scale test"
+metadata/prompt = "blocky tan utility droid pawn with thin limbs and cyan sensor"
+
+[node name="feet" type="MeshInstance3D" parent="blockcraft_tan_service_droid_01" unique_id=1696327773]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+material_override = SubResource("StandardMaterial3D_lj8yl")
+mesh = SubResource("BoxMesh_uxxkj")
+
+[node name="left_leg" type="MeshInstance3D" parent="blockcraft_tan_service_droid_01" unique_id=965787035]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, 0.5, 0)
+material_override = SubResource("StandardMaterial3D_lj8yl")
+mesh = SubResource("BoxMesh_ida8c")
+
+[node name="right_leg" type="MeshInstance3D" parent="blockcraft_tan_service_droid_01" unique_id=958212838]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.5, 0)
+material_override = SubResource("StandardMaterial3D_lj8yl")
+mesh = SubResource("BoxMesh_46ijf")
+
+[node name="body" type="MeshInstance3D" parent="blockcraft_tan_service_droid_01" unique_id=1645652387]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+material_override = SubResource("StandardMaterial3D_lj8yl")
+mesh = SubResource("BoxMesh_f7vac")
+
+[node name="head" type="MeshInstance3D" parent="blockcraft_tan_service_droid_01" unique_id=1911424795]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.63, -0.02)
+material_override = SubResource("StandardMaterial3D_lj8yl")
+mesh = SubResource("BoxMesh_k8bag")
+
+[node name="sensor" type="MeshInstance3D" parent="blockcraft_tan_service_droid_01" unique_id=1092753327]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.64, -0.23)
+material_override = SubResource("StandardMaterial3D_it1o6")
+mesh = SubResource("BoxMesh_xv0d4")
+
+[node name="left_arm" type="MeshInstance3D" parent="blockcraft_tan_service_droid_01" unique_id=1212394283]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 1.08, 0)
+material_override = SubResource("StandardMaterial3D_lj8yl")
+mesh = SubResource("BoxMesh_bv6oi")
+
+[node name="right_arm" type="MeshInstance3D" parent="blockcraft_tan_service_droid_01" unique_id=932741768]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 1.08, 0)
+material_override = SubResource("StandardMaterial3D_lj8yl")
+mesh = SubResource("BoxMesh_o0kee")
+
+[node name="@MeshInstance3D@29" type="MeshInstance3D" parent="." unique_id=1234044468]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0.02, 3.4)
+material_override = SubResource("StandardMaterial3D_xycf1")
+mesh = SubResource("TorusMesh_wqtjl")
+
+[node name="blockcraft_hover_sled_01" type="Node3D" parent="." unique_id=1406499265 instance=ExtResource("7_iwtbh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0, 10.200001)
+metadata/asset_id = "blockcraft_hover_sled_01"
+metadata/display_name = "Blockcraft Hover Sled 01"
+metadata/category = "vehicle_prop"
+metadata/gameplay_role = "small vehicle prop, cargo escort objective, or travel pad marker"
+metadata/prompt = "blocky hovering cargo sled with blue underside glow and stacked crates"
+
+[node name="sled_body" type="MeshInstance3D" parent="blockcraft_hover_sled_01" unique_id=2056564776]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+material_override = SubResource("StandardMaterial3D_gmr5e")
+mesh = SubResource("BoxMesh_111mg")
+
+[node name="front_wedge_fake" type="MeshInstance3D" parent="blockcraft_hover_sled_01" unique_id=1347399722]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.72)
+material_override = SubResource("StandardMaterial3D_nkgk6")
+mesh = SubResource("BoxMesh_il6yb")
+
+[node name="left_glow" type="MeshInstance3D" parent="blockcraft_hover_sled_01" unique_id=1842893684]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.22, 0)
+material_override = SubResource("StandardMaterial3D_k8rjw")
+mesh = SubResource("BoxMesh_uor2d")
+
+[node name="right_glow" type="MeshInstance3D" parent="blockcraft_hover_sled_01" unique_id=579243170]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.22, 0)
+material_override = SubResource("StandardMaterial3D_k8rjw")
+mesh = SubResource("BoxMesh_h53fx")
+
+[node name="cargo_big" type="MeshInstance3D" parent="blockcraft_hover_sled_01" unique_id=1298737399]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0.88, 0.08)
+material_override = SubResource("StandardMaterial3D_y48ca")
+mesh = SubResource("BoxMesh_vx1ni")
+
+[node name="cargo_small" type="MeshInstance3D" parent="blockcraft_hover_sled_01" unique_id=809527469]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, 0.8, 0.12)
+material_override = SubResource("StandardMaterial3D_4ui3s")
+mesh = SubResource("BoxMesh_bfn01")
+
+[node name="handle_bar" type="MeshInstance3D" parent="blockcraft_hover_sled_01" unique_id=1813927162]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0.95, -0.48)
+material_override = SubResource("StandardMaterial3D_itkkl")
+mesh = SubResource("BoxMesh_ku4qa")
+
+[node name="@MeshInstance3D@30" type="MeshInstance3D" parent="." unique_id=1953026806]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0.02, 10.200001)
+material_override = SubResource("StandardMaterial3D_xycf1")
+mesh = SubResource("TorusMesh_l00uj")
+
+[node name="blockcraft_frontier_micro_slice_01" type="Node3D" parent="." unique_id=897390189 instance=ExtResource("8_7bi7y")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0, 10.200001)
+metadata/asset_id = "blockcraft_frontier_micro_slice_01"
+metadata/display_name = "Blockcraft Frontier Micro Slice 01"
+metadata/category = "scene_slice"
+metadata/gameplay_role = "one-screen proof of the blockcraft MMO visual direction"
+metadata/prompt = "small blocky desert sci-fi MMO slice with gate, market counter, utility stack, pawn, droid, and hover cargo"
+
+[node name="base_tile" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=269894409]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
+material_override = SubResource("StandardMaterial3D_05bps")
+mesh = SubResource("BoxMesh_k31ji")
+
+[node name="raised_step" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=217075479]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 0.32, -1.55)
+material_override = SubResource("StandardMaterial3D_b3etc")
+mesh = SubResource("BoxMesh_oyjgt")
+
+[node name="gate_left" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1158166886]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.35, 0.95, 1.55)
+material_override = SubResource("StandardMaterial3D_b3etc")
+mesh = SubResource("BoxMesh_pfvb6")
+
+[node name="gate_right" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=344194736]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.65, 0.95, 1.55)
+material_override = SubResource("StandardMaterial3D_b3etc")
+mesh = SubResource("BoxMesh_jl6ru")
+
+[node name="gate_beam" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=125476317]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 1.98, 1.55)
+material_override = SubResource("StandardMaterial3D_b3etc")
+mesh = SubResource("BoxMesh_3n60b")
+
+[node name="gate_light_left" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1389507771]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.66, 0.92, 1.15)
+material_override = SubResource("StandardMaterial3D_nvu72")
+mesh = SubResource("BoxMesh_c7xsy")
+
+[node name="gate_light_right" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1311246655]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.34, 0.92, 1.15)
+material_override = SubResource("StandardMaterial3D_nvu72")
+mesh = SubResource("BoxMesh_tcis4")
+
+[node name="stall_wall" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=333888498]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.85, 1.1)
+material_override = SubResource("StandardMaterial3D_05bps")
+mesh = SubResource("BoxMesh_8ibwt")
+
+[node name="stall_counter" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1601771534]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.45, 0.35)
+material_override = SubResource("StandardMaterial3D_iehhx")
+mesh = SubResource("BoxMesh_rxln4")
+
+[node name="stall_canopy" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=55578756]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 1.82, 0.65)
+material_override = SubResource("StandardMaterial3D_x7ia7")
+mesh = SubResource("BoxMesh_qd71m")
+
+[node name="tower_base" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=662131433]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.28, -1.45)
+material_override = SubResource("StandardMaterial3D_iehhx")
+mesh = SubResource("BoxMesh_fwdec")
+
+[node name="tower_shaft" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=926445025]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.92, -1.45)
+material_override = SubResource("StandardMaterial3D_b3etc")
+mesh = SubResource("BoxMesh_iashh")
+
+[node name="tower_head" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1949333097]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.5, -1.45)
+material_override = SubResource("StandardMaterial3D_mc4ys")
+mesh = SubResource("BoxMesh_oasxr")
+
+[node name="tower_light" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=672142229]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.52, -1.7)
+material_override = SubResource("StandardMaterial3D_nvu72")
+mesh = SubResource("BoxMesh_3um2s")
+
+[node name="pawn_body" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=896519925]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.7, -1.2)
+material_override = SubResource("StandardMaterial3D_c408l")
+mesh = SubResource("BoxMesh_rwhni")
+
+[node name="pawn_head" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=421204821]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 1.22, -1.2)
+material_override = SubResource("StandardMaterial3D_c408l")
+mesh = SubResource("BoxMesh_wn0xq")
+
+[node name="pawn_visor" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1429466022]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 1.24, -1.4)
+material_override = SubResource("StandardMaterial3D_l8uts")
+mesh = SubResource("BoxMesh_dlmgy")
+
+[node name="pawn_mark" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=2132819539]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.82, -1.35)
+material_override = SubResource("StandardMaterial3D_c06fl")
+mesh = SubResource("BoxMesh_oens6")
+
+[node name="droid_body" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1457544913]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.68, -1.05)
+material_override = SubResource("StandardMaterial3D_k0swn")
+mesh = SubResource("BoxMesh_8e71d")
+
+[node name="droid_head" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1334091171]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 1.18, -1.05)
+material_override = SubResource("StandardMaterial3D_k0swn")
+mesh = SubResource("BoxMesh_k4lqc")
+
+[node name="droid_sensor" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1558729892]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 1.19, -1.21)
+material_override = SubResource("StandardMaterial3D_nvu72")
+mesh = SubResource("BoxMesh_nwgal")
+
+[node name="sled_body" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1693135036]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 0.34, -1.35)
+material_override = SubResource("StandardMaterial3D_mc4ys")
+mesh = SubResource("BoxMesh_8dl2r")
+
+[node name="sled_glow" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=114502795]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 0.18, -1.35)
+material_override = SubResource("StandardMaterial3D_nvu72")
+mesh = SubResource("BoxMesh_oeu1c")
+
+[node name="cargo_a" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=779141096]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3, 0.7, -1.35)
+material_override = SubResource("StandardMaterial3D_kuwak")
+mesh = SubResource("BoxMesh_c7wuj")
+
+[node name="cargo_b" type="MeshInstance3D" parent="blockcraft_frontier_micro_slice_01" unique_id=1275911820]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.92, 0.62, -1.28)
+material_override = SubResource("StandardMaterial3D_r7fx7")
+mesh = SubResource("BoxMesh_a3ba4")
+
+[node name="@MeshInstance3D@31" type="MeshInstance3D" parent="." unique_id=389904990]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0.02, 10.200001)
+material_override = SubResource("StandardMaterial3D_xycf1")
+mesh = SubResource("TorusMesh_rqeym")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=378385957]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=1060378273]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 29.12
+far = 120.0

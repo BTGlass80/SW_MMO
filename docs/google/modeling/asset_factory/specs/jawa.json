@@ -1,0 +1,124 @@
+{
+  "character_id": "jawa",
+  "display_name": "Jawa (High Fidelity)",
+  "cell_size": 0.07,
+  "output_dir": "res://docs/google/modeling/asset_factory/generated/jawa_v1",
+  "palette": {
+    "4d2e16": "jawa_brown",
+    "2b1709": "jawa_dark",
+    "ffd626": "jawa_eyes_yellow"
+  },
+  "parts": {
+    "head": {"front": [10, 10], "side": [10, 10]},
+    "torso": {"front": [12, 14], "side": [10, 14]},
+    "upper_arm": {"front": [3, 6], "side": [3, 6]},
+    "forearm": {"front": [3, 6], "side": [3, 6]},
+    "leg": {"front": [3, 6], "side": [3, 6]},
+    "blaster": {"front": [16, 6], "side": [4, 6]}
+  },
+  "skeleton": {
+    "root": "torso",
+    "bones": {
+      "torso": {
+        "parent": "",
+        "pivot": [0, 0, 0],
+        "default_position": [0, 0.65, 0]
+      },
+      "head": {
+        "parent": "torso",
+        "pivot": [0, -0.25, 0],
+        "default_position": [0, 0.45, 0.0]
+      },
+      "left_upper_arm": {
+        "parent": "torso",
+        "pivot": [0.08, 0.16, 0],
+        "default_position": [-0.35, 0.18, 0]
+      },
+      "left_forearm": {
+        "parent": "left_upper_arm",
+        "pivot": [0, 0.16, 0],
+        "default_position": [0, -0.32, -0.01]
+      },
+      "right_upper_arm": {
+        "parent": "torso",
+        "pivot": [-0.08, 0.16, 0],
+        "default_position": [0.35, 0.18, 0]
+      },
+      "right_forearm": {
+        "parent": "right_upper_arm",
+        "pivot": [0, 0.16, 0],
+        "default_position": [0, -0.32, -0.01]
+      },
+      "left_leg": {
+        "parent": "torso",
+        "pivot": [0, 0.2, 0],
+        "default_position": [-0.18, -0.45, 0]
+      },
+      "right_leg": {
+        "parent": "torso",
+        "pivot": [0, 0.2, 0],
+        "default_position": [0.18, -0.45, 0]
+      },
+      "blaster": {
+        "parent": "right_forearm",
+        "pivot": [0, -0.15, 0],
+        "default_position": [0.1, -0.22, -0.18]
+      }
+    }
+  },
+  "animations": {
+    "walk": {
+      "loop": true,
+      "length": 1.0,
+      "keyframes": [
+        {
+          "time": 0.0,
+          "bones": {
+            "left_leg": {"rotation": [24, 0, 0]},
+            "right_leg": {"rotation": [-24, 0, 0]},
+            "left_upper_arm": {"rotation": [-15, 0, 0]},
+            "right_upper_arm": {"rotation": [15, 0, 0]}
+          }
+        },
+        {
+          "time": 0.25,
+          "bones": {
+            "left_leg": {"rotation": [0, 0, 0]},
+            "right_leg": {"rotation": [0, 0, 0]}
+          }
+        },
+        {
+          "time": 0.5,
+          "bones": {
+            "left_leg": {"rotation": [-24, 0, 0]},
+            "right_leg": {"rotation": [24, 0, 0]},
+            "left_upper_arm": {"rotation": [15, 0, 0]},
+            "right_upper_arm": {"rotation": [-15, 0, 0]}
+          }
+        },
+        {
+          "time": 0.75,
+          "bones": {
+            "left_leg": {"rotation": [0, 0, 0]},
+            "right_leg": {"rotation": [0, 0, 0]}
+          }
+        }
+      ]
+    },
+    "aim": {
+      "loop": false,
+      "length": 0.8,
+      "keyframes": [
+        {
+          "time": 0.0,
+          "bones": {
+            "right_upper_arm": {"rotation": [-45, -20, 0]},
+            "right_forearm": {"rotation": [-30, 10, 0]},
+            "left_upper_arm": {"rotation": [-20, 25, 0]},
+            "left_forearm": {"rotation": [-40, 0, 0]}
+          }
+        }
+      ]
+    }
+  }
+}

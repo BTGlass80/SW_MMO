@@ -1,0 +1,95 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ybx8x"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_0bhc7"]
+size = Vector3(0.58, 0.28, 1.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8nyyp"]
+size = Vector3(0.22, 0.2, 0.58)
+
+[sub_resource type="BoxMesh" id="BoxMesh_a8svi"]
+size = Vector3(0.22, 0.2, 0.58)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ccxqi"]
+albedo_color = Color(0.20392157, 0.22745098, 0.25882354, 1)
+metallic = 0.25
+roughness = 0.62
+
+[sub_resource type="BoxMesh" id="BoxMesh_vjl8e"]
+size = Vector3(1.32, 0.12, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_q0v5n"]
+size = Vector3(1.32, 0.12, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v2w8w"]
+albedo_color = Color(0.23529412, 0.78431374, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.23529412, 0.78431374, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_nfsxv"]
+size = Vector3(0.8, 0.05, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4pydu"]
+size = Vector3(0.8, 0.05, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x76et"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_4kbt7"]
+size = Vector3(0.42, 0.2, 0.18)
+
+[node name="blockcraft_iso_splitnose_fighter_03" type="Node3D" unique_id=1005310502]
+metadata/asset_id = "blockcraft_iso_splitnose_fighter_03"
+metadata/display_name = "Blockcraft Isometric Splitnose Fighter 03"
+metadata/category = "space_ship_token"
+metadata/gameplay_role = "friendly flat-plane tactical fighter silhouette"
+metadata/prompt = "generic blocky split-nose space fighter token with blue engine glow"
+
+[node name="center_hull" type="MeshInstance3D" parent="." unique_id=1469273680]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0)
+material_override = SubResource("StandardMaterial3D_ybx8x")
+mesh = SubResource("BoxMesh_0bhc7")
+
+[node name="left_nose" type="MeshInstance3D" parent="." unique_id=267969985]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, 0.34, -0.9)
+material_override = SubResource("StandardMaterial3D_ybx8x")
+mesh = SubResource("BoxMesh_8nyyp")
+
+[node name="right_nose" type="MeshInstance3D" parent="." unique_id=562711705]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 0.34, -0.9)
+material_override = SubResource("StandardMaterial3D_ybx8x")
+mesh = SubResource("BoxMesh_a8svi")
+
+[node name="left_wing" type="MeshInstance3D" parent="." unique_id=390224714]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.88, 0.28, 0.18)
+material_override = SubResource("StandardMaterial3D_ccxqi")
+mesh = SubResource("BoxMesh_vjl8e")
+
+[node name="right_wing" type="MeshInstance3D" parent="." unique_id=615318640]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0.28, 0.18)
+material_override = SubResource("StandardMaterial3D_ccxqi")
+mesh = SubResource("BoxMesh_q0v5n")
+
+[node name="left_blue_mark" type="MeshInstance3D" parent="." unique_id=1447527178]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.88, 0.36, 0)
+material_override = SubResource("StandardMaterial3D_v2w8w")
+mesh = SubResource("BoxMesh_nfsxv")
+
+[node name="right_blue_mark" type="MeshInstance3D" parent="." unique_id=898957192]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.88, 0.36, 0)
+material_override = SubResource("StandardMaterial3D_v2w8w")
+mesh = SubResource("BoxMesh_4pydu")
+
+[node name="engine_glow" type="MeshInstance3D" parent="." unique_id=1354072368]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0.9)
+material_override = SubResource("StandardMaterial3D_x76et")
+mesh = SubResource("BoxMesh_4kbt7")

@@ -5,16 +5,21 @@ extends SceneTree
 
 const Chargen := preload("res://scripts/rules/chargen_model.gd")
 const SPECIES_PATH := "res://data/species_clone_wars.json"
+const STARTER_PACKAGES_PATH := "res://data/starter_packages.json"
 
 var _failures: Array[String] = []
 var _rules: Object
 var _species: Dictionary
+var _packages: Dictionary
 
 func _init() -> void:
 	_rules = load("res://scripts/rules/d6_rules.gd").new()
 	_species = _load_species()
+	_packages = _load_starter_packages()
 	var human: Dictionary = _species.get("human", {})
 	_assert_true(not human.is_empty(), "human species loaded")
+	var marksman: Dictionary = _packages.get("marksman", {})
+	_assert_true(not marksman.is_empty(), "marksman package loaded")
 
 	# A valid 18D build: all six attributes at 3D (6 x 3D = 18D), within human 2D-4D.
 	var ok := Chargen.validate_build(_rules, human, _uniform("3D"))
@@ -58,6 +63,16 @@ func _init() -> void:
 		var wk_default := Chargen.default_build(_rules, _species["wookiee"])
 		_assert_true(bool(Chargen.validate_build(_rules, _species["wookiee"], wk_default)["valid"]), "default build respects a skewed species' ranges")
 
+	# Starter package applied correctly
+	var marksman_build := Chargen.validate_build(_rules, human, _uniform("3D"), {}, "", marksman)
+	_assert_true(bool(marksman_build["valid"]), "marksman package build is valid")
+	var marksman_sheet: Dictionary = marksman_build["sheet"]
+	_assert_equal(String((marksman_sheet["skills"] as Dictionary).get("blaster", "")), "1D", "marksman package applies skills")
+	_assert_equal(int(marksman_sheet["credits"]), 500, "marksman package applies credits")
+	_assert_equal(String((marksman_sheet["equipment"] as Dictionary).get("weapon", "")), "blaster_rifle", "marksman package applies equipment")
+	var marksman_inv: Array = marksman_sheet["inventory"]
+	_assert_true(marksman_inv.has("power_pack"), "marksman package inventory includes power pack")
+
 	if _rules.has_method("free"):
 		_rules.free()
 	_finish()
@@ -84,6 +99,17 @@ func _load_species() -> Dictionary:
 		_failures.append("species parses")
 		return {}
 	return (parsed as Dictionary).get("species", {})
+
+func _load_starter_packages() -> Dictionary:
+	var file := FileAccess.open(STARTER_PACKAGES_PATH, FileAccess.READ)
+	if file == null:
+		_failures.append("starter packages file opens")
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		_failures.append("starter packages parses")
+		return {}
+	return (parsed as Dictionary).get("starter_packages", {})
 
 func _finish() -> void:
 	if _failures.is_empty():

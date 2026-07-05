@@ -1,0 +1,846 @@
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "free",
+		"box_uv": false
+	},
+	"codex_source": {
+		"schema": "gpt_blockbench_cubecraft_v0",
+		"pack_id": "blockbench_cubecraft_v0",
+		"asset_id": "cubecraft_outpost_gate_tile_01",
+		"generator": "docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs"
+	},
+	"codex_palette": {
+		"clone_white": "#e8eeee",
+		"clone_shadow": "#aeb8bb",
+		"clone_blue": "#2488d8",
+		"clone_red": "#b9352d",
+		"visor_black": "#101419",
+		"droid_tan": "#b99b63",
+		"droid_shadow": "#6d5a38",
+		"b2_bluegray": "#7b8d93",
+		"panel_gray": "#68727a",
+		"ship_dark": "#343a42",
+		"sand_block": "#b98245",
+		"sand_light": "#dfba72",
+		"adobe_dark": "#6b4a2f",
+		"tech_cyan": "#27d7ff",
+		"warning_orange": "#ff7a2c",
+		"saber_blue": "#38d9ff",
+		"space_plane": "#0b1724",
+		"republic_crimson": "#c43b32",
+		"freighter_yellow": "#d8b65d"
+	},
+	"name": "Cubecraft Outpost Gate Tile 01",
+	"model_identifier": "cubecraft_outpost_gate_tile_01",
+	"visible_box": [
+		1,
+		1,
+		0
+	],
+	"variable_placeholders": "",
+	"resolution": {
+		"width": 48,
+		"height": 32
+	},
+	"elements": [
+		{
+			"name": "base",
+			"uuid": "bbfadd08-4937-4d7c-ba96-4aaeedf1b5b3",
+			"from": [
+				-9,
+				0,
+				-7
+			],
+			"to": [
+				9,
+				0.4,
+				7
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 0,
+			"material_key": "sand_block",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "left_wall",
+			"uuid": "5c7a9960-b72f-43c2-85ae-c4c6ca138431",
+			"from": [
+				-6.1,
+				0.20000000000000018,
+				2.2
+			],
+			"to": [
+				-2.9,
+				5.8,
+				3.8
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 1,
+			"material_key": "adobe_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "right_wall",
+			"uuid": "68bb86e3-fe73-481a-aae0-3218c3a8c648",
+			"from": [
+				-0.8,
+				0.20000000000000018,
+				2.2
+			],
+			"to": [
+				2.4000000000000004,
+				5.8,
+				3.8
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 1,
+			"material_key": "adobe_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "lintel",
+			"uuid": "8fd59314-5e96-4527-9dc1-9987fde469e8",
+			"from": [
+				-6.15,
+				5.7,
+				2
+			],
+			"to": [
+				2.4499999999999997,
+				6.8999999999999995,
+				4
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 2,
+			"material_key": "sand_light",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "low_cover_a",
+			"uuid": "a5adba4f-0146-4be7-81f8-804c8eb3af84",
+			"from": [
+				1.7999999999999998,
+				0.19999999999999996,
+				-4.3
+			],
+			"to": [
+				6.8,
+				1.8,
+				-3.3
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 1,
+			"material_key": "adobe_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "low_cover_b",
+			"uuid": "8700b96d-39e3-48a1-9029-c84a40e68772",
+			"from": [
+				-7.4,
+				0.19999999999999996,
+				-3.3
+			],
+			"to": [
+				-3.1999999999999997,
+				1.8,
+				-2.3
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 2,
+			"material_key": "sand_light",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "terminal",
+			"uuid": "f679b524-da64-4578-9b1e-4cf0e7272885",
+			"from": [
+				6.300000000000001,
+				0.3999999999999999,
+				1
+			],
+			"to": [
+				7.5,
+				4.4,
+				2
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 3,
+			"material_key": "panel_gray",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "terminal_screen",
+			"uuid": "a32c13cb-b8eb-4147-8cc2-cbd2b7eafba3",
+			"from": [
+				6.45,
+				2.9,
+				0.75
+			],
+			"to": [
+				7.3500000000000005,
+				3.6999999999999997,
+				0.95
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 4,
+			"material_key": "tech_cyan",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "landing_tick_a",
+			"uuid": "1ce31808-cd8f-42d3-8c61-b1c411126af6",
+			"from": [
+				-1.25,
+				0.375,
+				-5.725
+			],
+			"to": [
+				5.25,
+				0.625,
+				-5.475
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 4,
+			"material_key": "tech_cyan",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "landing_tick_b",
+			"uuid": "71e4109c-812f-4c90-b8d4-312845468a24",
+			"from": [
+				-1.25,
+				0.375,
+				-4.325
+			],
+			"to": [
+				5.25,
+				0.625,
+				-4.075
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 4,
+			"material_key": "tech_cyan",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				}
+			}
+		}
+	],
+	"outliner": [
+		"bbfadd08-4937-4d7c-ba96-4aaeedf1b5b3",
+		"5c7a9960-b72f-43c2-85ae-c4c6ca138431",
+		"68bb86e3-fe73-481a-aae0-3218c3a8c648",
+		"8fd59314-5e96-4527-9dc1-9987fde469e8",
+		"a5adba4f-0146-4be7-81f8-804c8eb3af84",
+		"8700b96d-39e3-48a1-9029-c84a40e68772",
+		"f679b524-da64-4578-9b1e-4cf0e7272885",
+		"a32c13cb-b8eb-4147-8cc2-cbd2b7eafba3",
+		"1ce31808-cd8f-42d3-8c61-b1c411126af6",
+		"71e4109c-812f-4c90-b8d4-312845468a24"
+	],
+	"textures": [
+		{
+			"path": "textures/cubecraft_outpost_gate_tile_01_palette.png",
+			"name": "cubecraft_outpost_gate_tile_01_palette",
+			"folder": "",
+			"namespace": "",
+			"id": "0",
+			"particle": false,
+			"render_mode": "default",
+			"visible": true,
+			"mode": "bitmap",
+			"saved": true,
+			"uuid": "36c1914b-4491-4a8a-b390-6d0554db2249",
+			"source": "textures/cubecraft_outpost_gate_tile_01_palette.png"
+		}
+	]
+}

@@ -1,0 +1,20 @@
+{
+  "markets": [
+    {
+      "market_id": "mos_eisley_bazaar",
+      "name": "Mos Eisley Grand Bazaar",
+      "location": "tatooine.mos_eisley.market",
+      "tax_rate": 0.05,
+      "listing_fee": 10,
+      "allowed_factions": ["independent", "hutt", "republic", "cis"]
+    },
+    {
+      "market_id": "hutt_black_market",
+      "name": "Jabba's Underground Exchange",
+      "location": "tatooine.mos_eisley.cantina_backroom",
+      "tax_rate": 0.15,
+      "listing_fee": 50,
+      "allowed_factions": ["independent", "hutt"]
+    }
+  ]
+}

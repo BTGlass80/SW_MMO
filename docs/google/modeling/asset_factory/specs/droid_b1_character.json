@@ -1,0 +1,157 @@
+{
+  "character_id": "droid_b1",
+  "display_name": "B1 Battle Droid",
+  "cell_size": 0.075,
+  "output_dir": "res://docs/google/modeling/asset_factory/generated/droid_b1_character_v1",
+  "palette": {
+    "d3c19b": "body_tan",
+    "a99672": "body_shadow",
+    "30343a": "joint_metal",
+    "27d7ff": "eye_glow",
+    "6c4b35": "blaster_wood"
+  },
+  "parts": {
+    "head": {"front": [6, 9], "side": [8, 9]},
+    "torso": {"front": [8, 12], "side": [6, 12]},
+    "upper_arm": {"front": [2, 8], "side": [2, 8]},
+    "forearm": {"front": [2, 7], "side": [2, 7]},
+    "leg": {"front": [3, 11], "side": [4, 11]},
+    "backpack": {"front": [4, 9], "side": [3, 9]},
+    "blaster": {"front": [16, 5], "side": [3, 5]}
+  },
+  "skeleton": {
+    "root": "torso",
+    "bones": {
+      "torso": {
+        "parent": "",
+        "pivot": [0, 0, 0],
+        "default_position": [0, 1.05, 0]
+      },
+      "head": {
+        "parent": "torso",
+        "pivot": [0, -0.32, 0],
+        "default_position": [0, 0.72, -0.02]
+      },
+      "backpack": {
+        "parent": "torso",
+        "pivot": [0, 0, -0.08],
+        "default_position": [0, 0.05, 0.16]
+      },
+      "left_upper_arm": {
+        "parent": "torso",
+        "pivot": [0.06, 0.26, 0],
+        "default_position": [-0.36, 0.14, 0]
+      },
+      "left_forearm": {
+        "parent": "left_upper_arm",
+        "pivot": [0, 0.22, 0],
+        "default_position": [0, -0.52, -0.02]
+      },
+      "right_upper_arm": {
+        "parent": "torso",
+        "pivot": [-0.06, 0.26, 0],
+        "default_position": [0.36, 0.14, 0]
+      },
+      "right_forearm": {
+        "parent": "right_upper_arm",
+        "pivot": [0, 0.22, 0],
+        "default_position": [0, -0.52, -0.02]
+      },
+      "left_leg": {
+        "parent": "torso",
+        "pivot": [0, 0.38, 0],
+        "default_position": [-0.14, -0.62, 0]
+      },
+      "right_leg": {
+        "parent": "torso",
+        "pivot": [0, 0.38, 0],
+        "default_position": [0.14, -0.62, 0]
+      },
+      "blaster": {
+        "parent": "right_forearm",
+        "pivot": [-0.26, 0, 0],
+        "default_position": [0.08, -0.22, -0.2]
+      }
+    }
+  },
+  "animations": {
+    "walk": {
+      "loop": true,
+      "length": 1.2,
+      "keyframes": [
+        {
+          "time": 0.0,
+          "bones": {
+            "left_leg": {"rotation": [24, 0, 0]},
+            "right_leg": {"rotation": [-24, 0, 0]},
+            "left_upper_arm": {"rotation": [-20, 0, 0]},
+            "left_forearm": {"rotation": [-15, 0, 0]},
+            "right_upper_arm": {"rotation": [20, 0, 0]},
+            "right_forearm": {"rotation": [-35, 0, 0]}
+          }
+        },
+        {
+          "time": 0.3,
+          "bones": {
+            "left_leg": {"rotation": [0, 0, 0]},
+            "right_leg": {"rotation": [0, 0, 0]},
+            "left_upper_arm": {"rotation": [0, 0, 0]},
+            "left_forearm": {"rotation": [-20, 0, 0]},
+            "right_upper_arm": {"rotation": [0, 0, 0]},
+            "right_forearm": {"rotation": [-20, 0, 0]}
+          }
+        },
+        {
+          "time": 0.6,
+          "bones": {
+            "left_leg": {"rotation": [-24, 0, 0]},
+            "right_leg": {"rotation": [24, 0, 0]},
+            "left_upper_arm": {"rotation": [20, 0, 0]},
+            "left_forearm": {"rotation": [-35, 0, 0]},
+            "right_upper_arm": {"rotation": [-20, 0, 0]},
+            "right_forearm": {"rotation": [-15, 0, 0]}
+          }
+        },
+        {
+          "time": 0.9,
+          "bones": {
+            "left_leg": {"rotation": [0, 0, 0]},
+            "right_leg": {"rotation": [0, 0, 0]},
+            "left_upper_arm": {"rotation": [0, 0, 0]},
+            "left_forearm": {"rotation": [-20, 0, 0]},
+            "right_upper_arm": {"rotation": [0, 0, 0]},
+            "right_forearm": {"rotation": [-20, 0, 0]}
+          }
+        }
+      ]
+    },
+    "aim": {
+      "loop": false,
+      "length": 0.8,
+      "keyframes": [
+        {
+          "time": 0.0,
+          "bones": {
+            "head": {"rotation": [0, -15, 0]},
+            "left_upper_arm": {"rotation": [-45, 10, -25]},
+            "left_forearm": {"rotation": [-50, 0, 45]},
+            "right_upper_arm": {"rotation": [-75, -15, 10]},
+            "right_forearm": {"rotation": [-55, 0, -20]},
+            "blaster": {"rotation": [0, 0, 0]}
+          }
+        },
+        {
+          "time": 0.4,
+          "bones": {
+            "head": {"rotation": [0, -15, 0]},
+            "left_upper_arm": {"rotation": [-48, 12, -22]},
+            "left_forearm": {"rotation": [-52, 0, 42]},
+            "right_upper_arm": {"rotation": [-82, -18, 15]},
+            "right_forearm": {"rotation": [-58, 0, -15]},
+            "blaster": {"rotation": [-8, 0, 0]}
+          }
+        }
+      ]
+    }
+  }
+}

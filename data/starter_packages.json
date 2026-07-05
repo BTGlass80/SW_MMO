@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "starter_packages": {
+    "marksman": {
+      "name": "Marksman",
+      "description": "Combat specialist focusing on blasters and heavy weapons. Good at taking down targets.",
+      "skills": {
+        "blaster": "1D",
+        "brawling parry": "1D",
+        "dodge": "1D"
+      },
+      "equipment": {
+        "weapon": "blaster_rifle",
+        "armor": "blast_vest"
+      },
+      "inventory": ["blaster_pistol", "power_pack", "power_pack"],
+      "credits": 500
+    },
+    "artisan": {
+      "name": "Artisan",
+      "description": "Crafting specialist capable of creating useful items and tools.",
+      "skills": {
+        "armor repair": "1D",
+        "blaster repair": "1D",
+        "first aid": "1D"
+      },
+      "equipment": {
+        "weapon": "blaster_pistol",
+        "armor": "blast_vest"
+      },
+      "inventory": ["hold_out_blaster", "power_pack"],
+      "credits": 1000
+    },
+    "medic": {
+      "name": "Medic",
+      "description": "Medical specialist dedicated to healing wounds and saving lives.",
+      "skills": {
+        "first aid": "2D",
+        "dodge": "1D"
+      },
+      "equipment": {
+        "weapon": "blaster_pistol",
+        "armor": "blast_vest"
+      },
+      "inventory": ["medpac", "medpac", "medpac"],
+      "credits": 500
+    },
+    "pilot": {
+      "name": "Pilot",
+      "description": "Spacefaring specialist adept at starship piloting and gunnery.",
+      "skills": {
+        "space transports": "1D",
+        "starship gunnery": "1D",
+        "starship shields": "1D"
+      },
+      "equipment": {
+        "weapon": "blaster_pistol",
+        "armor": "blast_vest"
+      },
+      "inventory": ["blast_helmet", "power_pack"],
+      "credits": 800
+    }
+  }
+}

@@ -1,0 +1,184 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/private_clone_wars_blockcraft_v0/scenes/fan_republic_gunship_token_01.tscn" id="1_kasdx"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7blmk"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_anxuw"]
+size = Vector3(8.5, 0.08, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p3mi1"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_g1p4g"]
+size = Vector3(2.6, 0.65, 1.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_k1lkt"]
+size = Vector3(1.55, 0.46, 0.65)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a17if"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_mbily"]
+size = Vector3(0.85, 0.18, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_a86a1"]
+size = Vector3(1.4, 0.14, 0.72)
+
+[sub_resource type="BoxMesh" id="BoxMesh_f55em"]
+size = Vector3(1.4, 0.14, 0.72)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_esnbr"]
+albedo_color = Color(0.7254902, 0.20784314, 0.1764706, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_e1l54"]
+size = Vector3(0.46, 0.08, 0.9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ew1ix"]
+size = Vector3(0.46, 0.08, 0.9)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w0bt8"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_li3y7"]
+size = Vector3(0.42, 0.34, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_htded"]
+size = Vector3(0.42, 0.34, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_aesm6"]
+albedo_color = Color(1, 0.47843137, 0.17254902, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(1, 0.47843137, 0.17254902, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_fjoig"]
+size = Vector3(0.74, 0.28, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e4gy0"]
+albedo_color = Color(0.14117648, 0.84313726, 0.84313726, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14117648, 0.84313726, 0.84313726, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_d5wui"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ptp7d"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_0ek8b"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fskmp"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[node name="fan_republic_gunship_token_01_review" type="Node3D" unique_id=726483898]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=1043560665]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_7blmk")
+mesh = SubResource("BoxMesh_anxuw")
+
+[node name="fan_republic_gunship_token_01" type="Node3D" parent="." unique_id=2141454986 instance=ExtResource("1_kasdx")]
+metadata/asset_id = "fan_republic_gunship_token_01"
+metadata/display_name = "Fan Republic Gunship Token 01"
+metadata/category = "vehicle_prop"
+metadata/gameplay_role = "LAAT-like blockcraft gunship landing token for private fan table"
+metadata/prompt = "blockcraft Republic gunship-like landing craft token with white body, red panels, side pods, and blue cockpit"
+
+[node name="hull" type="MeshInstance3D" parent="fan_republic_gunship_token_01" unique_id=421643525]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, 0)
+material_override = SubResource("StandardMaterial3D_p3mi1")
+mesh = SubResource("BoxMesh_g1p4g")
+
+[node name="nose" type="MeshInstance3D" parent="fan_republic_gunship_token_01" unique_id=301192255]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, -0.85)
+material_override = SubResource("StandardMaterial3D_p3mi1")
+mesh = SubResource("BoxMesh_k1lkt")
+
+[node name="cockpit" type="MeshInstance3D" parent="fan_republic_gunship_token_01" unique_id=1988180403]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.93, -1.08)
+material_override = SubResource("StandardMaterial3D_a17if")
+mesh = SubResource("BoxMesh_mbily")
+
+[node name="left_wing" type="MeshInstance3D" parent="fan_republic_gunship_token_01" unique_id=95882618]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 0.55, -0.05)
+material_override = SubResource("StandardMaterial3D_p3mi1")
+mesh = SubResource("BoxMesh_a86a1")
+
+[node name="right_wing" type="MeshInstance3D" parent="fan_republic_gunship_token_01" unique_id=481034950]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0.55, -0.05)
+material_override = SubResource("StandardMaterial3D_p3mi1")
+mesh = SubResource("BoxMesh_f55em")
+
+[node name="left_red_panel" type="MeshInstance3D" parent="fan_republic_gunship_token_01" unique_id=1641533285]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.78, 1, 0.02)
+material_override = SubResource("StandardMaterial3D_esnbr")
+mesh = SubResource("BoxMesh_e1l54")
+
+[node name="right_red_panel" type="MeshInstance3D" parent="fan_republic_gunship_token_01" unique_id=1048301960]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 1, 0.02)
+material_override = SubResource("StandardMaterial3D_esnbr")
+mesh = SubResource("BoxMesh_ew1ix")
+
+[node name="left_pod" type="MeshInstance3D" parent="fan_republic_gunship_token_01" unique_id=1870408477]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.15, 0.48, 0.42)
+material_override = SubResource("StandardMaterial3D_w0bt8")
+mesh = SubResource("BoxMesh_li3y7")
+
+[node name="right_pod" type="MeshInstance3D" parent="fan_republic_gunship_token_01" unique_id=352384316]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.15, 0.48, 0.42)
+material_override = SubResource("StandardMaterial3D_w0bt8")
+mesh = SubResource("BoxMesh_htded")
+
+[node name="rear_engine" type="MeshInstance3D" parent="fan_republic_gunship_token_01" unique_id=1019613110]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, 0.82)
+material_override = SubResource("StandardMaterial3D_aesm6")
+mesh = SubResource("BoxMesh_fjoig")
+
+[node name="BlockSelectionMarker" type="Node3D" parent="." unique_id=1888251442]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+
+[node name="front" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1096008187]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.7)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_d5wui")
+
+[node name="back" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1981384103]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.7)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_ptp7d")
+
+[node name="left" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=2002668038]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_0ek8b")
+
+[node name="right" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1536950833]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_fskmp")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=1033465920]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=949612823]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 8.0
+far = 120.0

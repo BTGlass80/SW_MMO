@@ -1,0 +1,74 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ner16"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_m5xi3"]
+size = Vector3(0.55, 0.28, 1.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1me5u"]
+size = Vector3(0.34, 0.2, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3u6gg"]
+albedo_color = Color(0.20392157, 0.22745098, 0.25882354, 1)
+metallic = 0.25
+roughness = 0.62
+
+[sub_resource type="BoxMesh" id="BoxMesh_d7m7d"]
+size = Vector3(1.2, 0.1, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6xnpi"]
+size = Vector3(1.2, 0.1, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x7271"]
+albedo_color = Color(0.23529412, 0.78431374, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.23529412, 0.78431374, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_14ts1"]
+size = Vector3(0.35, 0.22, 0.24)
+
+[sub_resource type="TorusMesh" id="TorusMesh_e0ofu"]
+inner_radius = 0.85
+outer_radius = 0.92
+ring_segments = 72
+
+[node name="iso_space_fighter_01" type="Node3D" unique_id=58334745]
+metadata/asset_id = "iso_space_fighter_01"
+metadata/display_name = "Isometric Space Fighter 01"
+metadata/category = "space_ship_token"
+metadata/gameplay_role = "2.5D tactical player/enemy ship token"
+metadata/prompt = "generic chunky low-poly isometric tactical space fighter, no recognizable franchise silhouette"
+
+[node name="hull" type="MeshInstance3D" parent="." unique_id=384720007]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+material_override = SubResource("StandardMaterial3D_ner16")
+mesh = SubResource("BoxMesh_m5xi3")
+
+[node name="nose" type="MeshInstance3D" parent="." unique_id=2142424576]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37, -0.78)
+material_override = SubResource("StandardMaterial3D_ner16")
+mesh = SubResource("BoxMesh_1me5u")
+
+[node name="wing_left" type="MeshInstance3D" parent="." unique_id=1327678950]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.68, 0.28, 0.18)
+material_override = SubResource("StandardMaterial3D_3u6gg")
+mesh = SubResource("BoxMesh_d7m7d")
+
+[node name="wing_right" type="MeshInstance3D" parent="." unique_id=714927969]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.68, 0.28, 0.18)
+material_override = SubResource("StandardMaterial3D_3u6gg")
+mesh = SubResource("BoxMesh_6xnpi")
+
+[node name="engine" type="MeshInstance3D" parent="." unique_id=1297223441]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0.86)
+material_override = SubResource("StandardMaterial3D_x7271")
+mesh = SubResource("BoxMesh_14ts1")
+
+[node name="selection_ring" type="MeshInstance3D" parent="." unique_id=838683243]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = SubResource("StandardMaterial3D_x7271")
+mesh = SubResource("TorusMesh_e0ofu")

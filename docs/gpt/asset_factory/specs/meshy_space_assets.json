@@ -1,0 +1,58 @@
+{
+  "assets": [
+    {
+      "id": "meshy_space_planet_tatooine_v0",
+      "display_name": "Tatooine-like Desert Planet Meshy Preview v0",
+      "category": "space_ambience_object",
+      "style_lane": "private_blockcraft_reference_safe",
+      "provider": "meshy",
+      "endpoint": "text-to-3d-v2",
+      "mode": "preview",
+      "prompt": "Chunky low-poly stylized desert planet sphere game token. Boxy cratered surface segments, warm tan and orange sand dunes texture, subtle dry cracks, no ring, low-detail voxel art style, flat colors, no photorealism.",
+      "api_body": {
+        "mode": "preview",
+        "model_type": "lowpoly",
+        "target_formats": ["glb"],
+        "alpha_thumbnail": true,
+        "auto_size": false,
+        "origin_at": "center",
+        "moderation": true
+      },
+      "target_format": "glb",
+      "max_preview_credits": 25,
+      "allow_refine": false,
+      "review_required": true,
+      "acceptance_notes": [
+        "Must be a stylized chunky desert planet shape that looks good from distance.",
+        "Must not be photorealistic."
+      ]
+    },
+    {
+      "id": "meshy_space_asteroid_ore_v0",
+      "display_name": "Asteroid Rock Ore Mine Meshy Preview v0",
+      "category": "space_hazard_contact",
+      "style_lane": "private_blockcraft_reference_safe",
+      "provider": "meshy",
+      "endpoint": "text-to-3d-v2",
+      "mode": "preview",
+      "prompt": "Stylized chunky low-poly voxel space asteroid rock. Jagged boxy geometry, sharp flat polygon surfaces, dark iron gray rock body, shiny brown and orange copper ore veins, game asset token, no text.",
+      "api_body": {
+        "mode": "preview",
+        "model_type": "lowpoly",
+        "target_formats": ["glb"],
+        "alpha_thumbnail": true,
+        "auto_size": false,
+        "origin_at": "bottom",
+        "moderation": true
+      },
+      "target_format": "glb",
+      "max_preview_credits": 25,
+      "allow_refine": false,
+      "review_required": true,
+      "acceptance_notes": [
+        "Must have blocky, low-poly jagged rocky edges.",
+        "Must show distinct stylized metallic ore color accents."
+      ]
+    }
+  ]
+}

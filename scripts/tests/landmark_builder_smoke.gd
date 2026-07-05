@@ -25,7 +25,10 @@ func _init() -> void:
 	var null_mesh_count := _count_null_meshes(root)
 	_assert_equal(null_mesh_count, 0, "no MeshInstance3D has a null mesh")
 
-	_assert_true(_has_label(root, "Mos Eisley Cantina"), "cantina landmark label present")
+	var csg_count := _count_csg_nodes(root)
+	_assert_equal(csg_count, 0, "no CSG nodes are used in the landmark")
+
+	_assert_true(not _has_label(root, "Mos Eisley Cantina"), "cantina landmark label should be absent in release")
 	_assert_true(root.get_node_or_null("CantinaInterior") != null, "interior furniture group present")
 
 	var domed_huts := _count_named(root, "DomedHut")
@@ -39,6 +42,14 @@ func _init() -> void:
 
 	var walls := _count_named(root, "LowWall")
 	_assert_true(walls >= 4, "at least four low-wall perimeter segments (got %d)" % walls)
+
+	var capture_points := _count_named(root, "CapturePoint")
+	_assert_true(capture_points >= 4, "at least four visual runner capture points (got %d)" % capture_points)
+	
+	var point_entrance = _find_named(root, "CapturePoint_Cantina_Entrance")
+	_assert_true(point_entrance != null, "Entrance capture point exists")
+	if point_entrance:
+		_assert_true(point_entrance.has_meta("look_at_pos"), "Capture point has look_at_pos metadata")
 
 	# Determinism: a fresh builder with the same default origin/seed produces the same
 	# mesh count, so every client renders an identical landmark.
@@ -77,6 +88,14 @@ func _count_null_meshes(node: Node) -> int:
 		count += _count_null_meshes(child)
 	return count
 
+func _count_csg_nodes(node: Node) -> int:
+	var count := 0
+	if node is CSGShape3D:
+		count += 1
+	for child in node.get_children():
+		count += _count_csg_nodes(child)
+	return count
+
 ## Counts nodes whose name starts with `name_prefix`. Uses a prefix match rather than
 ## equality because Godot auto-disambiguates sibling names ("DomedHut", "DomedHut2", ...)
 ## when multiple children of the same parent share a base name.
@@ -95,6 +114,15 @@ func _has_label(node: Node, text: String) -> bool:
 		if _has_label(child, text):
 			return true
 	return false
+
+func _find_named(node: Node, name_prefix: String) -> Node:
+	if String(node.name).begins_with(name_prefix):
+		return node
+	for child in node.get_children():
+		var found = _find_named(child, name_prefix)
+		if found:
+			return found
+	return null
 
 func _finish() -> void:
 	if _failures.is_empty():

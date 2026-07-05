@@ -40,23 +40,32 @@ func _consume_ammo_for_shot(sheet: Dictionary) -> Dictionary:
 	var wdict: Dictionary = _weapons.get(weapon_key, {})
 	if not AmmoModel.uses_ammo(wdict):
 		return {"changed": false, "reloaded": false}
-	var ammo: Dictionary = sheet.get("ammo", {})
-	var r := AmmoModel.consume(ammo, weapon_key, wdict)
-	sheet["ammo"] = ammo
+	
+	var r := AmmoModel.consume(sheet, weapon_key, wdict)
 	return {"changed": true, "reloaded": bool(r.get("reloaded", false)), "shots_left": int(r.get("shots_left", 0)), "packs_left": int(r.get("packs_left", 0))}
 
 # mirror of network_manager._peer_can_fire_ammo (the submit gate)
 func _peer_can_fire(sheet: Dictionary) -> bool:
 	var weapon_key := String((sheet.get("equipment", {}) as Dictionary).get("weapon", ""))
 	var wdict: Dictionary = _weapons.get(weapon_key, {})
-	return AmmoModel.can_fire(sheet.get("ammo", {}), weapon_key, wdict)
+	return AmmoModel.can_fire(sheet, weapon_key, wdict)
 
 func _sheet(weapon_key: String, ammo: Dictionary) -> Dictionary:
+	var inventory = []
+	if ammo.has("packs"):
+		for i in range(int(ammo["packs"])):
+			inventory.append({
+				"template_key": "blaster_power_pack",
+				"quantity": 1
+			})
+		ammo.erase("packs")
+		ammo["migrated_packs"] = true
 	return {
 		"attributes": {"dexterity": "4D", "strength": "3D", "perception": "3D"},
 		"skills": {"blaster": "2D", "melee_combat": "2D"},
 		"equipment": {"weapon": weapon_key, "armor": ""},
 		"ammo": ammo,
+		"inventory": inventory
 	}
 
 func _hostile_pools(str_code: String) -> Dictionary:
@@ -99,7 +108,7 @@ func _init() -> void:
 	var ra := _consume_ammo_for_shot(hostile_sheet)
 	_assert_true(bool(ra["changed"]), "the equipped blaster consumed ammo on the resolved hostile shot")
 	_assert_equal(int((hostile_sheet["ammo"] as Dictionary)["blaster_pistol"]), 99, "the hostile shot decremented the magazine 100 -> 99")
-	_assert_equal(int((hostile_sheet["ammo"] as Dictionary)["packs"]), 2, "a normal shot did not touch the packs")
+	_assert_equal(AmmoModel.packs(hostile_sheet), 2, "a normal shot did not touch the packs")
 
 	# =========================================================================================
 	# (B) the FREE-SPARRING training-dummy shot does NOT decrement (target_key=="" and not pvp).
@@ -136,7 +145,7 @@ func _init() -> void:
 	var re := _consume_ammo_for_shot(legacy_sheet)
 	_assert_true(bool(re["changed"]) and not bool(re["reloaded"]), "the veteran's first fire is a fresh-magazine shot, not a reload")
 	_assert_equal(int((legacy_sheet["ammo"] as Dictionary)["blaster_pistol"]), 99, "first fire inits to full then spends one (100 -> 99)")
-	_assert_equal(int((legacy_sheet["ammo"] as Dictionary)["packs"]), AmmoModel.STARTING_PACKS, "first fire grants STARTING_PACKS (no stranded veteran)")
+	_assert_equal(AmmoModel.packs(legacy_sheet), AmmoModel.STARTING_PACKS, "first fire grants STARTING_PACKS (no stranded veteran)")
 
 	# =========================================================================================
 	# (F) a MELEE weapon at a REAL target never decrements or gates (single_use excluded the same way).

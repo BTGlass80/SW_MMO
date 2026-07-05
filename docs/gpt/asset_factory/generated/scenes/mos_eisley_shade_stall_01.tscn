@@ -1,0 +1,122 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qlw83"]
+albedo_color = Color(0.1882353, 0.20392157, 0.22745098, 1)
+metallic = 0.25
+roughness = 0.62
+
+[sub_resource type="BoxMesh" id="BoxMesh_sm6he"]
+size = Vector3(3.8, 1, 1.1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pvtdf"]
+top_radius = 0.08
+bottom_radius = 0.08
+height = 2.4
+radial_segments = 8
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cwci2"]
+top_radius = 0.08
+bottom_radius = 0.08
+height = 2.4
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sd41r"]
+albedo_color = Color(0.7490196, 0.22745098, 0.1254902, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_yerhv"]
+size = Vector3(5.2, 0.12, 2.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wmhi4"]
+albedo_color = Color(0.72156864, 0.5529412, 0.34509805, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_w5omo"]
+size = Vector3(4.4, 2, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lsdxj"]
+albedo_color = Color(0.11764706, 0.52156866, 0.5372549, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_vbinl"]
+size = Vector3(4.5, 0.2, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_c1ig2"]
+size = Vector3(0.8, 0.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w826v"]
+albedo_color = Color(0.14509805, 0.76862746, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14509805, 0.76862746, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_3hcxt"]
+size = Vector3(0.5, 0.12, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4hdec"]
+albedo_color = Color(0.35686275, 0.27450982, 0.19215687, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_dwjvj"]
+size = Vector3(0.75, 0.7, 0.75)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8qgme"]
+size = Vector3(0.55, 0.5, 0.55)
+
+[node name="mos_eisley_shade_stall_01" type="Node3D" unique_id=1403009034]
+metadata/asset_id = "mos_eisley_shade_stall_01"
+metadata/display_name = "Mos Eisley Shade Stall 01"
+metadata/category = "vendor_stall"
+metadata/gameplay_role = "vendor or quest-giver landmark"
+metadata/prompt = "generic low-poly desert sci-fi market shade stall with cargo, awning, and small power unit"
+
+[node name="counter" type="MeshInstance3D" parent="." unique_id=1732622545]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+material_override = SubResource("StandardMaterial3D_qlw83")
+mesh = SubResource("BoxMesh_sm6he")
+
+[node name="left_post" type="MeshInstance3D" parent="." unique_id=1191027228]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 1.25, -1)
+material_override = SubResource("StandardMaterial3D_qlw83")
+mesh = SubResource("CylinderMesh_pvtdf")
+
+[node name="right_post" type="MeshInstance3D" parent="." unique_id=1812116954]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 1.25, -1)
+material_override = SubResource("StandardMaterial3D_qlw83")
+mesh = SubResource("CylinderMesh_cwci2")
+
+[node name="awning" type="MeshInstance3D" parent="." unique_id=480868482]
+transform = Transform3D(0.9961947, 0.08715574, 0, -0.08715574, 0.9961947, 0, 0, 0, 1, 0, 2.35, -0.25)
+material_override = SubResource("StandardMaterial3D_sd41r")
+mesh = SubResource("BoxMesh_yerhv")
+
+[node name="back_wall" type="MeshInstance3D" parent="." unique_id=2146106227]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0.9)
+material_override = SubResource("StandardMaterial3D_wmhi4")
+mesh = SubResource("BoxMesh_w5omo")
+
+[node name="teal_band" type="MeshInstance3D" parent="." unique_id=1280900261]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 1.03)
+material_override = SubResource("StandardMaterial3D_lsdxj")
+mesh = SubResource("BoxMesh_vbinl")
+
+[node name="power_unit" type="MeshInstance3D" parent="." unique_id=661804799]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0.45, -1.1)
+material_override = SubResource("StandardMaterial3D_qlw83")
+mesh = SubResource("BoxMesh_c1ig2")
+
+[node name="cyan_light" type="MeshInstance3D" parent="." unique_id=597669649]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0.78, -1.52)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_3hcxt")
+
+[node name="cargo_a" type="MeshInstance3D" parent="." unique_id=1310397580]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.45, 0.35, -1.05)
+material_override = SubResource("StandardMaterial3D_4hdec")
+mesh = SubResource("BoxMesh_dwjvj")
+
+[node name="cargo_b" type="MeshInstance3D" parent="." unique_id=843276992]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.15, 0.25, -0.35)
+material_override = SubResource("StandardMaterial3D_4hdec")
+mesh = SubResource("BoxMesh_8qgme")

@@ -1,0 +1,88 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3aau5"]
+albedo_color = Color(0.20392157, 0.22745098, 0.25882354, 1)
+metallic = 0.25
+roughness = 0.62
+
+[sub_resource type="BoxMesh" id="BoxMesh_6rwjp"]
+size = Vector3(0.72, 0.42, 2.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nkgk6"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_vcdg6"]
+size = Vector3(0.82, 0.36, 1.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pgl3d"]
+size = Vector3(0.82, 0.36, 1.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vlwhm"]
+albedo_color = Color(0.9019608, 0.9254902, 0.92156863, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_wq5xk"]
+size = Vector3(1.08, 0.32, 0.48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y02up"]
+albedo_color = Color(1, 0.47843137, 0.17254902, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(1, 0.47843137, 0.17254902, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_47off"]
+size = Vector3(0.38, 0.24, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jsetg"]
+size = Vector3(0.38, 0.24, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hpxnr"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_k0f00"]
+size = Vector3(0.46, 0.06, 1.25)
+
+[node name="blockcraft_iso_freighter_02" type="Node3D" unique_id=333988387]
+metadata/asset_id = "blockcraft_iso_freighter_02"
+metadata/display_name = "Blockcraft Isometric Freighter 02"
+metadata/category = "space_ship_token"
+metadata/gameplay_role = "larger flat-plane tactical ship token"
+metadata/prompt = "blocky generic cargo freighter token for isometric tactical space"
+
+[node name="spine" type="MeshInstance3D" parent="." unique_id=724157661]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_3aau5")
+mesh = SubResource("BoxMesh_6rwjp")
+
+[node name="left_pod" type="MeshInstance3D" parent="." unique_id=1627517890]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.95, 0.42, 0.15)
+material_override = SubResource("StandardMaterial3D_nkgk6")
+mesh = SubResource("BoxMesh_vcdg6")
+
+[node name="right_pod" type="MeshInstance3D" parent="." unique_id=594003510]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.42, 0.15)
+material_override = SubResource("StandardMaterial3D_nkgk6")
+mesh = SubResource("BoxMesh_pgl3d")
+
+[node name="front_bridge" type="MeshInstance3D" parent="." unique_id=1893380756]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.72, -1.32)
+material_override = SubResource("StandardMaterial3D_vlwhm")
+mesh = SubResource("BoxMesh_wq5xk")
+
+[node name="left_engine" type="MeshInstance3D" parent="." unique_id=940997400]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.52, 0.42, 1.55)
+material_override = SubResource("StandardMaterial3D_y02up")
+mesh = SubResource("BoxMesh_47off")
+
+[node name="right_engine" type="MeshInstance3D" parent="." unique_id=1031002441]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.52, 0.42, 1.55)
+material_override = SubResource("StandardMaterial3D_y02up")
+mesh = SubResource("BoxMesh_jsetg")
+
+[node name="cargo_mark" type="MeshInstance3D" parent="." unique_id=1033429396]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.66, 0.2)
+material_override = SubResource("StandardMaterial3D_hpxnr")
+mesh = SubResource("BoxMesh_k0f00")

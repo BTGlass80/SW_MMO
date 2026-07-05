@@ -1,0 +1,261 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/scenes/iso_space_asteroid_cluster_01.tscn" id="1_gqu83"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ansor"]
+albedo_color = Color(0.043137256, 0.09019608, 0.14117648, 1)
+roughness = 0.95
+emission_enabled = true
+emission = Color(0.043137256, 0.09019608, 0.14117648, 1)
+emission_energy_multiplier = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_6sp5r"]
+size = Vector3(8.5, 0.08, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w826v"]
+albedo_color = Color(0.14509805, 0.76862746, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14509805, 0.76862746, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_yfrua"]
+size = Vector3(0.07, 0.03, 0.07)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tb7bv"]
+albedo_color = Color(0.47843137, 0.44313726, 0.4392157, 1)
+roughness = 0.86
+
+[sub_resource type="SphereMesh" id="SphereMesh_0l754"]
+radius = 0.55
+height = 1.1
+radial_segments = 12
+rings = 6
+
+[sub_resource type="SphereMesh" id="SphereMesh_3k823"]
+radius = 0.42
+height = 0.84
+radial_segments = 12
+rings = 6
+
+[sub_resource type="SphereMesh" id="SphereMesh_4kmo2"]
+radius = 0.36
+height = 0.72
+radial_segments = 12
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_22cfe"]
+albedo_color = Color(1, 0.41568628, 0.1882353, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(1, 0.41568628, 0.1882353, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="TorusMesh" id="TorusMesh_j651g"]
+inner_radius = 1.85
+outer_radius = 1.92
+ring_segments = 72
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6iae7"]
+albedo_color = Color(0.09019608, 0.39607844, 0.65882355, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.09019608, 0.39607844, 0.65882355, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="TorusMesh" id="TorusMesh_bk6ru"]
+inner_radius = 1.75
+outer_radius = 1.82
+ring_segments = 72
+
+[node name="iso_space_asteroid_cluster_01_review" type="Node3D" unique_id=1295862045]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=1997315837]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_ansor")
+mesh = SubResource("BoxMesh_6sp5r")
+
+[node name="ReviewStar_00" type="MeshInstance3D" parent="." unique_id=1274239113]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.25, 0.01, -1.8)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_01" type="MeshInstance3D" parent="." unique_id=474339108]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0.01, -3.5)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_02" type="MeshInstance3D" parent="." unique_id=1375775867]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 0.01, 1.8)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_03" type="MeshInstance3D" parent="." unique_id=1621700887]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.65, 0.01, 0.1)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_04" type="MeshInstance3D" parent="." unique_id=917163716]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.05, 0.01, -1.6)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_05" type="MeshInstance3D" parent="." unique_id=922976795]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.75, 0.01, -3.3)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_06" type="MeshInstance3D" parent="." unique_id=2098096720]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.01, 2)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_07" type="MeshInstance3D" parent="." unique_id=1400047317]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.85, 0.01, 0.3)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_08" type="MeshInstance3D" parent="." unique_id=1344552879]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.01, -1.4)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_09" type="MeshInstance3D" parent="." unique_id=840707451]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.55, 0.01, -3.1)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_10" type="MeshInstance3D" parent="." unique_id=315816160]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.25, 0.01, 2.2)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_11" type="MeshInstance3D" parent="." unique_id=425368964]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.45, 0.01, 0.5)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_12" type="MeshInstance3D" parent="." unique_id=2133045767]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.35, 0.01, -1.2)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_13" type="MeshInstance3D" parent="." unique_id=1242225653]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0.01, -2.9)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_14" type="MeshInstance3D" parent="." unique_id=1002762631]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.45, 0.01, 2.4)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_15" type="MeshInstance3D" parent="." unique_id=127454242]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 0.01, 0.7)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_16" type="MeshInstance3D" parent="." unique_id=1857236493]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.95, 0.01, -1)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_17" type="MeshInstance3D" parent="." unique_id=1975866174]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.85, 0.01, -2.7)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_18" type="MeshInstance3D" parent="." unique_id=2008029263]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.85, 0.01, 2.6)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_19" type="MeshInstance3D" parent="." unique_id=275989154]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.95, 0.01, 0.9)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_20" type="MeshInstance3D" parent="." unique_id=1991911101]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 0.01, -0.8)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_21" type="MeshInstance3D" parent="." unique_id=589596596]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.05, 0.01, -2.5)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_22" type="MeshInstance3D" parent="." unique_id=990947786]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.01, 2.8)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_23" type="MeshInstance3D" parent="." unique_id=106689868]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.15, 0.01, 1.1)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_24" type="MeshInstance3D" parent="." unique_id=161113127]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0.01, -0.6)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_25" type="MeshInstance3D" parent="." unique_id=1192705311]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.25, 0.01, -2.3)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_26" type="MeshInstance3D" parent="." unique_id=1867713297]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.55, 0.01, 3)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="ReviewStar_27" type="MeshInstance3D" parent="." unique_id=1828404215]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.15, 0.01, 1.3)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_yfrua")
+
+[node name="iso_space_asteroid_cluster_01" type="Node3D" parent="." unique_id=433836139 instance=ExtResource("1_gqu83")]
+transform = Transform3D(0.81915206, 0, -0.57357645, 0, 1, 0, 0.57357645, 0, 0.81915206, 0, 0, 0)
+metadata/asset_id = "iso_space_asteroid_cluster_01"
+metadata/display_name = "Isometric Space Asteroid Cluster 01"
+metadata/category = "space_hazard"
+metadata/gameplay_role = "2.5D obstacle or sensor occlusion prop"
+metadata/prompt = "generic low-poly asteroid cluster for isometric tactical space"
+
+[node name="rock_a" type="MeshInstance3D" parent="iso_space_asteroid_cluster_01" unique_id=886891085]
+transform = Transform3D(1.3, 0, 0, 0, 0.9, 0, 0, 0, 1, -0.9, 0.55, 0)
+material_override = SubResource("StandardMaterial3D_tb7bv")
+mesh = SubResource("SphereMesh_0l754")
+
+[node name="rock_b" type="MeshInstance3D" parent="iso_space_asteroid_cluster_01" unique_id=690659529]
+transform = Transform3D(1, 0, 0, 0, 0.8, 0, 0, 0, 1.4, 0.25, 0.42, 0.35)
+material_override = SubResource("StandardMaterial3D_tb7bv")
+mesh = SubResource("SphereMesh_3k823")
+
+[node name="rock_c" type="MeshInstance3D" parent="iso_space_asteroid_cluster_01" unique_id=502128470]
+transform = Transform3D(0.9, 0, 0, 0, 0.75, 0, 0, 0, 1.1, 1.05, 0.35, -0.45)
+material_override = SubResource("StandardMaterial3D_tb7bv")
+mesh = SubResource("SphereMesh_4kmo2")
+
+[node name="hazard_ring" type="MeshInstance3D" parent="iso_space_asteroid_cluster_01" unique_id=1892409318]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = SubResource("StandardMaterial3D_22cfe")
+mesh = SubResource("TorusMesh_j651g")
+
+[node name="@MeshInstance3D@8" type="MeshInstance3D" parent="." unique_id=2036834789]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+material_override = SubResource("StandardMaterial3D_6iae7")
+mesh = SubResource("TorusMesh_bk6ru")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=940447404]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=1074442430]
+transform = Transform3D(0.70710677, -0.3720458, 0.6013168, 0, 0.85039043, 0.5261522, -0.70710677, -0.3720458, 0.6013168, 13.22897, 12.425348, 13.22897)
+projection = 1
+current = true
+size = 8.0
+far = 120.0

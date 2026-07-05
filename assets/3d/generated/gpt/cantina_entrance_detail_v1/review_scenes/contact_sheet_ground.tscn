@@ -1,0 +1,466 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/cantina_entrance_detail_v1/scenes/cantina_entrance_threshold_detail_01.tscn" id="1_54fy1"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wrx5b"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_5uj3p"]
+size = Vector3(12.4, 0.08, 11)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i3qva"]
+albedo_color = Color(0.47843137, 0.3372549, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_praq3"]
+size = Vector3(5.55, 0.08, 3.75)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5jsuw"]
+albedo_color = Color(0.7254902, 0.50980395, 0.27058825, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_c336h"]
+size = Vector3(0.74, 0.04, 0.46)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_om5dl"]
+albedo_color = Color(0.8745098, 0.7294118, 0.44705883, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.8745098, 0.7294118, 0.44705883, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_2yedy"]
+size = Vector3(0.74, 0.04, 0.46)
+
+[sub_resource type="BoxMesh" id="BoxMesh_kh701"]
+size = Vector3(0.74, 0.04, 0.46)
+
+[sub_resource type="BoxMesh" id="BoxMesh_avdjx"]
+size = Vector3(0.74, 0.04, 0.46)
+
+[sub_resource type="BoxMesh" id="BoxMesh_kncuh"]
+size = Vector3(2.24, 0.4, 1.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5hcjx"]
+size = Vector3(2.24, 0.4, 1.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_klb0k"]
+size = Vector3(1.7, 0.22, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_canqb"]
+size = Vector3(1.7, 0.22, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hcy6b"]
+size = Vector3(1.22, 0.28, 0.48)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ni7ow"]
+size = Vector3(1.22, 0.28, 0.48)
+
+[sub_resource type="BoxMesh" id="BoxMesh_kn3mj"]
+size = Vector3(1.24, 1.92, 0.76)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sgvef"]
+size = Vector3(1.24, 1.92, 0.76)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ddhmb"]
+albedo_color = Color(0.3764706, 0.26666668, 0.17254902, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_jb32q"]
+size = Vector3(0.26, 0.34, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bp3xd"]
+size = Vector3(0.32, 0.22, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_0vibb"]
+size = Vector3(0.26, 0.3, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_spv4m"]
+size = Vector3(0.3, 0.2, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4njc5"]
+size = Vector3(2.05, 0.44, 0.9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_binj1"]
+size = Vector3(1.05, 0.5, 0.96)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mgfqf"]
+size = Vector3(1.05, 0.5, 0.96)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8yxlp"]
+size = Vector3(0.72, 0.25, 0.82)
+
+[sub_resource type="BoxMesh" id="BoxMesh_oc2qr"]
+size = Vector3(0.82, 0.25, 0.82)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ijs8u"]
+size = Vector3(0.72, 0.25, 0.82)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lx7hd"]
+albedo_color = Color(0.09019608, 0.105882354, 0.1254902, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_tgcow"]
+size = Vector3(1.52, 1.82, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5lr6h"]
+albedo_color = Color(0.18039216, 0.14509805, 0.1254902, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_3pmsi"]
+size = Vector3(1.06, 1.32, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yodft"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_vwv45"]
+size = Vector3(1.26, 0.07, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1y243"]
+size = Vector3(0.07, 0.82, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bsj5f"]
+size = Vector3(0.07, 0.82, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k0ttg"]
+albedo_color = Color(0.43529412, 0.26666668, 0.14901961, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_cm8lb"]
+size = Vector3(0.16, 0.45, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8kgga"]
+size = Vector3(0.16, 0.45, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pq0t8"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_y02ct"]
+size = Vector3(0.22, 0.85, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tnnpw"]
+albedo_color = Color(0.6431373, 0.6862745, 0.7019608, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.6431373, 0.6862745, 0.7019608, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_xtynx"]
+size = Vector3(0.16, 0.55, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_10knc"]
+size = Vector3(0.56, 0.28, 0.34)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4qrah"]
+albedo_color = Color(1, 0.47843137, 0.17254902, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(1, 0.47843137, 0.17254902, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_h25r1"]
+size = Vector3(0.34, 0.08, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_f3frr"]
+size = Vector3(0.05, 0.16, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ucsij"]
+size = Vector3(0.74, 0.44, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nv24w"]
+albedo_color = Color(0.7254902, 0.60784316, 0.3882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_d55yq"]
+size = Vector3(0.17, 0.2, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_w4ynh"]
+size = Vector3(0.2, 0.11, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wt0um"]
+size = Vector3(0.62, 0.08, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3amvs"]
+size = Vector3(0.32, 0.46, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bi0rw"]
+size = Vector3(0.2, 0.05, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ghevp"]
+albedo_color = Color(0.14117648, 0.84313726, 0.84313726, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14117648, 0.84313726, 0.84313726, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_g5x7d"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4ntkn"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rxd0g"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_np4tq"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[node name="AssetFactoryReview_ground" type="Node3D" unique_id=1747221421]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=1600494094]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_wrx5b")
+mesh = SubResource("BoxMesh_5uj3p")
+
+[node name="cantina_entrance_threshold_detail_01" type="Node3D" parent="." unique_id=1112442592 instance=ExtResource("1_54fy1")]
+metadata/asset_id = "cantina_entrance_threshold_detail_01"
+metadata/display_name = "Cantina Entrance Threshold Detail 01"
+metadata/category = "terrain_module"
+metadata/gameplay_role = "finer-detail elevated no-droids entrance threshold"
+metadata/prompt = "blockcraft cantina entrance with more Minecraft-like small cube detail, segmented steps, recessed dark doorway, no-droids sign, detector post, scan bars, side rails, and facade chips"
+
+[node name="dust_base" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=128909627]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+material_override = SubResource("StandardMaterial3D_i3qva")
+mesh = SubResource("BoxMesh_praq3")
+
+[node name="approach_tile_a" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=675742001]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.1, -1.35)
+material_override = SubResource("StandardMaterial3D_5jsuw")
+mesh = SubResource("BoxMesh_c336h")
+
+[node name="approach_tile_b" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1599385734]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.38, 0.1, -1.35)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_2yedy")
+
+[node name="approach_tile_c" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1669214230]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.44, 0.1, -1.35)
+material_override = SubResource("StandardMaterial3D_5jsuw")
+mesh = SubResource("BoxMesh_kh701")
+
+[node name="approach_tile_d" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=2063683849]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.26, 0.1, -1.35)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_avdjx")
+
+[node name="platform_left" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1902593342]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.22, 0.3, 0.68)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_kncuh")
+
+[node name="platform_right" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=751578994]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.22, 0.3, 0.68)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_5hcjx")
+
+[node name="step_low_left" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=2096197401]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.13, -0.88)
+material_override = SubResource("StandardMaterial3D_5jsuw")
+mesh = SubResource("BoxMesh_klb0k")
+
+[node name="step_low_right" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1355195314]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.13, -0.88)
+material_override = SubResource("StandardMaterial3D_5jsuw")
+mesh = SubResource("BoxMesh_canqb")
+
+[node name="step_mid_left" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1666730896]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.23, -0.35)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_hcy6b")
+
+[node name="step_mid_right" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=93425790]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.23, -0.35)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_ni7ow")
+
+[node name="left_wall_core" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1881846642]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.82, 1.05, 0.95)
+material_override = SubResource("StandardMaterial3D_5jsuw")
+mesh = SubResource("BoxMesh_kn3mj")
+
+[node name="right_wall_core" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1762232396]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.82, 1.05, 0.95)
+material_override = SubResource("StandardMaterial3D_5jsuw")
+mesh = SubResource("BoxMesh_sgvef")
+
+[node name="left_wall_chip_a" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1623626803]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 0.58, 0.52)
+material_override = SubResource("StandardMaterial3D_ddhmb")
+mesh = SubResource("BoxMesh_jb32q")
+
+[node name="left_wall_chip_b" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1243788127]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.25, 1.44, 0.5)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_bp3xd")
+
+[node name="right_wall_chip_a" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=642516815]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 0.74, 0.52)
+material_override = SubResource("StandardMaterial3D_ddhmb")
+mesh = SubResource("BoxMesh_0vibb")
+
+[node name="right_wall_chip_b" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1999675782]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.26, 1.54, 0.5)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_spv4m")
+
+[node name="lintel_center" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=60096585]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0.95)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_4njc5")
+
+[node name="lintel_left_cap" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1770069017]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.62, 2.13, 0.95)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_binj1")
+
+[node name="lintel_right_cap" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1376732008]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.62, 2.13, 0.95)
+material_override = SubResource("StandardMaterial3D_om5dl")
+mesh = SubResource("BoxMesh_mgfqf")
+
+[node name="top_block_left" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=527681084]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.65, 2.48, 0.95)
+material_override = SubResource("StandardMaterial3D_5jsuw")
+mesh = SubResource("BoxMesh_8yxlp")
+
+[node name="top_block_mid" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=967269288]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.48, 0.95)
+material_override = SubResource("StandardMaterial3D_5jsuw")
+mesh = SubResource("BoxMesh_oc2qr")
+
+[node name="top_block_right" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=485296755]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.65, 2.48, 0.95)
+material_override = SubResource("StandardMaterial3D_5jsuw")
+mesh = SubResource("BoxMesh_ijs8u")
+
+[node name="recess_shadow" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1093004834]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.51)
+material_override = SubResource("StandardMaterial3D_lx7hd")
+mesh = SubResource("BoxMesh_tgcow")
+
+[node name="inner_door" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1957935649]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.92, 0.43)
+material_override = SubResource("StandardMaterial3D_5lr6h")
+mesh = SubResource("BoxMesh_3pmsi")
+
+[node name="scan_bar_top" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1733802784]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.74, 0.35)
+material_override = SubResource("StandardMaterial3D_yodft")
+mesh = SubResource("BoxMesh_vwv45")
+
+[node name="scan_bar_side_left" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=657245983]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 1.24, 0.35)
+material_override = SubResource("StandardMaterial3D_yodft")
+mesh = SubResource("BoxMesh_1y243")
+
+[node name="scan_bar_side_right" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1009577531]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 1.24, 0.35)
+material_override = SubResource("StandardMaterial3D_yodft")
+mesh = SubResource("BoxMesh_bsj5f")
+
+[node name="left_side_rail" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=829292564]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.95, 0.55, -0.62)
+material_override = SubResource("StandardMaterial3D_k0ttg")
+mesh = SubResource("BoxMesh_cm8lb")
+
+[node name="right_side_rail" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=680913254]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.95, 0.55, -0.62)
+material_override = SubResource("StandardMaterial3D_k0ttg")
+mesh = SubResource("BoxMesh_8kgga")
+
+[node name="detector_post_lower" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1596740928]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, 0.75, -0.16)
+material_override = SubResource("StandardMaterial3D_pq0t8")
+mesh = SubResource("BoxMesh_y02ct")
+
+[node name="detector_post_upper" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1970016797]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, 1.45, -0.16)
+material_override = SubResource("StandardMaterial3D_tnnpw")
+mesh = SubResource("BoxMesh_xtynx")
+
+[node name="detector_head" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=893352958]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, 1.72, -0.34)
+material_override = SubResource("StandardMaterial3D_pq0t8")
+mesh = SubResource("BoxMesh_10knc")
+
+[node name="detector_eye" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=497883909]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, 1.73, -0.54)
+material_override = SubResource("StandardMaterial3D_4qrah")
+mesh = SubResource("BoxMesh_h25r1")
+
+[node name="detector_side_light" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1242364571]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.28, 1.72, -0.34)
+material_override = SubResource("StandardMaterial3D_yodft")
+mesh = SubResource("BoxMesh_f3frr")
+
+[node name="sign_plate" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1810614826]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.08, 1.55, 0.34)
+material_override = SubResource("StandardMaterial3D_tnnpw")
+mesh = SubResource("BoxMesh_ucsij")
+
+[node name="sign_droid_body" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1719648026]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.98, 1.54, 0.29)
+material_override = SubResource("StandardMaterial3D_nv24w")
+mesh = SubResource("BoxMesh_d55yq")
+
+[node name="sign_droid_head" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=1622721741]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.98, 1.7, 0.29)
+material_override = SubResource("StandardMaterial3D_nv24w")
+mesh = SubResource("BoxMesh_w4ynh")
+
+[node name="sign_red_slash" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=164868910]
+transform = Transform3D(0.88294756, 0.46947157, 0, -0.46947157, 0.88294756, 0, 0, 0, 1, 1.08, 1.56, 0.26)
+material_override = SubResource("StandardMaterial3D_4qrah")
+mesh = SubResource("BoxMesh_wt0um")
+
+[node name="tiny_power_box" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=2004251599]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.68, 0.4)
+material_override = SubResource("StandardMaterial3D_pq0t8")
+mesh = SubResource("BoxMesh_3amvs")
+
+[node name="tiny_power_light" type="MeshInstance3D" parent="cantina_entrance_threshold_detail_01" unique_id=2125875082]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55, 0.82, 0.29)
+material_override = SubResource("StandardMaterial3D_yodft")
+mesh = SubResource("BoxMesh_bi0rw")
+
+[node name="BlockSelectionMarker" type="Node3D" parent="." unique_id=630929858]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+
+[node name="front" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1425281500]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.7)
+material_override = SubResource("StandardMaterial3D_ghevp")
+mesh = SubResource("BoxMesh_g5x7d")
+
+[node name="back" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=745861709]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.7)
+material_override = SubResource("StandardMaterial3D_ghevp")
+mesh = SubResource("BoxMesh_4ntkn")
+
+[node name="left" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1198392531]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_ghevp")
+mesh = SubResource("BoxMesh_rxd0g")
+
+[node name="right" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=986943732]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_ghevp")
+mesh = SubResource("BoxMesh_np4tq")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=682559998]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=668833842]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 13.104
+far = 120.0

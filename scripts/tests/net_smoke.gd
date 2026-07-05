@@ -98,7 +98,22 @@ func _init() -> void:
 	fstate.tick(0.5)
 	_assert_true((fstate.get_player(1).get("pos") as Vector3).z < WorldState.SPAWN_POINT.z, "once can_act again, the player moves")
 
+	# Cantina blocker and movement collision checks.
+	var cstate := WorldState.new()
+	# The central bar counter (centered at (65.0, 1.2, 3.1)) is blocked
+	_assert_true(cstate.is_blocked(Vector3(65.0, 1.2, 3.1)), "center bar island is blocked")
+	
+	# Spawn near the blocker and try to walk directly into it
+	cstate.add_player(1, "TestColl", Vector3(64.0, 1.2, 3.1))
+	# Face East (yaw = -PI/2 or input move.x = 1.0) to walk directly into center bar X=65.0
+	cstate.set_input(1, Vector2(1.0, 0.0), 0.0, false)
+	cstate.tick(0.5)
+	var post_coll: Vector3 = cstate.get_player(1).get("pos")
+	_assert_true(post_coll.x < 65.0, "collision blocks player from entering the central bar blocker")
+
+
 	_finish()
+
 
 func _finish() -> void:
 	if _failures.is_empty():

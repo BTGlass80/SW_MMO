@@ -1,0 +1,92 @@
+{
+	"captures": [
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/google_pixel_hull_character_recreation_v0/captures/recreation_source_cards.png",
+			"description": "Google recreation front and side pixel cards. Designed with 212th Orange markings and a helmet rangefinder.",
+			"id": "recreation_source_cards",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/google_pixel_hull_character_recreation_v0/review_scenes/recreation_source_cards.tscn"
+		},
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/google_pixel_hull_character_recreation_v0/captures/recreation_flat_vs_volume.png",
+			"description": "Orange Clone Commander recreation. Left: flat front extrusion. Right: front+side visual hull with z-run merged voxels.",
+			"id": "recreation_flat_vs_volume",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/google_pixel_hull_character_recreation_v0/review_scenes/recreation_flat_vs_volume.tscn"
+		},
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/google_pixel_hull_character_recreation_v0/captures/recreation_three_quarter.png",
+			"description": "Three-quarter Godot camera proof for the Google Clone Commander rangefinder recreation.",
+			"id": "recreation_three_quarter",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/google_pixel_hull_character_recreation_v0/review_scenes/recreation_three_quarter.tscn"
+		},
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/google_pixel_hull_character_recreation_v0/captures/recreation_rotation_contact_sheet.png",
+			"description": "Rotation contact sheet at 0, 90, 180, and 270 degree yaw for the Google Clone Commander recreation.",
+			"id": "recreation_rotation_contact_sheet",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/google_pixel_hull_character_recreation_v0/review_scenes/recreation_rotation_contact_sheet.tscn"
+		}
+	],
+	"generator": "docs/google/modeling/asset_factory/scripts/google_pixel_hull_character_recreation.gd",
+	"source_images": {
+		"front": "res://docs/google/modeling/asset_factory/generated/google_pixel_hull_character_recreation_v0/source_images/commander_front_card_16x28.png",
+		"side": "res://docs/google/modeling/asset_factory/generated/google_pixel_hull_character_recreation_v0/source_images/commander_side_card_10x28.png"
+	},
+	"stats": {
+		"flat_front_extrude": {
+			"boxes": 94,
+			"mode": "front_card_same_color_horizontal_runs",
+			"pixels": 448
+		},
+		"front_card_display": {
+			"boxes": 94,
+			"mode": "front_card_same_color_horizontal_runs",
+			"pixels": 448
+		},
+		"front_side_visual_hull": {
+			"boxes": 250,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1390,
+			"side_pixels": 280
+		},
+		"side_card_display": {
+			"boxes": 72,
+			"mode": "front_card_same_color_horizontal_runs",
+			"pixels": 280
+		},
+		"trooper_visual_hull": {
+			"boxes": 250,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1390,
+			"side_pixels": 280
+		},
+		"trooper_visual_hull_yaw_0": {
+			"boxes": 250,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1390,
+			"side_pixels": 280
+		},
+		"trooper_visual_hull_yaw_180": {
+			"boxes": 250,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1390,
+			"side_pixels": 280
+		},
+		"trooper_visual_hull_yaw_270": {
+			"boxes": 250,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1390,
+			"side_pixels": 280
+		},
+		"trooper_visual_hull_yaw_90": {
+			"boxes": 250,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1390,
+			"side_pixels": 280
+		}
+	}
+}

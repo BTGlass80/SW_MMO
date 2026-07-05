@@ -1,0 +1,56 @@
+{
+  "schema": "gpt_blockbench_cubecraft_v0",
+  "pack_id": "blockbench_ship_droid_v2",
+  "display_name": "Blockbench Hostile Droid Ship v2",
+  "output_folder": "generated/blockbench_ship_droid_v2",
+  "preview_background": "#96acba",
+  "notes": [
+    "One-variable iteration after blockbench_ship_micro_v1.",
+    "Only the hostile droid ship changes. Pipeline, renderer, palette family, and friendly ship work are unchanged.",
+    "Goal: stronger hostile read through a flatter tri-wing silhouette, larger central eye, more insect-like prongs, and asymmetric droid panels."
+  ],
+  "palette": {
+    "droid_tan": "#b99b63",
+    "droid_shadow": "#6d5a38",
+    "ship_dark": "#343a42",
+    "tech_cyan": "#27d7ff",
+    "warning_orange": "#ff7a2c",
+    "engine_warm": "#ffb24a",
+    "panel_gray": "#68727a"
+  },
+  "assets": [
+    {
+      "id": "micro_tri_droid_stalker_v2",
+      "display_name": "Micro Tri Droid Stalker v2",
+      "category": "blockbench_space_ship",
+      "gameplay_role": "hostile droid fighter token; flatter tri-wing predator silhouette with larger eye and clearer threat prongs",
+      "cubes": [
+        {"name": "flat_core", "position": [0, 0.75, -0.25], "size": [2.35, 0.52, 1.65], "material": "droid_tan"},
+        {"name": "core_under_shadow", "position": [0, 0.45, -0.22], "size": [1.7, 0.22, 1.25], "material": "droid_shadow"},
+        {"name": "top_sensor_hump", "position": [0, 1.15, -0.05], "size": [1.05, 0.65, 0.9], "material": "droid_shadow"},
+        {"name": "front_eye_big", "position": [0, 0.95, -1.15], "size": [0.95, 0.34, 0.18], "material": "tech_cyan"},
+        {"name": "eye_left_orange", "position": [-0.68, 0.93, -1.12], "size": [0.28, 0.24, 0.16], "material": "warning_orange"},
+        {"name": "eye_right_orange", "position": [0.68, 0.93, -1.12], "size": [0.28, 0.24, 0.16], "material": "warning_orange"},
+        {"name": "front_mandible_left", "position": [-0.38, 0.62, -2.2], "size": [0.34, 0.25, 1.75], "material": "droid_shadow"},
+        {"name": "front_mandible_right", "position": [0.38, 0.62, -2.2], "size": [0.34, 0.25, 1.75], "material": "droid_shadow"},
+        {"name": "front_blade_center", "position": [0, 0.58, -3.45], "size": [0.58, 0.18, 1.8], "material": "droid_tan"},
+        {"name": "front_tip", "position": [0, 0.56, -4.55], "size": [0.35, 0.16, 0.55], "material": "droid_shadow"},
+        {"name": "left_inner_arm", "position": [-1.35, 0.58, 0.25], "size": [1.45, 0.22, 0.48], "material": "droid_shadow"},
+        {"name": "right_inner_arm", "position": [1.35, 0.58, 0.25], "size": [1.45, 0.22, 0.48], "material": "droid_shadow"},
+        {"name": "left_mid_blade", "position": [-2.55, 0.55, 0.75], "size": [1.6, 0.18, 0.58], "material": "droid_tan"},
+        {"name": "right_mid_blade", "position": [2.55, 0.55, 0.75], "size": [1.6, 0.18, 0.58], "material": "droid_tan"},
+        {"name": "left_outer_blade", "position": [-3.78, 0.52, 1.2], "size": [1.05, 0.16, 0.46], "material": "droid_shadow"},
+        {"name": "right_outer_blade", "position": [3.78, 0.52, 1.2], "size": [1.05, 0.16, 0.46], "material": "droid_shadow"},
+        {"name": "left_wing_tip", "position": [-4.45, 0.5, 1.55], "size": [0.42, 0.14, 0.35], "material": "warning_orange"},
+        {"name": "right_wing_tip", "position": [4.45, 0.5, 1.55], "size": [0.42, 0.14, 0.35], "material": "warning_orange"},
+        {"name": "rear_spine", "position": [0, 0.62, 1.05], "size": [0.75, 0.3, 1.2], "material": "droid_shadow"},
+        {"name": "rear_engine", "position": [0, 0.72, 1.78], "size": [0.9, 0.42, 0.35], "material": "ship_dark"},
+        {"name": "rear_glow", "position": [0, 0.72, 2.02], "size": [0.68, 0.26, 0.08], "material": "engine_warm"},
+        {"name": "left_side_sensor", "position": [-1.05, 0.98, -0.85], "size": [0.32, 0.28, 0.22], "material": "panel_gray"},
+        {"name": "right_side_sensor", "position": [1.05, 0.86, -0.8], "size": [0.28, 0.22, 0.2], "material": "ship_dark"},
+        {"name": "left_lower_claw", "position": [-0.92, 0.42, -1.75], "size": [0.28, 0.18, 0.75], "material": "droid_tan"},
+        {"name": "right_lower_claw", "position": [0.92, 0.42, -1.75], "size": [0.28, 0.18, 0.75], "material": "droid_tan"}
+      ]
+    }
+  ]
+}

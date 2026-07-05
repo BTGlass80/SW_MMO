@@ -1,0 +1,41 @@
+{
+	"pack_id": "blockbench_ship_micro_v1",
+	"display_name": "Blockbench Ship Microfighter v1",
+	"source_spec": "docs/gpt/asset_factory/specs/blockbench_ship_micro_v1.json",
+	"generated_at": "2026-07-04T05:31:22.962Z",
+	"assets": [
+		{
+			"id": "micro_arc_interceptor_v1",
+			"display_name": "Micro ARC Interceptor v1",
+			"category": "blockbench_space_ship",
+			"gameplay_role": "finer-resolution friendly interceptor token; compact toy-like cockpit, wings, astromech mark, and cannon reads",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_ship_micro_v1/blockbench/micro_arc_interceptor_v1.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_ship_micro_v1/previews/micro_arc_interceptor_v1.png"
+		},
+		{
+			"id": "micro_v_lancer_v1",
+			"display_name": "Micro V Lancer v1",
+			"category": "blockbench_space_ship",
+			"gameplay_role": "friendly light attack craft; narrow central body, splayed fin read, blue engine glow",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_ship_micro_v1/blockbench/micro_v_lancer_v1.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_ship_micro_v1/previews/micro_v_lancer_v1.png"
+		},
+		{
+			"id": "micro_tri_droid_stalker_v1",
+			"display_name": "Micro Tri Droid Stalker v1",
+			"category": "blockbench_space_ship",
+			"gameplay_role": "hostile droid fighter token; compact center eye, tri-fin threat shape, warm engine mark",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_ship_micro_v1/blockbench/micro_tri_droid_stalker_v1.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_ship_micro_v1/previews/micro_tri_droid_stalker_v1.png"
+		},
+		{
+			"id": "micro_blockade_runner_v1",
+			"display_name": "Micro Blockade Runner v1",
+			"category": "blockbench_space_ship",
+			"gameplay_role": "small capital/freighter token; readable bridge, long hull, side pods, engine cluster",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_ship_micro_v1/blockbench/micro_blockade_runner_v1.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_ship_micro_v1/previews/micro_blockade_runner_v1.png"
+		}
+	],
+	"contact_sheet": "docs/gpt/asset_factory/generated/blockbench_ship_micro_v1/previews/contact_sheet.png"
+}

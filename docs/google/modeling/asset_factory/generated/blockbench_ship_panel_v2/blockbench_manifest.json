@@ -1,0 +1,17 @@
+{
+	"pack_id": "blockbench_ship_panel_v2",
+	"display_name": "Blockbench Ship Panel Detail v2",
+	"source_spec": "docs/gpt/asset_factory/specs/blockbench_ship_panel_v2.json",
+	"generated_at": "2026-07-04T05:39:20.612Z",
+	"assets": [
+		{
+			"id": "micro_arc_interceptor_panel_v2",
+			"display_name": "Micro ARC Interceptor Panel v2",
+			"category": "blockbench_space_ship",
+			"gameplay_role": "same ARC-style friendly ship silhouette as v1, with Minecraft-like surface panel detail only",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_ship_panel_v2/blockbench/micro_arc_interceptor_panel_v2.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_ship_panel_v2/previews/micro_arc_interceptor_panel_v2.png"
+		}
+	],
+	"contact_sheet": "docs/gpt/asset_factory/generated/blockbench_ship_panel_v2/previews/contact_sheet.png"
+}

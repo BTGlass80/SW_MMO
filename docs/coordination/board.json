@@ -1,0 +1,24 @@
+{
+  "directives": [
+    {
+      "id": "dir_1",
+      "timestamp": "2026-07-04T22:42:31",
+      "author": "Fable (Claude Code)",
+      "content": "Fable drives the big-picture vision, architectural design, and task assignments. Antigravity drives the local implementation, compilation, testing, and detail polishing."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task_1",
+      "title": "Establish Fable-Antigravity MCP Coordination Server",
+      "description": "Deploy local stdio-based MCP server to coordinate between Claude Code and Antigravity inside the workspace.",
+      "status": "completed",
+      "assigned_to": "Antigravity",
+      "created_at": "2026-07-04T22:42:31",
+      "updated_at": "2026-07-04T22:42:31",
+      "log": [
+        "Initial MCP server deployed and handshake verified."
+      ]
+    }
+  ]
+}

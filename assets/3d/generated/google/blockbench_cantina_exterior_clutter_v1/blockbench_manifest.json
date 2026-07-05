@@ -1,0 +1,41 @@
+{
+	"pack_id": "blockbench_cantina_exterior_clutter_v1",
+	"display_name": "Blockbench Cantina Exterior Clutter v1",
+	"source_spec": "docs/gpt/asset_factory/specs/blockbench_cantina_exterior_clutter_v1.json",
+	"generated_at": "2026-07-04T12:16:13.829Z",
+	"assets": [
+		{
+			"id": "cantina_pipe_cluster_v1",
+			"display_name": "Cantina Pipe Cluster v1",
+			"category": "blockbench_environment_clutter",
+			"gameplay_role": "wall-mounted utility silhouette that adds lived-in spaceport density beside adobe facade modules",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_cantina_exterior_clutter_v1/blockbench/cantina_pipe_cluster_v1.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_cantina_exterior_clutter_v1/previews/cantina_pipe_cluster_v1.png"
+		},
+		{
+			"id": "cantina_utility_box_v1",
+			"display_name": "Cantina Utility Box v1",
+			"category": "blockbench_environment_clutter",
+			"gameplay_role": "wall utility box with amber lamp and wire runs for frontier service infrastructure",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_cantina_exterior_clutter_v1/blockbench/cantina_utility_box_v1.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_cantina_exterior_clutter_v1/previews/cantina_utility_box_v1.png"
+		},
+		{
+			"id": "cantina_crate_scrap_stack_v1",
+			"display_name": "Cantina Crate Scrap Stack v1",
+			"category": "blockbench_environment_clutter",
+			"gameplay_role": "low street clutter and cover-scale scrap cluster for Cantina exterior approach",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_cantina_exterior_clutter_v1/blockbench/cantina_crate_scrap_stack_v1.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_cantina_exterior_clutter_v1/previews/cantina_crate_scrap_stack_v1.png"
+		},
+		{
+			"id": "cantina_dust_berm_v1",
+			"display_name": "Cantina Dust Berm v1",
+			"category": "blockbench_environment_clutter",
+			"gameplay_role": "chunky dust buildup and rock scatter that breaks the clean toy-floor read around frontier buildings",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_cantina_exterior_clutter_v1/blockbench/cantina_dust_berm_v1.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_cantina_exterior_clutter_v1/previews/cantina_dust_berm_v1.png"
+		}
+	],
+	"contact_sheet": "docs/gpt/asset_factory/generated/blockbench_cantina_exterior_clutter_v1/previews/contact_sheet.png"
+}

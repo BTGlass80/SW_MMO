@@ -1,0 +1,100 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ms8t6"]
+albedo_color = Color(0.20392157, 0.22745098, 0.25882354, 1)
+metallic = 0.25
+roughness = 0.62
+
+[sub_resource type="BoxMesh" id="BoxMesh_4bicw"]
+size = Vector3(0.54, 0.36, 1.75)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rux0m"]
+albedo_color = Color(0.84705883, 0.7137255, 0.3647059, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_a85uk"]
+size = Vector3(0.62, 0.32, 1.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8kqd5"]
+albedo_color = Color(0.6039216, 0.64705884, 0.6666667, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_7ibvf"]
+size = Vector3(0.62, 0.32, 1.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6frkc"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_bma0q"]
+size = Vector3(0.46, 0.28, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jaqlw"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_s2l32"]
+size = Vector3(0.28, 0.1, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7amfi"]
+size = Vector3(0.34, 0.2, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i7ljx"]
+size = Vector3(0.34, 0.2, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5cuyt"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_gmm7x"]
+size = Vector3(0.12, 0.44, 0.12)
+
+[node name="fan_frontier_light_freighter_token_01" type="Node3D" unique_id=792936191]
+metadata/asset_id = "fan_frontier_light_freighter_token_01"
+metadata/display_name = "Fan Frontier Light Freighter Token 01"
+metadata/category = "spacecraft_token"
+metadata/gameplay_role = "civilian smuggler/freighter token for private fan table"
+metadata/prompt = "blockcraft frontier light freighter with offset cockpit, twin cargo pods, yellow hull paneling, and blue engine glow"
+
+[node name="central_spine" type="MeshInstance3D" parent="." unique_id=1235376029]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0.1)
+material_override = SubResource("StandardMaterial3D_ms8t6")
+mesh = SubResource("BoxMesh_4bicw")
+
+[node name="left_cargo_pod" type="MeshInstance3D" parent="." unique_id=1647102108]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.38, 0.12)
+material_override = SubResource("StandardMaterial3D_rux0m")
+mesh = SubResource("BoxMesh_a85uk")
+
+[node name="right_cargo_pod" type="MeshInstance3D" parent="." unique_id=1919130384]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.38, 0.12)
+material_override = SubResource("StandardMaterial3D_8kqd5")
+mesh = SubResource("BoxMesh_7ibvf")
+
+[node name="offset_cockpit" type="MeshInstance3D" parent="." unique_id=376845548]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.16, 0.48, -0.82)
+material_override = SubResource("StandardMaterial3D_6frkc")
+mesh = SubResource("BoxMesh_bma0q")
+
+[node name="cockpit_glass" type="MeshInstance3D" parent="." unique_id=279249921]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.16, 0.6, -1.08)
+material_override = SubResource("StandardMaterial3D_jaqlw")
+mesh = SubResource("BoxMesh_s2l32")
+
+[node name="left_engine" type="MeshInstance3D" parent="." unique_id=428482976]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 0.38, 1.02)
+material_override = SubResource("StandardMaterial3D_jaqlw")
+mesh = SubResource("BoxMesh_7amfi")
+
+[node name="right_engine" type="MeshInstance3D" parent="." unique_id=764381971]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.38, 1.02)
+material_override = SubResource("StandardMaterial3D_jaqlw")
+mesh = SubResource("BoxMesh_i7ljx")
+
+[node name="dish_stub" type="MeshInstance3D" parent="." unique_id=591279275]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.68, -0.58)
+material_override = SubResource("StandardMaterial3D_5cuyt")
+mesh = SubResource("BoxMesh_gmm7x")

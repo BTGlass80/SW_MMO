@@ -1,0 +1,1282 @@
+[gd_scene format=4]
+
+[sub_resource type="Environment" id="Environment_4krmp"]
+background_mode = 1
+background_color = Color(0.043137256, 0.0627451, 0.09019608, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.38666666, 0.36266667, 0.384, 1)
+ambient_light_energy = 0.72
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gc5i2"]
+albedo_color = Color(0.62352943, 0.39215687, 0.21176471, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_tuum2"]
+size = Vector3(3, 2.25, 0.16)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f2460"]
+albedo_color = Color(0.17254902, 0.12941177, 0.11372549, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_r6hdg"]
+size = Vector3(3.5, 0.08, 2.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6611m"]
+albedo_color = Color(0.62352943, 0.39215687, 0.21176471, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_vx00x"]
+size = Vector3(3, 2.25, 0.16)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mpqlj"]
+albedo_color = Color(0.17254902, 0.12941177, 0.11372549, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_0h423"]
+size = Vector3(3.5, 0.08, 2.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eim55"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_gspnk"]
+size = Vector3(2.16, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x0ydn"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_e1bdv"]
+size = Vector3(2.16, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3wj3f"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_vn2w5"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ny2yq"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_apkgu"]
+size = Vector3(1.68, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_op5hx"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_saksn"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vmml5"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_bbcu4"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fukec"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_oqc42"]
+size = Vector3(1.68, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hma0b"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_xtmrl"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_len70"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_l33yu"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mirwi"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_mevd2"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ytio5"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_ycein"]
+size = Vector3(1.2, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yops7"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_6euuk"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_s1ivd"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_7ie6t"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_my5ca"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_vidv8"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pyi61"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_vtrq7"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4dnn0"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_orjk5"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pk3t8"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_s1yp5"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i3y3o"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_rmaew"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pkun2"]
+albedo_color = Color(0.41960785, 0.4509804, 0.46666667, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_5557i"]
+size = Vector3(0.96, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kx3uh"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_vmk8f"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lq47n"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_58ko0"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xieyg"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_8ov2p"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6ashl"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_8cxme"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mmgrm"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_numvx"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_madnv"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_fx4wy"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_m0ml5"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_5w0ud"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uslg8"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_68lte"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ei7ix"]
+albedo_color = Color(0.41960785, 0.4509804, 0.46666667, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_2vk8g"]
+size = Vector3(0.96, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7fery"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_117qm"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lihri"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_h1xso"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ix2nm"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_8ejwp"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h7gb7"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_0wc3y"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4gy2h"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_w4u2j"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5ctm3"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_peu4f"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ovc4x"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_32cm1"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_22sje"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_ntdbr"]
+size = Vector3(1.2, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7noip"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_pify8"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rut8w"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_raf5p"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_35cf8"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_rxbme"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xmp57"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_esj5j"]
+size = Vector3(0.6, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kfa82"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_lta8f"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0t6la"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_ixgb8"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ecixa"]
+albedo_color = Color(0.41960785, 0.4509804, 0.46666667, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_kdtoe"]
+size = Vector3(0.96, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w2cf8"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_iddbv"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1h5ps"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_ydaij"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6sr8n"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_5mbow"]
+size = Vector3(0.6, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_31i1n"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_hctr1"]
+size = Vector3(0.6, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qgh0w"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_dlcbb"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g12m8"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_lvj6s"]
+size = Vector3(1.2, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bfs22"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_ciiq8"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5u311"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_m5btk"]
+size = Vector3(0.6, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sg7sb"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_yehbm"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8kd3y"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_8txl2"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r0yjo"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_dksft"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d5kai"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_04jio"]
+size = Vector3(1.2, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_li4x3"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_g3q6r"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o5org"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_hib6p"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u7d4d"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_6g5xw"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n7lis"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_sx1xu"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cd6ak"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_3fhnq"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uqa2b"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_5unpw"]
+size = Vector3(1.44, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_s1a4u"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_4c0gh"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sagug"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_y5j4b"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_25v86"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_pqg1o"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ino81"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_qkhmv"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b54q3"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_1v3hl"]
+size = Vector3(0.48, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xgcmi"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_6j7b8"]
+size = Vector3(0.48, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_s8oyq"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_fq64r"]
+size = Vector3(0.48, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7b0ws"]
+albedo_color = Color(0.2, 0.21960784, 0.23921569, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_8d3ch"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ffv6o"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_a0cgb"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rb2ri"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_i7ppv"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f8880"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_raut4"]
+size = Vector3(0.6, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4g0li"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_jiuqt"]
+size = Vector3(0.48, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ab2mo"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_8w0us"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_815ei"]
+albedo_color = Color(0.6627451, 0.36862746, 0.3019608, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_j15ck"]
+size = Vector3(0.36, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gn8qo"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_oc2id"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1ctem"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_c0b7d"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6xdxu"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_x4hme"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ekhua"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_0wcrk"]
+size = Vector3(0.6, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_616os"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_2yjpl"]
+size = Vector3(0.48, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nbqev"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_ooppo"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kiq6k"]
+albedo_color = Color(0.6627451, 0.36862746, 0.3019608, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_1injp"]
+size = Vector3(0.36, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tkdl0"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_5oq3b"]
+size = Vector3(0.12, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lmi1e"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_fgth1"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f6ory"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_3yrmu"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pwoek"]
+albedo_color = Color(0.84705883, 0.7019608, 0.41960785, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_8bkag"]
+size = Vector3(1.68, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_254n6"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_ek0aq"]
+size = Vector3(0.24, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nnrhd"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_wtxqh"]
+size = Vector3(2.16, 0.12, 0.204)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ii7og"]
+albedo_color = Color(0.7137255, 0.5411765, 0.3254902, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_nif6c"]
+size = Vector3(2.16, 0.12, 0.204)
+
+[sub_resource type="Image" id="Image_x0tp4"]
+data = {
+"data": PackedByteArray("AAAAADM4Pf/Ys2v/J9f//6leTf9rc3f/topT/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////w=="),
+"format": "RGBA8",
+"height": 1,
+"mipmaps": false,
+"width": 256
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_5qgib"]
+resource_name = "0"
+image = SubResource("Image_x0tp4")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w3di6"]
+resource_name = "15570346185994485406"
+albedo_texture = SubResource("ImageTexture_5qgib")
+metallic = 1.0
+roughness = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mpv0e"]
+resource_name = "15570346185994485406"
+albedo_texture = SubResource("ImageTexture_5qgib")
+metallic = 1.0
+roughness = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uxd42"]
+resource_name = "15570346185994485406"
+albedo_texture = SubResource("ImageTexture_5qgib")
+metallic = 1.0
+roughness = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6dcew"]
+resource_name = "15570346185994485406"
+albedo_texture = SubResource("ImageTexture_5qgib")
+metallic = 1.0
+roughness = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ebaj8"]
+resource_name = "15570346185994485406"
+albedo_texture = SubResource("ImageTexture_5qgib")
+metallic = 1.0
+roughness = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k13sr"]
+resource_name = "15570346185994485406"
+albedo_texture = SubResource("ImageTexture_5qgib")
+metallic = 1.0
+roughness = 0.1
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_k8ep0"]
+resource_name = "pixel_service_terminal_vengi_plane_pixel_service_terminal_front_24x24"
+_surfaces = [{
+"aabb": AABB(1, 11, 0, 22, 13, 1),
+"attribute_data": PackedByteArray("AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8AAMA7AAAAPwAAwDsAAAA/AADAOwAAAD8="),
+"format": 34359742481,
+"index_count": 204,
+"index_data": PackedByteArray("AAADAAEAAwACAAEABAAHAAUABwAGAAUACAALAAkACwAKAAkADAAPAA0ADwAOAA0AEAATABEAEwASABEAFAAXABUAFwAWABUAGAAbABkAGwAaABkAHAAfAB0AHwAeAB0AIAAjACEAIwAiACEAJAAnACUAJwAmACUAKAArACkAKwAqACkALAAvAC0ALwAuAC0AMAAzADEAMwAyADEANAA3ADUANwA2ADUAOAA7ADkAOwA6ADkAPAA/AD0APwA+AD0AQABDAEEAQwBCAEEARABHAEUARwBGAEUASABLAEkASwBKAEkATABPAE0ATwBOAE0AUABTAFEAUwBSAFEAVABXAFUAVwBWAFUAWABbAFkAWwBaAFkAXABfAF0AXwBeAF0AYABjAGEAYwBiAGEAZABnAGUAZwBmAGUAaABrAGkAawBqAGkAbABvAG0AbwBuAG0AcABzAHEAcwByAHEAdAB3AHUAdwB2AHUAeAB7AHkAewB6AHkAfAB/AH0AfwB+AH0AgACDAIEAgwCCAIEAhACHAIUAhwCGAIUA"),
+"material": SubResource("StandardMaterial3D_w3di6"),
+"name": "15570346185994485406",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 136,
+"vertex_data": PackedByteArray("AACAPwAAwEEAAIA/AABAQAAAwEEAAIA/AABAQAAAwEEAAAAAAACAPwAAwEEAAAAAAACoQQAAwEEAAIA/AAC4QQAAwEEAAIA/AAC4QQAAwEEAAAAAAACoQQAAwEEAAAAAAACAPwAAsEEAAIA/AACAPwAAsEEAAAAAAABAQAAAsEEAAAAAAABAQAAAsEEAAIA/AACoQQAAsEEAAIA/AACoQQAAsEEAAAAAAAC4QQAAsEEAAAAAAAC4QQAAsEEAAIA/AACoQQAAgEEAAAAAAACoQQAAgEEAAIA/AACoQQAAYEEAAIA/AACoQQAAYEEAAAAAAAC4QQAAwEEAAAAAAAC4QQAAwEEAAIA/AAC4QQAAsEEAAIA/AAC4QQAAsEEAAAAAAABAQAAAgEEAAAAAAABAQAAAYEEAAAAAAABAQAAAYEEAAIA/AABAQAAAgEEAAIA/AACAPwAAwEEAAAAAAACAPwAAsEEAAAAAAACAPwAAsEEAAIA/AACAPwAAwEEAAIA/AABAQAAAsEEAAIA/AABAQAAAwEEAAIA/AACAPwAAwEEAAIA/AACAPwAAsEEAAIA/AADAQAAAMEEAAIA/AADAQAAAYEEAAIA/AACAQAAAYEEAAIA/AACAQAAAMEEAAIA/AADAQAAAYEEAAIA/AADAQAAAgEEAAIA/AABAQAAAgEEAAIA/AABAQAAAYEEAAIA/AADAQAAAgEEAAIA/AADAQAAAmEEAAIA/AACAQAAAmEEAAIA/AACAQAAAgEEAAIA/AAAAQQAAcEEAAIA/AAAAQQAAoEEAAIA/AADgQAAAoEEAAIA/AADgQAAAcEEAAIA/AACIQQAAUEEAAIA/AACIQQAAcEEAAIA/AADgQAAAcEEAAIA/AADgQAAAUEEAAIA/AACIQQAAcEEAAIA/AACIQQAAgEEAAIA/AACAQQAAgEEAAIA/AACAQQAAcEEAAIA/AACIQQAAgEEAAIA/AACIQQAAiEEAAIA/AAAAQQAAiEEAAIA/AAAAQQAAgEEAAIA/AACIQQAAiEEAAIA/AACIQQAAmEEAAIA/AACAQQAAmEEAAIA/AACAQQAAiEEAAIA/AACIQQAAmEEAAIA/AACIQQAAoEEAAIA/AAAAQQAAoEEAAIA/AAAAQQAAmEEAAIA/AACgQQAAMEEAAIA/AACgQQAAoEEAAIA/AACQQQAAoEEAAIA/AACQQQAAMEEAAIA/AACoQQAAYEEAAIA/AACoQQAAgEEAAIA/AACgQQAAgEEAAIA/AACgQQAAYEEAAIA/AAC4QQAAsEEAAIA/AAC4QQAAwEEAAIA/AACoQQAAwEEAAIA/AACoQQAAsEEAAIA/AABAQAAAsEEAAAAAAACAPwAAsEEAAAAAAACAPwAAwEEAAAAAAABAQAAAwEEAAAAAAADAQAAAMEEAAAAAAACAQAAAMEEAAAAAAACAQAAAYEEAAAAAAADAQAAAYEEAAAAAAADAQAAAYEEAAAAAAABAQAAAYEEAAAAAAABAQAAAgEEAAAAAAADAQAAAgEEAAAAAAADAQAAAgEEAAAAAAACAQAAAgEEAAAAAAACAQAAAmEEAAAAAAADAQAAAmEEAAAAAAAAAQQAAcEEAAAAAAADgQAAAcEEAAAAAAADgQAAAoEEAAAAAAAAAQQAAoEEAAAAAAACIQQAAUEEAAAAAAADgQAAAUEEAAAAAAADgQAAAcEEAAAAAAACIQQAAcEEAAAAAAACIQQAAcEEAAAAAAACAQQAAcEEAAAAAAACAQQAAgEEAAAAAAACIQQAAgEEAAAAAAACIQQAAgEEAAAAAAAAAQQAAgEEAAAAAAAAAQQAAiEEAAAAAAACIQQAAiEEAAAAAAACIQQAAiEEAAAAAAACAQQAAiEEAAAAAAACAQQAAmEEAAAAAAACIQQAAmEEAAAAAAACIQQAAmEEAAAAAAAAAQQAAmEEAAAAAAAAAQQAAoEEAAAAAAACIQQAAoEEAAAAAAACgQQAAMEEAAAAAAACQQQAAMEEAAAAAAACQQQAAoEEAAAAAAACgQQAAoEEAAAAAAACoQQAAYEEAAAAAAACgQQAAYEEAAAAAAACgQQAAgEEAAAAAAACoQQAAgEEAAAAAAAC4QQAAsEEAAAAAAACoQQAAsEEAAAAAAACoQQAAwEEAAAAAAAC4QQAAwEEAAAAA")
+}, {
+"aabb": AABB(5, 8, 0, 14, 14, 1),
+"attribute_data": PackedByteArray("AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8AACA8AAAAPwAAIDwAAAA/AAAgPAAAAD8="),
+"format": 34359742481,
+"index_count": 132,
+"index_data": PackedByteArray("AAADAAEAAwACAAEABAAHAAUABwAGAAUACAALAAkACwAKAAkADAAPAA0ADwAOAA0AEAATABEAEwASABEAFAAXABUAFwAWABUAGAAbABkAGwAaABkAHAAfAB0AHwAeAB0AIAAjACEAIwAiACEAJAAnACUAJwAmACUAKAArACkAKwAqACkALAAvAC0ALwAuAC0AMAAzADEAMwAyADEANAA3ADUANwA2ADUAOAA7ADkAOwA6ADkAPAA/AD0APwA+AD0AQABDAEEAQwBCAEEARABHAEUARwBGAEUASABLAEkASwBKAEkATABPAE0ATwBOAE0AUABTAFEAUwBSAFEAVABXAFUAVwBWAFUA"),
+"material": SubResource("StandardMaterial3D_mpv0e"),
+"name": "15570346185994485406",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 88,
+"vertex_data": PackedByteArray("AADgQAAAUEEAAIA/AADgQAAAmEEAAIA/AADAQAAAmEEAAIA/AADAQAAAUEEAAIA/AADgQAAAmEEAAIA/AADgQAAAsEEAAIA/AACgQAAAsEEAAIA/AACgQAAAmEEAAIA/AAAgQQAAEEEAAIA/AAAgQQAAMEEAAIA/AACgQAAAMEEAAIA/AACgQAAAEEEAAIA/AAAgQQAAMEEAAIA/AAAgQQAAUEEAAIA/AADAQAAAUEEAAIA/AADAQAAAMEEAAIA/AABwQQAAEEEAAIA/AABwQQAAQEEAAIA/AABgQQAAQEEAAIA/AABgQQAAEEEAAIA/AACQQQAAMEEAAIA/AACQQQAAQEEAAIA/AABwQQAAQEEAAIA/AABwQQAAMEEAAIA/AACQQQAAQEEAAIA/AACQQQAAUEEAAIA/AAAgQQAAUEEAAIA/AAAgQQAAQEEAAIA/AACQQQAAUEEAAIA/AACQQQAAoEEAAIA/AACIQQAAoEEAAIA/AACIQQAAUEEAAIA/AACYQQAAAEEAAIA/AACYQQAAEEEAAIA/AACgQAAAEEEAAIA/AACgQAAAAEEAAIA/AACYQQAAEEEAAIA/AACYQQAAMEEAAIA/AACQQQAAMEEAAIA/AACQQQAAEEEAAIA/AACYQQAAoEEAAIA/AACYQQAAsEEAAIA/AADgQAAAsEEAAIA/AADgQAAAoEEAAIA/AADgQAAAUEEAAAAAAADAQAAAUEEAAAAAAADAQAAAmEEAAAAAAADgQAAAmEEAAAAAAADgQAAAmEEAAAAAAACgQAAAmEEAAAAAAACgQAAAsEEAAAAAAADgQAAAsEEAAAAAAAAgQQAAEEEAAAAAAACgQAAAEEEAAAAAAACgQAAAMEEAAAAAAAAgQQAAMEEAAAAAAAAgQQAAMEEAAAAAAADAQAAAMEEAAAAAAADAQAAAUEEAAAAAAAAgQQAAUEEAAAAAAABwQQAAEEEAAAAAAABgQQAAEEEAAAAAAABgQQAAQEEAAAAAAABwQQAAQEEAAAAAAACQQQAAMEEAAAAAAABwQQAAMEEAAAAAAABwQQAAQEEAAAAAAACQQQAAQEEAAAAAAACQQQAAQEEAAAAAAAAgQQAAQEEAAAAAAAAgQQAAUEEAAAAAAACQQQAAUEEAAAAAAACQQQAAUEEAAAAAAACIQQAAUEEAAAAAAACIQQAAoEEAAAAAAACQQQAAoEEAAAAAAACYQQAAAEEAAAAAAACgQAAAAEEAAAAAAACgQAAAEEEAAAAAAACYQQAAEEEAAAAAAACYQQAAEEEAAAAAAACQQQAAEEEAAAAAAACQQQAAMEEAAAAAAACYQQAAMEEAAAAAAACYQQAAoEEAAAAAAADgQAAAoEEAAAAAAADgQAAAsEEAAAAAAACYQQAAsEEAAAAA")
+}, {
+"aabb": AABB(10, 9, 0, 4, 3, 1),
+"attribute_data": PackedByteArray("AABgPAAAAD8AAGA8AAAAPwAAYDwAAAA/AABgPAAAAD8AAGA8AAAAPwAAYDwAAAA/AABgPAAAAD8AAGA8AAAAPw=="),
+"format": 34359742481,
+"index_count": 12,
+"index_data": PackedByteArray("AAADAAEAAwACAAEABAAHAAUABwAGAAUA"),
+"material": SubResource("StandardMaterial3D_uxd42"),
+"name": "15570346185994485406",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 8,
+"vertex_data": PackedByteArray("AABgQQAAEEEAAIA/AABgQQAAQEEAAIA/AAAgQQAAQEEAAIA/AAAgQQAAEEEAAIA/AABgQQAAEEEAAAAAAAAgQQAAEEEAAAAAAAAgQQAAQEEAAAAAAABgQQAAQEEAAAAA")
+}, {
+"aabb": AABB(15, 9, 0, 3, 2, 1),
+"attribute_data": PackedByteArray("AACQPAAAAD8AAJA8AAAAPwAAkDwAAAA/AACQPAAAAD8AAJA8AAAAPwAAkDwAAAA/AACQPAAAAD8AAJA8AAAAPw=="),
+"format": 34359742481,
+"index_count": 12,
+"index_data": PackedByteArray("AAADAAEAAwACAAEABAAHAAUABwAGAAUA"),
+"material": SubResource("StandardMaterial3D_6dcew"),
+"name": "15570346185994485406",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 8,
+"vertex_data": PackedByteArray("AACQQQAAEEEAAIA/AACQQQAAMEEAAIA/AABwQQAAMEEAAIA/AABwQQAAEEEAAIA/AACQQQAAEEEAAAAAAABwQQAAEEEAAAAAAABwQQAAMEEAAAAAAACQQQAAMEEAAAAA")
+}, {
+"aabb": AABB(8, 15, 0, 8, 4, 1),
+"attribute_data": PackedByteArray("AACwPAAAAD8AALA8AAAAPwAAsDwAAAA/AACwPAAAAD8AALA8AAAAPwAAsDwAAAA/AACwPAAAAD8AALA8AAAAPwAAsDwAAAA/AACwPAAAAD8AALA8AAAAPwAAsDwAAAA/AACwPAAAAD8AALA8AAAAPwAAsDwAAAA/AACwPAAAAD8="),
+"format": 34359742481,
+"index_count": 24,
+"index_data": PackedByteArray("AAADAAEAAwACAAEABAAHAAUABwAGAAUACAALAAkACwAKAAkADAAPAA0ADwAOAA0A"),
+"material": SubResource("StandardMaterial3D_ebaj8"),
+"name": "15570346185994485406",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 16,
+"vertex_data": PackedByteArray("AACAQQAAcEEAAIA/AACAQQAAgEEAAIA/AAAAQQAAgEEAAIA/AAAAQQAAcEEAAIA/AACAQQAAiEEAAIA/AACAQQAAmEEAAIA/AAAAQQAAmEEAAIA/AAAAQQAAiEEAAIA/AACAQQAAcEEAAAAAAAAAQQAAcEEAAAAAAAAAQQAAgEEAAAAAAACAQQAAgEEAAAAAAACAQQAAiEEAAAAAAAAAQQAAiEEAAAAAAAAAQQAAmEEAAAAAAACAQQAAmEEAAAAA")
+}, {
+"aabb": AABB(3, 6, 0, 18, 18, 1),
+"attribute_data": PackedByteArray("AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPwAA0DwAAAA/AADQPAAAAD8AANA8AAAAPw=="),
+"format": 34359742481,
+"index_count": 156,
+"index_data": PackedByteArray("AAADAAEAAwACAAEABAAHAAUABwAGAAUACAALAAkACwAKAAkADAAPAA0ADwAOAA0AEAATABEAEwASABEAFAAXABUAFwAWABUAGAAbABkAGwAaABkAHAAfAB0AHwAeAB0AIAAjACEAIwAiACEAJAAnACUAJwAmACUAKAArACkAKwAqACkALAAvAC0ALwAuAC0AMAAzADEAMwAyADEANAA3ADUANwA2ADUAOAA7ADkAOwA6ADkAPAA/AD0APwA+AD0AQABDAEEAQwBCAEEARABHAEUARwBGAEUASABLAEkASwBKAEkATABPAE0ATwBOAE0AUABTAFEAUwBSAFEAVABXAFUAVwBWAFUAWABbAFkAWwBaAFkAXABfAF0AXwBeAF0AYABjAGEAYwBiAGEAZABnAGUAZwBmAGUA"),
+"material": SubResource("StandardMaterial3D_k13sr"),
+"name": "15570346185994485406",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 104,
+"vertex_data": PackedByteArray("AABAQAAAwEEAAIA/AACoQQAAwEEAAIA/AACoQQAAwEEAAAAAAABAQAAAwEEAAAAAAABAQAAAwEAAAIA/AABAQAAAwEAAAAAAAACoQQAAwEAAAAAAAACoQQAAwEAAAIA/AACoQQAAYEEAAAAAAACoQQAAYEEAAIA/AACoQQAAwEAAAIA/AACoQQAAwEAAAAAAAACoQQAAsEEAAAAAAACoQQAAsEEAAIA/AACoQQAAgEEAAIA/AACoQQAAgEEAAAAAAABAQAAAYEEAAAAAAABAQAAAwEAAAAAAAABAQAAAwEAAAIA/AABAQAAAYEEAAIA/AABAQAAAsEEAAAAAAABAQAAAgEEAAAAAAABAQAAAgEEAAIA/AABAQAAAsEEAAIA/AACAQAAAMEEAAIA/AACAQAAAYEEAAIA/AABAQAAAYEEAAIA/AABAQAAAMEEAAIA/AACAQAAAgEEAAIA/AACAQAAAwEEAAIA/AABAQAAAwEEAAIA/AABAQAAAgEEAAIA/AACgQAAAAEEAAIA/AACgQAAAMEEAAIA/AABAQAAAMEEAAIA/AABAQAAAAEEAAIA/AACgQAAAmEEAAIA/AACgQAAAwEEAAIA/AACAQAAAwEEAAIA/AACAQAAAmEEAAIA/AACoQQAAwEAAAIA/AACoQQAAAEEAAIA/AABAQAAAAEEAAIA/AABAQAAAwEAAAIA/AACoQQAAAEEAAIA/AACoQQAAMEEAAIA/AACYQQAAMEEAAIA/AACYQQAAAEEAAIA/AACoQQAAMEEAAIA/AACoQQAAYEEAAIA/AACgQQAAYEEAAIA/AACgQQAAMEEAAIA/AACoQQAAgEEAAIA/AACoQQAAoEEAAIA/AACgQQAAoEEAAIA/AACgQQAAgEEAAIA/AACoQQAAoEEAAIA/AACoQQAAsEEAAIA/AACYQQAAsEEAAIA/AACYQQAAoEEAAIA/AACoQQAAsEEAAIA/AACoQQAAwEEAAIA/AACgQAAAwEEAAIA/AACgQAAAsEEAAIA/AACAQAAAMEEAAAAAAABAQAAAMEEAAAAAAABAQAAAYEEAAAAAAACAQAAAYEEAAAAAAACAQAAAgEEAAAAAAABAQAAAgEEAAAAAAABAQAAAwEEAAAAAAACAQAAAwEEAAAAAAACgQAAAAEEAAAAAAABAQAAAAEEAAAAAAABAQAAAMEEAAAAAAACgQAAAMEEAAAAAAACgQAAAmEEAAAAAAACAQAAAmEEAAAAAAACAQAAAwEEAAAAAAACgQAAAwEEAAAAAAACoQQAAwEAAAAAAAABAQAAAwEAAAAAAAABAQAAAAEEAAAAAAACoQQAAAEEAAAAAAACoQQAAAEEAAAAAAACYQQAAAEEAAAAAAACYQQAAMEEAAAAAAACoQQAAMEEAAAAAAACoQQAAMEEAAAAAAACgQQAAMEEAAAAAAACgQQAAYEEAAAAAAACoQQAAYEEAAAAAAACoQQAAgEEAAAAAAACgQQAAgEEAAAAAAACgQQAAoEEAAAAAAACoQQAAoEEAAAAAAACoQQAAoEEAAAAAAACYQQAAoEEAAAAAAACYQQAAsEEAAAAAAACoQQAAsEEAAAAAAACoQQAAsEEAAAAAAACgQAAAsEEAAAAAAACgQAAAwEEAAAAAAACoQQAAwEEAAAAA")
+}]
+blend_shape_mode = 0
+
+[node name="VengiTerminalSameSourceAB" type="Node3D" unique_id=646083327]
+
+[node name="@WorldEnvironment@2" type="WorldEnvironment" parent="." unique_id=1867713636]
+environment = SubResource("Environment_4krmp")
+
+[node name="cantina_wall" type="MeshInstance3D" parent="." unique_id=1027544068]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 1.08, 0.12)
+material_override = SubResource("StandardMaterial3D_gc5i2")
+mesh = SubResource("BoxMesh_tuum2")
+
+[node name="dust_floor" type="MeshInstance3D" parent="." unique_id=1058848728]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, -0.04, -0.45)
+material_override = SubResource("StandardMaterial3D_f2460")
+mesh = SubResource("BoxMesh_r6hdg")
+
+[node name="@MeshInstance3D@3" type="MeshInstance3D" parent="." unique_id=144310434]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 1.08, 0.12)
+material_override = SubResource("StandardMaterial3D_6611m")
+mesh = SubResource("BoxMesh_vx00x")
+
+[node name="@MeshInstance3D@4" type="MeshInstance3D" parent="." unique_id=1923764506]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, -0.04, -0.45)
+material_override = SubResource("StandardMaterial3D_mpqlj")
+mesh = SubResource("BoxMesh_0h423")
+
+[node name="godot_terminal_runmerge" type="Node3D" parent="." unique_id=112583688]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 0.84, -0.08)
+
+[node name="godot_terminal_runmerge_run_3_3" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=416615077]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02, 0)
+material_override = SubResource("StandardMaterial3D_eim55")
+mesh = SubResource("BoxMesh_gspnk")
+
+[node name="godot_terminal_runmerge_run_3_4" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=593511712]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+material_override = SubResource("StandardMaterial3D_x0ydn")
+mesh = SubResource("BoxMesh_e1bdv")
+
+[node name="godot_terminal_runmerge_run_3_5" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=893241308]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.96, 0.78, 0)
+material_override = SubResource("StandardMaterial3D_3wj3f")
+mesh = SubResource("BoxMesh_vn2w5")
+
+[node name="godot_terminal_runmerge_run_5_5" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1310310452]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.78, 0)
+material_override = SubResource("StandardMaterial3D_ny2yq")
+mesh = SubResource("BoxMesh_apkgu")
+
+[node name="godot_terminal_runmerge_run_19_5" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=2084592133]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0.78, 0)
+material_override = SubResource("StandardMaterial3D_op5hx")
+mesh = SubResource("BoxMesh_saksn")
+
+[node name="godot_terminal_runmerge_run_3_6" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=815737942]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.96, 0.66, 0)
+material_override = SubResource("StandardMaterial3D_vmml5")
+mesh = SubResource("BoxMesh_bbcu4")
+
+[node name="godot_terminal_runmerge_run_5_6" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=878362894]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.66, 0)
+material_override = SubResource("StandardMaterial3D_fukec")
+mesh = SubResource("BoxMesh_oqc42")
+
+[node name="godot_terminal_runmerge_run_19_6" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=853390428]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, 0.66, 0)
+material_override = SubResource("StandardMaterial3D_hma0b")
+mesh = SubResource("BoxMesh_xtmrl")
+
+[node name="godot_terminal_runmerge_run_3_7" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1789723189]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.96, 0.54, 0)
+material_override = SubResource("StandardMaterial3D_len70")
+mesh = SubResource("BoxMesh_l33yu")
+
+[node name="godot_terminal_runmerge_run_5_7" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=449585400]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.54, 0)
+material_override = SubResource("StandardMaterial3D_mirwi")
+mesh = SubResource("BoxMesh_mevd2")
+
+[node name="godot_terminal_runmerge_run_7_7" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1203837980]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.54, 0)
+material_override = SubResource("StandardMaterial3D_ytio5")
+mesh = SubResource("BoxMesh_ycein")
+
+[node name="godot_terminal_runmerge_run_17_7" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=149284092]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, 0.54, 0)
+material_override = SubResource("StandardMaterial3D_yops7")
+mesh = SubResource("BoxMesh_6euuk")
+
+[node name="godot_terminal_runmerge_run_18_7" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=404980181]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84, 0.54, 0)
+material_override = SubResource("StandardMaterial3D_s1ivd")
+mesh = SubResource("BoxMesh_7ie6t")
+
+[node name="godot_terminal_runmerge_run_20_7" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=141544068]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, 0.54, 0)
+material_override = SubResource("StandardMaterial3D_my5ca")
+mesh = SubResource("BoxMesh_vidv8")
+
+[node name="godot_terminal_runmerge_run_3_8" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=603422006]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_pyi61")
+mesh = SubResource("BoxMesh_vtrq7")
+
+[node name="godot_terminal_runmerge_run_4_8" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1285989688]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.84, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_4dnn0")
+mesh = SubResource("BoxMesh_orjk5")
+
+[node name="godot_terminal_runmerge_run_6_8" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=10427531]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.66, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_pk3t8")
+mesh = SubResource("BoxMesh_s1yp5")
+
+[node name="godot_terminal_runmerge_run_7_8" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1531148289]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.54, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_i3y3o")
+mesh = SubResource("BoxMesh_rmaew")
+
+[node name="godot_terminal_runmerge_run_8_8" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=770281836]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_pkun2")
+mesh = SubResource("BoxMesh_5557i")
+
+[node name="godot_terminal_runmerge_run_16_8" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=568395319]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.54, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_kx3uh")
+mesh = SubResource("BoxMesh_vmk8f")
+
+[node name="godot_terminal_runmerge_run_17_8" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1757281585]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_lq47n")
+mesh = SubResource("BoxMesh_58ko0")
+
+[node name="godot_terminal_runmerge_run_18_8" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=498105075]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_xieyg")
+mesh = SubResource("BoxMesh_8ov2p")
+
+[node name="godot_terminal_runmerge_run_20_8" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=92045875]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_6ashl")
+mesh = SubResource("BoxMesh_8cxme")
+
+[node name="godot_terminal_runmerge_run_3_9" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1718663968]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, 0.3, 0)
+material_override = SubResource("StandardMaterial3D_mmgrm")
+mesh = SubResource("BoxMesh_numvx")
+
+[node name="godot_terminal_runmerge_run_4_9" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1770249425]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.84, 0.3, 0)
+material_override = SubResource("StandardMaterial3D_madnv")
+mesh = SubResource("BoxMesh_fx4wy")
+
+[node name="godot_terminal_runmerge_run_6_9" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1943394568]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.66, 0.3, 0)
+material_override = SubResource("StandardMaterial3D_m0ml5")
+mesh = SubResource("BoxMesh_5w0ud")
+
+[node name="godot_terminal_runmerge_run_7_9" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=2026834659]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.54, 0.3, 0)
+material_override = SubResource("StandardMaterial3D_uslg8")
+mesh = SubResource("BoxMesh_68lte")
+
+[node name="godot_terminal_runmerge_run_8_9" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=915976616]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+material_override = SubResource("StandardMaterial3D_ei7ix")
+mesh = SubResource("BoxMesh_2vk8g")
+
+[node name="godot_terminal_runmerge_run_16_9" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=2027845730]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.54, 0.3, 0)
+material_override = SubResource("StandardMaterial3D_7fery")
+mesh = SubResource("BoxMesh_117qm")
+
+[node name="godot_terminal_runmerge_run_17_9" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=725639121]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, 0.3, 0)
+material_override = SubResource("StandardMaterial3D_lihri")
+mesh = SubResource("BoxMesh_h1xso")
+
+[node name="godot_terminal_runmerge_run_18_9" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1075602214]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84, 0.3, 0)
+material_override = SubResource("StandardMaterial3D_ix2nm")
+mesh = SubResource("BoxMesh_8ejwp")
+
+[node name="godot_terminal_runmerge_run_20_9" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=893346222]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, 0.3, 0)
+material_override = SubResource("StandardMaterial3D_h7gb7")
+mesh = SubResource("BoxMesh_0wc3y")
+
+[node name="godot_terminal_runmerge_run_3_10" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=880899263]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, 0.18, 0)
+material_override = SubResource("StandardMaterial3D_4gy2h")
+mesh = SubResource("BoxMesh_w4u2j")
+
+[node name="godot_terminal_runmerge_run_4_10" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1431811446]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.84, 0.18, 0)
+material_override = SubResource("StandardMaterial3D_5ctm3")
+mesh = SubResource("BoxMesh_peu4f")
+
+[node name="godot_terminal_runmerge_run_6_10" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1734244383]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.66, 0.18, 0)
+material_override = SubResource("StandardMaterial3D_ovc4x")
+mesh = SubResource("BoxMesh_32cm1")
+
+[node name="godot_terminal_runmerge_run_7_10" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=818000891]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0)
+material_override = SubResource("StandardMaterial3D_22sje")
+mesh = SubResource("BoxMesh_ntdbr")
+
+[node name="godot_terminal_runmerge_run_17_10" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1040503231]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, 0.18, 0)
+material_override = SubResource("StandardMaterial3D_7noip")
+mesh = SubResource("BoxMesh_pify8")
+
+[node name="godot_terminal_runmerge_run_18_10" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=972755247]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84, 0.18, 0)
+material_override = SubResource("StandardMaterial3D_rut8w")
+mesh = SubResource("BoxMesh_raf5p")
+
+[node name="godot_terminal_runmerge_run_20_10" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=805873173]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, 0.18, 0)
+material_override = SubResource("StandardMaterial3D_35cf8")
+mesh = SubResource("BoxMesh_rxbme")
+
+[node name="godot_terminal_runmerge_run_1_11" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=683345776]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, 0.06, 0)
+material_override = SubResource("StandardMaterial3D_xmp57")
+mesh = SubResource("BoxMesh_esj5j")
+
+[node name="godot_terminal_runmerge_run_6_11" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=337623312]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.66, 0.06, 0)
+material_override = SubResource("StandardMaterial3D_kfa82")
+mesh = SubResource("BoxMesh_lta8f")
+
+[node name="godot_terminal_runmerge_run_7_11" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=463025341]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.54, 0.06, 0)
+material_override = SubResource("StandardMaterial3D_0t6la")
+mesh = SubResource("BoxMesh_ixgb8")
+
+[node name="godot_terminal_runmerge_run_8_11" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=2117091348]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+material_override = SubResource("StandardMaterial3D_ecixa")
+mesh = SubResource("BoxMesh_kdtoe")
+
+[node name="godot_terminal_runmerge_run_16_11" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1231824027]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.54, 0.06, 0)
+material_override = SubResource("StandardMaterial3D_w2cf8")
+mesh = SubResource("BoxMesh_iddbv")
+
+[node name="godot_terminal_runmerge_run_17_11" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1867880826]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, 0.06, 0)
+material_override = SubResource("StandardMaterial3D_1h5ps")
+mesh = SubResource("BoxMesh_ydaij")
+
+[node name="godot_terminal_runmerge_run_18_11" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=872156652]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, 0.06, 0)
+material_override = SubResource("StandardMaterial3D_6sr8n")
+mesh = SubResource("BoxMesh_5mbow")
+
+[node name="godot_terminal_runmerge_run_1_12" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1998094053]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, -0.06, 0)
+material_override = SubResource("StandardMaterial3D_31i1n")
+mesh = SubResource("BoxMesh_hctr1")
+
+[node name="godot_terminal_runmerge_run_6_12" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1422022407]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.66, -0.06, 0)
+material_override = SubResource("StandardMaterial3D_qgh0w")
+mesh = SubResource("BoxMesh_dlcbb")
+
+[node name="godot_terminal_runmerge_run_7_12" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1013215127]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0)
+material_override = SubResource("StandardMaterial3D_g12m8")
+mesh = SubResource("BoxMesh_lvj6s")
+
+[node name="godot_terminal_runmerge_run_17_12" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1891604652]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, -0.06, 0)
+material_override = SubResource("StandardMaterial3D_bfs22")
+mesh = SubResource("BoxMesh_ciiq8")
+
+[node name="godot_terminal_runmerge_run_18_12" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=822727689]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, -0.06, 0)
+material_override = SubResource("StandardMaterial3D_5u311")
+mesh = SubResource("BoxMesh_m5btk")
+
+[node name="godot_terminal_runmerge_run_3_13" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=508692070]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, -0.18, 0)
+material_override = SubResource("StandardMaterial3D_sg7sb")
+mesh = SubResource("BoxMesh_yehbm")
+
+[node name="godot_terminal_runmerge_run_4_13" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1345153439]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.84, -0.18, 0)
+material_override = SubResource("StandardMaterial3D_8kd3y")
+mesh = SubResource("BoxMesh_8txl2")
+
+[node name="godot_terminal_runmerge_run_6_13" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=486843138]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.66, -0.18, 0)
+material_override = SubResource("StandardMaterial3D_r0yjo")
+mesh = SubResource("BoxMesh_dksft")
+
+[node name="godot_terminal_runmerge_run_7_13" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=728530389]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18, 0)
+material_override = SubResource("StandardMaterial3D_d5kai")
+mesh = SubResource("BoxMesh_04jio")
+
+[node name="godot_terminal_runmerge_run_17_13" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=981199410]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, -0.18, 0)
+material_override = SubResource("StandardMaterial3D_li4x3")
+mesh = SubResource("BoxMesh_g3q6r")
+
+[node name="godot_terminal_runmerge_run_18_13" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=333909813]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84, -0.18, 0)
+material_override = SubResource("StandardMaterial3D_o5org")
+mesh = SubResource("BoxMesh_hib6p")
+
+[node name="godot_terminal_runmerge_run_20_13" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=944122077]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, -0.18, 0)
+material_override = SubResource("StandardMaterial3D_u7d4d")
+mesh = SubResource("BoxMesh_6g5xw")
+
+[node name="godot_terminal_runmerge_run_3_14" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=69069185]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, -0.3, 0)
+material_override = SubResource("StandardMaterial3D_n7lis")
+mesh = SubResource("BoxMesh_sx1xu")
+
+[node name="godot_terminal_runmerge_run_4_14" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1291746735]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.84, -0.3, 0)
+material_override = SubResource("StandardMaterial3D_cd6ak")
+mesh = SubResource("BoxMesh_3fhnq")
+
+[node name="godot_terminal_runmerge_run_6_14" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=2065877669]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+material_override = SubResource("StandardMaterial3D_uqa2b")
+mesh = SubResource("BoxMesh_5unpw")
+
+[node name="godot_terminal_runmerge_run_18_14" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1106641716]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84, -0.3, 0)
+material_override = SubResource("StandardMaterial3D_s1a4u")
+mesh = SubResource("BoxMesh_4c0gh")
+
+[node name="godot_terminal_runmerge_run_20_14" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=2080096252]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, -0.3, 0)
+material_override = SubResource("StandardMaterial3D_sagug")
+mesh = SubResource("BoxMesh_y5j4b")
+
+[node name="godot_terminal_runmerge_run_3_15" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1331153210]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, -0.42, 0)
+material_override = SubResource("StandardMaterial3D_25v86")
+mesh = SubResource("BoxMesh_pqg1o")
+
+[node name="godot_terminal_runmerge_run_4_15" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1502006452]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.84, -0.42, 0)
+material_override = SubResource("StandardMaterial3D_ino81")
+mesh = SubResource("BoxMesh_qkhmv")
+
+[node name="godot_terminal_runmerge_run_6_15" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1447736575]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.48, -0.42, 0)
+material_override = SubResource("StandardMaterial3D_b54q3")
+mesh = SubResource("BoxMesh_1v3hl")
+
+[node name="godot_terminal_runmerge_run_10_15" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1184392443]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.42, 0)
+material_override = SubResource("StandardMaterial3D_xgcmi")
+mesh = SubResource("BoxMesh_6j7b8")
+
+[node name="godot_terminal_runmerge_run_14_15" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1641549154]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, -0.42, 0)
+material_override = SubResource("StandardMaterial3D_s8oyq")
+mesh = SubResource("BoxMesh_fq64r")
+
+[node name="godot_terminal_runmerge_run_18_15" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=920673724]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.84, -0.42, 0)
+material_override = SubResource("StandardMaterial3D_7b0ws")
+mesh = SubResource("BoxMesh_8d3ch")
+
+[node name="godot_terminal_runmerge_run_20_15" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1623284985]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, -0.42, 0)
+material_override = SubResource("StandardMaterial3D_ffv6o")
+mesh = SubResource("BoxMesh_a0cgb")
+
+[node name="godot_terminal_runmerge_run_3_16" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=467250243]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.96, -0.54, 0)
+material_override = SubResource("StandardMaterial3D_rb2ri")
+mesh = SubResource("BoxMesh_i7ppv")
+
+[node name="godot_terminal_runmerge_run_5_16" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=495065261]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.54, -0.54, 0)
+material_override = SubResource("StandardMaterial3D_f8880")
+mesh = SubResource("BoxMesh_raut4")
+
+[node name="godot_terminal_runmerge_run_10_16" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=720506431]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.54, 0)
+material_override = SubResource("StandardMaterial3D_4g0li")
+mesh = SubResource("BoxMesh_jiuqt")
+
+[node name="godot_terminal_runmerge_run_14_16" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1340684597]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, -0.54, 0)
+material_override = SubResource("StandardMaterial3D_ab2mo")
+mesh = SubResource("BoxMesh_8w0us")
+
+[node name="godot_terminal_runmerge_run_15_16" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1555765288]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.54, -0.54, 0)
+material_override = SubResource("StandardMaterial3D_815ei")
+mesh = SubResource("BoxMesh_j15ck")
+
+[node name="godot_terminal_runmerge_run_18_16" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1643750429]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, -0.54, 0)
+material_override = SubResource("StandardMaterial3D_gn8qo")
+mesh = SubResource("BoxMesh_oc2id")
+
+[node name="godot_terminal_runmerge_run_19_16" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1893126167]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, -0.54, 0)
+material_override = SubResource("StandardMaterial3D_1ctem")
+mesh = SubResource("BoxMesh_c0b7d")
+
+[node name="godot_terminal_runmerge_run_3_17" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1098454078]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.96, -0.66, 0)
+material_override = SubResource("StandardMaterial3D_6xdxu")
+mesh = SubResource("BoxMesh_x4hme")
+
+[node name="godot_terminal_runmerge_run_5_17" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1383449631]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.54, -0.66, 0)
+material_override = SubResource("StandardMaterial3D_ekhua")
+mesh = SubResource("BoxMesh_0wcrk")
+
+[node name="godot_terminal_runmerge_run_10_17" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1489348721]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.66, 0)
+material_override = SubResource("StandardMaterial3D_616os")
+mesh = SubResource("BoxMesh_2yjpl")
+
+[node name="godot_terminal_runmerge_run_14_17" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1097356339]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, -0.66, 0)
+material_override = SubResource("StandardMaterial3D_nbqev")
+mesh = SubResource("BoxMesh_ooppo")
+
+[node name="godot_terminal_runmerge_run_15_17" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=870507735]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.54, -0.66, 0)
+material_override = SubResource("StandardMaterial3D_kiq6k")
+mesh = SubResource("BoxMesh_1injp")
+
+[node name="godot_terminal_runmerge_run_18_17" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1367234863]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, -0.66, 0)
+material_override = SubResource("StandardMaterial3D_tkdl0")
+mesh = SubResource("BoxMesh_5oq3b")
+
+[node name="godot_terminal_runmerge_run_19_17" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=1243783897]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, -0.66, 0)
+material_override = SubResource("StandardMaterial3D_lmi1e")
+mesh = SubResource("BoxMesh_fgth1")
+
+[node name="godot_terminal_runmerge_run_3_18" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=667024640]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.96, -0.78, 0)
+material_override = SubResource("StandardMaterial3D_f6ory")
+mesh = SubResource("BoxMesh_3yrmu")
+
+[node name="godot_terminal_runmerge_run_5_18" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=435100854]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.78, 0)
+material_override = SubResource("StandardMaterial3D_pwoek")
+mesh = SubResource("BoxMesh_8bkag")
+
+[node name="godot_terminal_runmerge_run_19_18" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=2067255742]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.96, -0.78, 0)
+material_override = SubResource("StandardMaterial3D_254n6")
+mesh = SubResource("BoxMesh_ek0aq")
+
+[node name="godot_terminal_runmerge_run_3_19" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=156455408]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.9, 0)
+material_override = SubResource("StandardMaterial3D_nnrhd")
+mesh = SubResource("BoxMesh_wtxqh")
+
+[node name="godot_terminal_runmerge_run_3_20" type="MeshInstance3D" parent="godot_terminal_runmerge" unique_id=99496325]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.02, 0)
+material_override = SubResource("StandardMaterial3D_ii7og")
+mesh = SubResource("BoxMesh_nif6c")
+
+[node name="vengi_terminal_plane_glb" type="Node3D" parent="." unique_id=1773267224]
+transform = Transform3D(0.12, 0, 0, 0, 0.12, 0, 0, 0, 0.12, 2.1, 0.82, -0.08)
+
+[node name="pixel_service_terminal_vengi_plane" type="Node3D" parent="vengi_terminal_plane_glb" unique_id=650737166]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, -15, -0.5)
+
+[node name="root" type="Node3D" parent="vengi_terminal_plane_glb/pixel_service_terminal_vengi_plane" unique_id=1604975297]
+
+[node name="pixel_service_terminal_front_24x24" type="MeshInstance3D" parent="vengi_terminal_plane_glb/pixel_service_terminal_vengi_plane/root" unique_id=375656986]
+mesh = SubResource("ArrayMesh_k8ep0")
+
+[node name="VengiProofSun" type="DirectionalLight3D" parent="." unique_id=145703894]
+transform = Transform3D(0.65281844, 0.5236251, -0.5473983, -0.10966991, 0.7803419, 0.6156615, 0.7495336, -0.34188205, 0.5668475, 0, 0, 0)
+light_color = Color(1, 0.8862745, 0.6666667, 1)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=1776883354]
+transform = Transform3D(-0.70710677, -0.34815532, 0.6154574, 0, 0.87038827, 0.492366, -0.70710677, 0.34815532, -0.6154574, 8.616405, 7.7931237, -8.816404)
+projection = 1
+current = true
+size = 6.5
+far = 100.0

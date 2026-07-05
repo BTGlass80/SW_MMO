@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760">
+  <rect width="1400" height="760" fill="#07111f"/>
+  <text x="700" y="58" text-anchor="middle" fill="#eaf6ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">2.5D Space: Flat Simulation, Isometric Presentation</text>
+  <text x="700" y="96" text-anchor="middle" fill="#9fb7c9" font-family="Segoe UI, Arial, sans-serif" font-size="18">The mechanics can stay x/y. The player-facing view should not look like a flat overlay.</text>
+
+  <g transform="translate(80,140)">
+    <rect x="0" y="0" width="560" height="500" rx="16" fill="#0d1b2d" stroke="#23415f" stroke-width="2"/>
+    <text x="280" y="42" text-anchor="middle" fill="#ffb86b" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Avoid: Flat Overlay Feel</text>
+    <rect x="105" y="95" width="350" height="350" fill="#071827" stroke="#315674" stroke-width="2"/>
+    <g stroke="#183952" stroke-width="1">
+      <path d="M155 95 V445 M205 95 V445 M255 95 V445 M305 95 V445 M355 95 V445 M405 95 V445"/>
+      <path d="M105 145 H455 M105 195 H455 M105 245 H455 M105 295 H455 M105 345 H455 M105 395 H455"/>
+    </g>
+    <circle cx="210" cy="320" r="25" fill="none" stroke="#35a8ff" stroke-width="4"/>
+    <polygon points="210,286 194,330 226,330" fill="#dceeff"/>
+    <circle cx="350" cy="205" r="25" fill="none" stroke="#ff704c" stroke-width="4"/>
+    <polygon points="350,171 334,215 366,215" fill="#f7c1a3"/>
+    <path d="M225 310 C255 280 300 245 332 215" fill="none" stroke="#35a8ff" stroke-width="5" stroke-dasharray="13 10"/>
+    <text x="280" y="485" text-anchor="middle" fill="#9fb7c9" font-family="Segoe UI, Arial, sans-serif" font-size="17">Correct mechanics, weak fantasy: reads like a board pasted on the screen.</text>
+  </g>
+
+  <g transform="translate(760,140)">
+    <rect x="0" y="0" width="560" height="500" rx="16" fill="#0d1b2d" stroke="#23415f" stroke-width="2"/>
+    <text x="280" y="42" text-anchor="middle" fill="#7ee7ff" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Target: Isometric 2.5D</text>
+    <g transform="translate(280,260)">
+      <polygon points="0,-185 330,0 0,185 -330,0" fill="#071827" stroke="#315674" stroke-width="2"/>
+      <g stroke="#183952" stroke-width="1">
+        <path d="M-270,-34 L-62,-151 M-210,0 L0,-118 M-150,34 L62,-83 M-90,67 L124,-49 M-30,101 L186,-15 M30,135 L248,20"/>
+        <path d="M270,-34 L62,-151 M210,0 L0,-118 M150,34 L-62,-83 M90,67 L-124,-49 M30,101 L-186,-15 M-30,135 L-248,20"/>
+        <path d="M-270,34 L-62,151 M-210,0 L0,118 M-150,-34 L62,83 M-90,-67 L124,49 M-30,-101 L186,15 M30,-135 L248,-20"/>
+        <path d="M270,34 L62,151 M210,0 L0,118 M150,-34 L-62,83 M90,-67 L-124,49 M30,-101 L-186,15 M-30,-135 L-248,-20"/>
+      </g>
+      <ellipse cx="-115" cy="82" rx="42" ry="18" fill="none" stroke="#35a8ff" stroke-width="4"/>
+      <polygon points="-115,28 -165,98 -115,124 -65,98" fill="#dceeff" stroke="#78d8ff" stroke-width="2"/>
+      <polygon points="-115,28 -85,94 -115,108 -145,94" fill="#7fb9d3"/>
+      <ellipse cx="125" cy="-58" rx="42" ry="18" fill="none" stroke="#ff704c" stroke-width="4"/>
+      <polygon points="125,-112 75,-42 125,-16 175,-42" fill="#f7c1a3" stroke="#ff9b69" stroke-width="2"/>
+      <polygon points="125,-112 155,-46 125,-32 95,-46" fill="#8f5260"/>
+      <path d="M-78 70 C-12 20 52 -25 92 -51" fill="none" stroke="#35a8ff" stroke-width="5" stroke-dasharray="13 10"/>
+      <circle cx="0" cy="0" r="54" fill="none" stroke="#2cc7ff" stroke-opacity="0.55" stroke-width="2"/>
+      <circle cx="0" cy="0" r="92" fill="none" stroke="#2cc7ff" stroke-opacity="0.3" stroke-width="2"/>
+    </g>
+    <text x="280" y="485" text-anchor="middle" fill="#9fb7c9" font-family="Segoe UI, Arial, sans-serif" font-size="17">Same x/y tactics, stronger fantasy: ships, rings, pathing, grid, and camera imply depth.</text>
+  </g>
+
+  <text x="700" y="705" text-anchor="middle" fill="#eaf6ff" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="600">Implementation target: Vector2 gameplay state mapped onto a Godot x/z plane with an orthographic isometric Camera3D.</text>
+</svg>
+

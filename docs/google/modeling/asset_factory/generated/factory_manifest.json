@@ -1,0 +1,91 @@
+{
+	"asset_count": 7,
+	"assets": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/captures/assets/mos_eisley_shade_stall_01.png",
+			"category": "vendor_stall",
+			"display_name": "Mos Eisley Shade Stall 01",
+			"gameplay_role": "vendor or quest-giver landmark",
+			"id": "mos_eisley_shade_stall_01",
+			"prompt": "generic low-poly desert sci-fi market shade stall with cargo, awning, and small power unit",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/review_scenes/mos_eisley_shade_stall_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/scenes/mos_eisley_shade_stall_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/captures/assets/mos_eisley_cover_barricade_01.png",
+			"category": "combat_cover",
+			"display_name": "Mos Eisley Cover Barricade 01",
+			"gameplay_role": "readable 1/4 to 1/2 cover object",
+			"id": "mos_eisley_cover_barricade_01",
+			"prompt": "generic low-poly sci-fi desert barricade with crates and angled metal panels",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/review_scenes/mos_eisley_cover_barricade_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/scenes/mos_eisley_cover_barricade_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/captures/assets/mos_eisley_vaporator_01.png",
+			"category": "landmark_prop",
+			"display_name": "Mos Eisley Vaporator 01",
+			"gameplay_role": "desert landmark or harvest/repair prop",
+			"id": "mos_eisley_vaporator_01",
+			"prompt": "generic low-poly desert moisture vaporator tower with dish, fins, and cyan status light",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/review_scenes/mos_eisley_vaporator_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/scenes/mos_eisley_vaporator_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/captures/assets/mos_eisley_dome_hut_01.png",
+			"category": "building",
+			"display_name": "Mos Eisley Dome Hut 01",
+			"gameplay_role": "starter district building chunk",
+			"id": "mos_eisley_dome_hut_01",
+			"prompt": "generic low-poly desert dome building with teal band, small antenna, and pipe cluster",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/review_scenes/mos_eisley_dome_hut_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/scenes/mos_eisley_dome_hut_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/captures/assets/iso_space_fighter_01.png",
+			"category": "space_ship_token",
+			"display_name": "Isometric Space Fighter 01",
+			"gameplay_role": "2.5D tactical player/enemy ship token",
+			"id": "iso_space_fighter_01",
+			"prompt": "generic chunky low-poly isometric tactical space fighter, no recognizable franchise silhouette",
+			"review_camera": "space",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/review_scenes/iso_space_fighter_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/scenes/iso_space_fighter_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/captures/assets/iso_space_freighter_01.png",
+			"category": "space_ship_token",
+			"display_name": "Isometric Space Freighter 01",
+			"gameplay_role": "2.5D tactical larger ship token",
+			"id": "iso_space_freighter_01",
+			"prompt": "generic chunky low-poly isometric tactical space freighter, broad and slow-looking",
+			"review_camera": "space",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/review_scenes/iso_space_freighter_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/scenes/iso_space_freighter_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/captures/assets/iso_space_asteroid_cluster_01.png",
+			"category": "space_hazard",
+			"display_name": "Isometric Space Asteroid Cluster 01",
+			"gameplay_role": "2.5D obstacle or sensor occlusion prop",
+			"id": "iso_space_asteroid_cluster_01",
+			"prompt": "generic low-poly asteroid cluster for isometric tactical space",
+			"review_camera": "space",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/review_scenes/iso_space_asteroid_cluster_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/scenes/iso_space_asteroid_cluster_01.tscn"
+		}
+	],
+	"captures": {
+		"all": "res://docs/gpt/asset_factory/generated/captures/contact_sheet_all.png",
+		"ground": "res://docs/gpt/asset_factory/generated/captures/contact_sheet_ground.png",
+		"space": "res://docs/gpt/asset_factory/generated/captures/contact_sheet_space.png"
+	},
+	"display_name": "Mos Eisley Chunky Prototype Pack v0",
+	"generated_at_unix": 1783135031.916,
+	"pack_id": "mos_eisley_chunky_v0",
+	"schema": "gpt_asset_factory_v0"
+}

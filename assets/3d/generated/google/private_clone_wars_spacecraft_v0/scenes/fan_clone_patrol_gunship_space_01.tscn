@@ -1,0 +1,99 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6frkc"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_6cnkm"]
+size = Vector3(1.55, 0.48, 1.65)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8kqd5"]
+albedo_color = Color(0.6039216, 0.64705884, 0.6666667, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_w7ohh"]
+size = Vector3(0.95, 0.34, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jaqlw"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_a2jig"]
+size = Vector3(0.58, 0.12, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yjcs5"]
+size = Vector3(0.46, 0.36, 1.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xhp4v"]
+size = Vector3(0.46, 0.36, 1.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fn2vn"]
+albedo_color = Color(0.76862746, 0.23137255, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_tbqie"]
+size = Vector3(0.34, 0.08, 0.78)
+
+[sub_resource type="BoxMesh" id="BoxMesh_536at"]
+size = Vector3(0.34, 0.08, 0.78)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xxro2"]
+size = Vector3(0.32, 0.22, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pgee8"]
+size = Vector3(0.32, 0.22, 0.16)
+
+[node name="fan_clone_patrol_gunship_space_01" type="Node3D" unique_id=527628884]
+metadata/asset_id = "fan_clone_patrol_gunship_space_01"
+metadata/display_name = "Fan Clone Patrol Gunship Space 01"
+metadata/category = "spacecraft_token"
+metadata/gameplay_role = "small patrol transport/gunship token for private fan space map"
+metadata/prompt = "blockcraft clone patrol gunship silhouette with white hull, blunt cockpit, side pods, crimson panels, and blue engines"
+
+[node name="hull" type="MeshInstance3D" parent="." unique_id=398598562]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_6frkc")
+mesh = SubResource("BoxMesh_6cnkm")
+
+[node name="nose_cockpit" type="MeshInstance3D" parent="." unique_id=1885573583]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.48, -0.98)
+material_override = SubResource("StandardMaterial3D_8kqd5")
+mesh = SubResource("BoxMesh_w7ohh")
+
+[node name="cockpit_glass" type="MeshInstance3D" parent="." unique_id=656721603]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.66, -1.22)
+material_override = SubResource("StandardMaterial3D_jaqlw")
+mesh = SubResource("BoxMesh_a2jig")
+
+[node name="left_side_pod" type="MeshInstance3D" parent="." unique_id=314185024]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02, 0.36, 0.12)
+material_override = SubResource("StandardMaterial3D_6frkc")
+mesh = SubResource("BoxMesh_yjcs5")
+
+[node name="right_side_pod" type="MeshInstance3D" parent="." unique_id=765484039]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.02, 0.36, 0.12)
+material_override = SubResource("StandardMaterial3D_6frkc")
+mesh = SubResource("BoxMesh_xhp4v")
+
+[node name="left_red_panel" type="MeshInstance3D" parent="." unique_id=1204039333]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 0.7, -0.08)
+material_override = SubResource("StandardMaterial3D_fn2vn")
+mesh = SubResource("BoxMesh_tbqie")
+
+[node name="right_red_panel" type="MeshInstance3D" parent="." unique_id=713201952]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.7, -0.08)
+material_override = SubResource("StandardMaterial3D_fn2vn")
+mesh = SubResource("BoxMesh_536at")
+
+[node name="left_engine" type="MeshInstance3D" parent="." unique_id=1810701873]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 0.42, 0.98)
+material_override = SubResource("StandardMaterial3D_jaqlw")
+mesh = SubResource("BoxMesh_xxro2")
+
+[node name="right_engine" type="MeshInstance3D" parent="." unique_id=1665064048]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.42, 0.98)
+material_override = SubResource("StandardMaterial3D_jaqlw")
+mesh = SubResource("BoxMesh_pgee8")

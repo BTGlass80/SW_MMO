@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Cantina source comparison contract">
+  <rect width="1280" height="720" fill="#101820"/>
+  <text x="48" y="52" fill="#dbe8ed" font-family="Arial, sans-serif" font-size="30" font-weight="700">Cantina Terrain Contract: Fan Art vs SW_MUSH Data vs Blockcraft Output</text>
+  <text x="50" y="84" fill="#9fb2c1" font-family="Arial, sans-serif" font-size="16">Internal docs-only SVG. Derived from SW_MUSH room/map data plus project terrain needs; not copied from fan art.</text>
+
+  <g transform="translate(52 122)">
+    <rect x="0" y="0" width="350" height="520" rx="8" fill="#1c2630" stroke="#3b4d5f" stroke-width="2"/>
+    <text x="20" y="38" fill="#ffd58a" font-family="Arial, sans-serif" font-size="24" font-weight="700">Fan-art / visual study</text>
+    <text x="20" y="72" fill="#dbe8ed" font-family="Arial, sans-serif" font-size="16">Use for:</text>
+    <text x="36" y="104" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• sun-blasted exterior mood</text>
+    <text x="36" y="130" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• facade density and clutter</text>
+    <text x="36" y="156" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• steps, walls, signs, vents</text>
+    <text x="36" y="182" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• dark-interior contrast</text>
+    <text x="20" y="230" fill="#ff8a70" font-family="Arial, sans-serif" font-size="16">Do not use for:</text>
+    <text x="36" y="262" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• copied geometry</text>
+    <text x="36" y="288" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• copied textures or logos</text>
+    <text x="36" y="314" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• one-image mesh generation</text>
+    <rect x="42" y="362" width="250" height="90" fill="#b88d58" stroke="#d2b37a" stroke-width="3"/>
+    <path d="M42 362 C92 312 242 312 292 362 Z" fill="#d2b37a" stroke="#ead2a0" stroke-width="3"/>
+    <rect x="133" y="396" width="68" height="56" fill="#14110c"/>
+    <rect x="122" y="382" width="90" height="14" fill="#bf3a20"/>
+    <text x="72" y="486" fill="#9fb2c1" font-family="Arial, sans-serif" font-size="14">mood only, not source art</text>
+  </g>
+
+  <g transform="translate(466 122)">
+    <rect x="0" y="0" width="350" height="520" rx="8" fill="#1c2630" stroke="#3b4d5f" stroke-width="2"/>
+    <text x="20" y="38" fill="#8ad7ff" font-family="Arial, sans-serif" font-size="24" font-weight="700">SW_MUSH desc / YAML</text>
+    <text x="20" y="72" fill="#dbe8ed" font-family="Arial, sans-serif" font-size="16">Must preserve:</text>
+    <text x="36" y="104" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• elevated entrance</text>
+    <text x="36" y="130" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• no-droids threshold</text>
+    <text x="36" y="156" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• main bar social hub</text>
+    <text x="36" y="182" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• curved booth ring</text>
+    <text x="36" y="208" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• bandstand</text>
+    <text x="36" y="234" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• back hallway / cellar</text>
+    <g transform="translate(66 292) scale(34)">
+      <rect x="0" y="0" width="6" height="6" fill="#23303a" stroke="#607080" stroke-width=".04"/>
+      <rect x=".4" y=".4" width="5.2" height="5.2" fill="#2f3a43" stroke="#8094a4" stroke-width=".06"/>
+      <line x1="4" y1="2" x2="4" y2="4" stroke="#25c4ff" stroke-width=".12"/>
+      <line x1="4" y1="4" x2="2" y2="4" stroke="#25c4ff" stroke-width=".12"/>
+      <rect x="3.25" y="1.425" width="1.5" height="1.15" fill="#b88d58" stroke="#ffd58a" stroke-width=".06"/>
+      <rect x="3.325" y="3.475" width="1.35" height="1.05" fill="#5b4631" stroke="#ffd58a" stroke-width=".06"/>
+      <rect x="1.325" y="3.475" width="1.35" height="1.05" fill="#5b4631" stroke="#ffd58a" stroke-width=".06"/>
+      <text x="3.42" y="2.12" fill="#101820" font-family="Arial, sans-serif" font-size=".28">ENT</text>
+      <text x="3.55" y="4.12" fill="#ffd58a" font-family="Arial, sans-serif" font-size=".28">BAR</text>
+      <text x="1.52" y="4.12" fill="#ffd58a" font-family="Arial, sans-serif" font-size=".28">BACK</text>
+    </g>
+    <text x="62" y="506" fill="#9fb2c1" font-family="Arial, sans-serif" font-size="14">adjacency: entrance → bar → back hall</text>
+  </g>
+
+  <g transform="translate(880 122)">
+    <rect x="0" y="0" width="350" height="520" rx="8" fill="#1c2630" stroke="#3b4d5f" stroke-width="2"/>
+    <text x="20" y="38" fill="#a8ffb2" font-family="Arial, sans-serif" font-size="24" font-weight="700">Blockcraft terrain output</text>
+    <text x="20" y="72" fill="#dbe8ed" font-family="Arial, sans-serif" font-size="16">Model as kit pieces:</text>
+    <text x="36" y="104" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• entrance threshold</text>
+    <text x="36" y="130" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• domed wall sections</text>
+    <text x="36" y="156" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• bar counter</text>
+    <text x="36" y="182" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• booth cluster</text>
+    <text x="36" y="208" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• bandstand</text>
+    <text x="36" y="234" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="15">• back hallway / cellar door</text>
+    <g transform="translate(44 292)">
+      <rect x="0" y="112" width="260" height="116" fill="#c89555" stroke="#d2b37a" stroke-width="3"/>
+      <rect x="54" y="48" width="152" height="112" fill="#b88d58" stroke="#d2b37a" stroke-width="4"/>
+      <path d="M54 48 C84 4 176 4 206 48 Z" fill="#d2b37a" stroke="#ead2a0" stroke-width="4"/>
+      <rect x="105" y="110" width="50" height="50" fill="#101820"/>
+      <rect x="92" y="90" width="76" height="18" fill="#bf3a20"/>
+      <rect x="30" y="166" width="70" height="18" fill="#5b4631"/>
+      <rect x="160" y="166" width="70" height="18" fill="#5b4631"/>
+      <circle cx="214" cy="91" r="22" fill="#30343a" stroke="#25c4ff" stroke-width="4"/>
+      <text x="82" y="218" fill="#9fb2c1" font-family="Arial, sans-serif" font-size="14">terrain + affordance kit</text>
+    </g>
+  </g>
+
+  <path d="M414 374 L452 374" stroke="#dbe8ed" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M828 374 L866 374" stroke="#dbe8ed" stroke-width="4" marker-end="url(#arrow)"/>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L8,3 z" fill="#dbe8ed"/>
+    </marker>
+  </defs>
+</svg>

@@ -10,6 +10,7 @@ extends RefCounted
 
 const SPACEPORT_ROW_DATA_PATH := "res://data/mos_eisley_spaceport_row.json"
 const PROPS_DATA_PATH := "res://data/mos_eisley_props.json"
+const MODEL_MANIFEST_PATH := "res://data/model_manifest.json"
 
 # Curated low-poly Kenney models (CC0). Note: some kits use "GLB format", others
 # "GLTF format" in their path. Scales are first-pass estimates — worth a visual tune.
@@ -35,10 +36,12 @@ const MODEL_KEY_MAP := {
 var _rng := RandomNumberGenerator.new()
 var _rooms := {}
 var _model_cache := {}
+var _model_manifest := {}
 
 func _init(seed_value: int = 1138) -> void:
 	_rng.seed = seed_value
 	_load_rooms()
+	_load_model_manifest()
 
 # --- composite builders ---
 func build_lighting(host: Node3D) -> void:
@@ -65,51 +68,38 @@ func build_ground(host: Node3D) -> void:
 
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(120, 1, 120)
+	shape.size = Vector3(200, 1, 200)
 	collision.shape = shape
 	collision.position.y = -0.55
 	ground.add_child(collision)
 
 	var mesh_instance := MeshInstance3D.new()
 	var mesh := BoxMesh.new()
-	mesh.size = Vector3(120, 1, 120)
+	mesh.size = Vector3(200, 1, 200)
 	mesh_instance.mesh = mesh
 	mesh_instance.position.y = -0.55
 	mesh_instance.material_override = make_material(Color(0.68, 0.57, 0.42), 0.95)
 	ground.add_child(mesh_instance)
 
 func build_settlement(host: Node3D) -> void:
-	add_box_to_world(host, Vector3(3, 0.03, 0), Vector3(54, 0.08, 10), Color(0.53, 0.45, 0.34))
-	add_box_to_world(host, Vector3(3, 0.09, -5.2), Vector3(54, 0.1, 0.35), Color(0.82, 0.63, 0.20))
-	add_box_to_world(host, Vector3(3, 0.09, 5.2), Vector3(54, 0.1, 0.35), Color(0.82, 0.63, 0.20))
+	# Main street path - narrower dirt road
+	add_box_to_world(host, Vector3(0, 0.02, 0), Vector3(70, 0.05, 12), Color(0.60, 0.50, 0.38))
+	add_box_to_world(host, Vector3(0, 0.08, -6), Vector3(70, 0.1, 0.4), Color(0.82, 0.63, 0.20))
+	add_box_to_world(host, Vector3(0, 0.08, 6), Vector3(70, 0.1, 0.4), Color(0.82, 0.63, 0.20))
 	add_label(host, Vector3(3, 2.4, 0), "Spaceport Row")
+	
+	# Orienting structures for spawn view (west end)
+	_add_hab_block(host, Vector3(-32, 0, -8), Vector3(8, 5, 12), Color(0.53, 0.47, 0.39).darkened(0.1))
+	_add_hab_block(host, Vector3(-22, 0, 3), Vector3(6, 3, 6), Color(0.53, 0.47, 0.39))
+	add_box_to_world(host, Vector3(-25, 2.5, -2.5), Vector3(2, 5, 2), Color(0.3, 0.3, 0.3)) # Sensor pylon
 
-	_add_landing_pad(host, Vector3(-20, 0.02, -13))
-	add_label(host, Vector3(-20, 2.0, -13), "Docking Bay 94")
-	add_inspectable_marker(host, Vector3(-25.5, 1.3, -10.0), Vector3(1.2, 2.6, 7.0), _room_title("docking_bay_94_entrance", "Docking Bay 94"), _room_inspection("docking_bay_94_entrance", "Cracked steps drop into a scorched bay pit lined with loaders, fuel cells, and cargo cover."))
-	_add_bay_94_details(host, Vector3(-20, 0, -13))
+	_build_from_rooms(host)
 
-	_add_landing_pad(host, Vector3(14, 0.02, -12))
-	add_label(host, Vector3(14, 2.0, -12), "Docking Bay 86")
-	add_inspectable_marker(host, Vector3(14, 1.2, -7.5), Vector3(6, 2.4, 1.2), _room_title("docking_bay_86", "Docking Bay 86"), _room_inspection("docking_bay_86", "A practical small-craft bay with brusque admin droid service and little patience for loitering."))
-	_add_landing_pad(host, Vector3(-16, 0.02, 14))
-	add_label(host, Vector3(-16, 2.0, 14), "Docking Bay 87")
-	add_inspectable_marker(host, Vector3(-16, 1.2, 8.5), Vector3(6, 2.4, 1.2), _room_title("docking_bay_87", "Docking Bay 87"), _room_inspection("docking_bay_87", "A modernized bay favored by smugglers, merchants, and anyone who prefers flexible inspections."))
-
-	_add_hab_block(host, Vector3(-3, 0, 12), Vector3(7, 3, 5), Color(0.53, 0.47, 0.39))
-	add_label(host, Vector3(-3, 3.7, 12), "Customs")
-	add_inspectable_marker(host, Vector3(-3, 1.6, 8.9), Vector3(6, 3.2, 1.2), _room_title("spaceport_customs_office", "Spaceport Customs"), _room_inspection("spaceport_customs_office", "A dusty office where paperwork, confiscated goods, and quiet bribes all pile up."))
-	_add_hab_block(host, Vector3(9, 0, 11), Vector3(8, 3, 5), Color(0.45, 0.45, 0.40))
-	add_label(host, Vector3(9, 3.7, 11), "Transport Depot")
-	add_inspectable_marker(host, Vector3(9, 1.6, 7.9), Vector3(7, 3.2, 1.2), _room_title("transport_depot", "Transport Depot"), _room_inspection("transport_depot", "Rows of uncomfortable passengers wait beside a cafe selling overpriced food and worse advice."))
-	_add_hab_block(host, Vector3(9, 0, -20), Vector3(8, 3, 6), Color(0.49, 0.44, 0.36))
-	add_label(host, Vector3(9, 3.7, -20), "Spaceport Speeders")
-	add_inspectable_marker(host, Vector3(9, 1.6, -16.4), Vector3(7, 3.2, 1.2), _room_title("spaceport_speeders", "Spaceport Speeders"), _room_inspection("spaceport_speeders", "A cluttered speeder shop smelling of lubricant, ozone, and hard bargaining."))
 	_add_tower(host, Vector3(-7, 0, -24), 8)
 	add_label(host, Vector3(-7, 10.4, -24), "Control Tower")
 	add_inspectable_marker(host, Vector3(-7, 4.5, -20.8), Vector3(4, 9, 1.2), _room_title("mos_eisley_control_tower", "Control Tower"), _room_inspection("mos_eisley_control_tower", "A tall observation module coordinates landings while trying to stay above the dust and noise."))
 
-	# Parked low-poly craft on the docking bays (Bay 94 is left clear for the range).
+	# Parked low-poly craft
 	place_model(host, SHIP_CARGO, Vector3(14, 0.45, -12), 40.0, 2.4)
 	place_model(host, SHIP_SPEEDER, Vector3(-16, 0.55, 14), -25.0, 2.2)
 	place_model(host, SHIP_MINER, Vector3(4, 0.4, -19), 90.0, 1.8)
@@ -121,12 +111,38 @@ func build_settlement(host: Node3D) -> void:
 	for x in [-9, -3, 3, 15, 20]:
 		_add_crate_stack(host, Vector3(x, 0, 6.8), _rng.randi_range(1, 3))
 
-	# Additive data-driven set-dressing — loaded from mos_eisley_props.json.
-	# No-op when the file is absent or malformed; never touches the hardcoded layout.
 	_place_data_props(host)
+	
+	# Full-Area Probes
+	add_route_probe(host, Vector3(-20, 1.2, -4.0), "Spawn")
+	add_route_probe(host, Vector3(-25.5, 1.4, -8.0), "Bay94Entrance")
+	add_route_probe(host, Vector3(-20.0, 0.2, -13.0), "Bay94Pit")
+	add_route_probe(host, Vector3(-3.0, 1.2, 5.0), "CustomsFront")
+	add_route_probe(host, Vector3(9.0, 1.2, -11.0), "SpeedersFront")
+	add_route_probe(host, Vector3(9.0, 1.2, 3.0), "TransportDepotFront")
+	add_route_probe(host, Vector3(-7.0, 1.2, -15.0), "ControlTowerFront")
+	add_route_probe(host, Vector3(15.0, 1.2, -18.0), "DockingBay86Front")
+	add_route_probe(host, Vector3(-20.0, 1.2, -22.0), "DockingBay87Front")
+
+	# Full-Area Capture Points
+	add_capture_point(host, Vector3(-16, 1.8, -4), Vector3(-25, 1.8, -6), "Spawn Range")
+	add_capture_point(host, Vector3(0, 1.8, 0), Vector3(20, 1.8, 0), "Spaceport Row East")
+	add_capture_point(host, Vector3(0, 1.8, 0), Vector3(-20, 1.8, 0), "Spaceport Row West")
+	add_capture_point(host, Vector3(-22, 1.8, -6), Vector3(-25, 1.8, -10), "Bay94 Entrance")
+	add_capture_point(host, Vector3(-20, 1.8, -6), Vector3(-20, 0.5, -13), "Bay94 Pit")
+	add_capture_point(host, Vector3(-3, 1.8, 0), Vector3(-3, 1.8, 8), "Customs Front")
+	add_capture_point(host, Vector3(9, 1.8, -4), Vector3(9, 1.8, -16), "Speeders Front")
+	add_capture_point(host, Vector3(9, 1.8, 0), Vector3(9, 1.8, 8), "Transport Depot Front")
+	add_capture_point(host, Vector3(-7, 1.8, -4), Vector3(-7, 8.0, -20), "Control Tower")
 
 func _add_bay_94_details(host: Node3D, center: Vector3) -> void:
-	add_box_to_world(host, center + Vector3(0, -0.18, 0), Vector3(10, 0.18, 10), Color(0.24, 0.25, 0.25))
+	# Add entrance threshold and service flow area near the path
+	add_box_to_world(host, center + Vector3(-5.5, 2.0, 3.0), Vector3(1.2, 4.0, 1.2), Color(0.35, 0.32, 0.25))
+	add_box_to_world(host, center + Vector3(-5.5, 4.5, 5.0), Vector3(1.2, 1.0, 5.2), Color(0.35, 0.32, 0.25))
+	add_box_to_world(host, center + Vector3(-5.5, 2.0, 7.0), Vector3(1.2, 4.0, 1.2), Color(0.35, 0.32, 0.25))
+	add_box_to_world(host, center + Vector3(-5.5, 0.05, 5.0), Vector3(4.0, 0.1, 6.0), Color(0.25, 0.25, 0.25)) # Service pad
+	
+	# Pit details
 	add_box_to_world(host, center + Vector3(0, 0.42, 5.0), Vector3(4.5, 0.8, 0.45), Color(0.31, 0.28, 0.22))
 	add_box_to_world(host, center + Vector3(-4.4, 0.6, -2.5), Vector3(1.2, 1.2, 1.2), Color(0.20, 0.21, 0.22))
 	add_box_to_world(host, center + Vector3(4.2, 0.6, -2.9), Vector3(1.1, 1.2, 1.1), Color(0.20, 0.21, 0.22))
@@ -168,11 +184,44 @@ func _place_data_props(host: Node3D) -> void:
 func _add_hab_block(host: Node3D, pos: Vector3, size: Vector3, color: Color) -> void:
 	var body := StaticBody3D.new()
 	body.name = "HabBlock"
-	body.position = pos + Vector3(0, size.y * 0.5, 0)
+	body.position = pos
 	host.add_child(body)
-	add_box(body, Vector3.ZERO, size, color)
-	add_box(body, Vector3(0, size.y * 0.5 + 0.2, 0), Vector3(size.x + 0.8, 0.4, size.z + 0.8), color.darkened(0.16))
-	add_box(body, Vector3(size.x * 0.3, 0.15, -size.z * 0.52), Vector3(1.5, 1.9, 0.18), Color(0.12, 0.11, 0.1))
+	
+	# Main block (grounded)
+	add_box(body, Vector3(0, size.y * 0.5, 0), size, color)
+	
+	# Add a smaller secondary block to make it stepped
+	var secondary_size = size * 0.6
+	secondary_size.y = size.y * 0.7
+	var x_offset = (size.x - secondary_size.x) * 0.5 * (1.0 if _rng.randf() > 0.5 else -1.0)
+	var z_offset = (size.z - secondary_size.z) * 0.5 * (1.0 if _rng.randf() > 0.5 else -1.0)
+	add_box(body, Vector3(x_offset, size.y + secondary_size.y * 0.5, z_offset), secondary_size, color)
+	
+	# Roof caps (correctly grounded to their blocks)
+	add_box(body, Vector3(0, size.y + 0.1, 0), Vector3(size.x + 0.4, 0.2, size.z + 0.4), color.darkened(0.16))
+	add_box(body, Vector3(x_offset, size.y + secondary_size.y + 0.1, z_offset), Vector3(secondary_size.x + 0.4, 0.2, secondary_size.z + 0.4), color.darkened(0.16))
+	
+	# Facade Details: Pillars and Awnings
+	if size.x > 5:
+		# Awning
+		add_box(body, Vector3(0, size.y * 0.45, -size.z * 0.5 - 1.0), Vector3(size.x * 0.8, 0.2, 2.0), color.darkened(0.2))
+		# Pillars
+		add_box(body, Vector3(-size.x * 0.35, size.y * 0.225, -size.z * 0.5 - 1.8), Vector3(0.4, size.y * 0.45, 0.4), color.darkened(0.1))
+		add_box(body, Vector3(size.x * 0.35, size.y * 0.225, -size.z * 0.5 - 1.8), Vector3(0.4, size.y * 0.45, 0.4), color.darkened(0.1))
+	
+	# Doorway
+	var doorway_path := "res://assets/3d/generated/google/buildings/desert_doorway.tscn"
+	if ResourceLoader.exists(doorway_path):
+		var doorway = place_model(body, doorway_path, Vector3(size.x * 0.3, 0, -size.z * 0.5 - 0.1))
+	else:
+		add_box(body, Vector3(size.x * 0.3, 0.95, -size.z * 0.52), Vector3(1.5, 1.9, 0.18), Color(0.12, 0.11, 0.1))
+
+	# Dome cap on secondary roof
+	var dome_path := "res://assets/3d/generated/google/buildings/dome_cap.tscn"
+	if ResourceLoader.exists(dome_path):
+		var dome = place_model(body, dome_path, Vector3(x_offset, size.y + secondary_size.y, z_offset))
+		if dome != null:
+			dome.scale = Vector3(secondary_size.x * 0.4, 1.0, secondary_size.z * 0.4)
 
 func _add_tower(host: Node3D, pos: Vector3, height: int) -> void:
 	for y in range(height):
@@ -180,13 +229,113 @@ func _add_tower(host: Node3D, pos: Vector3, height: int) -> void:
 	add_box_to_world(host, pos + Vector3(0, height + 0.45, 0), Vector3(5.2, 0.9, 5.2), Color(0.30, 0.32, 0.32))
 	add_box_to_world(host, pos + Vector3(0, height + 1.6, 0), Vector3(1.2, 1.8, 1.2), Color(0.18, 0.28, 0.32))
 
-func _add_landing_pad(host: Node3D, pos: Vector3) -> void:
-	add_box_to_world(host, pos, Vector3(14, 0.25, 14), Color(0.29, 0.31, 0.32))
-	add_box_to_world(host, pos + Vector3(0, 0.18, 0), Vector3(10, 0.12, 10), Color(0.38, 0.39, 0.38))
-	add_box_to_world(host, pos + Vector3(-4.8, 0.4, -4.8), Vector3(1, 0.8, 1), Color(0.83, 0.64, 0.18))
-	add_box_to_world(host, pos + Vector3(4.8, 0.4, -4.8), Vector3(1, 0.8, 1), Color(0.83, 0.64, 0.18))
-	add_box_to_world(host, pos + Vector3(-4.8, 0.4, 4.8), Vector3(1, 0.8, 1), Color(0.83, 0.64, 0.18))
-	add_box_to_world(host, pos + Vector3(4.8, 0.4, 4.8), Vector3(1, 0.8, 1), Color(0.83, 0.64, 0.18))
+	# Add a moisture vaporator next to the tower
+	var vaporator_path := "res://assets/3d/generated/google/buildings/moisture_vaporator.tscn"
+	if ResourceLoader.exists(vaporator_path):
+		place_model(host, vaporator_path, pos + Vector3(3.5, 0, 3.5))
+
+func _build_from_rooms(host: Node3D) -> void:
+	for slug in _rooms:
+		var room: Dictionary = _rooms[slug]
+		var style: String = room.get("style", "civic")
+		var pos_dict: Dictionary = room.get("scene_position", {})
+		if pos_dict.is_empty():
+			continue
+		var pos := Vector3(float(pos_dict.get("x", 0)), 0.0, float(pos_dict.get("z", 0)))
+		var name: String = room.get("name", "Unknown Room")
+		
+		# Offset for visual centering based on the marker position
+		var is_south := pos.z > 0
+		var building_pos := pos
+		if is_south:
+			building_pos.z += 3.0
+		else:
+			building_pos.z -= 3.0
+			
+		if style == "dock":
+			# Pit is usually further back
+			building_pos = pos
+			if slug == "docking_bay_94_entrance":
+				continue # Handled by the pit
+			elif slug == "docking_bay_94_pit":
+				_add_landing_pad_walled(host, building_pos, name, "94")
+				add_inspectable_marker(host, Vector3(-25.5, 1.3, -10.0), Vector3(1.2, 2.6, 7.0), _room_title("docking_bay_94_entrance", "Docking Bay 94"), _room_inspection("docking_bay_94_entrance", "Cracked steps drop into a scorched bay pit lined with loaders, fuel cells, and cargo cover."))
+				_add_bay_94_details(host, building_pos)
+			elif slug == "docking_bay_86":
+				_add_landing_pad_walled(host, building_pos, name, "86")
+				add_inspectable_marker(host, pos, Vector3(6, 2.4, 1.2), _room_title(slug, name), _room_inspection(slug, name))
+			elif slug == "docking_bay_87":
+				_add_landing_pad_walled(host, building_pos, name, "87")
+				add_inspectable_marker(host, pos, Vector3(6, 2.4, 1.2), _room_title(slug, name), _room_inspection(slug, name))
+		elif style == "civic" or style == "vendor":
+			var b_size := Vector3(8, 3, 6)
+			var b_color := Color(0.53, 0.47, 0.39)
+			if slug == "mos_eisley_customs":
+				b_size = Vector3(12, 4.5, 9)
+				b_color = Color(0.6, 0.5, 0.4)
+			elif slug == "mos_eisley_transport_depot":
+				b_size = Vector3(10, 3.5, 12)
+				b_color = Color(0.4, 0.35, 0.3)
+			elif "spaceport_row" in slug:
+				b_size = Vector3(14, 2.5, 7)
+				b_color = Color(0.5, 0.45, 0.38)
+			elif slug == "mos_eisley_speeders":
+				b_size = Vector3(9, 2.8, 8)
+				
+			_add_hab_block(host, building_pos, b_size, b_color)
+			add_label(host, building_pos + Vector3(0, b_size.y + 0.7, 0), name)
+			add_inspectable_marker(host, pos, Vector3(6, 3.2, 1.2), _room_title(slug, name), _room_inspection(slug, name))
+			
+			if slug == "mos_eisley_transport_depot":
+				# Add multiple crates of different colors in the camera's view path to break up floor dominance
+				add_box_to_world(host, Vector3(8, 0.5, 4), Vector3(1.0, 1.0, 1.0), Color(0.35, 0.3, 0.25))
+				add_box_to_world(host, Vector3(10, 0.5, 4), Vector3(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2))
+				add_box_to_world(host, Vector3(9, 0.3, 3), Vector3(0.6, 0.6, 0.6), Color(0.6, 0.2, 0.2))
+			
+			# Add vaporator or barricade nearby randomly
+			if _rng.randf() > 0.5:
+				var vap_path := "res://assets/3d/generated/google/buildings/moisture_vaporator.tscn"
+				if ResourceLoader.exists(vap_path):
+					place_model(host, vap_path, building_pos + Vector3((_rng.randf() - 0.5) * 10.0, 0, (_rng.randf() - 0.5) * 10.0))
+
+func _add_landing_pad_walled(host: Node3D, pos: Vector3, label_text: String, bay_num: String = "") -> void:
+	# Add walled perimeter with recessed pit feel
+	var wall_color := Color(0.68, 0.57, 0.42)
+	add_box_to_world(host, pos + Vector3(0, 1.5, -8), Vector3(16, 3.0, 1), wall_color) # Back wall
+	add_box_to_world(host, pos + Vector3(-8, 1.5, 0), Vector3(1, 3.0, 16), wall_color) # Left wall
+	add_box_to_world(host, pos + Vector3(8, 1.5, 0), Vector3(1, 3.0, 16), wall_color) # Right wall
+	
+	# Entryway arch & partial front walls
+	add_box_to_world(host, pos + Vector3(-5.5, 1.5, 8), Vector3(6, 3.0, 1), wall_color)
+	add_box_to_world(host, pos + Vector3(5.5, 1.5, 8), Vector3(6, 3.0, 1), wall_color)
+	add_box_to_world(host, pos + Vector3(0, 3.5, 8), Vector3(6, 1.0, 1), wall_color) # Lintel
+	
+	# A slightly recessed dark floor for the pad
+	add_box_to_world(host, pos + Vector3(0, 0.05, 0), Vector3(15, 0.1, 15), Color(0.24, 0.25, 0.25))
+	
+	# Floor pit
+	add_box_to_world(host, pos + Vector3(0, -0.2, 0), Vector3(14, 0.1, 14), Color(0.24, 0.22, 0.20))
+	add_box_to_world(host, pos + Vector3(0, -0.15, 0), Vector3(10, 0.1, 10), Color(0.38, 0.39, 0.38))
+	add_label(host, pos + Vector3(0, 4.0, 0), label_text)
+	
+	# Entry ramp/stairs
+	var is_south = pos.z > 0
+	var ramp_offset = Vector3(0, 0.0, 7) if not is_south else Vector3(0, 0.0, -7)
+	add_box_to_world(host, pos + ramp_offset, Vector3(4, 0.5, 2), Color(0.3, 0.3, 0.3))
+	
+	# Door frame
+	var door_offset = Vector3(0, 1.5, 8) if not is_south else Vector3(0, 1.5, -8)
+	add_box_to_world(host, pos + door_offset + Vector3(-2.5, 0, 0), Vector3(1, 3.0, 1), wall_color)
+	add_box_to_world(host, pos + door_offset + Vector3(2.5, 0, 0), Vector3(1, 3.0, 1), wall_color)
+	add_box_to_world(host, pos + door_offset + Vector3(0, 1.25, 0), Vector3(4, 0.5, 1), wall_color)
+
+	var light_path := "res://assets/3d/generated/google/buildings/landing_pad_light.tscn"
+	for offset in [Vector3(-4.8, -0.1, -4.8), Vector3(4.8, -0.1, -4.8), Vector3(-4.8, -0.1, 4.8), Vector3(4.8, -0.1, 4.8)]:
+		if ResourceLoader.exists(light_path):
+			place_model(host, light_path, pos + offset)
+		else:
+			add_box_to_world(host, pos + offset + Vector3(0, 0.25, 0), Vector3(1, 0.8, 1), Color(0.83, 0.64, 0.18))
+
 
 func _add_crate_stack(host: Node3D, pos: Vector3, count: int) -> void:
 	for i in range(count):
@@ -253,26 +402,72 @@ func instance_model(model_path: String) -> Node3D:
 		return null
 	return (packed as PackedScene).instantiate()
 
-## Place a low-poly model into the world (purely visual unless the caller adds its
-## own collision). Returns the instance, or null if the model could not load.
+func _load_model_manifest() -> void:
+	if not FileAccess.file_exists(MODEL_MANIFEST_PATH):
+		push_error("Missing model manifest: " + MODEL_MANIFEST_PATH)
+		return
+	var file := FileAccess.open(MODEL_MANIFEST_PATH, FileAccess.READ)
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) == TYPE_DICTIONARY and parsed.has("models"):
+		_model_manifest = parsed.get("models", {})
+
+## Place a low-poly model into the world. Automatically computes visual AABB to ground it
+## flush against pos.y, unless it's a known hovercraft in the manifest.
 func place_model(host: Node3D, model_path: String, pos: Vector3, rot_deg: float = 0.0, model_scale: float = 1.0) -> Node3D:
 	var inst := instance_model(model_path)
 	if inst == null:
 		return null
+	
+	var manifest_data: Dictionary = _model_manifest.get(model_path, {})
+	var is_hover: bool = manifest_data.get("hover", false)
+	var hover_height: float = manifest_data.get("hover_height", 0.0)
+	var bottom_offset: float = manifest_data.get("bottom_offset", 0.0)
+	var manifest_scale: float = manifest_data.get("visual_scale", 1.0)
+	
+	# Allow explicit passed scale to override manifest scale if it's != 1.0
+	var final_scale = model_scale if model_scale != 1.0 else manifest_scale
+	
 	inst.position = pos
 	inst.rotation_degrees.y = rot_deg
-	inst.scale = Vector3.ONE * model_scale
+	inst.scale = Vector3.ONE * final_scale
 	host.add_child(inst)
+	
+	var min_y := 9999.0
+	var found_mesh := false
+	var stack: Array[Node] = [inst]
+	while stack.size() > 0:
+		var node = stack.pop_back()
+		if node is MeshInstance3D and node.mesh != null:
+			var aabb = node.mesh.get_aabb()
+			var local_trans = node.transform
+			for i in range(8):
+				var vertex = aabb.get_endpoint(i)
+				var local_vertex = local_trans * vertex
+				if local_vertex.y < min_y:
+					min_y = local_vertex.y
+			found_mesh = true
+		for child in node.get_children():
+			stack.push_back(child)
+	
+	if is_hover:
+		inst.set_meta("hover", true)
+		inst.position.y = pos.y + hover_height
+	else:
+		inst.set_meta("grounded", true)
+		if found_mesh and min_y != 9999.0:
+			inst.position.y = pos.y - min_y + bottom_offset
+			
 	return inst
 
-func add_label(host: Node3D, pos: Vector3, text: String) -> void:
+func add_label(host: Node3D, pos: Vector3, text: String, color: Color = Color.WHITE) -> void:
+	if not OS.get_cmdline_args().has("--debug-world-labels"):
+		return
 	var label := Label3D.new()
-	label.name = "Label_%s" % text.replace(" ", "_")
 	label.text = text
-	label.position = pos
+	label.pixel_size = 0.02
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.font_size = 34
-	label.modulate = Color(0.09, 0.08, 0.06)
+	label.modulate = color
+	label.position = pos
 	host.add_child(label)
 
 func add_inspectable_marker(host: Node3D, pos: Vector3, size: Vector3, title: String, description: String) -> void:
@@ -285,11 +480,56 @@ func add_inspectable_marker(host: Node3D, pos: Vector3, size: Vector3, title: St
 	host.add_child(body)
 
 	var collision := CollisionShape3D.new()
+	collision.set_meta("inspect_volume", true)
 	var shape := BoxShape3D.new()
 	shape.size = size
 	collision.shape = shape
 	body.add_child(collision)
 
+func add_capture_point(host: Node3D, pos: Vector3, look_at_pos: Vector3, title: String) -> void:
+	var point := Node3D.new()
+	point.name = "CapturePoint_%s" % title.replace(" ", "_")
+	point.position = pos
+	point.set_meta("capture_point", true)
+	point.set_meta("look_at_pos", look_at_pos)
+	host.add_child(point)
+	
+	if OS.get_cmdline_args().has("--debug-world-labels"):
+		var mesh_inst := MeshInstance3D.new()
+		var mesh := SphereMesh.new()
+		mesh.radius = 0.2
+		mesh.height = 0.4
+		mesh_inst.mesh = mesh
+		mesh_inst.material_override = make_material(Color(1.0, 0.0, 1.0), 0.5)
+		point.add_child(mesh_inst)
+		add_label(point, Vector3(0, 0.5, 0), "Capture: %s" % title, Color(1.0, 0.5, 1.0))
+
+func add_route_probe(host: Node3D, pos: Vector3, title: String) -> void:
+	var body := StaticBody3D.new()
+	body.name = "RouteProbe_%s" % title.replace(" ", "_")
+	body.position = pos
+	body.collision_layer = 0
+	body.collision_mask = 1 # test against world collision
+	host.add_child(body)
+	
+	var collision := CollisionShape3D.new()
+	var shape := CapsuleShape3D.new()
+	shape.radius = 0.4
+	shape.height = 1.8
+	collision.shape = shape
+	collision.position = Vector3(0, 0.9, 0)
+	body.add_child(collision)
+	
+	if OS.get_cmdline_args().has("--debug-world-labels"):
+		var mesh_inst := MeshInstance3D.new()
+		var mesh := CapsuleMesh.new()
+		mesh.radius = 0.4
+		mesh.height = 1.8
+		mesh_inst.mesh = mesh
+		mesh_inst.position = Vector3(0, 0.9, 0)
+		mesh_inst.material_override = make_material(Color(1.0, 1.0, 0.0), 0.5)
+		body.add_child(mesh_inst)
+		add_label(body, Vector3(0, 2.0, 0), "Route: %s" % title, Color(1.0, 1.0, 0.0))
 # --- spaceport room flavor data ---
 func _load_rooms() -> void:
 	if not FileAccess.file_exists(SPACEPORT_ROW_DATA_PATH):
@@ -311,3 +551,286 @@ func _room_title(slug: String, fallback: String) -> String:
 func _room_inspection(slug: String, fallback: String) -> String:
 	var room: Dictionary = _rooms.get(slug, {})
 	return String(room.get("inspect_text", fallback))
+
+
+# --- Voxel Asset Library Showcase Room ---
+func build_asset_library(host: Node3D) -> void:
+	# 1. Floor slab (Expanded 32m x 32m gallery space)
+	add_box_to_world(host, Vector3(30, 0.05, 15), Vector3(32, 0.1, 32), Color(0.16, 0.18, 0.20))
+	add_label(host, Vector3(30, 2.5, 31), "Voxel Exhibition Gallery")
+	
+	# 2. Main structural walls (dark industrial tones)
+	add_box_to_world(host, Vector3(30, 2.0, -1.0), Vector3(32, 4.0, 0.5), Color(0.22, 0.25, 0.28)) # Back
+	add_box_to_world(host, Vector3(14.0, 2.0, 15), Vector3(0.5, 4.0, 32.5), Color(0.22, 0.25, 0.28)) # Left
+	add_box_to_world(host, Vector3(46.0, 2.0, 15), Vector3(0.5, 4.0, 32.5), Color(0.22, 0.25, 0.28)) # Right
+	
+	# Front wall with entrance gap
+	add_box_to_world(host, Vector3(21.0, 2.0, 31.0), Vector3(14.0, 4.0, 0.5), Color(0.22, 0.25, 0.28))
+	add_box_to_world(host, Vector3(39.0, 2.0, 31.0), Vector3(14.0, 4.0, 0.5), Color(0.22, 0.25, 0.28))
+	add_box_to_world(host, Vector3(30.0, 3.5, 31.0), Vector3(4.0, 1.0, 0.5), Color(0.22, 0.25, 0.28))
+	
+	# 3. Emissive lighting fixtures (cyan neon tubes)
+	add_box_to_world(host, Vector3(22, 3.8, 15), Vector3(4, 0.1, 0.3), Color(0.15, 0.84, 1.0))
+	add_box_to_world(host, Vector3(38, 3.8, 15), Vector3(4, 0.1, 0.3), Color(0.15, 0.84, 1.0))
+	add_box_to_world(host, Vector3(30, 3.8, 8), Vector3(0.3, 0.1, 4), Color(0.15, 0.84, 1.0))
+	add_box_to_world(host, Vector3(30, 3.8, 22), Vector3(0.3, 0.1, 4), Color(0.15, 0.84, 1.0))
+	
+	# --- Wing A (Left wall): Characters, Droids & NPCs (x = 18.0) ---
+	add_label(host, Vector3(18.0, 2.2, 16.0), "WING A: Characters & Rigs")
+	_add_library_display(
+		host, Vector3(18.0, 0.0, 4.0), 
+		"Clone Commander Display", 
+		"Clone Commander (High Fidelity) Standing Rig. Press 'E' to cycle anims (Walk/Aim/Neutral). Built from clone_commander.json.", 
+		"clone_commander", 
+		"res://assets/3d/generated/google/clone_commander_v1/clone_commander_actor.tscn"
+	)
+	_add_library_display(
+		host, Vector3(18.0, 0.0, 8.0), 
+		"B1 Droid Target Display", 
+		"Rigged B1 Battle Droid remote display. Press 'E' to trigger 'aim' and fire a red laser blaster beam!", 
+		"b1_droid", 
+		"res://assets/3d/generated/google/droid_b1_character_v1/droid_b1_actor.tscn"
+	)
+	_add_library_display(
+		host, Vector3(18.0, 0.0, 12.0), 
+		"Wookiee NPC Display", 
+		"Tall Wookiee (High Fidelity) Standing Rig representing Chalmun. Press 'E' to cycle anims (Walk/Aim/Neutral). Built from wookiee.json.", 
+		"wookiee", 
+		"res://assets/3d/generated/google/wookiee_v1/wookiee_actor.tscn"
+	)
+	_add_library_display(
+		host, Vector3(18.0, 0.0, 16.0), 
+		"Jawa NPC Display", 
+		"Short Jawa (High Fidelity) Standing Rig representing Ruzz-tha. Press 'E' to cycle anims (Walk/Aim/Neutral). Built from jawa.json.", 
+		"jawa", 
+		"res://assets/3d/generated/google/jawa_v1/jawa_actor.tscn"
+	)
+	_add_library_display(
+		host, Vector3(18.0, 0.0, 20.0), 
+		"Weequay NPC Display", 
+		"Weequay (High Fidelity) Standing Rig representing Greeshk/Guard. Press 'E' to cycle anims (Walk/Aim/Neutral). Built from weequay.json.", 
+		"weequay", 
+		"res://assets/3d/generated/google/weequay_v1/weequay_actor.tscn"
+	)
+	_add_library_display(
+		host, Vector3(18.0, 0.0, 24.0), 
+		"Abyssinian NPC Display", 
+		"Abyssinian (High Fidelity) Standing Rig representing Djas Puhr. Press 'E' to cycle anims (Walk/Aim/Neutral). Built from abyssinian.json.", 
+		"abyssinian", 
+		"res://assets/3d/generated/google/abyssinian_v1/abyssinian_actor.tscn"
+	)
+	_add_library_display(
+		host, Vector3(18.0, 0.0, 28.0), 
+		"Republic Officer Display", 
+		"Republic Officer (High Fidelity) Standing Rig representing Vesh Talon. Press 'E' to cycle anims (Walk/Aim/Neutral). Built from republic_officer.json.", 
+		"republic_officer", 
+		"res://assets/3d/generated/google/republic_officer_v1/republic_officer_actor.tscn"
+	)
+
+	
+	# --- Wing B (Right wall): Vehicles & Ships (x = 42.0) ---
+	add_label(host, Vector3(42.0, 2.2, 15.0), "WING B: Vehicles & Ships")
+	_add_library_display(
+		host, Vector3(42.0, 0.0, 8.0), 
+		"Kenney Speeder Craft", 
+		"Curated space Speeder-A glider. Flat-shaded Kenney space-kit GLB model. Press 'E' to trigger hover-boost spin!", 
+		"speeder", 
+		SHIP_SPEEDER
+	)
+	_add_library_display(
+		host, Vector3(42.0, 0.0, 15.0), 
+		"Kenney Cargo Ship", 
+		"Curated Cargo-A shuttle ship. Flat-shaded Kenney space-kit GLB model. Press 'E' to trigger hover-boost spin!", 
+		"cargo", 
+		SHIP_CARGO
+	)
+	_add_library_display(
+		host, Vector3(42.0, 0.0, 22.0), 
+		"Kenney Miner Craft", 
+		"Curated Miner transport shuttle. Flat-shaded Kenney space-kit GLB model. Press 'E' to trigger hover-boost spin!", 
+		"miner", 
+		SHIP_MINER
+	)
+	
+	# --- Wing C (Back wall): modular Buildings & Props (z = 3.0) ---
+	add_label(host, Vector3(31.0, 2.2, 3.0), "WING C: Modular Buildings & Props")
+	_add_library_display(
+		host, Vector3(22.0, 0.0, 3.0), 
+		"Voxel Cantina Table Prop", 
+		"Custom voxel cantina table tabletop. Central metal post with tiny cyan cup. Press 'E' to inspect.", 
+		"table", 
+		""
+	)
+	_add_library_display(
+		host, Vector3(25.0, 0.0, 3.0), 
+		"Voxel Cantina Bar Counter", 
+		"Modular bar counter decorator. Side trims and beverage taps. Press 'E' to inspect.", 
+		"bar", 
+		""
+	)
+	_add_library_display(
+		host, Vector3(28.0, 0.0, 3.0), 
+		"Desert Doorway model", 
+		"Rounded desert adobe doorway frame with custom texturing noise. Press 'E' to inspect.", 
+		"prop", 
+		"res://assets/3d/generated/google/buildings/desert_doorway.tscn"
+	)
+	_add_library_display(
+		host, Vector3(31.0, 0.0, 3.0), 
+		"Moisture Vaporator model", 
+		"Desert moisture vaporator tower with cooling fins and glowing status light. Press 'E' to inspect.", 
+		"prop", 
+		"res://assets/3d/generated/google/buildings/moisture_vaporator.tscn"
+	)
+	_add_library_display(
+		host, Vector3(34.0, 0.0, 3.0), 
+		"Dome Cap model", 
+		"Curved adobe roof dome cap for modular building construction. Press 'E' to inspect.", 
+		"prop", 
+		"res://assets/3d/generated/google/buildings/dome_cap.tscn"
+	)
+	_add_library_display(
+		host, Vector3(37.0, 0.0, 3.0), 
+		"Combat Barricade model", 
+		"Sturdy concrete barricade cover block with yellow/black hazard striping. Press 'E' to inspect.", 
+		"prop", 
+		"res://assets/3d/generated/google/buildings/combat_barricade.tscn"
+	)
+	_add_library_display(
+		host, Vector3(40.0, 0.0, 3.0), 
+		"Landing Pad Light model", 
+		"Landing pad boundary warning post with glowing yellow beacon light. Press 'E' to inspect.", 
+		"prop", 
+		"res://assets/3d/generated/google/buildings/landing_pad_light.tscn"
+	)
+	
+	# --- Wing D (Center Island): Weapons & Gear (z = 16.0) ---
+	add_label(host, Vector3(30.0, 2.2, 16.0), "WING D: Weapons & Gear")
+	_add_library_display(
+		host, Vector3(24.0, 0.0, 16.0), 
+		"Blaster Pistol model", 
+		"Chunky voxel sidearm blaster pistol with custom texturing. Press 'E' to inspect.", 
+		"prop", 
+		"res://assets/3d/generated/google/weapons/blaster_pistol.tscn"
+	)
+	_add_library_display(
+		host, Vector3(27.0, 0.0, 16.0), 
+		"Blaster Rifle model", 
+		"Standard military blaster rifle longarm with scope and wooden stock. Press 'E' to inspect.", 
+		"prop", 
+		"res://assets/3d/generated/google/weapons/blaster_rifle.tscn"
+	)
+	_add_library_display(
+		host, Vector3(30.0, 0.0, 16.0), 
+		"Wookiee Bowcaster model", 
+		"Wookiee bowcaster crossbow frame with front dual magnetic spheres. Press 'E' to inspect.", 
+		"prop", 
+		"res://assets/3d/generated/google/weapons/bowcaster.tscn"
+	)
+	_add_library_display(
+		host, Vector3(33.0, 0.0, 16.0), 
+		"Lightsaber model", 
+		"Voxel lightsaber hilt with custom emissive glowing cyan energy blade. Press 'E' to inspect.", 
+		"prop", 
+		"res://assets/3d/generated/google/weapons/lightsaber.tscn"
+	)
+	_add_library_display(
+		host, Vector3(36.0, 0.0, 16.0), 
+		"Thermal Detonator model", 
+		"Textured weathered grey sphere with glowing red activation button. Press 'E' to inspect.", 
+		"prop", 
+		"res://assets/3d/generated/google/weapons/thermal_detonator.tscn"
+	)
+
+
+
+
+func _add_library_display(host: Node3D, pos: Vector3, title: String, desc: String, type: String, model_path: String) -> void:
+	# 1. Spawn Pedestal Box
+	var pedestal_color := Color(0.24, 0.28, 0.31)
+	add_box_to_world(host, pos + Vector3(0, 0.4, 0), Vector3(1.1, 0.8, 1.1), pedestal_color)
+	
+	# 2. Spawn Inspectable Interactive Marker (Collision Body + custom script)
+	var body := StaticBody3D.new()
+	body.name = "LibraryDisplay_%s" % title.replace(" ", "_")
+	body.position = pos + Vector3(0, 0.4, 0)
+	body.set_meta("inspectable", true)
+	body.set_meta("title", title)
+	body.set_meta("description", desc)
+	body.set_script(load("res://scripts/world/voxel_library_display.gd"))
+	body.display_type = type
+	host.add_child(body)
+	
+	var collision := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(1.2, 2.0, 1.2)
+	collision.shape = shape
+	body.add_child(collision)
+	
+	# 3. Instantiate the Model
+	if model_path != "":
+		if ResourceLoader.exists(model_path):
+			var model: Node3D = load(model_path).instantiate()
+			model.name = "model"
+			model.position = Vector3(0, 0.65, 0) # Offset above pedestal
+			body.add_child(model)
+			body.target_node = model
+			
+			# If B1 Droid, spawn the laser beam!
+			if type == "b1_droid":
+				var beam := MeshInstance3D.new()
+				var cyl := CylinderMesh.new()
+				cyl.top_radius = 0.03
+				cyl.bottom_radius = 0.03
+				cyl.height = 7.0
+				beam.mesh = cyl
+				
+				# Rotate cylinder so it points forward along -Z axis
+				beam.rotation_degrees = Vector3(90, 0, 0)
+				beam.position = Vector3(0, 0.35, -3.8) # Position in front of blaster barrel
+				
+				# Emissive red laser material
+				var mat := StandardMaterial3D.new()
+				mat.albedo_color = Color(1, 0.1, 0.1)
+				mat.emission_enabled = true
+				mat.emission = Color(1, 0.1, 0.1)
+				mat.emission_energy_multiplier = 4.0
+				beam.material_override = mat
+				beam.visible = false
+				
+				body.add_child(beam)
+				body.laser_beam = beam
+				
+	# If Table or Bar prop, build them programmatically
+	elif type == "table":
+		var table_holder := Node3D.new()
+		table_holder.position = Vector3(0, 0.4, 0)
+		body.add_child(table_holder)
+		# Central metal post
+		add_box(table_holder, Vector3(0, 0.2, 0), Vector3(0.18, 0.4, 0.18), Color(0.42, 0.46, 0.5))
+		# Circular tabletop slab
+		add_box(table_holder, Vector3(0, 0.42, 0), Vector3(0.9, 0.06, 0.9), Color(0.18, 0.21, 0.24))
+		# Glowing cyan cup
+		add_box(table_holder, Vector3(0.2, 0.48, 0.1), Vector3(0.08, 0.08, 0.08), Color(0.15, 0.84, 1.0))
+		body.target_node = table_holder
+		
+	elif type == "bar":
+		var bar_holder := Node3D.new()
+		bar_holder.position = Vector3(0, 0.4, 0)
+		body.add_child(bar_holder)
+		# Counter base
+		add_box(bar_holder, Vector3(0, 0.3, 0), Vector3(0.9, 0.6, 0.45), Color(0.22, 0.25, 0.28))
+		# Counter top trim plate
+		add_box(bar_holder, Vector3(0, 0.62, 0), Vector3(0.94, 0.04, 0.48), Color(0.68, 0.57, 0.42))
+		# Service taps
+		add_box(bar_holder, Vector3(0.1, 0.72, -0.05), Vector3(0.06, 0.16, 0.06), Color(0.5, 0.55, 0.6))
+		add_box(bar_holder, Vector3(0.15, 0.8, -0.05), Vector3(0.12, 0.04, 0.06), Color(0.5, 0.55, 0.6))
+		body.target_node = bar_holder
+		
+	elif type == "crate":
+		# Add a barrel beside the crate
+		if ResourceLoader.exists(BARREL_MODEL):
+			var barrel: Node3D = load(BARREL_MODEL).instantiate()
+			barrel.name = "barrel"
+			barrel.position = Vector3(0.42, 0.5, 0.0)
+			body.add_child(barrel)

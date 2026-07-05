@@ -1,0 +1,82 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3u6gg"]
+albedo_color = Color(0.20392157, 0.22745098, 0.25882354, 1)
+metallic = 0.25
+roughness = 0.62
+
+[sub_resource type="BoxMesh" id="BoxMesh_uev1r"]
+size = Vector3(1.4, 0.45, 2.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ner16"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_qii2k"]
+size = Vector3(0.8, 0.38, 1.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_g5muq"]
+size = Vector3(0.8, 0.38, 1.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xda3u"]
+size = Vector3(0.75, 0.32, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_22cfe"]
+albedo_color = Color(1, 0.41568628, 0.1882353, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(1, 0.41568628, 0.1882353, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_86f00"]
+size = Vector3(0.35, 0.28, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_twuri"]
+size = Vector3(0.35, 0.28, 0.24)
+
+[sub_resource type="TorusMesh" id="TorusMesh_1iibk"]
+inner_radius = 1.35
+outer_radius = 1.45
+ring_segments = 72
+
+[node name="iso_space_freighter_01" type="Node3D" unique_id=1090711326]
+metadata/asset_id = "iso_space_freighter_01"
+metadata/display_name = "Isometric Space Freighter 01"
+metadata/category = "space_ship_token"
+metadata/gameplay_role = "2.5D tactical larger ship token"
+metadata/prompt = "generic chunky low-poly isometric tactical space freighter, broad and slow-looking"
+
+[node name="main_body" type="MeshInstance3D" parent="." unique_id=1300097130]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+material_override = SubResource("StandardMaterial3D_3u6gg")
+mesh = SubResource("BoxMesh_uev1r")
+
+[node name="cargo_pod_left" type="MeshInstance3D" parent="." unique_id=786775409]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.95, 0.42, 0.2)
+material_override = SubResource("StandardMaterial3D_ner16")
+mesh = SubResource("BoxMesh_qii2k")
+
+[node name="cargo_pod_right" type="MeshInstance3D" parent="." unique_id=562718987]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0.42, 0.2)
+material_override = SubResource("StandardMaterial3D_ner16")
+mesh = SubResource("BoxMesh_g5muq")
+
+[node name="bridge" type="MeshInstance3D" parent="." unique_id=577521795]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.78, -1.2)
+material_override = SubResource("StandardMaterial3D_ner16")
+mesh = SubResource("BoxMesh_xda3u")
+
+[node name="engine_left" type="MeshInstance3D" parent="." unique_id=666095347]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0.45, 1.45)
+material_override = SubResource("StandardMaterial3D_22cfe")
+mesh = SubResource("BoxMesh_86f00")
+
+[node name="engine_right" type="MeshInstance3D" parent="." unique_id=2066892377]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0.45, 1.45)
+material_override = SubResource("StandardMaterial3D_22cfe")
+mesh = SubResource("BoxMesh_twuri")
+
+[node name="selection_ring" type="MeshInstance3D" parent="." unique_id=881306269]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+material_override = SubResource("StandardMaterial3D_22cfe")
+mesh = SubResource("TorusMesh_1iibk")

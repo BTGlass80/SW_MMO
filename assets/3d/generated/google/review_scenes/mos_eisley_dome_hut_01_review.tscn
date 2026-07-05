@@ -1,0 +1,147 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/scenes/mos_eisley_dome_hut_01.tscn" id="1_1weh5"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jfdy3"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_8gctr"]
+size = Vector3(8.5, 0.08, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wmhi4"]
+albedo_color = Color(0.72156864, 0.5529412, 0.34509805, 1)
+roughness = 0.86
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_qavca"]
+top_radius = 2.35
+bottom_radius = 2.35
+radial_segments = 18
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i1lbe"]
+albedo_color = Color(0.8235294, 0.7019608, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="SphereMesh" id="SphereMesh_nk3dj"]
+radius = 2.25
+height = 4.5
+radial_segments = 16
+rings = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lsdxj"]
+albedo_color = Color(0.11764706, 0.52156866, 0.5372549, 1)
+roughness = 0.86
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_30pxa"]
+top_radius = 2.42
+bottom_radius = 2.42
+height = 0.18
+radial_segments = 18
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qlw83"]
+albedo_color = Color(0.1882353, 0.20392157, 0.22745098, 1)
+metallic = 0.25
+roughness = 0.62
+
+[sub_resource type="BoxMesh" id="BoxMesh_qmvdf"]
+size = Vector3(0.9, 1.35, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w826v"]
+albedo_color = Color(0.14509805, 0.76862746, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14509805, 0.76862746, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_vd3ni"]
+size = Vector3(0.55, 0.08, 0.05)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_64iqn"]
+top_radius = 0.04
+bottom_radius = 0.04
+height = 1.25
+radial_segments = 8
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_knlra"]
+top_radius = 0.12
+bottom_radius = 0.12
+height = 2.2
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cusbn"]
+albedo_color = Color(0.11764706, 0.52156866, 0.5372549, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.11764706, 0.52156866, 0.5372549, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="TorusMesh" id="TorusMesh_rlpto"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[node name="mos_eisley_dome_hut_01_review" type="Node3D" unique_id=1162978884]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=1656252037]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_jfdy3")
+mesh = SubResource("BoxMesh_8gctr")
+
+[node name="mos_eisley_dome_hut_01" type="Node3D" parent="." unique_id=1424936580 instance=ExtResource("1_1weh5")]
+metadata/asset_id = "mos_eisley_dome_hut_01"
+metadata/display_name = "Mos Eisley Dome Hut 01"
+metadata/category = "building"
+metadata/gameplay_role = "starter district building chunk"
+metadata/prompt = "generic low-poly desert dome building with teal band, small antenna, and pipe cluster"
+
+[node name="round_base" type="MeshInstance3D" parent="mos_eisley_dome_hut_01" unique_id=2055600273]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+material_override = SubResource("StandardMaterial3D_wmhi4")
+mesh = SubResource("CylinderMesh_qavca")
+
+[node name="dome" type="MeshInstance3D" parent="mos_eisley_dome_hut_01" unique_id=686579830]
+transform = Transform3D(1, 0, 0, 0, 0.45, 0, 0, 0, 1, 0, 2.1, 0)
+material_override = SubResource("StandardMaterial3D_i1lbe")
+mesh = SubResource("SphereMesh_nk3dj")
+
+[node name="teal_band" type="MeshInstance3D" parent="mos_eisley_dome_hut_01" unique_id=526234559]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55, 0)
+material_override = SubResource("StandardMaterial3D_lsdxj")
+mesh = SubResource("CylinderMesh_30pxa")
+
+[node name="door" type="MeshInstance3D" parent="mos_eisley_dome_hut_01" unique_id=122159023]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, -2.26)
+material_override = SubResource("StandardMaterial3D_qlw83")
+mesh = SubResource("BoxMesh_qmvdf")
+
+[node name="door_light" type="MeshInstance3D" parent="mos_eisley_dome_hut_01" unique_id=1101892852]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.42, -2.34)
+material_override = SubResource("StandardMaterial3D_w826v")
+mesh = SubResource("BoxMesh_vd3ni")
+
+[node name="antenna" type="MeshInstance3D" parent="mos_eisley_dome_hut_01" unique_id=626816226]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 3.55, -0.4)
+material_override = SubResource("StandardMaterial3D_qlw83")
+mesh = SubResource("CylinderMesh_64iqn")
+
+[node name="pipe_left" type="MeshInstance3D" parent="mos_eisley_dome_hut_01" unique_id=1938516451]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, -2.1, 1.05, 0.8)
+material_override = SubResource("StandardMaterial3D_qlw83")
+mesh = SubResource("CylinderMesh_knlra")
+
+[node name="@MeshInstance3D@5" type="MeshInstance3D" parent="." unique_id=1770193747]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+material_override = SubResource("StandardMaterial3D_cusbn")
+mesh = SubResource("TorusMesh_rlpto")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=971938639]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=410518385]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 8.0
+far = 120.0

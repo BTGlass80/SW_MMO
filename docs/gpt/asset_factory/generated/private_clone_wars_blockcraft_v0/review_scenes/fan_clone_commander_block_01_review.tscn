@@ -1,0 +1,225 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/private_clone_wars_blockcraft_v0/scenes/fan_clone_commander_block_01.tscn" id="1_ntd18"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xj5so"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_s2y5e"]
+size = Vector3(8.5, 0.08, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cjxkl"]
+albedo_color = Color(0.0627451, 0.078431375, 0.09803922, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_v6epl"]
+size = Vector3(0.74, 0.24, 0.44)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j27mj"]
+albedo_color = Color(0.68235296, 0.72156864, 0.73333335, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_2mba7"]
+size = Vector3(0.6, 0.7, 0.36)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c54dv"]
+albedo_color = Color(0.92941177, 0.9490196, 0.9372549, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_atteo"]
+size = Vector3(0.92, 0.78, 0.48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8xcyk"]
+albedo_color = Color(0.14117648, 0.53333336, 0.84705883, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14117648, 0.53333336, 0.84705883, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_enn36"]
+size = Vector3(0.18, 0.58, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_o8kv4"]
+size = Vector3(0.38, 0.28, 0.56)
+
+[sub_resource type="BoxMesh" id="BoxMesh_a14wn"]
+size = Vector3(0.32, 0.24, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1831e"]
+size = Vector3(1.42, 0.22, 0.26)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ute8x"]
+size = Vector3(0.8, 0.54, 0.64)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pfbde"]
+size = Vector3(0.14, 0.14, 0.66)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4mevg"]
+size = Vector3(0.52, 0.14, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5wr1x"]
+size = Vector3(0.12, 0.18, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_04fst"]
+size = Vector3(0.12, 0.18, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r4roa"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_o12b8"]
+size = Vector3(0.06, 0.5, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w0bt8"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_6sw1k"]
+size = Vector3(0.2, 0.08, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mgag8"]
+size = Vector3(0.14, 0.14, 0.44)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e4gy0"]
+albedo_color = Color(0.14117648, 0.84313726, 0.84313726, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14117648, 0.84313726, 0.84313726, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_qr1d2"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wmod1"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sukr3"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xdcvx"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[node name="fan_clone_commander_block_01_review" type="Node3D" unique_id=1056867486]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=995383279]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_xj5so")
+mesh = SubResource("BoxMesh_s2y5e")
+
+[node name="fan_clone_commander_block_01" type="Node3D" parent="." unique_id=1456299913 instance=ExtResource("1_ntd18")]
+metadata/asset_id = "fan_clone_commander_block_01"
+metadata/display_name = "Fan Clone Commander Block 01"
+metadata/category = "character_token"
+metadata/gameplay_role = "clone commander pawn for private fan table"
+metadata/prompt = "blockcraft clone commander with blue pauldron, rangefinder antenna, and command markings"
+
+[node name="boots" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=706006392]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+material_override = SubResource("StandardMaterial3D_cjxkl")
+mesh = SubResource("BoxMesh_v6epl")
+
+[node name="legs" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=909945972]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.54, 0)
+material_override = SubResource("StandardMaterial3D_j27mj")
+mesh = SubResource("BoxMesh_2mba7")
+
+[node name="torso" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=1089884890]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.26, 0)
+material_override = SubResource("StandardMaterial3D_c54dv")
+mesh = SubResource("BoxMesh_atteo")
+
+[node name="blue_sash" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=1369516552]
+transform = Transform3D(0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0, 0, 1, -0.12, 1.38, -0.28)
+material_override = SubResource("StandardMaterial3D_8xcyk")
+mesh = SubResource("BoxMesh_enn36")
+
+[node name="blue_pauldron" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=1769084455]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.66, 1.5, 0)
+material_override = SubResource("StandardMaterial3D_8xcyk")
+mesh = SubResource("BoxMesh_o8kv4")
+
+[node name="right_shoulder" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=1206552521]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, 1.5, 0)
+material_override = SubResource("StandardMaterial3D_c54dv")
+mesh = SubResource("BoxMesh_a14wn")
+
+[node name="arms" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=72047053]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.08, -0.04)
+material_override = SubResource("StandardMaterial3D_j27mj")
+mesh = SubResource("BoxMesh_1831e")
+
+[node name="helmet" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=1461558815]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.88, 0)
+material_override = SubResource("StandardMaterial3D_c54dv")
+mesh = SubResource("BoxMesh_ute8x")
+
+[node name="helmet_fin" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=985304593]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.18, 0.03)
+material_override = SubResource("StandardMaterial3D_j27mj")
+mesh = SubResource("BoxMesh_pfbde")
+
+[node name="visor" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=1777393628]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.88, -0.38)
+material_override = SubResource("StandardMaterial3D_cjxkl")
+mesh = SubResource("BoxMesh_4mevg")
+
+[node name="visor_drop" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=1735861438]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -0.39)
+material_override = SubResource("StandardMaterial3D_cjxkl")
+mesh = SubResource("BoxMesh_5wr1x")
+
+[node name="blue_helmet_mark" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=1241503069]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 2.03, -0.38)
+material_override = SubResource("StandardMaterial3D_8xcyk")
+mesh = SubResource("BoxMesh_04fst")
+
+[node name="rangefinder_stalk" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=215150379]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.49, 2.15, -0.1)
+material_override = SubResource("StandardMaterial3D_r4roa")
+mesh = SubResource("BoxMesh_o12b8")
+
+[node name="rangefinder_tip" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=522959946]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.49, 2.42, -0.23)
+material_override = SubResource("StandardMaterial3D_w0bt8")
+mesh = SubResource("BoxMesh_6sw1k")
+
+[node name="sidearm" type="MeshInstance3D" parent="fan_clone_commander_block_01" unique_id=510775662]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 0.95, -0.28)
+material_override = SubResource("StandardMaterial3D_r4roa")
+mesh = SubResource("BoxMesh_mgag8")
+
+[node name="BlockSelectionMarker" type="Node3D" parent="." unique_id=1253582989]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+
+[node name="front" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=906080422]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.7)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_qr1d2")
+
+[node name="back" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1891855925]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.7)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_wmod1")
+
+[node name="left" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=213575392]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_sukr3")
+
+[node name="right" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=76565197]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_xdcvx")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=2143307481]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=1079351171]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 8.0
+far = 120.0

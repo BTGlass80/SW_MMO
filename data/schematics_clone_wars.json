@@ -1,0 +1,233 @@
+{
+  "schematics": [
+    {
+      "key": "basic_medpac",
+      "name": "Basic Medpac",
+      "category": "medical",
+      "required_skill": "first_aid",
+      "difficulty": 10,
+      "station_type": "medic",
+      "requires": {
+        "organic_tissue": 2,
+        "medical_biogel": 1
+      },
+      "output": {
+        "template_key": "medpac",
+        "name": "Basic Medpac",
+        "kind": "medical",
+        "quantity": 1,
+        "max_condition": 5,
+        "modifiers": {
+          "heals_wound_penalty": true
+        }
+      },
+      "quality_formula": "0.7 * medicinal_value + 0.3 * purity"
+    },
+    {
+      "key": "field_stimpack",
+      "name": "Field Stimpack",
+      "category": "medical",
+      "required_skill": "first_aid",
+      "difficulty": 12,
+      "station_type": "medic",
+      "requires": {
+        "chemical_compound": 2,
+        "medical_biogel": 2
+      },
+      "output": {
+        "template_key": "stimpack",
+        "name": "Field Stimpack",
+        "kind": "medical",
+        "quantity": 1,
+        "max_condition": 3,
+        "modifiers": {
+          "heals_downed": true
+        }
+      },
+      "quality_formula": "0.6 * medicinal_value + 0.4 * potential_energy"
+    },
+    {
+      "key": "blaster_power_pack",
+      "name": "Blaster Power Pack",
+      "category": "engineering",
+      "required_skill": "technical",
+      "difficulty": 10,
+      "station_type": "artisan",
+      "requires": {
+        "ferrous_metal": 2,
+        "energy_crystal": 1
+      },
+      "output": {
+        "template_key": "power_pack",
+        "name": "Blaster Power Pack",
+        "kind": "ammo",
+        "quantity": 1,
+        "max_condition": 1,
+        "modifiers": {
+          "shots": 20
+        }
+      },
+      "quality_formula": "0.5 * conductivity + 0.5 * potential_energy"
+    },
+    {
+      "key": "basic_blaster_cell",
+      "name": "Basic Blaster Cell",
+      "category": "engineering",
+      "required_skill": "technical",
+      "difficulty": 8,
+      "station_type": "artisan",
+      "requires": {
+        "nonferrous_metal": 1,
+        "energy_crystal": 1
+      },
+      "output": {
+        "template_key": "blaster_cell",
+        "name": "Basic Blaster Cell",
+        "kind": "ammo",
+        "quantity": 1,
+        "max_condition": 1,
+        "modifiers": {
+          "shots": 10
+        }
+      },
+      "quality_formula": "0.4 * conductivity + 0.6 * potential_energy"
+    },
+    {
+      "key": "blaster_pistol_service_kit",
+      "name": "Pistol Service Kit",
+      "category": "engineering",
+      "required_skill": "technical",
+      "difficulty": 14,
+      "station_type": "artisan",
+      "requires": {
+        "ferrous_metal": 2,
+        "electronic_parts": 1
+      },
+      "output": {
+        "template_key": "weapon_service_kit",
+        "name": "Pistol Service Kit",
+        "kind": "weapon_repair",
+        "quantity": 1,
+        "max_condition": 3,
+        "modifiers": {
+          "repairs_condition": 10
+        }
+      },
+      "quality_formula": "0.7 * durability + 0.3 * malleability"
+    },
+    {
+      "key": "ship_patch_kit",
+      "name": "Ship Patch Kit",
+      "category": "engineering",
+      "required_skill": "technical",
+      "difficulty": 12,
+      "station_type": "artisan",
+      "requires": {
+        "rare_alloy": 1,
+        "starship_salvage": 2
+      },
+      "output": {
+        "template_key": "ship_repair_patch",
+        "name": "Ship Patch Kit",
+        "kind": "space_repair",
+        "quantity": 1,
+        "max_condition": 1,
+        "modifiers": {
+          "repairs_hull": 15
+        }
+      },
+      "quality_formula": "0.6 * durability + 0.4 * density"
+    },
+    {
+      "key": "sensor_spike",
+      "name": "Sensor Spike",
+      "category": "slicing",
+      "required_skill": "technical",
+      "difficulty": 16,
+      "station_type": "slicer",
+      "requires": {
+        "electronic_parts": 2,
+        "nonferrous_metal": 1
+      },
+      "output": {
+        "template_key": "sensor_spike",
+        "name": "Sensor Spike",
+        "kind": "slicing",
+        "quantity": 1,
+        "max_condition": 2,
+        "modifiers": {
+          "slice_bonus": 5
+        }
+      },
+      "quality_formula": "0.8 * conductivity + 0.2 * purity"
+    },
+    {
+      "key": "datapad_intel_report",
+      "name": "Encrypted Intel Report",
+      "category": "slicing",
+      "required_skill": "technical",
+      "difficulty": 18,
+      "station_type": "slicer",
+      "requires": {
+        "electronic_parts": 1
+      },
+      "output": {
+        "template_key": "intel_report",
+        "name": "Encrypted Intel Report",
+        "kind": "intel",
+        "quantity": 1,
+        "max_condition": 1,
+        "modifiers": {
+          "intel_value": 50
+        }
+      },
+      "quality_formula": "1.0 * purity"
+    },
+    {
+      "key": "ration_pack",
+      "name": "Survival Ration Pack",
+      "category": "outdoors",
+      "required_skill": "technical",
+      "difficulty": 6,
+      "station_type": "scout",
+      "requires": {
+        "organic_tissue": 2,
+        "silicate": 1
+      },
+      "output": {
+        "template_key": "ration_pack",
+        "name": "Survival Ration Pack",
+        "kind": "consumable",
+        "quantity": 1,
+        "max_condition": 1,
+        "modifiers": {
+          "heals_fatigue": true
+        }
+      },
+      "quality_formula": "0.8 * purity + 0.2 * medicinal_value"
+    },
+    {
+      "key": "survey_probe",
+      "name": "Survey Probe",
+      "category": "engineering",
+      "required_skill": "technical",
+      "difficulty": 10,
+      "station_type": "artisan",
+      "requires": {
+        "electronic_parts": 1,
+        "ferrous_metal": 1
+      },
+      "output": {
+        "template_key": "survey_tool",
+        "name": "Survey Probe",
+        "kind": "tool",
+        "quantity": 1,
+        "max_condition": 5,
+        "modifiers": {
+          "survey_range_bonus": 20
+        }
+      },
+      "quality_formula": "0.5 * conductivity + 0.5 * density"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+	"captures": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_kit_v0/captures/pixel_cantina_source_card.png",
+			"description": "Original 48x32 top-down pixel source card for the Cantina kit. Each color is a semantic tile class, not a copied texture.",
+			"id": "pixel_cantina_source_card",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_kit_v0/review_scenes/pixel_cantina_source_card.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_kit_v0/captures/pixel_cantina_merge_ab.png",
+			"description": "Left: one cube per non-empty pixel. Center: greedy rectangle merge. Right: same merged rectangles emitted as material-batched meshes.",
+			"id": "pixel_cantina_merge_ab",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_kit_v0/review_scenes/pixel_cantina_merge_ab.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_kit_v0/captures/pixel_cantina_batched_isometric.png",
+			"description": "Material-batched pixel Cantina kit from the gameplay/isometric review camera.",
+			"id": "pixel_cantina_batched_isometric",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_kit_v0/review_scenes/pixel_cantina_batched_isometric.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_kit_v0/captures/pixel_cantina_room_read_closeup.png",
+			"description": "Close review of the bar, booths, entrance, back hallway, and clutter readability using batched geometry.",
+			"id": "pixel_cantina_room_read_closeup",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_kit_v0/review_scenes/pixel_cantina_room_read_closeup.tscn"
+		}
+	],
+	"generator": "docs/gpt/asset_factory/scripts/godot_pixel_cantina_kit_proof.gd",
+	"source_image": "res://docs/gpt/asset_factory/generated/godot_pixel_cantina_kit_v0/source_images/cantina_floorplan_48x32.png",
+	"stats": {
+		"batched_mesh_nodes": 8,
+		"batched_triangles_estimate": 888,
+		"box_reduction_vs_per_pixel": 92.3,
+		"greedy_rect_boxes": 74,
+		"greedy_rect_triangles_estimate": 888,
+		"grid_size": "48x32",
+		"node_reduction_vs_per_pixel": 99.2,
+		"nonempty_pixels": 966,
+		"per_pixel_boxes": 966,
+		"per_pixel_triangles_estimate": 11592,
+		"row_run_boxes": 206,
+		"row_run_triangles_estimate": 2472,
+		"used_categories": [
+			"bar",
+			"booth",
+			"clutter",
+			"door",
+			"floor",
+			"light",
+			"table",
+			"wall"
+		]
+	}
+}

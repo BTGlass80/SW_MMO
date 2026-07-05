@@ -1,0 +1,31 @@
+{
+	"asset_count": 1,
+	"assets": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/cantina_entrance_detail_v1/captures/assets/cantina_entrance_threshold_detail_01.png",
+			"category": "terrain_module",
+			"display_name": "Cantina Entrance Threshold Detail 01",
+			"footprint": [
+				5.7,
+				4.2
+			],
+			"gameplay_role": "finer-detail elevated no-droids entrance threshold",
+			"id": "cantina_entrance_threshold_detail_01",
+			"prompt": "blockcraft cantina entrance with more Minecraft-like small cube detail, segmented steps, recessed dark doorway, no-droids sign, detector post, scan bars, side rails, and facade chips",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/cantina_entrance_detail_v1/review_scenes/cantina_entrance_threshold_detail_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/cantina_entrance_detail_v1/scenes/cantina_entrance_threshold_detail_01.tscn"
+		}
+	],
+	"captures": {
+		"all": "res://docs/gpt/asset_factory/generated/cantina_entrance_detail_v1/captures/contact_sheet_all.png",
+		"characters": "res://docs/gpt/asset_factory/generated/cantina_entrance_detail_v1/captures/contact_sheet_characters.png",
+		"ground": "res://docs/gpt/asset_factory/generated/cantina_entrance_detail_v1/captures/contact_sheet_ground.png",
+		"scene_slices": "res://docs/gpt/asset_factory/generated/cantina_entrance_detail_v1/captures/contact_sheet_scene_slices.png",
+		"space": "res://docs/gpt/asset_factory/generated/cantina_entrance_detail_v1/captures/contact_sheet_space.png"
+	},
+	"display_name": "Cantina Entrance Detail V1",
+	"generated_at_unix": 1783145799.086,
+	"pack_id": "cantina_entrance_detail_v1",
+	"schema": "gpt_asset_factory_v0"
+}

@@ -1,0 +1,196 @@
+[gd_scene load_steps=18 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat_sand"]
+albedo_color = Color(0.72, 0.56, 0.36, 1.0)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="mat_plaster"]
+albedo_color = Color(0.76, 0.61, 0.42, 1.0)
+roughness = 0.92
+
+[sub_resource type="StandardMaterial3D" id="mat_teal"]
+albedo_color = Color(0.05, 0.52, 0.56, 1.0)
+roughness = 0.72
+
+[sub_resource type="StandardMaterial3D" id="mat_metal"]
+albedo_color = Color(0.18, 0.20, 0.22, 1.0)
+roughness = 0.58
+metallic = 0.35
+
+[sub_resource type="StandardMaterial3D" id="mat_awning"]
+albedo_color = Color(0.78, 0.20, 0.10, 1.0)
+roughness = 0.88
+
+[sub_resource type="StandardMaterial3D" id="mat_accent_light"]
+albedo_color = Color(0.05, 0.6, 0.85, 1.0)
+emission_enabled = true
+emission = Color(0.0, 0.55, 0.9, 1.0)
+emission_energy_multiplier = 1.7
+
+[sub_resource type="BoxMesh" id="mesh_ground"]
+size = Vector3(28, 0.12, 22)
+
+[sub_resource type="BoxMesh" id="mesh_pad"]
+size = Vector3(8, 0.08, 5)
+
+[sub_resource type="CylinderMesh" id="mesh_building_base"]
+top_radius = 2.4
+bottom_radius = 2.7
+height = 2.2
+radial_segments = 16
+
+[sub_resource type="SphereMesh" id="mesh_dome"]
+radius = 2.45
+height = 2.45
+radial_segments = 16
+rings = 8
+
+[sub_resource type="CylinderMesh" id="mesh_pipe"]
+top_radius = 0.18
+bottom_radius = 0.18
+height = 4.0
+radial_segments = 12
+
+[sub_resource type="BoxMesh" id="mesh_awning"]
+size = Vector3(4.2, 0.08, 2.2)
+
+[sub_resource type="BoxMesh" id="mesh_crate"]
+size = Vector3(1.0, 0.9, 1.0)
+
+[sub_resource type="BoxMesh" id="mesh_barricade"]
+size = Vector3(2.2, 0.8, 0.55)
+
+[sub_resource type="BoxMesh" id="mesh_shuttle_body"]
+size = Vector3(3.4, 0.8, 5.0)
+
+[sub_resource type="BoxMesh" id="mesh_shuttle_wing"]
+size = Vector3(5.4, 0.18, 1.1)
+
+[sub_resource type="BoxMesh" id="mesh_light_strip"]
+size = Vector3(0.08, 0.14, 1.1)
+
+[node name="GroundSpaceportVisualBlockout" type="Node3D"]
+
+[node name="Purpose" type="Node3D" parent="."]
+metadata/notes = "Docs-only reference. Demonstrates a cheap but more intentional low-poly spaceport composition: plaza, domes, awnings, crates, cover, landing pad, lighting, and isometric MMO camera."
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.08, 0)
+mesh = SubResource("mesh_ground")
+surface_material_override/0 = SubResource("mat_sand")
+
+[node name="LandingPad" type="MeshInstance3D" parent="."]
+position = Vector3(6.6, 0.02, -2.6)
+mesh = SubResource("mesh_pad")
+surface_material_override/0 = SubResource("mat_metal")
+
+[node name="DomeBuildingA" type="Node3D" parent="."]
+position = Vector3(-7.0, 1.1, -3.5)
+
+[node name="Base" type="MeshInstance3D" parent="DomeBuildingA"]
+mesh = SubResource("mesh_building_base")
+surface_material_override/0 = SubResource("mat_plaster")
+
+[node name="Dome" type="MeshInstance3D" parent="DomeBuildingA"]
+position = Vector3(0, 1.22, 0)
+scale = Vector3(1, 0.42, 1)
+mesh = SubResource("mesh_dome")
+surface_material_override/0 = SubResource("mat_plaster")
+
+[node name="TealBand" type="MeshInstance3D" parent="DomeBuildingA"]
+position = Vector3(0, 0.55, 0)
+scale = Vector3(1.04, 0.12, 1.04)
+mesh = SubResource("mesh_building_base")
+surface_material_override/0 = SubResource("mat_teal")
+
+[node name="Awning" type="MeshInstance3D" parent="DomeBuildingA"]
+position = Vector3(2.65, -0.45, 0.8)
+rotation = Vector3(0, 0, -0.12)
+mesh = SubResource("mesh_awning")
+surface_material_override/0 = SubResource("mat_awning")
+
+[node name="PipeStack" type="Node3D" parent="DomeBuildingA"]
+position = Vector3(-2.0, 0.1, 1.7)
+rotation = Vector3(0, 0, 1.5708)
+
+[node name="Pipe" type="MeshInstance3D" parent="DomeBuildingA/PipeStack"]
+mesh = SubResource("mesh_pipe")
+surface_material_override/0 = SubResource("mat_metal")
+
+[node name="DomeBuildingB" type="Node3D" parent="."]
+position = Vector3(-2.0, 0.85, -6.7)
+scale = Vector3(0.72, 0.72, 0.72)
+
+[node name="Base" type="MeshInstance3D" parent="DomeBuildingB"]
+mesh = SubResource("mesh_building_base")
+surface_material_override/0 = SubResource("mat_plaster")
+
+[node name="Dome" type="MeshInstance3D" parent="DomeBuildingB"]
+position = Vector3(0, 1.22, 0)
+scale = Vector3(1, 0.42, 1)
+mesh = SubResource("mesh_dome")
+surface_material_override/0 = SubResource("mat_plaster")
+
+[node name="Shuttle" type="Node3D" parent="."]
+position = Vector3(6.6, 0.72, -2.6)
+rotation = Vector3(0, -0.35, 0)
+
+[node name="Body" type="MeshInstance3D" parent="Shuttle"]
+mesh = SubResource("mesh_shuttle_body")
+surface_material_override/0 = SubResource("mat_metal")
+
+[node name="Wing" type="MeshInstance3D" parent="Shuttle"]
+position = Vector3(0, -0.18, 0.3)
+mesh = SubResource("mesh_shuttle_wing")
+surface_material_override/0 = SubResource("mat_metal")
+
+[node name="BlueAccent" type="MeshInstance3D" parent="Shuttle"]
+position = Vector3(0, 0.12, 2.52)
+mesh = SubResource("mesh_light_strip")
+surface_material_override/0 = SubResource("mat_accent_light")
+
+[node name="CargoCluster" type="Node3D" parent="."]
+position = Vector3(-3.0, 0.45, 2.8)
+
+[node name="CrateA" type="MeshInstance3D" parent="CargoCluster"]
+mesh = SubResource("mesh_crate")
+surface_material_override/0 = SubResource("mat_metal")
+
+[node name="CrateB" type="MeshInstance3D" parent="CargoCluster"]
+position = Vector3(1.05, 0, 0.15)
+scale = Vector3(1.1, 0.8, 1)
+mesh = SubResource("mesh_crate")
+surface_material_override/0 = SubResource("mat_metal")
+
+[node name="CrateC" type="MeshInstance3D" parent="CargoCluster"]
+position = Vector3(0.35, 0.72, -0.9)
+scale = Vector3(0.8, 0.7, 0.8)
+mesh = SubResource("mesh_crate")
+surface_material_override/0 = SubResource("mat_metal")
+
+[node name="CoverLane" type="Node3D" parent="."]
+position = Vector3(1.0, 0.4, 3.8)
+
+[node name="BarricadeA" type="MeshInstance3D" parent="CoverLane"]
+rotation = Vector3(0, 0.45, 0)
+mesh = SubResource("mesh_barricade")
+surface_material_override/0 = SubResource("mat_metal")
+
+[node name="BarricadeB" type="MeshInstance3D" parent="CoverLane"]
+position = Vector3(3.0, 0, -0.7)
+rotation = Vector3(0, -0.4, 0)
+mesh = SubResource("mesh_barricade")
+surface_material_override/0 = SubResource("mat_metal")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(10.5, 9.2, 10.5)
+rotation = Vector3(-0.785398, 0.785398, 0)
+projection = 1
+size = 16.0
+current = true
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.75, -0.55, -0.2)
+light_energy = 2.4
+shadow_enabled = true
+

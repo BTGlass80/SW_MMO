@@ -1,0 +1,116 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/city-kit-industrial/Models/GLB format/building-a.glb" id="1_building_a"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/city-kit-industrial/Models/GLB format/building-g.glb" id="2_building_g"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/hangar_smallA.glb" id="3_hangar"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/craft_cargoB.glb" id="4_cargo_craft"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/craft_speederA.glb" id="5_speeder"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/barrels.glb" id="6_barrels"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/gate_simple.glb" id="7_gate"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/machine_generator.glb" id="8_generator"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/astronautA.glb" id="9_actor"]
+
+[sub_resource type="StandardMaterial3D" id="mat_sand"]
+albedo_color = Color(0.72, 0.55, 0.34, 1.0)
+roughness = 0.94
+
+[sub_resource type="StandardMaterial3D" id="mat_pad"]
+albedo_color = Color(0.24, 0.25, 0.25, 1.0)
+roughness = 0.67
+metallic = 0.2
+
+[sub_resource type="StandardMaterial3D" id="mat_awning"]
+albedo_color = Color(0.82, 0.18, 0.08, 1.0)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="mesh_ground"]
+size = Vector3(32, 0.12, 24)
+
+[sub_resource type="BoxMesh" id="mesh_awning"]
+size = Vector3(5.2, 0.08, 2.4)
+
+[sub_resource type="BoxMesh" id="mesh_pad"]
+size = Vector3(9.0, 0.08, 6.0)
+
+[node name="GroundAssetKitbashReference" type="Node3D"]
+metadata/notes = "Docs-only reference. Uses actual existing project GLB assets plus simple composition/lighting. This is closer to what Claude can cheaply implement than the generated concept image."
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh_ground")
+surface_material_override/0 = SubResource("mat_sand")
+
+[node name="LandingPad" type="MeshInstance3D" parent="."]
+position = Vector3(5.4, 0.03, -2.4)
+mesh = SubResource("mesh_pad")
+surface_material_override/0 = SubResource("mat_pad")
+
+[node name="Hangar" parent="." instance=ExtResource("3_hangar")]
+position = Vector3(7.6, 0.05, -5.6)
+rotation = Vector3(0, 3.14159, 0)
+scale = Vector3(1.4, 1.4, 1.4)
+
+[node name="CargoCraft" parent="." instance=ExtResource("4_cargo_craft")]
+position = Vector3(5.2, 0.45, -2.2)
+rotation = Vector3(0, -0.55, 0)
+scale = Vector3(1.25, 1.25, 1.25)
+
+[node name="BuildingLeft" parent="." instance=ExtResource("1_building_a")]
+position = Vector3(-6.8, 0.08, -4.8)
+rotation = Vector3(0, 0.72, 0)
+scale = Vector3(1.45, 1.45, 1.45)
+
+[node name="BuildingBack" parent="." instance=ExtResource("2_building_g")]
+position = Vector3(-1.4, 0.08, -7.0)
+rotation = Vector3(0, -0.2, 0)
+scale = Vector3(1.15, 1.15, 1.15)
+
+[node name="RedAwning" type="MeshInstance3D" parent="."]
+position = Vector3(-4.8, 2.2, -1.3)
+rotation = Vector3(0.12, 0.72, 0.0)
+mesh = SubResource("mesh_awning")
+surface_material_override/0 = SubResource("mat_awning")
+
+[node name="GateToDangerZone" parent="." instance=ExtResource("7_gate")]
+position = Vector3(10.8, 0.05, 3.5)
+rotation = Vector3(0, -0.78, 0)
+scale = Vector3(1.6, 1.6, 1.6)
+
+[node name="VendorGenerator" parent="." instance=ExtResource("8_generator")]
+position = Vector3(-4.5, 0.05, 1.2)
+rotation = Vector3(0, 1.2, 0)
+scale = Vector3(1.1, 1.1, 1.1)
+
+[node name="CargoBarrelsA" parent="." instance=ExtResource("6_barrels")]
+position = Vector3(-2.6, 0.05, 2.5)
+rotation = Vector3(0, 0.35, 0)
+scale = Vector3(1.25, 1.25, 1.25)
+
+[node name="CargoBarrelsB" parent="." instance=ExtResource("6_barrels")]
+position = Vector3(0.1, 0.05, 2.8)
+rotation = Vector3(0, -0.55, 0)
+
+[node name="ParkedSpeeder" parent="." instance=ExtResource("5_speeder")]
+position = Vector3(-7.2, 0.35, 2.8)
+rotation = Vector3(0, 1.05, 0)
+scale = Vector3(1.2, 1.2, 1.2)
+
+[node name="ScaleActorA" parent="." instance=ExtResource("9_actor")]
+position = Vector3(-3.1, 0.05, -0.1)
+rotation = Vector3(0, 0.6, 0)
+
+[node name="ScaleActorB" parent="." instance=ExtResource("9_actor")]
+position = Vector3(2.0, 0.05, 1.4)
+rotation = Vector3(0, -1.15, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(11.5, 9.8, 11.5)
+rotation = Vector3(-0.802851, 0.785398, 0)
+projection = 1
+size = 17.5
+current = true
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.8, -0.55, -0.15)
+light_energy = 2.7
+shadow_enabled = true
+

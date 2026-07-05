@@ -1,0 +1,1158 @@
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "free",
+		"box_uv": false
+	},
+	"codex_source": {
+		"schema": "gpt_blockbench_cubecraft_v0",
+		"pack_id": "blockbench_cubecraft_v0",
+		"asset_id": "cubecraft_space_tableau_01",
+		"generator": "docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs"
+	},
+	"codex_palette": {
+		"clone_white": "#e8eeee",
+		"clone_shadow": "#aeb8bb",
+		"clone_blue": "#2488d8",
+		"clone_red": "#b9352d",
+		"visor_black": "#101419",
+		"droid_tan": "#b99b63",
+		"droid_shadow": "#6d5a38",
+		"b2_bluegray": "#7b8d93",
+		"panel_gray": "#68727a",
+		"ship_dark": "#343a42",
+		"sand_block": "#b98245",
+		"sand_light": "#dfba72",
+		"adobe_dark": "#6b4a2f",
+		"tech_cyan": "#27d7ff",
+		"warning_orange": "#ff7a2c",
+		"saber_blue": "#38d9ff",
+		"space_plane": "#0b1724",
+		"republic_crimson": "#c43b32",
+		"freighter_yellow": "#d8b65d"
+	},
+	"name": "Cubecraft Space Tableau 01",
+	"model_identifier": "cubecraft_space_tableau_01",
+	"visible_box": [
+		1,
+		1,
+		0
+	],
+	"variable_placeholders": "",
+	"resolution": {
+		"width": 48,
+		"height": 48
+	},
+	"elements": [
+		{
+			"name": "friendly_body",
+			"uuid": "2c5be7bc-f375-48c7-affe-cf1a714b2f17",
+			"from": [
+				-6.1,
+				0.7,
+				-4.2
+			],
+			"to": [
+				-5.1,
+				1.3,
+				-0.20000000000000018
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 0,
+			"material_key": "clone_white",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "friendly_wing",
+			"uuid": "17bb44e5-d9bf-44d9-b2f3-b28525443b68",
+			"from": [
+				-7.699999999999999,
+				0.675,
+				-2.1
+			],
+			"to": [
+				-3.4999999999999996,
+				0.925,
+				-1.2999999999999998
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 1,
+			"material_key": "republic_crimson",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "friendly_cockpit",
+			"uuid": "961a99c0-002f-4ec4-9846-6c8f12de7cf5",
+			"from": [
+				-5.949999999999999,
+				1.375,
+				-2.65
+			],
+			"to": [
+				-5.25,
+				1.725,
+				-2.15
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 2,
+			"material_key": "tech_cyan",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "wingman_body",
+			"uuid": "310d1593-df63-4c34-945a-9926d2246d98",
+			"from": [
+				-3.05,
+				0.7,
+				0.30000000000000004
+			],
+			"to": [
+				-1.95,
+				1.3,
+				3.9000000000000004
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 0,
+			"material_key": "clone_white",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "wingman_wing",
+			"uuid": "f7a0de54-3fe2-49eb-872c-2b337ac9137f",
+			"from": [
+				-4.5,
+				0.675,
+				1.85
+			],
+			"to": [
+				-0.5,
+				0.925,
+				2.5500000000000003
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 1,
+			"material_key": "republic_crimson",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "enemy_core",
+			"uuid": "bc58d385-9a0d-4ead-a3fd-9b6cb1a1e94e",
+			"from": [
+				2.25,
+				0.7,
+				-2.55
+			],
+			"to": [
+				3.75,
+				1.3,
+				-1.05
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 3,
+			"material_key": "droid_tan",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "enemy_fin_front",
+			"uuid": "49094520-6608-4f81-889b-fc32536b08af",
+			"from": [
+				2.7,
+				0.675,
+				-4.65
+			],
+			"to": [
+				3.3,
+				0.925,
+				-2.15
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 4,
+			"material_key": "droid_shadow",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "enemy_fin_left",
+			"uuid": "7e6e2f52-d767-4508-a2c9-f79ceb6007aa",
+			"from": [
+				0.1499999999999999,
+				0.675,
+				-1.3
+			],
+			"to": [
+				2.65,
+				0.925,
+				-0.7
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 4,
+			"material_key": "droid_shadow",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "enemy_fin_right",
+			"uuid": "2a3c8573-aef9-4188-9aaf-f7669256c72e",
+			"from": [
+				3.3499999999999996,
+				0.675,
+				-1.3
+			],
+			"to": [
+				5.85,
+				0.925,
+				-0.7
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 4,
+			"material_key": "droid_shadow",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "freighter_spine",
+			"uuid": "57810b37-aedc-40eb-a35e-87bf9a1e2698",
+			"from": [
+				-1.05,
+				0.7999999999999999,
+				3
+			],
+			"to": [
+				0.25,
+				1.6,
+				7
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 5,
+			"material_key": "ship_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "freighter_left_pod",
+			"uuid": "580d986e-4b05-4003-9a8b-e43cf1945120",
+			"from": [
+				-2.5,
+				0.7,
+				3.4
+			],
+			"to": [
+				-1.1,
+				1.3,
+				6.6
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 6,
+			"material_key": "freighter_yellow",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "freighter_right_pod",
+			"uuid": "92c6d974-82b5-4df4-8c6b-7d2c37569343",
+			"from": [
+				0.30000000000000004,
+				0.7,
+				3.4
+			],
+			"to": [
+				1.7,
+				1.3,
+				6.6
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 7,
+			"material_key": "clone_shadow",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "blue_laser",
+			"uuid": "77a135ec-ed24-4cbf-bb26-35854f7c868f",
+			"from": [
+				-3.9000000000000004,
+				0.36,
+				-2.19
+			],
+			"to": [
+				1.5000000000000002,
+				0.54,
+				-2.0100000000000002
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 2,
+			"material_key": "tech_cyan",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "orange_laser",
+			"uuid": "9a373f37-9cb2-48c1-a7c3-a64ee3f7924c",
+			"from": [
+				-0.7000000000000002,
+				0.41000000000000003,
+				0.21
+			],
+			"to": [
+				3.5,
+				0.59,
+				0.39
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 8,
+			"material_key": "warning_orange",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						32,
+						48,
+						48
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						32,
+						48,
+						48
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						32,
+						48,
+						48
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						32,
+						48,
+						48
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						32,
+						48,
+						48
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						32,
+						48,
+						48
+					],
+					"texture": 0
+				}
+			}
+		}
+	],
+	"outliner": [
+		"2c5be7bc-f375-48c7-affe-cf1a714b2f17",
+		"17bb44e5-d9bf-44d9-b2f3-b28525443b68",
+		"961a99c0-002f-4ec4-9846-6c8f12de7cf5",
+		"310d1593-df63-4c34-945a-9926d2246d98",
+		"f7a0de54-3fe2-49eb-872c-2b337ac9137f",
+		"bc58d385-9a0d-4ead-a3fd-9b6cb1a1e94e",
+		"49094520-6608-4f81-889b-fc32536b08af",
+		"7e6e2f52-d767-4508-a2c9-f79ceb6007aa",
+		"2a3c8573-aef9-4188-9aaf-f7669256c72e",
+		"57810b37-aedc-40eb-a35e-87bf9a1e2698",
+		"580d986e-4b05-4003-9a8b-e43cf1945120",
+		"92c6d974-82b5-4df4-8c6b-7d2c37569343",
+		"77a135ec-ed24-4cbf-bb26-35854f7c868f",
+		"9a373f37-9cb2-48c1-a7c3-a64ee3f7924c"
+	],
+	"textures": [
+		{
+			"path": "textures/cubecraft_space_tableau_01_palette.png",
+			"name": "cubecraft_space_tableau_01_palette",
+			"folder": "",
+			"namespace": "",
+			"id": "0",
+			"particle": false,
+			"render_mode": "default",
+			"visible": true,
+			"mode": "bitmap",
+			"saved": true,
+			"uuid": "66290086-f983-4d36-a851-66efade16ddc",
+			"source": "textures/cubecraft_space_tableau_01_palette.png"
+		}
+	]
+}

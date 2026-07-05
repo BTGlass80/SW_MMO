@@ -27,6 +27,8 @@ from collections import Counter, defaultdict
 INFLOW = {
     "sell": lambda e: int(e.get("price", 0)),
     "loot": lambda e: int(e.get("loot_credits", 0)),  # loot_credits = credits + salvage total
+    "bazaar_sell_revenue": lambda e: int(e.get("price", 0)),  # Transfer from buyer
+    "space_sell_cargo": lambda e: int(e.get("credits_earned", 0)),  # Space faucet
     # DIV-0022 (PvP bounties): a hunter's payout, and an escrow refund on pay-off / expiry.
     "bounty_collect": lambda e: int(e.get("payout", 0)),
     "bounty_refund": lambda e: int(e.get("refund", 0)),
@@ -35,17 +37,23 @@ INFLOW = {
 OUTFLOW = {
     "buy": lambda e: int(e.get("price", 0)),
     "repair": lambda e: int(e.get("cost", 0)),
+    "bazaar_buy": lambda e: int(e.get("price", 0)),  # Transfer to seller
+    "bazaar_list_fee": lambda e: int(e.get("amount", 0)), # Listing fee
+    "space_buy_fuel": lambda e: int(e.get("cost", 0)),  # Space sink
+    "space_repair_ship": lambda e: int(e.get("cost", 0)), # Space sink
+    "buy_insurance": lambda e: int(e.get("cost", 0)),
     # DIV-0022 (PvP bounties): placement debits escrow + a non-refundable posting fee; pay-off is a sink.
     # NOTE: only the fee is a NET sink (escrow returns as a bounty_collect/bounty_refund inflow), so
     # place+collect net to the fee — exactly the faucets-and-sinks intent.
     "bounty_place": lambda e: int(e.get("credits", 0)),
     "bounty_payoff": lambda e: int(e.get("cost", 0)),
+    "sink_fee": lambda e: int(e.get("amount", 0)),  # Docking/Travel/Repair fee
 }
 # Known types that carry no wallet delta (death keeps credits per DIV-0006).
-NEUTRAL = {"death", "travel", "window_resolve"}
+NEUTRAL = {"death", "travel", "window_resolve", "bazaar_list"}
 
 # Fields that suggest an event type moves credits even if we don't know it.
-CREDITY_FIELDS = ("price", "cost", "credits", "loot_credits", "reward_credits")
+CREDITY_FIELDS = ("price", "cost", "credits", "loot_credits", "reward_credits", "amount", "credits_earned")
 
 
 def read_events(path):
@@ -155,6 +163,34 @@ def main(argv=None):
         print(render(per_char, unknown_credity, type_counts))
     return 0
 
+def test_tally():
+    events = [
+        # Bazaar fee (outflow)
+        {"type": "bazaar_list_fee", "character_id": "test_char", "amount": 50},
+        # Bazaar buy/sell (transfer)
+        {"type": "bazaar_buy", "character_id": "test_char", "price": 100},
+        {"type": "bazaar_sell_revenue", "character_id": "test_char2", "price": 100},
+        # Space cargo sale (inflow)
+        {"type": "space_sell_cargo", "character_id": "test_char", "credits_earned": 500},
+        # Docking fee (outflow)
+        {"type": "sink_fee", "character_id": "test_char", "amount": 75}
+    ]
+    per_char, unknown_credity, type_counts = tally(events)
+    
+    # Assert unknown_credity is empty
+    assert not unknown_credity, f"Expected no unknown credity events, got {unknown_credity}"
+    
+    # test_char: inflow = 500 (space), outflow = 50 (bazaar list) + 100 (bazaar buy) + 75 (docking) = 225
+    assert per_char["test_char"]["inflow"] == 500
+    assert per_char["test_char"]["outflow"] == 225
+    
+    # test_char2: inflow = 100 (bazaar sell), outflow = 0
+    assert per_char["test_char2"]["inflow"] == 100
+    assert per_char["test_char2"]["outflow"] == 0
+    print("test_tally passed.")
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--test":
+        test_tally()
+        sys.exit(0)
     sys.exit(main())

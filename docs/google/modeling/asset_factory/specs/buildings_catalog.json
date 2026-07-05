@@ -1,0 +1,37 @@
+{
+  "desert_doorway": {
+    "display_name": "Desert Doorway",
+    "cell_size": 0.08,
+    "parts": {
+      "body": {"front": [24, 24], "side": [6, 24]}
+    }
+  },
+  "moisture_vaporator": {
+    "display_name": "Moisture Vaporator",
+    "cell_size": 0.08,
+    "parts": {
+      "body": {"front": [10, 32], "side": [10, 32]}
+    }
+  },
+  "dome_cap": {
+    "display_name": "Dome Cap",
+    "cell_size": 0.08,
+    "parts": {
+      "body": {"front": [24, 12], "side": [24, 12]}
+    }
+  },
+  "combat_barricade": {
+    "display_name": "Combat Barricade",
+    "cell_size": 0.08,
+    "parts": {
+      "body": {"front": [16, 12], "side": [16, 12]}
+    }
+  },
+  "landing_pad_light": {
+    "display_name": "Landing Pad Light",
+    "cell_size": 0.08,
+    "parts": {
+      "body": {"front": [6, 16], "side": [6, 16]}
+    }
+  }
+}

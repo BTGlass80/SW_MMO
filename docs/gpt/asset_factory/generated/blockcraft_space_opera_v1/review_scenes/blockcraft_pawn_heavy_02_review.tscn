@@ -1,0 +1,225 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_pawn_heavy_02.tscn" id="1_usgj3"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b15kn"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_bnpb0"]
+size = Vector3(8.5, 0.08, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iswes"]
+albedo_color = Color(0.0627451, 0.078431375, 0.09803922, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_feegk"]
+size = Vector3(0.82, 0.26, 0.48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dyrlf"]
+albedo_color = Color(0.68235296, 0.72156864, 0.73333335, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_2l4oy"]
+size = Vector3(0.68, 0.72, 0.38)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hepon"]
+size = Vector3(0.94, 0.2, 0.46)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wjwqr"]
+albedo_color = Color(0.9019608, 0.9254902, 0.92156863, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_bec1x"]
+size = Vector3(0.98, 0.78, 0.52)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jsa81"]
+size = Vector3(0.54, 0.36, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ktd48"]
+albedo_color = Color(0.18431373, 0.56078434, 0.8392157, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.18431373, 0.56078434, 0.8392157, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_3wb47"]
+size = Vector3(0.44, 0.08, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jqosu"]
+size = Vector3(0.38, 0.32, 0.58)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pwgr1"]
+size = Vector3(0.38, 0.32, 0.58)
+
+[sub_resource type="BoxMesh" id="BoxMesh_nxypj"]
+size = Vector3(0.24, 0.62, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_57qi8"]
+size = Vector3(0.24, 0.62, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_h4x7r"]
+size = Vector3(0.8, 0.52, 0.64)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gxynx"]
+size = Vector3(0.54, 0.14, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ddtrp"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_jgy3p"]
+size = Vector3(0.72, 0.92, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_oxb8f"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_ljs88"]
+size = Vector3(0.28, 0.26, 0.78)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ors46"]
+size = Vector3(0.18, 0.18, 0.32)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u2rmh"]
+albedo_color = Color(0.14117648, 0.84313726, 0.84313726, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14117648, 0.84313726, 0.84313726, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_s42fw"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i4u1f"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jnc8o"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4v5yp"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[node name="blockcraft_pawn_heavy_02_review" type="Node3D" unique_id=1996919695]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=866176407]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_b15kn")
+mesh = SubResource("BoxMesh_bnpb0")
+
+[node name="blockcraft_pawn_heavy_02" type="Node3D" parent="." unique_id=1085280939 instance=ExtResource("1_usgj3")]
+metadata/asset_id = "blockcraft_pawn_heavy_02"
+metadata/display_name = "Blockcraft Armored Heavy 02"
+metadata/category = "character_token"
+metadata/gameplay_role = "friendly heavy pawn silhouette test"
+metadata/prompt = "generic blocky heavy white armored pawn with large backpack and boxy cannon"
+
+[node name="wide_boots" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=699147750]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, 0)
+material_override = SubResource("StandardMaterial3D_iswes")
+mesh = SubResource("BoxMesh_feegk")
+
+[node name="wide_legs" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=1410831559]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.56, 0)
+material_override = SubResource("StandardMaterial3D_dyrlf")
+mesh = SubResource("BoxMesh_2l4oy")
+
+[node name="belt" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=2055172322]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.94, -0.02)
+material_override = SubResource("StandardMaterial3D_iswes")
+mesh = SubResource("BoxMesh_hepon")
+
+[node name="torso" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=857166276]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+material_override = SubResource("StandardMaterial3D_wjwqr")
+mesh = SubResource("BoxMesh_bec1x")
+
+[node name="chest_plate" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=854251972]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38, -0.31)
+material_override = SubResource("StandardMaterial3D_dyrlf")
+mesh = SubResource("BoxMesh_jsa81")
+
+[node name="blue_unit_bar" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=411240552]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.58, -0.34)
+material_override = SubResource("StandardMaterial3D_ktd48")
+mesh = SubResource("BoxMesh_3wb47")
+
+[node name="left_shoulder" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=1950968491]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.74, 1.5, 0)
+material_override = SubResource("StandardMaterial3D_wjwqr")
+mesh = SubResource("BoxMesh_jqosu")
+
+[node name="right_shoulder" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=1691683729]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.74, 1.5, 0)
+material_override = SubResource("StandardMaterial3D_wjwqr")
+mesh = SubResource("BoxMesh_pwgr1")
+
+[node name="left_arm" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=368721271]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.76, 1.08, -0.1)
+material_override = SubResource("StandardMaterial3D_dyrlf")
+mesh = SubResource("BoxMesh_nxypj")
+
+[node name="right_arm" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=1194095318]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.76, 1.08, -0.28)
+material_override = SubResource("StandardMaterial3D_dyrlf")
+mesh = SubResource("BoxMesh_57qi8")
+
+[node name="helmet" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=1708876048]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9, 0)
+material_override = SubResource("StandardMaterial3D_wjwqr")
+mesh = SubResource("BoxMesh_h4x7r")
+
+[node name="visor" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=1579170049]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9, -0.37)
+material_override = SubResource("StandardMaterial3D_iswes")
+mesh = SubResource("BoxMesh_gxynx")
+
+[node name="backpack" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=1418144327]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.28, 0.41)
+material_override = SubResource("StandardMaterial3D_ddtrp")
+mesh = SubResource("BoxMesh_jgy3p")
+
+[node name="cannon_body" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=1187295700]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 1.03, -0.55)
+material_override = SubResource("StandardMaterial3D_oxb8f")
+mesh = SubResource("BoxMesh_ljs88")
+
+[node name="cannon_tip" type="MeshInstance3D" parent="blockcraft_pawn_heavy_02" unique_id=511047877]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 1.03, -1.05)
+material_override = SubResource("StandardMaterial3D_ddtrp")
+mesh = SubResource("BoxMesh_ors46")
+
+[node name="BlockSelectionMarker" type="Node3D" parent="." unique_id=884271627]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+
+[node name="front" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1951100169]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.7)
+material_override = SubResource("StandardMaterial3D_u2rmh")
+mesh = SubResource("BoxMesh_s42fw")
+
+[node name="back" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1428652773]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.7)
+material_override = SubResource("StandardMaterial3D_u2rmh")
+mesh = SubResource("BoxMesh_i4u1f")
+
+[node name="left" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=870177260]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_u2rmh")
+mesh = SubResource("BoxMesh_jnc8o")
+
+[node name="right" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=531938916]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_u2rmh")
+mesh = SubResource("BoxMesh_4v5yp")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=1475558725]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=158127046]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 8.0
+far = 120.0

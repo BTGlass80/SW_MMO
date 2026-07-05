@@ -321,6 +321,7 @@ func submit_fire_intent(peer_id: int, intent: Dictionary) -> void:
 		"full_dodge": bool(intent.get("full_dodge", false)),  # F51: defensive stance — forgo the attack, max dodge
 		"dodge": bool(intent.get("dodge", false)),            # F52: active dodge WHILE attacking (-1D multi-action)
 		"target_peer": maxi(int(intent.get("target_peer", 0)), 0),  # DIV-0019: 0 = shared dummy/creature (unchanged path)
+		"target_npc": String(intent.get("target_npc", "")),
 	}
 
 func pending_intent_count() -> int:
@@ -447,6 +448,12 @@ func resolve_window(seed_base: int, pvp_gate: Dictionary = {}) -> Dictionary:
 			lethal = true  # PvP is always lethal — the sparring clamp is skipped
 		else:
 			target_key = String(_player_target.get(peer_id, ""))
+			
+			# If the intent specifically targeted an NPC, override the target_key
+			var target_npc := String(_intents[peer_id].get("target_npc", ""))
+			if target_npc != "":
+				target_key = target_npc
+				
 			var use_hostile := target_key != "" and _hostile_targets.has(target_key)
 			var tprofile: Dictionary
 			if use_hostile:

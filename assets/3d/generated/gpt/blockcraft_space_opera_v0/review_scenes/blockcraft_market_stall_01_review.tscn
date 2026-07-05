@@ -1,0 +1,152 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v0/scenes/blockcraft_market_stall_01.tscn" id="1_1km7b"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_14fqg"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_rdn28"]
+size = Vector3(8.5, 0.08, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_svl3x"]
+albedo_color = Color(0.7254902, 0.50980395, 0.27058825, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_g1ckq"]
+size = Vector3(3.9, 2, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8o7bj"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_diyqk"]
+size = Vector3(3.4, 1.1, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y5ng1"]
+albedo_color = Color(0.7254902, 0.2627451, 0.1882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_wgxle"]
+size = Vector3(4.8, 0.25, 2.45)
+
+[sub_resource type="BoxMesh" id="BoxMesh_vxlo4"]
+size = Vector3(0.18, 2, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_upd4u"]
+size = Vector3(0.18, 2, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hpxnr"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_d2ome"]
+size = Vector3(0.7, 0.75, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6rwxq"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_241j4"]
+size = Vector3(0.48, 0.28, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eo0f2"]
+albedo_color = Color(0.47843137, 0.3372549, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_2bkv1"]
+size = Vector3(0.62, 0.62, 0.62)
+
+[sub_resource type="BoxMesh" id="BoxMesh_m5vkw"]
+size = Vector3(0.48, 0.48, 0.48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xycf1"]
+albedo_color = Color(0.14117648, 0.84313726, 0.84313726, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14117648, 0.84313726, 0.84313726, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="TorusMesh" id="TorusMesh_r735f"]
+inner_radius = 2.0
+outer_radius = 2.07
+ring_segments = 72
+
+[node name="blockcraft_market_stall_01_review" type="Node3D" unique_id=286659501]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=428202523]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_14fqg")
+mesh = SubResource("BoxMesh_rdn28")
+
+[node name="blockcraft_market_stall_01" type="Node3D" parent="." unique_id=941395238 instance=ExtResource("1_1km7b")]
+metadata/asset_id = "blockcraft_market_stall_01"
+metadata/display_name = "Blockcraft Market Stall 01"
+metadata/category = "vendor_stall"
+metadata/gameplay_role = "vendor, quest-giver, or repair terminal landmark"
+metadata/prompt = "blocky desert market stall with red canopy, crates, and glowing terminal"
+
+[node name="back_wall" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=2028012677]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.8)
+material_override = SubResource("StandardMaterial3D_svl3x")
+mesh = SubResource("BoxMesh_g1ckq")
+
+[node name="counter" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=1942934136]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, -0.75)
+material_override = SubResource("StandardMaterial3D_8o7bj")
+mesh = SubResource("BoxMesh_diyqk")
+
+[node name="canopy" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=1436001659]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.35, -0.15)
+material_override = SubResource("StandardMaterial3D_y5ng1")
+mesh = SubResource("BoxMesh_wgxle")
+
+[node name="left_post" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=159194242]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.2, -1.15)
+material_override = SubResource("StandardMaterial3D_8o7bj")
+mesh = SubResource("BoxMesh_vxlo4")
+
+[node name="right_post" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=120403825]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.2, -1.15)
+material_override = SubResource("StandardMaterial3D_8o7bj")
+mesh = SubResource("BoxMesh_upd4u")
+
+[node name="terminal_body" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=1670019856]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.45, 0.85, -1.35)
+material_override = SubResource("StandardMaterial3D_hpxnr")
+mesh = SubResource("BoxMesh_d2ome")
+
+[node name="terminal_screen" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=1823473587]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.45, 1, -1.55)
+material_override = SubResource("StandardMaterial3D_6rwxq")
+mesh = SubResource("BoxMesh_241j4")
+
+[node name="crate_a" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=1766481744]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0.35, -1.28)
+material_override = SubResource("StandardMaterial3D_eo0f2")
+mesh = SubResource("BoxMesh_2bkv1")
+
+[node name="crate_b" type="MeshInstance3D" parent="blockcraft_market_stall_01" unique_id=545546993]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0.25, -0.55)
+material_override = SubResource("StandardMaterial3D_eo0f2")
+mesh = SubResource("BoxMesh_m5vkw")
+
+[node name="@MeshInstance3D@4" type="MeshInstance3D" parent="." unique_id=881853058]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+material_override = SubResource("StandardMaterial3D_xycf1")
+mesh = SubResource("TorusMesh_r735f")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=1918109519]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=2076537022]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 8.0
+far = 120.0

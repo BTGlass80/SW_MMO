@@ -1,0 +1,63 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i3arq"]
+albedo_color = Color(0.46666667, 0.4392157, 0.42745098, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_ehvki"]
+size = Vector3(0.78, 0.72, 0.66)
+
+[sub_resource type="BoxMesh" id="BoxMesh_uruds"]
+size = Vector3(0.58, 0.46, 0.92)
+
+[sub_resource type="BoxMesh" id="BoxMesh_x60fi"]
+size = Vector3(0.45, 0.38, 0.62)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hpxnr"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_shmff"]
+size = Vector3(0.95, 0.08, 0.32)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y02up"]
+albedo_color = Color(1, 0.47843137, 0.17254902, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(1, 0.47843137, 0.17254902, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_mexnc"]
+size = Vector3(0.24, 0.08, 0.08)
+
+[node name="blockcraft_iso_debris_field_01" type="Node3D" unique_id=1109010598]
+metadata/asset_id = "blockcraft_iso_debris_field_01"
+metadata/display_name = "Blockcraft Isometric Debris Field 01"
+metadata/category = "space_hazard"
+metadata/gameplay_role = "flat-plane obstacle, cover, or sensor occlusion marker"
+metadata/prompt = "blocky asteroid and wreckage debris field for isometric tactical space"
+
+[node name="rock_a" type="MeshInstance3D" parent="." unique_id=496613673]
+transform = Transform3D(0.9418009, -0.13236149, 0.309017, 0.1391731, 0.99026805, 0, -0.30600965, 0.043006856, 0.95105654, -0.95, 0.42, 0)
+material_override = SubResource("StandardMaterial3D_i3arq")
+mesh = SubResource("BoxMesh_ehvki")
+
+[node name="rock_b" type="MeshInstance3D" parent="." unique_id=1947734440]
+transform = Transform3D(0.92210466, 0.09691711, -0.37460658, -0.104528464, 0.9945219, 0, 0.37255445, 0.03915705, 0.92718387, 0.15, 0.3, 0.42)
+material_override = SubResource("StandardMaterial3D_i3arq")
+mesh = SubResource("BoxMesh_uruds")
+
+[node name="rock_c" type="MeshInstance3D" parent="." unique_id=1284308276]
+transform = Transform3D(0.81644267, -0.14396086, 0.5591929, 0.17364818, 0.9848077, 0, -0.5506975, 0.09710283, 0.8290376, 1, 0.28, -0.48)
+material_override = SubResource("StandardMaterial3D_i3arq")
+mesh = SubResource("BoxMesh_x60fi")
+
+[node name="wreck_panel" type="MeshInstance3D" parent="." unique_id=1320033590]
+transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, 0.52, 0.18, -0.02)
+material_override = SubResource("StandardMaterial3D_hpxnr")
+mesh = SubResource("BoxMesh_shmff")
+
+[node name="warning_glow" type="MeshInstance3D" parent="." unique_id=1346458432]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.25, -0.22)
+material_override = SubResource("StandardMaterial3D_y02up")
+mesh = SubResource("BoxMesh_mexnc")

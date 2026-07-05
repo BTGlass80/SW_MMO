@@ -1,0 +1,198 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/private_clone_wars_blockcraft_v0/scenes/fan_b1_battle_droid_block_01.tscn" id="1_3kphm"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_42ltt"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_g7hb7"]
+size = Vector3(8.5, 0.08, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ijf6e"]
+albedo_color = Color(0.42745098, 0.3529412, 0.21960784, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_8xsc5"]
+size = Vector3(0.58, 0.2, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2rbc"]
+albedo_color = Color(0.7254902, 0.60784316, 0.3882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_j1518"]
+size = Vector3(0.12, 0.78, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xv4iu"]
+size = Vector3(0.12, 0.78, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_qaq3o"]
+size = Vector3(0.42, 0.16, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fh8ox"]
+size = Vector3(0.46, 0.68, 0.26)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mijwx"]
+size = Vector3(0.42, 0.26, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ven1u"]
+size = Vector3(0.38, 0.22, 0.26)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cjxkl"]
+albedo_color = Color(0.0627451, 0.078431375, 0.09803922, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_fga8x"]
+size = Vector3(0.28, 0.06, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_aiwxs"]
+size = Vector3(0.16, 0.26, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6d8xv"]
+size = Vector3(0.24, 0.56, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_y6kln"]
+size = Vector3(0.1, 0.66, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_nuym4"]
+size = Vector3(0.1, 0.66, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r4roa"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_3lyjv"]
+size = Vector3(0.1, 0.1, 0.88)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e4gy0"]
+albedo_color = Color(0.14117648, 0.84313726, 0.84313726, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14117648, 0.84313726, 0.84313726, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_hp6ci"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i0vmp"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bju6w"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_q1e1t"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[node name="fan_b1_battle_droid_block_01_review" type="Node3D" unique_id=1483445093]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=47075503]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_42ltt")
+mesh = SubResource("BoxMesh_g7hb7")
+
+[node name="fan_b1_battle_droid_block_01" type="Node3D" parent="." unique_id=981252837 instance=ExtResource("1_3kphm")]
+metadata/asset_id = "fan_b1_battle_droid_block_01"
+metadata/display_name = "Fan B1 Battle Droid Block 01"
+metadata/category = "character_token"
+metadata/gameplay_role = "B1-style battle droid pawn for private fan table"
+metadata/prompt = "blockcraft tan B1 battle droid with long head, thin limbs, and blaster"
+
+[node name="feet" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=1279067366]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+material_override = SubResource("StandardMaterial3D_ijf6e")
+mesh = SubResource("BoxMesh_8xsc5")
+
+[node name="left_leg" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=494598143]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.17, 0.52, 0)
+material_override = SubResource("StandardMaterial3D_h2rbc")
+mesh = SubResource("BoxMesh_j1518")
+
+[node name="right_leg" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=1812210565]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.17, 0.52, 0)
+material_override = SubResource("StandardMaterial3D_h2rbc")
+mesh = SubResource("BoxMesh_xv4iu")
+
+[node name="pelvis" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=451326714]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.88, 0)
+material_override = SubResource("StandardMaterial3D_ijf6e")
+mesh = SubResource("BoxMesh_qaq3o")
+
+[node name="torso" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=1940080674]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.24, 0)
+material_override = SubResource("StandardMaterial3D_h2rbc")
+mesh = SubResource("BoxMesh_fh8ox")
+
+[node name="long_head" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=1972387264]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.78, -0.12)
+material_override = SubResource("StandardMaterial3D_h2rbc")
+mesh = SubResource("BoxMesh_mijwx")
+
+[node name="back_cranium" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=560633992]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.82, 0.28)
+material_override = SubResource("StandardMaterial3D_ijf6e")
+mesh = SubResource("BoxMesh_ven1u")
+
+[node name="eye_bar" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=691863402]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.82, -0.38)
+material_override = SubResource("StandardMaterial3D_cjxkl")
+mesh = SubResource("BoxMesh_fga8x")
+
+[node name="neck" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=926658704]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.52, 0.06)
+material_override = SubResource("StandardMaterial3D_ijf6e")
+mesh = SubResource("BoxMesh_aiwxs")
+
+[node name="backpack_stalk" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=504413623]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.23, 0.24)
+material_override = SubResource("StandardMaterial3D_ijf6e")
+mesh = SubResource("BoxMesh_6d8xv")
+
+[node name="left_arm" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=285538065]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 1.16, -0.06)
+material_override = SubResource("StandardMaterial3D_h2rbc")
+mesh = SubResource("BoxMesh_y6kln")
+
+[node name="right_arm" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=1167829537]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 1.16, -0.18)
+material_override = SubResource("StandardMaterial3D_h2rbc")
+mesh = SubResource("BoxMesh_nuym4")
+
+[node name="blaster" type="MeshInstance3D" parent="fan_b1_battle_droid_block_01" unique_id=1988537618]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.58, 1.02, -0.62)
+material_override = SubResource("StandardMaterial3D_r4roa")
+mesh = SubResource("BoxMesh_3lyjv")
+
+[node name="BlockSelectionMarker" type="Node3D" parent="." unique_id=1907292267]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+
+[node name="front" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1688304076]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.7)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_hp6ci")
+
+[node name="back" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=210680726]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.7)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_i0vmp")
+
+[node name="left" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1371259658]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_bju6w")
+
+[node name="right" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1827017055]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_e4gy0")
+mesh = SubResource("BoxMesh_q1e1t")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=1943847209]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=295132771]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 8.0
+far = 120.0

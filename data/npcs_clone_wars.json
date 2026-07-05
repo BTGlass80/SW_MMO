@@ -402,6 +402,57 @@
       "vendor": false,
       "source_room": "Jabba's Townhouse - Audience Chamber",
       "source_file": "npcs_drop_mob_grind_hutt_territory.yaml"
+    },
+    {
+      "id": "figrin_dan",
+      "name": "Figrin D'an",
+      "species": "Bith",
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "role": "Bith Holo-Musician",
+      "faction_axis": "independent",
+      "description": "The front-man of the Modal Nodes, checking his Kloo horn valves and muttering about booking rates.",
+      "dialogue_lines": [
+        "Play it again? We play the same tune all night. The crowd expects it.",
+        "Bookings are slim in the Outer Rim. Still better than performing on a Republic cruiser."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Chalmun's Cantina - Sabacc Lounge",
+      "source_file": "npcs_mos_eisley_population_p2.yaml"
+    },
+    {
+      "id": "kabe",
+      "name": "Kabe",
+      "species": "Chadra-Fan",
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "role": "Chadra-Fan Scavenger",
+      "faction_axis": "independent",
+      "description": "A small, bat-eared Chadra-Fan nursing a cup of spotchka, looking for open pockets or dropped credits.",
+      "dialogue_lines": [
+        "You buying the next round? Spotchka is pricey today.",
+        "Watch your pockets, stranger. The cantina has quick fingers."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Chalmun's Cantina - Main Bar",
+      "source_file": "npcs_mos_eisley_population_p2.yaml"
+    },
+    {
+      "id": "momaw_nadon",
+      "name": "Momaw Nadon",
+      "species": "Ithorian",
+      "zone_id": "tatooine.mos_eisley.spaceport",
+      "role": "Ithorian exile and botanist",
+      "faction_axis": "independent",
+      "description": "A tall, slow-speaking Ithorian exile sitting quietly in the booth recesses, nursing his drink.",
+      "dialogue_lines": [
+        "Peace be with you. The desert is quiet, but the town is loud.",
+        "I miss the forests of Ithor. Here, only the weeds survive."
+      ],
+      "hostile": false,
+      "vendor": false,
+      "source_room": "Chalmun's Cantina - Main Bar",
+      "source_file": "npcs_mos_eisley_population_p2.yaml"
     }
   ]
 }

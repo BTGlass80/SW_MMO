@@ -1,0 +1,106 @@
+{
+	"asset_count": 6,
+	"assets": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/assets/cantina_entrance_threshold_01.png",
+			"category": "terrain_module",
+			"display_name": "Cantina Entrance Threshold 01",
+			"footprint": [
+				5.5,
+				4.0
+			],
+			"gameplay_role": "elevated no-droids entrance threshold",
+			"id": "cantina_entrance_threshold_01",
+			"prompt": "blockcraft cantina entrance with raised steps, recessed dark doorway, no-droids sign, detector post, and cyan scan bar",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/review_scenes/cantina_entrance_threshold_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/scenes/cantina_entrance_threshold_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/assets/cantina_bar_booth_bay_01.png",
+			"category": "terrain_module",
+			"display_name": "Cantina Bar Booth Bay 01",
+			"footprint": [
+				5.8,
+				4.2
+			],
+			"gameplay_role": "main bar wall and curved booth-ring read",
+			"id": "cantina_bar_booth_bay_01",
+			"prompt": "blockcraft cantina interior bay with wall bar, curved booths, tables, dim floor, and warm service lights",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/review_scenes/cantina_bar_booth_bay_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/scenes/cantina_bar_booth_bay_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/assets/cantina_bandstand_corner_01.png",
+			"category": "terrain_module",
+			"display_name": "Cantina Bandstand Corner 01",
+			"footprint": [
+				4.5,
+				3.8
+			],
+			"gameplay_role": "music/bandstand identity corner",
+			"id": "cantina_bandstand_corner_01",
+			"prompt": "blockcraft cantina bandstand with raised stage, instruments, music lights, and acoustic wall alcove",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/review_scenes/cantina_bandstand_corner_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/scenes/cantina_bandstand_corner_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/assets/cantina_back_hallway_service_01.png",
+			"category": "terrain_module",
+			"display_name": "Cantina Back Hallway Service 01",
+			"footprint": [
+				5.6,
+				3.2
+			],
+			"gameplay_role": "back hallway with restrooms, cellar trapdoor, and curtained office",
+			"id": "cantina_back_hallway_service_01",
+			"prompt": "blockcraft cantina rear hallway module with service doors, cellar hatch, curtained office, and dim maintenance lighting",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/review_scenes/cantina_back_hallway_service_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/scenes/cantina_back_hallway_service_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/assets/cantina_multiroom_slice_01.png",
+			"category": "scene_slice",
+			"display_name": "Cantina Multiroom Slice 01",
+			"footprint": [
+				9.5,
+				7.2
+			],
+			"gameplay_role": "one-screen proof of outside -> entrance -> bar -> back hallway readability",
+			"id": "cantina_multiroom_slice_01",
+			"prompt": "blockcraft cantina social landmark slice with outside trouble zone, elevated no-droids entry, main bar, booth ring, bandstand, and back hallway",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/review_scenes/cantina_multiroom_slice_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/scenes/cantina_multiroom_slice_01.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/assets/cantina_exterior_plaza_slice_01.png",
+			"category": "scene_slice",
+			"display_name": "Cantina Exterior Plaza Slice 01",
+			"footprint": [
+				9.0,
+				6.8
+			],
+			"gameplay_role": "outside approach and social doorstep terrain",
+			"id": "cantina_exterior_plaza_slice_01",
+			"prompt": "blockcraft cantina exterior plaza with dome mass, recessed doorway, low walls, vaporators, clutter, and trouble-space cover",
+			"review_camera": "ground",
+			"review_scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/review_scenes/cantina_exterior_plaza_slice_01_review.tscn",
+			"scene_path": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/scenes/cantina_exterior_plaza_slice_01.tscn"
+		}
+	],
+	"captures": {
+		"all": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/contact_sheet_all.png",
+		"characters": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/contact_sheet_characters.png",
+		"ground": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/contact_sheet_ground.png",
+		"scene_slices": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/contact_sheet_scene_slices.png",
+		"space": "res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/captures/contact_sheet_space.png"
+	},
+	"display_name": "Cantina Terrain Kit V0",
+	"generated_at_unix": 1783145664.442,
+	"pack_id": "cantina_terrain_kit_v0",
+	"schema": "gpt_asset_factory_v0"
+}

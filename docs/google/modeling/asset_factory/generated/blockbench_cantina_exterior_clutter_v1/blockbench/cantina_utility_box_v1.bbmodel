@@ -1,0 +1,841 @@
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "free",
+		"box_uv": false
+	},
+	"codex_source": {
+		"schema": "gpt_blockbench_cubecraft_v0",
+		"pack_id": "blockbench_cantina_exterior_clutter_v1",
+		"asset_id": "cantina_utility_box_v1",
+		"generator": "docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs"
+	},
+	"codex_palette": {
+		"sand_dust": "#b87938",
+		"sand_shadow": "#81562f",
+		"sand_light": "#d6a75b",
+		"rust_dark": "#5c3d26",
+		"soot_dark": "#211915",
+		"metal_mid": "#555d62",
+		"metal_dark": "#30363a",
+		"wire_dark": "#1f272b",
+		"lamp_amber": "#ffb14a",
+		"scanner_cyan": "#27d7ff",
+		"crate_wood": "#7b5631",
+		"crate_lid": "#a0713a",
+		"scrap_red": "#8f2e24",
+		"stone_gray": "#6a6256"
+	},
+	"name": "Cantina Utility Box v1",
+	"model_identifier": "cantina_utility_box_v1",
+	"visible_box": [
+		1,
+		1,
+		0
+	],
+	"variable_placeholders": "",
+	"resolution": {
+		"width": 48,
+		"height": 48
+	},
+	"elements": [
+		{
+			"name": "main_box",
+			"uuid": "306e40e6-b536-46b3-b987-faabae07d800",
+			"from": [
+				-0.26,
+				0.09000000000000002,
+				-0.15
+			],
+			"to": [
+				0.26,
+				0.6699999999999999,
+				0.15
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 0,
+			"material_key": "soot_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "front_plate",
+			"uuid": "2d74930b-9b53-4000-93f8-fe857afb924e",
+			"from": [
+				-0.21,
+				0.24,
+				-0.21
+			],
+			"to": [
+				0.21,
+				0.6,
+				-0.15
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 1,
+			"material_key": "metal_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "amber_lamp",
+			"uuid": "da324f0c-313a-452e-aacf-f4f01a7297ba",
+			"from": [
+				-0.125,
+				0.71,
+				-0.23500000000000001
+			],
+			"to": [
+				0.125,
+				0.81,
+				-0.165
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 2,
+			"material_key": "lamp_amber",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "cyan_status_dot",
+			"uuid": "f3e7135c-d801-4ef2-a2f6-c6e9af594813",
+			"from": [
+				-0.17500000000000002,
+				0.405,
+				-0.25
+			],
+			"to": [
+				-0.10500000000000001,
+				0.475,
+				-0.21000000000000002
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 3,
+			"material_key": "scanner_cyan",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "red_warning_tag",
+			"uuid": "bb0847d2-a2b0-4a2a-a29e-f47d0165a9c2",
+			"from": [
+				0.05,
+				0.26,
+				-0.25
+			],
+			"to": [
+				0.21000000000000002,
+				0.31999999999999995,
+				-0.21000000000000002
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 4,
+			"material_key": "scrap_red",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "left_wire_upper",
+			"uuid": "3b05325a-6c0e-46d6-a1dc-ad8700e971f6",
+			"from": [
+				-0.76,
+				0.715,
+				-0.10500000000000001
+			],
+			"to": [
+				-0.19999999999999996,
+				0.765,
+				-0.055
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 5,
+			"material_key": "wire_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "left_wire_lower",
+			"uuid": "1fe7d639-9ff3-491c-a855-cad571b86b19",
+			"from": [
+				-0.66,
+				0.52,
+				-0.1
+			],
+			"to": [
+				-0.19999999999999998,
+				0.56,
+				-0.06
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 5,
+			"material_key": "wire_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						16,
+						48,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "right_conduit",
+			"uuid": "331f6f5a-2e07-4547-96f2-38bfef4fc1fb",
+			"from": [
+				0.44,
+				-0.04999999999999999,
+				-0.09
+			],
+			"to": [
+				0.52,
+				0.81,
+				-0.010000000000000002
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 6,
+			"material_key": "metal_mid",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "top_cap",
+			"uuid": "654a058d-49fa-4a5c-8e38-a8c1f0b745b5",
+			"from": [
+				-0.3,
+				0.6699999999999999,
+				-0.17
+			],
+			"to": [
+				0.3,
+				0.75,
+				0.17
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 6,
+			"material_key": "metal_mid",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						32,
+						16,
+						48
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "bottom_shadow_foot",
+			"uuid": "ce0457fd-2e04-4092-8063-d2cbdc4b782c",
+			"from": [
+				-0.3,
+				0.015,
+				-0.15000000000000002
+			],
+			"to": [
+				0.3,
+				0.105,
+				0.19
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 7,
+			"material_key": "rust_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						32,
+						32,
+						48
+					],
+					"texture": 0
+				}
+			}
+		}
+	],
+	"outliner": [
+		"306e40e6-b536-46b3-b987-faabae07d800",
+		"2d74930b-9b53-4000-93f8-fe857afb924e",
+		"da324f0c-313a-452e-aacf-f4f01a7297ba",
+		"f3e7135c-d801-4ef2-a2f6-c6e9af594813",
+		"bb0847d2-a2b0-4a2a-a29e-f47d0165a9c2",
+		"3b05325a-6c0e-46d6-a1dc-ad8700e971f6",
+		"1fe7d639-9ff3-491c-a855-cad571b86b19",
+		"331f6f5a-2e07-4547-96f2-38bfef4fc1fb",
+		"654a058d-49fa-4a5c-8e38-a8c1f0b745b5",
+		"ce0457fd-2e04-4092-8063-d2cbdc4b782c"
+	],
+	"textures": [
+		{
+			"path": "textures/cantina_utility_box_v1_palette.png",
+			"name": "cantina_utility_box_v1_palette",
+			"folder": "",
+			"namespace": "",
+			"id": "0",
+			"particle": false,
+			"render_mode": "default",
+			"visible": true,
+			"mode": "bitmap",
+			"saved": true,
+			"uuid": "18dac9bc-186a-4008-bc62-5ec7ea75753a",
+			"source": "textures/cantina_utility_box_v1_palette.png"
+		}
+	]
+}

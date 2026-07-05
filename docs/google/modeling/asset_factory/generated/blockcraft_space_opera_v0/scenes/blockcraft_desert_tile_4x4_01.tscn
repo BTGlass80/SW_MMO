@@ -1,0 +1,79 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_svl3x"]
+albedo_color = Color(0.7254902, 0.50980395, 0.27058825, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_m36bh"]
+size = Vector3(4, 0.24, 4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4py3p"]
+albedo_color = Color(0.8745098, 0.7294118, 0.44705883, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.8745098, 0.7294118, 0.44705883, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_kusac"]
+size = Vector3(1.4, 0.45, 1.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eo0f2"]
+albedo_color = Color(0.47843137, 0.3372549, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_4aetf"]
+size = Vector3(0.18, 0.25, 1.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hpxnr"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_6t6ic"]
+size = Vector3(1.1, 0.08, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i3arq"]
+albedo_color = Color(0.46666667, 0.4392157, 0.42745098, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_vuext"]
+size = Vector3(0.38, 0.26, 0.32)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wmpan"]
+size = Vector3(0.28, 0.22, 0.42)
+
+[node name="blockcraft_desert_tile_4x4_01" type="Node3D" unique_id=1265748367]
+metadata/asset_id = "blockcraft_desert_tile_4x4_01"
+metadata/display_name = "Blockcraft Desert Tile 4x4 01"
+metadata/category = "terrain_tile"
+metadata/gameplay_role = "repeatable desert ground tile with height-step readability"
+metadata/prompt = "blocky desert ground tile with simple ledge, rocks, and panel scraps"
+
+[node name="base" type="MeshInstance3D" parent="." unique_id=1291646966]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+material_override = SubResource("StandardMaterial3D_svl3x")
+mesh = SubResource("BoxMesh_m36bh")
+
+[node name="raised_corner" type="MeshInstance3D" parent="." unique_id=2014680479]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 0.38, -1.15)
+material_override = SubResource("StandardMaterial3D_4py3p")
+mesh = SubResource("BoxMesh_kusac")
+
+[node name="step_shadow" type="MeshInstance3D" parent="." unique_id=1001850822]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.24, -1.15)
+material_override = SubResource("StandardMaterial3D_eo0f2")
+mesh = SubResource("BoxMesh_4aetf")
+
+[node name="panel_scrap" type="MeshInstance3D" parent="." unique_id=788617231]
+transform = Transform3D(0.9396926, 0, 0.34202012, 0, 1, 0, -0.34202012, 0, 0.9396926, 1, 0.28, 0.65)
+material_override = SubResource("StandardMaterial3D_hpxnr")
+mesh = SubResource("BoxMesh_6t6ic")
+
+[node name="small_rock_a" type="MeshInstance3D" parent="." unique_id=2034408162]
+transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, -1.3, 0.34, 1.2)
+material_override = SubResource("StandardMaterial3D_i3arq")
+mesh = SubResource("BoxMesh_vuext")
+
+[node name="small_rock_b" type="MeshInstance3D" parent="." unique_id=98906624]
+transform = Transform3D(0.95105654, 0, -0.309017, 0, 1, 0, 0.309017, 0, 0.95105654, 1.55, 0.31, -1.3)
+material_override = SubResource("StandardMaterial3D_i3arq")
+mesh = SubResource("BoxMesh_wmpan")

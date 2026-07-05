@@ -1,0 +1,512 @@
+{
+	"captures": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_room_runtime_adapter_v0/captures/adapter_clean_room.png",
+			"description": "External JSON semantic cards rendered as deterministic voxel room geometry.",
+			"id": "adapter_clean_room",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_room_runtime_adapter_v0/review_scenes/adapter_clean_room.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_room_runtime_adapter_v0/captures/adapter_collision_nav_overlay.png",
+			"description": "External JSON semantic cards emitted walkable rectangles, merged collision boxes, and debug overlays.",
+			"id": "adapter_collision_nav_overlay",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_room_runtime_adapter_v0/review_scenes/adapter_collision_nav_overlay.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_room_runtime_adapter_v0/captures/adapter_socket_path_probe.png",
+			"description": "Named sockets and grid-routed path probes resolved from the external socket/path JSON.",
+			"id": "adapter_socket_path_probe",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_room_runtime_adapter_v0/review_scenes/adapter_socket_path_probe.tscn"
+		}
+	],
+	"generator": "docs/gpt/asset_factory/scripts/godot_pixel_room_runtime_adapter.gd",
+	"sockets": [
+		{
+			"action": "",
+			"facing": "north",
+			"grid": {
+				"x": 24,
+				"y": 25
+			},
+			"id": "entrance_spawn",
+			"kind": "spawn",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 24,
+				"y": 24
+			},
+			"resolved_world": {
+				"x": 0.08,
+				"y": 0.08,
+				"z": 1.36
+			},
+			"role": "spawn",
+			"tags": [
+				"entry",
+				"player"
+			],
+			"walkable": false,
+			"world": {
+				"x": 0.08,
+				"y": 0.08,
+				"z": 1.52
+			}
+		},
+		{
+			"action": "order_drink",
+			"facing": "east",
+			"grid": {
+				"x": 34,
+				"y": 13
+			},
+			"id": "bar_order_anchor",
+			"kind": "interaction",
+			"path_walkable": true,
+			"resolved_from_blocked": false,
+			"resolved_grid": {
+				"x": 34,
+				"y": 13
+			},
+			"resolved_world": {
+				"x": 1.68,
+				"y": 0.08,
+				"z": -0.4
+			},
+			"role": "use",
+			"tags": [
+				"bar",
+				"social"
+			],
+			"walkable": true,
+			"world": {
+				"x": 1.68,
+				"y": 0.08,
+				"z": -0.4
+			}
+		},
+		{
+			"action": "",
+			"facing": "west",
+			"grid": {
+				"x": 35,
+				"y": 20
+			},
+			"id": "bartender_anchor",
+			"kind": "npc_anchor",
+			"path_walkable": true,
+			"resolved_from_blocked": false,
+			"resolved_grid": {
+				"x": 35,
+				"y": 20
+			},
+			"resolved_world": {
+				"x": 1.84,
+				"y": 0.08,
+				"z": 0.72
+			},
+			"role": "stand",
+			"tags": [
+				"bar",
+				"staff"
+			],
+			"walkable": true,
+			"world": {
+				"x": 1.84,
+				"y": 0.08,
+				"z": 0.72
+			}
+		},
+		{
+			"action": "sit",
+			"facing": "south",
+			"grid": {
+				"x": 15,
+				"y": 10
+			},
+			"id": "left_booth_table",
+			"kind": "social_table",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 15,
+				"y": 8
+			},
+			"resolved_world": {
+				"x": -1.36,
+				"y": 0.08,
+				"z": -1.2
+			},
+			"role": "seat",
+			"tags": [
+				"booth",
+				"seated"
+			],
+			"walkable": false,
+			"world": {
+				"x": -1.36,
+				"y": 0.08,
+				"z": -0.88
+			}
+		},
+		{
+			"action": "sit",
+			"facing": "north",
+			"grid": {
+				"x": 15,
+				"y": 19
+			},
+			"id": "rear_booth_table",
+			"kind": "social_table",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 15,
+				"y": 17
+			},
+			"resolved_world": {
+				"x": -1.36,
+				"y": 0.08,
+				"z": 0.24
+			},
+			"role": "seat",
+			"tags": [
+				"booth",
+				"seated"
+			],
+			"walkable": false,
+			"world": {
+				"x": -1.36,
+				"y": 0.08,
+				"z": 0.56
+			}
+		},
+		{
+			"action": "sit",
+			"facing": "south",
+			"grid": {
+				"x": 21,
+				"y": 10
+			},
+			"id": "center_table_a",
+			"kind": "social_table",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 19,
+				"y": 10
+			},
+			"resolved_world": {
+				"x": -0.72,
+				"y": 0.08,
+				"z": -0.88
+			},
+			"role": "seat",
+			"tags": [
+				"table",
+				"seated"
+			],
+			"walkable": false,
+			"world": {
+				"x": -0.4,
+				"y": 0.08,
+				"z": -0.88
+			}
+		},
+		{
+			"action": "sit",
+			"facing": "north",
+			"grid": {
+				"x": 21,
+				"y": 19
+			},
+			"id": "center_table_b",
+			"kind": "social_table",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 21,
+				"y": 17
+			},
+			"resolved_world": {
+				"x": -0.4,
+				"y": 0.08,
+				"z": 0.24
+			},
+			"role": "seat",
+			"tags": [
+				"table",
+				"seated"
+			],
+			"walkable": false,
+			"world": {
+				"x": -0.4,
+				"y": 0.08,
+				"z": 0.56
+			}
+		},
+		{
+			"action": "enter_service_hall",
+			"facing": "north",
+			"grid": {
+				"x": 35,
+				"y": 10
+			},
+			"id": "service_door_anchor",
+			"kind": "transition",
+			"path_walkable": true,
+			"resolved_from_blocked": false,
+			"resolved_grid": {
+				"x": 35,
+				"y": 10
+			},
+			"resolved_world": {
+				"x": 1.84,
+				"y": 0.08,
+				"z": -0.88
+			},
+			"role": "transition",
+			"tags": [
+				"service",
+				"door"
+			],
+			"walkable": true,
+			"world": {
+				"x": 1.84,
+				"y": 0.08,
+				"z": -0.88
+			}
+		},
+		{
+			"action": "inspect_sign",
+			"facing": "south",
+			"grid": {
+				"x": 22,
+				"y": 8
+			},
+			"id": "no_droids_sign_socket",
+			"kind": "prop_socket",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 22,
+				"y": 7
+			},
+			"resolved_world": {
+				"x": -0.24,
+				"y": 0.08,
+				"z": -1.36
+			},
+			"role": "inspect",
+			"tags": [
+				"sign",
+				"wall"
+			],
+			"walkable": false,
+			"world": {
+				"x": -0.24,
+				"y": 0.08,
+				"z": -1.2
+			}
+		},
+		{
+			"action": "",
+			"facing": "down",
+			"grid": {
+				"x": 35,
+				"y": 10
+			},
+			"id": "bar_light_socket",
+			"kind": "light_socket",
+			"path_walkable": true,
+			"resolved_from_blocked": false,
+			"resolved_grid": {
+				"x": 35,
+				"y": 10
+			},
+			"resolved_world": {
+				"x": 1.84,
+				"y": 0.08,
+				"z": -0.88
+			},
+			"role": "light",
+			"tags": [
+				"bar",
+				"light"
+			],
+			"walkable": true,
+			"world": {
+				"x": 1.84,
+				"y": 0.08,
+				"z": -0.88
+			}
+		},
+		{
+			"action": "",
+			"facing": "east",
+			"grid": {
+				"x": 8,
+				"y": 24
+			},
+			"id": "clutter_socket_left",
+			"kind": "prop_socket",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 7,
+				"y": 22
+			},
+			"resolved_world": {
+				"x": -2.64,
+				"y": 0.08,
+				"z": 1.04
+			},
+			"role": "prop",
+			"tags": [
+				"clutter"
+			],
+			"walkable": false,
+			"world": {
+				"x": -2.48,
+				"y": 0.08,
+				"z": 1.36
+			}
+		},
+		{
+			"action": "",
+			"facing": "west",
+			"grid": {
+				"x": 40,
+				"y": 24
+			},
+			"id": "clutter_socket_rear",
+			"kind": "prop_socket",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 40,
+				"y": 25
+			},
+			"resolved_world": {
+				"x": 2.64,
+				"y": 0.08,
+				"z": 1.52
+			},
+			"role": "prop",
+			"tags": [
+				"clutter"
+			],
+			"walkable": false,
+			"world": {
+				"x": 2.64,
+				"y": 0.08,
+				"z": 1.36
+			}
+		},
+		{
+			"action": "take_cover",
+			"facing": "east",
+			"grid": {
+				"x": 10,
+				"y": 16
+			},
+			"id": "cover_left_partition",
+			"kind": "cover_anchor",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 10,
+				"y": 15
+			},
+			"resolved_world": {
+				"x": -2.16,
+				"y": 0.08,
+				"z": -0.08
+			},
+			"role": "cover",
+			"tags": [
+				"booth",
+				"cover"
+			],
+			"walkable": false,
+			"world": {
+				"x": -2.16,
+				"y": 0.08,
+				"z": 0.08
+			}
+		},
+		{
+			"action": "take_cover",
+			"facing": "west",
+			"grid": {
+				"x": 31,
+				"y": 14
+			},
+			"id": "cover_bar_corner",
+			"kind": "cover_anchor",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 32,
+				"y": 14
+			},
+			"resolved_world": {
+				"x": 1.36,
+				"y": 0.08,
+				"z": -0.24
+			},
+			"role": "cover",
+			"tags": [
+				"bar",
+				"cover"
+			],
+			"walkable": false,
+			"world": {
+				"x": 1.2,
+				"y": 0.08,
+				"z": -0.24
+			}
+		}
+	],
+	"source_images": {
+		"collision": "res://docs/gpt/asset_factory/generated/godot_pixel_room_runtime_adapter_v0/source_images/collision_mask.png",
+		"detail": "res://docs/gpt/asset_factory/generated/godot_pixel_room_runtime_adapter_v0/source_images/detail_card.png",
+		"floor": "res://docs/gpt/asset_factory/generated/godot_pixel_room_runtime_adapter_v0/source_images/floor_card.png",
+		"walkable": "res://docs/gpt/asset_factory/generated/godot_pixel_room_runtime_adapter_v0/source_images/walkable_mask.png"
+	},
+	"spec_path": "res://docs/gpt/asset_factory/specs/pixel_room_cantina_runtime_adapter_v0.json",
+	"stats": {
+		"blocker_pixels": 527,
+		"collision_rectangles": 38,
+		"collision_shape_reduction_vs_pixels": 92.8,
+		"collision_shapes": 38,
+		"cover_socket_count": 2,
+		"detail_nonempty_pixels": 141,
+		"detail_rectangles": 27,
+		"floor_nonempty_pixels": 966,
+		"floor_rectangles": 74,
+		"grid_size": "48x32",
+		"nonwalkable_socket_count": 10,
+		"path_probe_cells": 61,
+		"path_probe_count": 3,
+		"resolved_socket_count": 10,
+		"seat_socket_count": 4,
+		"socket_count": 14,
+		"socket_role_counts": {
+			"cover": 2,
+			"inspect": 1,
+			"light": 1,
+			"prop": 2,
+			"seat": 4,
+			"spawn": 1,
+			"stand": 1,
+			"transition": 1,
+			"use": 1
+		},
+		"stand_socket_count": 2,
+		"use_socket_count": 2,
+		"walk_node_reduction_vs_pixels": 90.9,
+		"walkable_pixels": 439,
+		"walkable_rectangles": 40
+	}
+}

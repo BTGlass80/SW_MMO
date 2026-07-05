@@ -1,0 +1,145 @@
+{
+  "character_id": "wookiee",
+  "display_name": "Wookiee (High Fidelity)",
+  "cell_size": 0.09,
+  "output_dir": "res://docs/google/modeling/asset_factory/generated/wookiee_v1",
+  "palette": {
+    "3b251a": "fur_brown",
+    "281810": "fur_dark",
+    "664d3b": "fur_highlight",
+    "dbcb83": "bandolier_silver",
+    "5c483b": "leather_belt"
+  },
+  "parts": {
+    "head": {"front": [12, 14], "side": [12, 14]},
+    "torso": {"front": [14, 22], "side": [12, 22]},
+    "upper_arm": {"front": [4, 10], "side": [4, 10]},
+    "forearm": {"front": [4, 10], "side": [4, 10]},
+    "thigh": {"front": [5, 12], "side": [5, 12]},
+    "shin": {"front": [5, 12], "side": [5, 12]},
+    "blaster": {"front": [24, 10], "side": [6, 10]}
+  },
+  "skeleton": {
+    "root": "torso",
+    "bones": {
+      "torso": {
+        "parent": "",
+        "pivot": [0, 0, 0],
+        "default_position": [0, 1.35, 0]
+      },
+      "head": {
+        "parent": "torso",
+        "pivot": [0, -0.45, 0],
+        "default_position": [0, 1.05, 0.0]
+      },
+      "left_upper_arm": {
+        "parent": "torso",
+        "pivot": [0.12, 0.32, 0],
+        "default_position": [-0.58, 0.35, 0]
+      },
+      "left_forearm": {
+        "parent": "left_upper_arm",
+        "pivot": [0, 0.32, 0],
+        "default_position": [0, -0.68, -0.02]
+      },
+      "right_upper_arm": {
+        "parent": "torso",
+        "pivot": [-0.12, 0.32, 0],
+        "default_position": [0.58, 0.35, 0]
+      },
+      "right_forearm": {
+        "parent": "right_upper_arm",
+        "pivot": [0, 0.32, 0],
+        "default_position": [0, -0.68, -0.02]
+      },
+      "left_thigh": {
+        "parent": "torso",
+        "pivot": [0, 0.42, 0],
+        "default_position": [-0.25, -0.95, 0]
+      },
+      "left_shin": {
+        "parent": "left_thigh",
+        "pivot": [0, 0.42, 0],
+        "default_position": [0, -0.95, 0]
+      },
+      "right_thigh": {
+        "parent": "torso",
+        "pivot": [0, 0.42, 0],
+        "default_position": [0.25, -0.95, 0]
+      },
+      "right_shin": {
+        "parent": "right_thigh",
+        "pivot": [0, 0.42, 0],
+        "default_position": [0, -0.95, 0]
+      },
+      "blaster": {
+        "parent": "right_forearm",
+        "pivot": [0, -0.3, 0],
+        "default_position": [0.15, -0.4, -0.3]
+      }
+    }
+  },
+  "animations": {
+    "walk": {
+      "loop": true,
+      "length": 1.2,
+      "keyframes": [
+        {
+          "time": 0.0,
+          "bones": {
+            "left_thigh": {"rotation": [22, 0, 0]},
+            "left_shin": {"rotation": [12, 0, 0]},
+            "right_thigh": {"rotation": [-22, 0, 0]},
+            "right_shin": {"rotation": [0, 0, 0]},
+            "left_upper_arm": {"rotation": [-18, 0, 0]},
+            "right_upper_arm": {"rotation": [18, 0, 0]}
+          }
+        },
+        {
+          "time": 0.3,
+          "bones": {
+            "left_thigh": {"rotation": [0, 0, 0]},
+            "left_shin": {"rotation": [28, 0, 0]},
+            "right_thigh": {"rotation": [0, 0, 0]},
+            "right_shin": {"rotation": [4, 0, 0]}
+          }
+        },
+        {
+          "time": 0.6,
+          "bones": {
+            "left_thigh": {"rotation": [-22, 0, 0]},
+            "left_shin": {"rotation": [0, 0, 0]},
+            "right_thigh": {"rotation": [22, 0, 0]},
+            "right_shin": {"rotation": [12, 0, 0]},
+            "left_upper_arm": {"rotation": [18, 0, 0]},
+            "right_upper_arm": {"rotation": [-18, 0, 0]}
+          }
+        },
+        {
+          "time": 0.9,
+          "bones": {
+            "left_thigh": {"rotation": [0, 0, 0]},
+            "left_shin": {"rotation": [4, 0, 0]},
+            "right_thigh": {"rotation": [0, 0, 0]},
+            "right_shin": {"rotation": [28, 0, 0]}
+          }
+        }
+      ]
+    },
+    "aim": {
+      "loop": false,
+      "length": 0.8,
+      "keyframes": [
+        {
+          "time": 0.0,
+          "bones": {
+            "right_upper_arm": {"rotation": [-45, -25, 0]},
+            "right_forearm": {"rotation": [-35, 12, 0]},
+            "left_upper_arm": {"rotation": [-25, 30, 0]},
+            "left_forearm": {"rotation": [-45, 0, 0]}
+          }
+        }
+      ]
+    }
+  }
+}

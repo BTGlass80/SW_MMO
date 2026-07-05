@@ -1,0 +1,924 @@
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "free",
+		"box_uv": false
+	},
+	"codex_source": {
+		"schema": "gpt_blockbench_cubecraft_v0",
+		"pack_id": "blockbench_cubecraft_v0",
+		"asset_id": "cubecraft_clone_rifleman_01",
+		"generator": "docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs"
+	},
+	"codex_palette": {
+		"clone_white": "#e8eeee",
+		"clone_shadow": "#aeb8bb",
+		"clone_blue": "#2488d8",
+		"clone_red": "#b9352d",
+		"visor_black": "#101419",
+		"droid_tan": "#b99b63",
+		"droid_shadow": "#6d5a38",
+		"b2_bluegray": "#7b8d93",
+		"panel_gray": "#68727a",
+		"ship_dark": "#343a42",
+		"sand_block": "#b98245",
+		"sand_light": "#dfba72",
+		"adobe_dark": "#6b4a2f",
+		"tech_cyan": "#27d7ff",
+		"warning_orange": "#ff7a2c",
+		"saber_blue": "#38d9ff",
+		"space_plane": "#0b1724",
+		"republic_crimson": "#c43b32",
+		"freighter_yellow": "#d8b65d"
+	},
+	"name": "Cubecraft Clone Rifleman 01",
+	"model_identifier": "cubecraft_clone_rifleman_01",
+	"visible_box": [
+		1,
+		1,
+		0
+	],
+	"variable_placeholders": "",
+	"resolution": {
+		"width": 48,
+		"height": 32
+	},
+	"elements": [
+		{
+			"name": "boots",
+			"uuid": "d4b3bdec-c009-43b5-af9b-6c6dc453b199",
+			"from": [
+				-3,
+				0,
+				-1.9
+			],
+			"to": [
+				3,
+				0.8,
+				1.9
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 0,
+			"material_key": "visor_black",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "legs",
+			"uuid": "d6295ed5-f4f7-491e-a0f3-7902073fe416",
+			"from": [
+				-2.4,
+				0.8000000000000003,
+				-1.6
+			],
+			"to": [
+				2.4,
+				3.6,
+				1.6
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 1,
+			"material_key": "clone_shadow",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "torso",
+			"uuid": "30eb3120-2509-4a54-b747-a35c4aae243d",
+			"from": [
+				-3.3,
+				3.5999999999999996,
+				-1.9
+			],
+			"to": [
+				3.3,
+				7.6,
+				1.9
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 2,
+			"material_key": "clone_white",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "chest_panel",
+			"uuid": "9a08035c-6ffd-4720-9176-0e0b1a82c787",
+			"from": [
+				-0.9,
+				4.8,
+				-2.13
+			],
+			"to": [
+				0.9,
+				6.8,
+				-1.91
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 3,
+			"material_key": "clone_blue",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						16,
+						16,
+						32
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "shoulders",
+			"uuid": "7f2d737c-bb1d-4ae0-854a-76822f8ca7ff",
+			"from": [
+				-4.4,
+				6.7,
+				-2
+			],
+			"to": [
+				4.4,
+				7.7,
+				2
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 2,
+			"material_key": "clone_white",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "helmet",
+			"uuid": "6a77e3f5-7060-4be2-883e-0d6215bacf6d",
+			"from": [
+				-3.2,
+				8.200000000000001,
+				-2.5
+			],
+			"to": [
+				3.2,
+				11.4,
+				2.5
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 2,
+			"material_key": "clone_white",
+			"faces": {
+				"north": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						32,
+						0,
+						48,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "helmet_brow",
+			"uuid": "8d1ef33b-3f45-4238-aded-88d665b13085",
+			"from": [
+				-3.4,
+				10.225,
+				-2.745
+			],
+			"to": [
+				3.4,
+				10.674999999999999,
+				-2.495
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 1,
+			"material_key": "clone_shadow",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "visor_bar",
+			"uuid": "4daf0c12-5c9e-48b4-aef4-114096f32170",
+			"from": [
+				-2.15,
+				9.575,
+				-2.875
+			],
+			"to": [
+				2.15,
+				10.125,
+				-2.625
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 0,
+			"material_key": "visor_black",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "visor_drop",
+			"uuid": "8674fc1d-e204-4c6a-94a3-98f5ab8c964c",
+			"from": [
+				-0.5,
+				8.75,
+				-2.905
+			],
+			"to": [
+				0.5,
+				9.75,
+				-2.655
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 0,
+			"material_key": "visor_black",
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "helmet_fin",
+			"uuid": "b0ecc2f7-3b1d-4a76-93ba-21501c66f3ee",
+			"from": [
+				-0.5,
+				11.3,
+				-2.5
+			],
+			"to": [
+				0.5,
+				12,
+				2.5
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 1,
+			"material_key": "clone_shadow",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						0,
+						32,
+						16
+					],
+					"texture": 0
+				}
+			}
+		},
+		{
+			"name": "blaster",
+			"uuid": "9903dc5e-2c4d-4bc2-8c3b-66c08ae53603",
+			"from": [
+				4.3,
+				4.6,
+				-6.5
+			],
+			"to": [
+				5.1000000000000005,
+				5.4,
+				-1.5
+			],
+			"origin": [
+				0,
+				0,
+				0
+			],
+			"color": 4,
+			"material_key": "ship_dark",
+			"faces": {
+				"north": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"east": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"south": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"west": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"up": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				},
+				"down": {
+					"uv": [
+						16,
+						16,
+						32,
+						32
+					],
+					"texture": 0
+				}
+			}
+		}
+	],
+	"outliner": [
+		"d4b3bdec-c009-43b5-af9b-6c6dc453b199",
+		"d6295ed5-f4f7-491e-a0f3-7902073fe416",
+		"30eb3120-2509-4a54-b747-a35c4aae243d",
+		"9a08035c-6ffd-4720-9176-0e0b1a82c787",
+		"7f2d737c-bb1d-4ae0-854a-76822f8ca7ff",
+		"6a77e3f5-7060-4be2-883e-0d6215bacf6d",
+		"8d1ef33b-3f45-4238-aded-88d665b13085",
+		"4daf0c12-5c9e-48b4-aef4-114096f32170",
+		"8674fc1d-e204-4c6a-94a3-98f5ab8c964c",
+		"b0ecc2f7-3b1d-4a76-93ba-21501c66f3ee",
+		"9903dc5e-2c4d-4bc2-8c3b-66c08ae53603"
+	],
+	"textures": [
+		{
+			"path": "textures/cubecraft_clone_rifleman_01_palette.png",
+			"name": "cubecraft_clone_rifleman_01_palette",
+			"folder": "",
+			"namespace": "",
+			"id": "0",
+			"particle": false,
+			"render_mode": "default",
+			"visible": true,
+			"mode": "bitmap",
+			"saved": true,
+			"uuid": "f8e50021-a689-4e5f-9fb6-540a221d691f",
+			"source": "textures/cubecraft_clone_rifleman_01_palette.png"
+		}
+	]
+}

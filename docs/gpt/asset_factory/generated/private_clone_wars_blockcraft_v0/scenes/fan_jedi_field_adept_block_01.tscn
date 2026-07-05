@@ -1,0 +1,119 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hbc0i"]
+albedo_color = Color(0.41960785, 0.2901961, 0.18431373, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_21f42"]
+size = Vector3(0.62, 0.24, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kdu6g"]
+albedo_color = Color(0.43137255, 0.29803923, 0.1882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_2cih6"]
+size = Vector3(0.72, 0.72, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dsj00"]
+albedo_color = Color(0.7058824, 0.5372549, 0.3372549, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_7aorc"]
+size = Vector3(0.78, 0.7, 0.44)
+
+[sub_resource type="BoxMesh" id="BoxMesh_0sx2e"]
+size = Vector3(0.18, 0.9, 0.48)
+
+[sub_resource type="BoxMesh" id="BoxMesh_p884t"]
+size = Vector3(0.18, 0.9, 0.48)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rg6de"]
+size = Vector3(0.48, 0.42, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_m2ppj"]
+size = Vector3(0.54, 0.2, 0.46)
+
+[sub_resource type="BoxMesh" id="BoxMesh_45mgs"]
+size = Vector3(0.18, 0.62, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1jdod"]
+size = Vector3(0.18, 0.62, 0.24)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w0bt8"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_0mjg1"]
+size = Vector3(0.12, 0.12, 0.32)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jiads"]
+albedo_color = Color(0.21960784, 0.8509804, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.21960784, 0.8509804, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_0ah1h"]
+size = Vector3(0.08, 0.08, 0.9)
+
+[node name="fan_jedi_field_adept_block_01" type="Node3D" unique_id=779762879]
+metadata/asset_id = "fan_jedi_field_adept_block_01"
+metadata/display_name = "Fan Jedi Field Adept Block 01"
+metadata/category = "character_token"
+metadata/gameplay_role = "Jedi-style hero support pawn for private fan table"
+metadata/prompt = "blockcraft Jedi field adept with brown robe, tan tunic, and blue lightsaber-like blade"
+
+[node name="boots" type="MeshInstance3D" parent="." unique_id=1106852585]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+material_override = SubResource("StandardMaterial3D_hbc0i")
+mesh = SubResource("BoxMesh_21f42")
+
+[node name="robe_lower" type="MeshInstance3D" parent="." unique_id=551776367]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+material_override = SubResource("StandardMaterial3D_kdu6g")
+mesh = SubResource("BoxMesh_2cih6")
+
+[node name="tunic" type="MeshInstance3D" parent="." unique_id=1223150311]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.18, 0)
+material_override = SubResource("StandardMaterial3D_dsj00")
+mesh = SubResource("BoxMesh_7aorc")
+
+[node name="robe_left" type="MeshInstance3D" parent="." unique_id=1425911382]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.48, 1.12, 0.02)
+material_override = SubResource("StandardMaterial3D_kdu6g")
+mesh = SubResource("BoxMesh_0sx2e")
+
+[node name="robe_right" type="MeshInstance3D" parent="." unique_id=818513164]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, 1.12, 0.02)
+material_override = SubResource("StandardMaterial3D_kdu6g")
+mesh = SubResource("BoxMesh_p884t")
+
+[node name="head" type="MeshInstance3D" parent="." unique_id=1892105777]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.72, 0)
+material_override = SubResource("StandardMaterial3D_dsj00")
+mesh = SubResource("BoxMesh_rg6de")
+
+[node name="hair_block" type="MeshInstance3D" parent="." unique_id=333158037]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.96, 0.04)
+material_override = SubResource("StandardMaterial3D_hbc0i")
+mesh = SubResource("BoxMesh_m2ppj")
+
+[node name="left_arm" type="MeshInstance3D" parent="." unique_id=1343673395]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.58, 1.16, -0.08)
+material_override = SubResource("StandardMaterial3D_kdu6g")
+mesh = SubResource("BoxMesh_45mgs")
+
+[node name="right_arm" type="MeshInstance3D" parent="." unique_id=1632058722]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.58, 1.16, -0.28)
+material_override = SubResource("StandardMaterial3D_kdu6g")
+mesh = SubResource("BoxMesh_1jdod")
+
+[node name="saber_hilt" type="MeshInstance3D" parent="." unique_id=2058730651]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.68, 1.08, -0.55)
+material_override = SubResource("StandardMaterial3D_w0bt8")
+mesh = SubResource("BoxMesh_0mjg1")
+
+[node name="saber_blade" type="MeshInstance3D" parent="." unique_id=421801836]
+transform = Transform3D(1, 0, 0, 0, 0.9848077, 0.17364818, 0, -0.17364818, 0.9848077, 0.68, 1.22, -1.02)
+material_override = SubResource("StandardMaterial3D_jiads")
+mesh = SubResource("BoxMesh_0ah1h")

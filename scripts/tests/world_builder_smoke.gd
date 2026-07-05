@@ -3,21 +3,20 @@ extends SceneTree
 ## networked worlds. Verifies it builds the expected landmarks into a host node and
 ## that the layout is deterministic (so every client renders the same Mos Eisley).
 
-const WorldBuilder := preload("res://scripts/world/world_builder.gd")
-
 var _failures: Array[String] = []
 
 func _init() -> void:
 	var host := Node3D.new()
 	get_root().add_child(host)
-	var builder := WorldBuilder.new()
+	var builder := preload("res://scripts/world/world_builder.gd").new(1138)
 	builder.build_lighting(host)
 	builder.build_ground(host)
 	builder.build_settlement(host)
 
 	_assert_true(host.get_node_or_null("SettlementGround") != null, "settlement ground built")
-	_assert_true(_has_label(host, "Spaceport Row"), "spaceport row label present")
-	_assert_true(_has_label(host, "Docking Bay 94"), "bay 94 label present")
+	_assert_true(not _has_label(host, "Spaceport Row"), "spaceport row label hidden by default")
+	_assert_true(not _has_label(host, "Docking Bay 94"), "bay 94 label hidden by default")
+	_assert_true(not _has_label(host, "Voxel Exhibition Gallery"), "asset gallery hidden by default")
 	_assert_true(_count_inspectables(host) >= 6, "at least six inspectable markers")
 
 	var total := host.get_child_count()
@@ -53,7 +52,7 @@ func _init() -> void:
 	# prop layout from the JSON.
 	var host2 := Node3D.new()
 	get_root().add_child(host2)
-	var builder2 := WorldBuilder.new()
+	var builder2 := preload("res://scripts/world/world_builder.gd").new(1138)
 	builder2.build_lighting(host2)
 	builder2.build_ground(host2)
 	builder2.build_settlement(host2)

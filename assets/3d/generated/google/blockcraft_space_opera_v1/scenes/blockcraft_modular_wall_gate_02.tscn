@@ -1,0 +1,114 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6frtk"]
+albedo_color = Color(0.7254902, 0.50980395, 0.27058825, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_6gxs7"]
+size = Vector3(1.55, 1.9, 0.65)
+
+[sub_resource type="BoxMesh" id="BoxMesh_nd6p1"]
+size = Vector3(1.55, 1.9, 0.65)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wxpfy"]
+albedo_color = Color(0.8745098, 0.7294118, 0.44705883, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.8745098, 0.7294118, 0.44705883, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_r4qrp"]
+size = Vector3(4.6, 0.5, 0.78)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_oxb8f"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_qq8bc"]
+size = Vector3(1, 1.42, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ddtrp"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_ps7p0"]
+size = Vector3(0.78, 1.15, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x76et"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_fpyob"]
+size = Vector3(0.46, 0.08, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jvqmu"]
+size = Vector3(0.52, 0.12, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yuupv"]
+size = Vector3(0.52, 0.12, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rbwlj"]
+size = Vector3(1.25, 0.34, 0.88)
+
+[sub_resource type="BoxMesh" id="BoxMesh_srljm"]
+size = Vector3(1.25, 0.34, 0.88)
+
+[node name="blockcraft_modular_wall_gate_02" type="Node3D" unique_id=308049549]
+metadata/asset_id = "blockcraft_modular_wall_gate_02"
+metadata/display_name = "Blockcraft Modular Wall Gate 02"
+metadata/category = "settlement_module"
+metadata/gameplay_role = "settlement wall kit piece with doorway and cover proportions"
+metadata/prompt = "blocky desert frontier wall gate with inset door, vents, cyan tech strips, and roof blocks"
+
+[node name="left_wall" type="MeshInstance3D" parent="." unique_id=1764683040]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.65, 0.95, 0)
+material_override = SubResource("StandardMaterial3D_6frtk")
+mesh = SubResource("BoxMesh_6gxs7")
+
+[node name="right_wall" type="MeshInstance3D" parent="." unique_id=691824119]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.65, 0.95, 0)
+material_override = SubResource("StandardMaterial3D_6frtk")
+mesh = SubResource("BoxMesh_nd6p1")
+
+[node name="top_lintel" type="MeshInstance3D" parent="." unique_id=588181120]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.15, 0)
+material_override = SubResource("StandardMaterial3D_wxpfy")
+mesh = SubResource("BoxMesh_r4qrp")
+
+[node name="door_shadow" type="MeshInstance3D" parent="." unique_id=2009014006]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.78, -0.36)
+material_override = SubResource("StandardMaterial3D_oxb8f")
+mesh = SubResource("BoxMesh_qq8bc")
+
+[node name="door_panel" type="MeshInstance3D" parent="." unique_id=1577685246]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.76, -0.42)
+material_override = SubResource("StandardMaterial3D_ddtrp")
+mesh = SubResource("BoxMesh_ps7p0")
+
+[node name="cyan_door_light" type="MeshInstance3D" parent="." unique_id=1301861745]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38, -0.47)
+material_override = SubResource("StandardMaterial3D_x76et")
+mesh = SubResource("BoxMesh_fpyob")
+
+[node name="left_vent" type="MeshInstance3D" parent="." unique_id=1405428186]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.72, 1.2, -0.39)
+material_override = SubResource("StandardMaterial3D_ddtrp")
+mesh = SubResource("BoxMesh_jvqmu")
+
+[node name="right_vent" type="MeshInstance3D" parent="." unique_id=2065081296]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.72, 1.2, -0.39)
+material_override = SubResource("StandardMaterial3D_ddtrp")
+mesh = SubResource("BoxMesh_yuupv")
+
+[node name="left_roof_block" type="MeshInstance3D" parent="." unique_id=157117938]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.75, 2.58, 0)
+material_override = SubResource("StandardMaterial3D_wxpfy")
+mesh = SubResource("BoxMesh_rbwlj")
+
+[node name="right_roof_block" type="MeshInstance3D" parent="." unique_id=2102031633]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 2.58, 0)
+material_override = SubResource("StandardMaterial3D_wxpfy")
+mesh = SubResource("BoxMesh_srljm")

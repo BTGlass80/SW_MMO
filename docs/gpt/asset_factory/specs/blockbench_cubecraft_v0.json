@@ -1,0 +1,134 @@
+{
+  "schema": "gpt_blockbench_cubecraft_v0",
+  "pack_id": "blockbench_cubecraft_v0",
+  "display_name": "Blockbench Cubecraft Excursion v0",
+  "output_folder": "generated/blockbench_cubecraft_v0",
+  "preview_background": "#96acba",
+  "notes": [
+    "This pass changes one tool/process: author as Blockbench .bbmodel source, not Godot .tscn first.",
+    "The model grammar is lower element-count and texture-panel driven, closer to how Cubecraft/Minecraft-style projects move quickly.",
+    "The Node preview renderer is only for fast iteration; the .bbmodel files are the model source to open/export from Blockbench."
+  ],
+  "palette": {
+    "clone_white": "#e8eeee",
+    "clone_shadow": "#aeb8bb",
+    "clone_blue": "#2488d8",
+    "clone_red": "#b9352d",
+    "visor_black": "#101419",
+    "droid_tan": "#b99b63",
+    "droid_shadow": "#6d5a38",
+    "b2_bluegray": "#7b8d93",
+    "panel_gray": "#68727a",
+    "ship_dark": "#343a42",
+    "sand_block": "#b98245",
+    "sand_light": "#dfba72",
+    "adobe_dark": "#6b4a2f",
+    "tech_cyan": "#27d7ff",
+    "warning_orange": "#ff7a2c",
+    "saber_blue": "#38d9ff",
+    "space_plane": "#0b1724",
+    "republic_crimson": "#c43b32",
+    "freighter_yellow": "#d8b65d"
+  },
+  "assets": [
+    {
+      "id": "cubecraft_clone_rifleman_01",
+      "display_name": "Cubecraft Clone Rifleman 01",
+      "category": "blockbench_character",
+      "gameplay_role": "low-element clone rifleman source model",
+      "cubes": [
+        {"name": "boots", "position": [0, 0.4, 0], "size": [6.0, 0.8, 3.8], "material": "visor_black"},
+        {"name": "legs", "position": [0, 2.2, 0], "size": [4.8, 2.8, 3.2], "material": "clone_shadow"},
+        {"name": "torso", "position": [0, 5.6, 0], "size": [6.6, 4.0, 3.8], "material": "clone_white"},
+        {"name": "chest_panel", "position": [0, 5.8, -2.02], "size": [1.8, 2.0, 0.22], "material": "clone_blue"},
+        {"name": "shoulders", "position": [0, 7.2, 0], "size": [8.8, 1.0, 4.0], "material": "clone_white"},
+        {"name": "helmet", "position": [0, 9.8, 0], "size": [6.4, 3.2, 5.0], "material": "clone_white"},
+        {"name": "helmet_brow", "position": [0, 10.45, -2.62], "size": [6.8, 0.45, 0.25], "material": "clone_shadow"},
+        {"name": "visor_bar", "position": [0, 9.85, -2.75], "size": [4.3, 0.55, 0.25], "material": "visor_black"},
+        {"name": "visor_drop", "position": [0, 9.25, -2.78], "size": [1.0, 1.0, 0.25], "material": "visor_black"},
+        {"name": "helmet_fin", "position": [0, 11.65, 0], "size": [1.0, 0.7, 5.0], "material": "clone_shadow"},
+        {"name": "blaster", "position": [4.7, 5.0, -4.0], "size": [0.8, 0.8, 5.0], "material": "ship_dark"}
+      ]
+    },
+    {
+      "id": "cubecraft_clone_heavy_01",
+      "display_name": "Cubecraft Clone Heavy 01",
+      "category": "blockbench_character",
+      "gameplay_role": "low-element clone heavy source model",
+      "cubes": [
+        {"name": "boots", "position": [0, 0.4, 0], "size": [6.8, 0.8, 4.2], "material": "visor_black"},
+        {"name": "legs", "position": [0, 2.3, 0], "size": [5.4, 3.0, 3.5], "material": "clone_shadow"},
+        {"name": "torso", "position": [0, 5.7, 0], "size": [7.2, 4.2, 4.2], "material": "clone_white"},
+        {"name": "blue_band", "position": [0, 6.2, -2.25], "size": [5.0, 0.8, 0.25], "material": "clone_blue"},
+        {"name": "wide_shoulders", "position": [0, 7.4, 0], "size": [10.0, 1.2, 4.5], "material": "clone_white"},
+        {"name": "launcher_pack", "position": [0, 5.9, 2.55], "size": [5.8, 3.8, 1.0], "material": "panel_gray"},
+        {"name": "helmet", "position": [0, 10.0, 0], "size": [6.8, 3.4, 5.2], "material": "clone_white"},
+        {"name": "visor", "position": [0, 10.0, -2.85], "size": [4.5, 0.55, 0.25], "material": "visor_black"},
+        {"name": "visor_drop", "position": [0, 9.35, -2.9], "size": [1.0, 1.1, 0.25], "material": "visor_black"},
+        {"name": "launcher_tube", "position": [-4.9, 10.2, -0.5], "size": [1.1, 1.1, 5.8], "material": "ship_dark"},
+        {"name": "heavy_blaster", "position": [4.9, 5.2, -4.2], "size": [1.2, 1.0, 5.8], "material": "ship_dark"},
+        {"name": "muzzle", "position": [4.9, 5.2, -7.3], "size": [1.0, 0.8, 0.5], "material": "warning_orange"}
+      ]
+    },
+    {
+      "id": "cubecraft_b1_droid_01",
+      "display_name": "Cubecraft B1 Droid 01",
+      "category": "blockbench_character",
+      "gameplay_role": "low-element skinny battle droid source model",
+      "cubes": [
+        {"name": "feet", "position": [0, 0.3, 0], "size": [4.8, 0.6, 3.4], "material": "droid_shadow"},
+        {"name": "left_leg", "position": [-1.2, 2.2, 0], "size": [0.8, 3.2, 1.0], "material": "droid_tan"},
+        {"name": "right_leg", "position": [1.2, 2.2, 0], "size": [0.8, 3.2, 1.0], "material": "droid_tan"},
+        {"name": "pelvis", "position": [0, 3.9, 0], "size": [3.4, 0.8, 1.4], "material": "droid_shadow"},
+        {"name": "torso", "position": [0, 6.2, 0], "size": [3.4, 3.4, 1.8], "material": "droid_tan"},
+        {"name": "neck", "position": [0, 8.0, 0.15], "size": [1.0, 1.4, 1.0], "material": "droid_shadow"},
+        {"name": "long_head", "position": [0, 9.1, -0.5], "size": [3.4, 1.4, 4.2], "material": "droid_tan"},
+        {"name": "back_cranium", "position": [0, 9.4, 1.75], "size": [2.8, 1.0, 1.4], "material": "droid_shadow"},
+        {"name": "eye_bar", "position": [0, 9.25, -2.72], "size": [2.0, 0.3, 0.2], "material": "visor_black"},
+        {"name": "left_arm", "position": [-2.8, 6.1, -0.2], "size": [0.7, 3.2, 0.8], "material": "droid_tan"},
+        {"name": "right_arm", "position": [2.8, 6.1, -0.7], "size": [0.7, 3.2, 0.8], "material": "droid_tan"},
+        {"name": "blaster", "position": [3.7, 5.3, -3.8], "size": [0.6, 0.6, 4.7], "material": "ship_dark"}
+      ]
+    },
+    {
+      "id": "cubecraft_outpost_gate_tile_01",
+      "display_name": "Cubecraft Outpost Gate Tile 01",
+      "category": "blockbench_environment",
+      "gameplay_role": "editable Blockbench desert gate kit tile",
+      "cubes": [
+        {"name": "base", "position": [0, 0.2, 0], "size": [18.0, 0.4, 14.0], "material": "sand_block"},
+        {"name": "left_wall", "position": [-4.5, 3.0, 3.0], "size": [3.2, 5.6, 1.6], "material": "adobe_dark"},
+        {"name": "right_wall", "position": [0.8, 3.0, 3.0], "size": [3.2, 5.6, 1.6], "material": "adobe_dark"},
+        {"name": "lintel", "position": [-1.85, 6.3, 3.0], "size": [8.6, 1.2, 2.0], "material": "sand_light"},
+        {"name": "low_cover_a", "position": [4.3, 1.0, -3.8], "size": [5.0, 1.6, 1.0], "material": "adobe_dark"},
+        {"name": "low_cover_b", "position": [-5.3, 1.0, -2.8], "size": [4.2, 1.6, 1.0], "material": "sand_light"},
+        {"name": "terminal", "position": [6.9, 2.4, 1.5], "size": [1.2, 4.0, 1.0], "material": "panel_gray"},
+        {"name": "terminal_screen", "position": [6.9, 3.3, 0.85], "size": [0.9, 0.8, 0.2], "material": "tech_cyan"},
+        {"name": "landing_tick_a", "position": [2.0, 0.5, -5.6], "size": [6.5, 0.25, 0.25], "material": "tech_cyan"},
+        {"name": "landing_tick_b", "position": [2.0, 0.5, -4.2], "size": [6.5, 0.25, 0.25], "material": "tech_cyan"}
+      ]
+    },
+    {
+      "id": "cubecraft_space_tableau_01",
+      "display_name": "Cubecraft Space Tableau 01",
+      "category": "blockbench_space",
+      "gameplay_role": "Blockbench-authored 2.5D tactical space tableau source model",
+      "cubes": [
+        {"name": "friendly_body", "position": [-5.6, 1.0, -2.2], "size": [1.0, 0.6, 4.0], "material": "clone_white"},
+        {"name": "friendly_wing", "position": [-5.6, 0.8, -1.7], "size": [4.2, 0.25, 0.8], "material": "republic_crimson"},
+        {"name": "friendly_cockpit", "position": [-5.6, 1.55, -2.4], "size": [0.7, 0.35, 0.5], "material": "tech_cyan"},
+        {"name": "wingman_body", "position": [-2.5, 1.0, 2.1], "size": [1.1, 0.6, 3.6], "material": "clone_white"},
+        {"name": "wingman_wing", "position": [-2.5, 0.8, 2.2], "size": [4.0, 0.25, 0.7], "material": "republic_crimson"},
+        {"name": "enemy_core", "position": [3.0, 1.0, -1.8], "size": [1.5, 0.6, 1.5], "material": "droid_tan"},
+        {"name": "enemy_fin_front", "position": [3.0, 0.8, -3.4], "size": [0.6, 0.25, 2.5], "material": "droid_shadow"},
+        {"name": "enemy_fin_left", "position": [1.4, 0.8, -1.0], "size": [2.5, 0.25, 0.6], "material": "droid_shadow"},
+        {"name": "enemy_fin_right", "position": [4.6, 0.8, -1.0], "size": [2.5, 0.25, 0.6], "material": "droid_shadow"},
+        {"name": "freighter_spine", "position": [-0.4, 1.2, 5.0], "size": [1.3, 0.8, 4.0], "material": "ship_dark"},
+        {"name": "freighter_left_pod", "position": [-1.8, 1.0, 5.0], "size": [1.4, 0.6, 3.2], "material": "freighter_yellow"},
+        {"name": "freighter_right_pod", "position": [1.0, 1.0, 5.0], "size": [1.4, 0.6, 3.2], "material": "clone_shadow"},
+        {"name": "blue_laser", "position": [-1.2, 0.45, -2.1], "size": [5.4, 0.18, 0.18], "material": "tech_cyan"},
+        {"name": "orange_laser", "position": [1.4, 0.5, 0.3], "size": [4.2, 0.18, 0.18], "material": "warning_orange"}
+      ]
+    }
+  ]
+}

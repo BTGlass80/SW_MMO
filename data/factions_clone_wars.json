@@ -1,0 +1,28 @@
+{
+  "factions": [
+    {
+      "faction_id": "republic",
+      "name": "Galactic Republic",
+      "description": "Legitimate authority, clone patrols, Jedi detachments, military contracts, lawful security.",
+      "default_standing": 0
+    },
+    {
+      "faction_id": "cis",
+      "name": "Confederacy of Independent Systems",
+      "description": "Separatist cells, droid armies, corporate logistics, covert factories, convoy interdiction.",
+      "default_standing": -50
+    },
+    {
+      "faction_id": "hutt",
+      "name": "Hutt Cartel",
+      "description": "Smuggling, bounties, spice, black markets, protection rackets, neutral ports.",
+      "default_standing": -10
+    },
+    {
+      "faction_id": "independent",
+      "name": "Independent Frontier",
+      "description": "Settlers, miners, traders, scouts, medics, mercenaries, local militias.",
+      "default_standing": 50
+    }
+  ]
+}

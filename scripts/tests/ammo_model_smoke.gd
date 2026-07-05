@@ -27,40 +27,40 @@ func _init() -> void:
 	_assert_true(AmmoModel.uses_ammo(flash), "a 1-shot ammo weapon still uses ammo")
 
 	# --- initial_ammo (chargen grace) ---
-	var fresh := AmmoModel.initial_ammo()
-	_assert_equal(int(fresh.get("packs", -1)), AmmoModel.STARTING_PACKS, "initial_ammo grants STARTING_PACKS")
+	var fresh := {"inventory": AmmoModel.initial_packs(), "ammo": {"migrated_packs": true}}
+	_assert_equal(AmmoModel.packs(fresh), AmmoModel.STARTING_PACKS, "initial_ammo grants STARTING_PACKS")
 	_assert_true(not fresh.has("blaster_pistol"), "initial_ammo carries no per-weapon entry (lazy on first fire)")
 
 	# --- consume from a full magazine decrements by one (no reload) ---
-	var a := {"blaster_pistol": 100, "packs": 2}
+	var a := {"ammo": {"blaster_pistol": 100, "migrated_packs": true}, "inventory": [{"template_key": "blaster_power_pack", "quantity": 2}]}
 	var r := AmmoModel.consume(a, "blaster_pistol", pistol)
 	_assert_true(bool(r["ok"]), "a shot with ammo succeeds")
 	_assert_equal(int(r["shots_left"]), 99, "a fired shot decrements the magazine by 1")
 	_assert_true(not bool(r["reloaded"]), "a full magazine does not reload")
-	_assert_equal(int(a["packs"]), 2, "a normal shot does not touch the pack count")
+	_assert_equal(AmmoModel.packs(a), 2, "a normal shot does not touch the pack count")
 
 	# --- empty magazine + a carried pack AUTO-RELOADS (spends a pack, refills to full, fires the shot) ---
-	var b := {"blaster_pistol": 0, "packs": 1}
+	var b := {"ammo": {"blaster_pistol": 0, "migrated_packs": true}, "inventory": [{"template_key": "blaster_power_pack", "quantity": 1}]}
 	_assert_true(AmmoModel.can_fire(b, "blaster_pistol", pistol), "empty magazine + a pack CAN fire (will reload)")
 	var rb := AmmoModel.consume(b, "blaster_pistol", pistol)
 	_assert_true(bool(rb["ok"]), "empty+pack consume succeeds")
 	_assert_true(bool(rb["reloaded"]), "empty magazine auto-reloads from a pack")
 	_assert_equal(int(rb["packs_left"]), 0, "auto-reload spends exactly one pack")
-	_assert_equal(int(b["blaster_pistol"]), 99, "reload refills to full (100) then the shot spends one -> 99")
+	_assert_equal(int(b.get("ammo", {})["blaster_pistol"]), 99, "reload refills to full (100) then the shot spends one -> 99")
 
 	# --- empty magazine + NO pack REJECTS ---
-	var c := {"blaster_pistol": 0, "packs": 0}
+	var c := {"ammo": {"blaster_pistol": 0, "migrated_packs": true}, "inventory": []}
 	_assert_true(not AmmoModel.can_fire(c, "blaster_pistol", pistol), "empty + no pack CANNOT fire (out_of_ammo)")
 	var rc := AmmoModel.consume(c, "blaster_pistol", pistol)
 	_assert_true(not bool(rc["ok"]), "empty + no pack consume fails (defensive; the submit gate rejects first)")
-	_assert_equal(int(c["blaster_pistol"]), 0, "a failed consume does not go negative")
+	_assert_equal(int(c.get("ammo", {})["blaster_pistol"]), 0, "a failed consume does not go negative")
 
 	# --- non-ammo weapon: never gates, never decrements ---
-	var m := {"packs": 0}
+	var m := {"ammo": {"migrated_packs": true}, "inventory": []}
 	_assert_true(AmmoModel.can_fire(m, "vibroblade", melee), "a melee weapon can always fire")
 	var rm := AmmoModel.consume(m, "vibroblade", melee)
 	_assert_true(bool(rm["ok"]), "a melee consume is a no-op success")
-	_assert_true(not m.has("vibroblade"), "a melee weapon never writes an ammo entry")
+	_assert_true(not m.get("ammo", {}).has("vibroblade"), "a melee weapon never writes an ammo entry")
 	_assert_true(AmmoModel.can_fire({}, "frag_grenade", grenade), "a single_use grenade can always fire (latent)")
 
 	# --- LAZY MIGRATION: a sheet with no ammo block inits full shots + STARTING_PACKS on first fire ---
@@ -68,29 +68,29 @@ func _init() -> void:
 	_assert_true(AmmoModel.can_fire(legacy, "blaster_pistol", pistol), "a legacy (no-ammo) sheet reads as a full magazine -> can fire")
 	var rl := AmmoModel.consume(legacy, "blaster_pistol", pistol)
 	_assert_true(bool(rl["ok"]), "the veteran's first fire succeeds")
-	_assert_equal(int(legacy["blaster_pistol"]), 99, "first fire inits the magazine to full then spends one (100 -> 99)")
-	_assert_equal(int(legacy["packs"]), AmmoModel.STARTING_PACKS, "first fire grants STARTING_PACKS (no stranded veterans)")
+	_assert_equal(int(legacy.get("ammo", {})["blaster_pistol"]), 99, "first fire inits the magazine to full then spends one (100 -> 99)")
+	_assert_equal(AmmoModel.packs(legacy), AmmoModel.STARTING_PACKS, "first fire grants STARTING_PACKS (no stranded veterans)")
 	_assert_true(not bool(rl["reloaded"]), "the migrated first fire is from the fresh full magazine, not a reload")
 
 	# --- heavy magazine drains to empty then reloads: consume 25 shots, the 26th reloads ---
-	var h := {"heavy_blaster_pistol": 25, "packs": 1}
+	var h := {"ammo": {"heavy_blaster_pistol": 25, "migrated_packs": true}, "inventory": [{"template_key": "blaster_power_pack", "quantity": 1}]}
 	for i in range(25):
 		AmmoModel.consume(h, "heavy_blaster_pistol", heavy)
-	_assert_equal(int(h["heavy_blaster_pistol"]), 0, "25 shots empties a 25-round heavy magazine")
-	_assert_equal(int(h["packs"]), 1, "draining the magazine has not yet touched the pack")
+	_assert_equal(int(h.get("ammo", {})["heavy_blaster_pistol"]), 0, "25 shots empties a 25-round heavy magazine")
+	_assert_equal(AmmoModel.packs(h), 1, "draining the magazine has not yet touched the pack")
 	var r26 := AmmoModel.consume(h, "heavy_blaster_pistol", heavy)
 	_assert_true(bool(r26["reloaded"]), "the 26th shot auto-reloads")
-	_assert_equal(int(h["packs"]), 0, "the 26th shot spends the pack")
-	_assert_equal(int(h["heavy_blaster_pistol"]), 24, "reloaded heavy magazine (25) less the fired shot -> 24")
+	_assert_equal(AmmoModel.packs(h), 0, "the 26th shot spends the pack")
+	_assert_equal(int(h.get("ammo", {})["heavy_blaster_pistol"]), 24, "reloaded heavy magazine (25) less the fired shot -> 24")
 
 	# --- add_packs / remove_pack (the vendor buy/sell path) ---
-	var v := AmmoModel.initial_ammo()
+	var v := {"inventory": AmmoModel.initial_packs(), "ammo": {}}
 	AmmoModel.add_packs(v, 3)
 	_assert_equal(AmmoModel.packs(v), AmmoModel.STARTING_PACKS + 3, "add_packs stacks onto the carried count")
 	var rem := AmmoModel.remove_pack(v)
 	_assert_true(bool(rem["ok"]), "remove_pack succeeds while packs remain")
 	_assert_equal(int(rem["packs_left"]), AmmoModel.STARTING_PACKS + 2, "remove_pack drops the count by one")
-	var empty_v := {"packs": 0}
+	var empty_v := {"inventory": []}
 	_assert_true(not bool(AmmoModel.remove_pack(empty_v)["ok"]), "remove_pack fails with no packs (nothing to sell)")
 
 	# --- PACK_COST is the WEG anchor ---

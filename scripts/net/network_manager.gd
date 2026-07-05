@@ -19,6 +19,11 @@ const Territory := preload("res://scripts/net/territory_model.gd")
 const Chargen := preload("res://scripts/rules/chargen_model.gd")
 const Progression := preload("res://scripts/rules/progression_model.gd")
 const Equipment := preload("res://scripts/rules/equipment_model.gd")
+const CraftingModel := preload("res://scripts/rules/crafting_model.gd")
+const BazaarModel := preload("res://scripts/rules/bazaar_model.gd")
+const ItemInstance := preload("res://scripts/rules/item_instance.gd")
+
+
 const OrgModel := preload("res://scripts/net/org_model.gd")
 const PendingInfluence := preload("res://scripts/net/pending_influence_model.gd")
 const ChatModel := preload("res://scripts/net/chat_model.gd")
@@ -52,6 +57,8 @@ const ARMOR_DATA_PATH := "res://data/armor_clone_wars.json"
 const CREATURES_DATA_PATH := "res://data/creatures_clone_wars.json"
 const VENDOR_STOCK_PATH := "res://data/vendor_stock_by_zone.json"  # per-zone vendor variety (overnight C1)
 const NPCS_DATA_PATH := "res://data/npcs_clone_wars.json"  # named NPCs (overnight C1) placed per zone
+const FACTER_DATA_PATH := "res://data/factions_clone_wars.json"
+const STARTER_PACKAGES_DATA_PATH := "res://data/starter_packages.json"  # DIV-0020: quest defs — notice board + rewards
 const QUESTS_DATA_PATH := "res://data/quests_clone_wars.json"  # DIV-0020: quest defs — notice board + rewards
 const HARVEST_VALUES_PATH := "res://data/harvest_values_clone_wars.json"  # DIV-0023: per-good/per-resource harvest credit values (Option A)
 const HOSTILE_DISTANCE := 10.0  # DIV-0017: nominal engagement range for a spawned hostile creature
@@ -113,6 +120,21 @@ signal quests_updated(quests: Dictionary)   # DIV-0020: this client's live quest
 signal quest_catalog_received(defs: Dictionary) # DIV-0020: the available-quest catalog (notice board)
 signal harvested(notice: Dictionary)        # DIV-0023: this client field-dressed a disabled creature into a sellable good
 signal loot_corpse_replied(result: Dictionary) # DIV-0025: outcome of looting another player's corpse
+signal survey_replied(result: Dictionary)
+signal harvest_replied(result: Dictionary)
+signal craft_replied(result: Dictionary)
+signal bazaar_list_replied(result: Dictionary)
+signal bazaar_buy_replied(result: Dictionary)
+signal bazaar_listings_updated(listings: Dictionary)
+signal launch_ship_replied(result: Dictionary)
+signal land_ship_replied(result: Dictionary)
+signal hyperjump_replied(result: Dictionary)
+signal space_mine_replied(result: Dictionary)
+signal space_sell_cargo_replied(result: Dictionary)
+signal use_item_replied(result: Dictionary)
+
+
+
 
 var mode: int = Mode.NONE
 var state: WorldState = null          # server only
@@ -149,6 +171,7 @@ var _species_data := {}               # server only (chargen species ranges)
 var _skill_attr := {}                 # server only (skill key -> governing attribute)
 var _weapons_catalog := {}            # server only (weapon key -> stats; for equip)
 var _armor_catalog := {}              # server only (armor key -> stats; for equip)
+var admin_allowlist: Array = [] # Explicit operator allowlist, populated only via --dev-admin-allowlist
 var last_snapshot: Dictionary = {}    # client view of the world
 var last_wallet: Dictionary = {}      # client view of its own CP wallet
 var last_credits: int = 0             # client view of its own credit balance (Wave F economy)
@@ -172,6 +195,10 @@ var _territory_influence := {}        # org_id -> {zone_id -> int} (server; terr
 var _pending_zone_influence := []     # E8/E24: [{zone_id, axis, delta}] accrued from play
 var _record_cache := {}               # E26: character_id -> record (kills per-call JSON I/O)
 var _peer_rpc_budget := {}            # E26: peer_id -> {tokens, last_ms} reliable-RPC bucket
+var _peer_surveys := {}               # server-only: peer_id -> active deposit info
+var _bazaar_listings := {}            # server-only: active bazaar listing ID -> listing Dictionary
+
+
 var _ambient := {}                    # E27: zone_id -> ambient NPC roster (Director-advanced)
 var _heal_treated := {}               # DIV-0013: target_peer -> wound level last First-Aided (retry gate)
 var _downed := {}                     # DIV-0027: peer -> {severity:int, killer:int, name:String, rounds:int} — server-only downed-in-field state (rebuilt on login from persisted wound_state)
@@ -427,7 +454,7 @@ func _peer_can_fire_ammo(peer_id: int) -> bool:
 	var sheet: Dictionary = record.get("sheet", {})
 	var weapon_key := String((sheet.get("equipment", {}) as Dictionary).get("weapon", ""))
 	var wdict: Dictionary = _weapons_catalog.get(weapon_key, {})
-	return AmmoModel.can_fire(sheet.get("ammo", {}), weapon_key, wdict)
+	return AmmoModel.can_fire(sheet, weapon_key, wdict)
 
 # server -> client: a PvP fire intent was refused (protected zone / different zone / etc.)
 @rpc("authority", "call_remote", "reliable")
@@ -1151,9 +1178,12 @@ func _create_character(character_id: String, display_name: String, build: Dictio
 	var record := store.default_record(character_id, character_id, display_name, WorldState.SPAWN_POINT)
 	var species_key := String(build.get("species", "human"))
 	var species := _species_for(species_key)
+	var package_key := String(build.get("starter_package", ""))
+	var starter_package := _load_starter_package(package_key)
+
 	var sheet := {}
 	if build.has("attributes") and not bool(build.get("quickstart", false)):
-		var result: Dictionary = Chargen.validate_build(D6Rules, species, build.get("attributes", {}), build.get("skills", {}))
+		var result: Dictionary = Chargen.validate_build(D6Rules, species, build.get("attributes", {}), build.get("skills", {}), "", starter_package)
 		if bool(result.get("valid", false)):
 			sheet = result["sheet"]
 		else:
@@ -1191,6 +1221,20 @@ func _load_species() -> Dictionary:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return {}
 	return (parsed as Dictionary).get("species", {})
+
+func _load_starter_package(package_key: String) -> Dictionary:
+	if package_key == "" or not FileAccess.file_exists(STARTER_PACKAGES_DATA_PATH):
+		return {}
+	var file := FileAccess.open(STARTER_PACKAGES_DATA_PATH, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return {}
+	var packages: Dictionary = (parsed as Dictionary).get("starter_packages", {})
+	if not packages.has(package_key):
+		return {}
+	return packages.get(package_key, {}) as Dictionary
 
 func _load_json_container(path: String, key: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
@@ -1234,15 +1278,32 @@ func _load_named_npcs() -> void:
 		var radius := 8.0 + fposmod(float(h / 7) * 0.381966011, 1.0) * 30.0
 		if not _named_npcs_by_zone.has(zone_id):
 			_named_npcs_by_zone[zone_id] = []
+		var npc_pos := {"x": cos(angle) * radius, "y": WorldState.GROUND_Y, "z": sin(angle) * radius}
+		if id == "wuher":
+			npc_pos = {"x": 65.4, "y": WorldState.GROUND_Y, "z": 1.1}
+		elif id == "chalmun":
+			npc_pos = {"x": 39.0, "y": WorldState.GROUND_Y, "z": 18.7}
+		elif id == "djas_puhr":
+			npc_pos = {"x": 61.0, "y": WorldState.GROUND_Y, "z": 38.0}
+		elif id == "figrin_dan":
+			npc_pos = {"x": 83.0, "y": WorldState.GROUND_Y, "z": -22.9}
+		elif id == "kabe":
+			npc_pos = {"x": 58.6, "y": WorldState.GROUND_Y, "z": -6.5}
+		elif id == "momaw_nadon":
+			npc_pos = {"x": 91.4, "y": WorldState.GROUND_Y, "z": 18.3}
+
+
+
 		(_named_npcs_by_zone[zone_id] as Array).append({
 			"id": id,
 			"name": String(npc.get("name", id)),
 			"role": String(npc.get("role", "")),
 			"faction_axis": String(npc.get("faction_axis", "independent")),
 			"kind": _npc_kind(npc),
-			"pos": {"x": cos(angle) * radius, "y": WorldState.GROUND_Y, "z": sin(angle) * radius},
+			"pos": npc_pos,
 			"lines": npc.get("dialogue_lines", []),
 		})
+
 	var counts := {}
 	for z in _named_npcs_by_zone:
 		counts[z] = (_named_npcs_by_zone[z] as Array).size()
@@ -1353,6 +1414,86 @@ func send_equip(slot: String, item_key: String) -> void:
 	if mode == Mode.CLIENT and connected:
 		submit_equip.rpc_id(1, slot, item_key)
 
+# --- BETA-P31-1: General Item Usage ---
+@rpc("any_peer", "call_remote", "reliable")
+func submit_use_item(instance_id: String, target_id: int = -1) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var peer := multiplayer.get_remote_sender_id()
+	if not _rate_ok(peer):
+		return
+	var peer_char := String(_peer_characters.get(peer, ""))
+	if peer_char == "":
+		return
+	var record := _cached_load(peer_char)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var inventory: Array = sheet.get("inventory", [])
+	
+	var item_idx := -1
+	var item: Dictionary = {}
+	for i in range(inventory.size()):
+		var inv_item = inventory[i]
+		if inv_item is Dictionary and String(inv_item.get("instance_id", inv_item.get("id", ""))) == instance_id:
+			item_idx = i
+			item = inv_item
+			break
+			
+	if item_idx == -1:
+		use_item_result.rpc_id(peer, {"ok": false, "reason": "item_not_found"})
+		return
+		
+	# For now, item usage mostly targets self, unless target_id is valid
+	var target_char := peer_char
+	var target_peer := peer
+	var target_record := record
+	var target_sheet := sheet
+	
+	if target_id != -1 and target_id != peer:
+		target_char = String(_peer_characters.get(target_id, ""))
+		if target_char != "":
+			target_peer = target_id
+			target_record = _cached_load(target_char)
+			target_sheet = target_record.get("sheet", {})
+
+	var ItemUsageModel = load("res://scripts/rules/item_usage_model.gd")
+	var result = ItemUsageModel.use_item(sheet, D6Rules, target_sheet, item, _server_rng.randi())
+	
+	if bool(result.get("ok", false)):
+		var consumed = bool(result.get("consumed", false))
+		var new_item = result.get("item", item)
+		
+		if consumed:
+			inventory.remove_at(item_idx)
+		else:
+			inventory[item_idx] = new_item
+			
+		sheet["inventory"] = inventory
+		record["sheet"] = sheet
+		_cached_save(peer_char, record)
+		_push_sheet(peer, record)
+		
+		if target_peer != peer:
+			target_record["sheet"] = result.get("target_state", target_sheet)
+			_cached_save(target_char, target_record)
+			_push_sheet(target_peer, target_record)
+			
+		if _telemetry != null:
+			_telemetry.log_event("item_use", {"ts": Time.get_unix_time_from_system(), "character_id": peer_char, "item_key": item.get("template_key", item.get("template_id", "")), "target": target_char})
+			
+		use_item_result.rpc_id(peer, {"ok": true})
+	else:
+		use_item_result.rpc_id(peer, {"ok": false, "reason": result.get("reason", "usage_failed")})
+
+func send_use_item(instance_id: String, target_id: int = -1) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_use_item.rpc_id(1, instance_id, target_id)
+		
+@rpc("authority", "call_remote", "reliable")
+func use_item_result(result: Dictionary) -> void:
+	use_item_replied.emit(result)
+
 # server -> client: the outcome of an equip request
 @rpc("authority", "call_remote", "reliable")
 func equip_result(result: Dictionary) -> void:
@@ -1366,7 +1507,7 @@ func equip_result(result: Dictionary) -> void:
 # retry gate blocks re-treating the same wound level until it changes (no spam-to-success).
 # Cooperative healing only — NOT PvP (owner-gated); no death roll/penalty here.
 @rpc("any_peer", "call_remote", "reliable")
-func submit_heal(target_id: int) -> void:
+func submit_heal(target_id: int, medpac_instance_id: String = "") -> void:
 	if mode != Mode.SERVER or store == null:
 		return
 	var healer := multiplayer.get_remote_sender_id()
@@ -1401,13 +1542,76 @@ func submit_heal(target_id: int) -> void:
 		heal_result.rpc_id(healer, {"ok": false, "reason": "already_treated", "target_id": target_id})
 		return
 	_heal_treated[target_id] = level  # one First Aid per wound level until it changes
-	var h_sheet: Dictionary = _cached_load(healer_char).get("sheet", {})
+	var h_record := _cached_load(healer_char)
+	var h_sheet: Dictionary = h_record.get("sheet", {})
+	
+	# Find and consume a medpac
+	var medpac_idx := -1
+	var medpac_quality := 50.0
+	var inventory: Array = h_sheet.get("inventory", [])
+	
+	if medpac_instance_id != "":
+		for i in range(inventory.size()):
+			var item = inventory[i]
+			if item is Dictionary and String(item.get("instance_id", "")) == medpac_instance_id:
+				medpac_idx = i
+				if item.has("effectiveness"):
+					medpac_quality = float(item.get("effectiveness", 50.0))
+				else:
+					medpac_quality = float(item.get("quality", 50.0))
+				break
+	
+	if medpac_idx == -1:
+		for i in range(inventory.size()):
+			var item = inventory[i]
+			if item is Dictionary and (String(item.get("template_key", "")) == "medpac" or String(item.get("template_id", "")) == "medpac"):
+				medpac_idx = i
+				if item.has("effectiveness"):
+					medpac_quality = float(item.get("effectiveness", 50.0))
+				else:
+					medpac_quality = float(item.get("quality", 50.0))
+				break
+			elif item is String and "Medpac" in item:
+				medpac_idx = i
+				break
+			
+	if medpac_idx == -1:
+		heal_result.rpc_id(healer, {"ok": false, "reason": "no_medpac"})
+		return
+		
+	# Consume the medpac durability
+	var item = inventory[medpac_idx]
+	if item is Dictionary:
+		var cond = int(item.get("condition", 5)) - 1
+		if cond <= 0:
+			inventory.remove_at(medpac_idx)
+		else:
+			item["condition"] = cond
+			inventory[medpac_idx] = item
+	else:
+		inventory.remove_at(medpac_idx)
+	h_sheet["inventory"] = inventory
+	h_record["sheet"] = h_sheet
+	_cached_save(healer_char, h_record)
+	_push_sheet(healer, h_record)
+	
 	var tech := String((h_sheet.get("attributes", {}) as Dictionary).get("technical", "2D"))
 	var first_aid := String((h_sheet.get("skills", {}) as Dictionary).get("first_aid", "0D"))
 	var heal_pool: Dictionary = D6Rules.add_pools(D6Rules.parse_pool(tech), D6Rules.parse_pool(first_aid))
+	
+	# High quality medpac bonus
+	if medpac_quality >= 80.0:
+		heal_pool = D6Rules.add_pools(heal_pool, D6Rules.parse_pool("1D"))
+	elif medpac_quality >= 60.0:
+		heal_pool = D6Rules.add_pools(heal_pool, D6Rules.parse_pool("0D+2"))
+		
 	var result: Dictionary = Recovery.heal_check(_server_rng, heal_pool, level)
 	var healed := bool(result.get("healed", false))
 	var new_level := String(result.get("new_level", level))
+	
+	if _telemetry != null:
+		_telemetry.log_event("item_use", {"ts": Time.get_unix_time_from_system(), "character_id": healer_char, "item_key": "medpac", "target": target_char, "healed": healed})
+
 	if healed:
 		t_sheet["wound_state"] = new_level
 		t_record["sheet"] = t_sheet
@@ -1437,16 +1641,585 @@ func submit_heal(target_id: int) -> void:
 	heal_result.rpc_id(healer, {"ok": healed, "reason": "" if healed else "failed",
 		"target_id": target_id, "from": level, "to": new_level})
 
-func send_heal(target_id: int) -> void:
+func send_heal(target_id: int, medpac_instance_id: String = "") -> void:
 	if mode == Mode.CLIENT and connected:
-		submit_heal.rpc_id(1, target_id)
+		submit_heal.rpc_id(1, target_id, medpac_instance_id)
 
 # server -> client: the outcome of a First Aid attempt
 @rpc("authority", "call_remote", "reliable")
 func heal_result(result: Dictionary) -> void:
 	heal_replied.emit(result)
 
+# --- Surveying and Crafting (SWG Playable Alpha Loop) ---
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_survey() -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+		
+	var zone_id := String(_peer_zones.get(sender, _default_zone))
+	var seed_val := _server_rng.randi()
+	var current_time = Time.get_unix_time_from_system()
+	var deposit = CraftingModel.roll_survey(sheet, D6Rules, zone_id, seed_val, current_time)
+	_peer_surveys[sender] = deposit
+	if _telemetry != null:
+		_telemetry.log_event("survey", {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "zone": zone_id, "resource": deposit.get("type", "")})
+	survey_result.rpc_id(sender, deposit)
+
+
+func send_survey() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_survey.rpc_id(1)
+
+@rpc("authority", "call_remote", "reliable")
+func survey_result(result: Dictionary) -> void:
+	survey_replied.emit(result)
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_harvest() -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var deposit: Dictionary = _peer_surveys.get(sender, {})
+	if deposit.is_empty():
+		harvest_result.rpc_id(sender, {"ok": false, "reason": "no_active_survey"})
+		return
+		
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	
+	var seed_val := _server_rng.randi()
+	var current_time = Time.get_unix_time_from_system()
+	var outcome = CraftingModel.harvest_resource(sheet, D6Rules, deposit, seed_val, current_time)
+	if bool(outcome.get("ok", false)):
+		record["sheet"] = outcome["sheet"]
+		_cached_save(character_id, record)
+		_push_sheet(sender, record)
+		_peer_surveys.erase(sender) # consume deposit
+		if _telemetry != null:
+			_telemetry.log_event("manual_harvest", {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "resource": deposit.get("type", ""), "count": 3, "quality": deposit.get("quality", 50.0)})
+		harvest_result.rpc_id(sender, outcome)
+
+	else:
+		harvest_result.rpc_id(sender, {"ok": false, "reason": "failed"})
+
+func send_harvest() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_harvest.rpc_id(1)
+
+@rpc("authority", "call_remote", "reliable")
+func harvest_result(result: Dictionary) -> void:
+	harvest_replied.emit(result)
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_craft(item_type: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var seed_val := _server_rng.randi()
+	var outcome = CraftingModel.craft_item(sheet, item_type, D6Rules, seed_val, character_id)
+	if bool(outcome.get("ok", false)):
+		record["sheet"] = outcome["sheet"]
+		_cached_save(character_id, record)
+		_push_sheet(sender, record)
+		if _telemetry != null:
+			_telemetry.log_event("craft_success", {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "schematic": item_type, "quality": outcome.get("quality", 50.0)})
+		craft_result.rpc_id(sender, outcome)
+	else:
+		if _telemetry != null:
+			_telemetry.log_event("craft_failure", {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "schematic": item_type, "reason": outcome.get("reason", "failed")})
+		craft_result.rpc_id(sender, {"ok": false, "reason": outcome.get("reason", "failed")})
+
+
+func send_craft(item_type: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_craft.rpc_id(1, item_type)
+
+@rpc("authority", "call_remote", "reliable")
+func craft_result(result: Dictionary) -> void:
+	craft_replied.emit(result)
+
+# --- Bazaar Marketplace (SWG Player-to-Player Economy) ---
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_bazaar_list(item_id: String, price: int) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	
+	var inventory: Array = sheet.get("inventory", [])
+	var target_idx := -1
+	var target_item: Dictionary = {}
+	for i in range(inventory.size()):
+		var val = inventory[i]
+		if val is Dictionary and (String(val.get("id", "")) == item_id or String(val.get("instance_id", "")) == item_id):
+			target_idx = i
+			target_item = val
+			break
+			
+	if target_idx == -1:
+		bazaar_list_result.rpc_id(sender, {"ok": false, "reason": "item_not_in_inventory"})
+		return
+		
+	var credits := int(sheet.get("credits", 0))
+	var outcome := BazaarModel.list_item(_bazaar_listings, target_item, price, character_id, credits)
+	if bool(outcome.get("ok", false)):
+		inventory.remove_at(target_idx)
+		sheet["inventory"] = inventory
+		sheet["credits"] = credits - int(outcome["fee"])
+		record["sheet"] = sheet
+		_cached_save(character_id, record)
+		
+		_bazaar_listings = outcome["listings"]
+		_save_world_state()
+		
+		if _telemetry != null:
+			_telemetry.log_event("bazaar_list", {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "item_id": item_id, "price": price, "fee": outcome["fee"]})
+			_telemetry.log_event("bazaar_list_fee", {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "amount": int(outcome["fee"])})
+			
+		_push_sheet(sender, record)
+		bazaar_list_result.rpc_id(sender, {"ok": true})
+		_broadcast_bazaar_listings()
+
+	else:
+		bazaar_list_result.rpc_id(sender, {"ok": false, "reason": outcome.get("reason", "failed")})
+
+func send_bazaar_list(item_id: String, price: int) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_bazaar_list.rpc_id(1, item_id, price)
+
+@rpc("authority", "call_remote", "reliable")
+func bazaar_list_result(result: Dictionary) -> void:
+	bazaar_list_replied.emit(result)
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_bazaar_buy(listing_id: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var buyer_peer := multiplayer.get_remote_sender_id()
+	if not _rate_ok(buyer_peer):
+		return
+	var buyer_char := String(_peer_characters.get(buyer_peer, ""))
+	if buyer_char == "":
+		return
+	var buyer_record := _cached_load(buyer_char)
+	if buyer_record.is_empty():
+		return
+	var buyer_sheet: Dictionary = buyer_record.get("sheet", {})
+	var buyer_credits := int(buyer_sheet.get("credits", 0))
+	
+	var outcome := BazaarModel.buy_item(_bazaar_listings, listing_id, buyer_char, buyer_credits)
+	if bool(outcome.get("ok", false)):
+		var seller_char := String(outcome["seller_id"])
+		var price := int(outcome["price"])
+		var item: Dictionary = outcome["item"]
+		
+		buyer_sheet["credits"] = buyer_credits - price
+		var buyer_inv: Array = buyer_sheet.get("inventory", [])
+		buyer_inv.append(item)
+		buyer_sheet["inventory"] = buyer_inv
+		buyer_record["sheet"] = buyer_sheet
+		_cached_save(buyer_char, buyer_record)
+		
+		var seller_record := _cached_load(seller_char)
+		if not seller_record.is_empty():
+			var seller_sheet: Dictionary = seller_record.get("sheet", {})
+			seller_sheet["credits"] = int(seller_sheet.get("credits", 0)) + price
+			seller_record["sheet"] = seller_sheet
+			_cached_save(seller_char, seller_record)
+			
+			for peer in _peer_characters.keys():
+				if String(_peer_characters[peer]) == seller_char:
+					_push_sheet(peer, seller_record)
+					break
+					
+		_bazaar_listings = outcome["listings"]
+		_save_world_state()
+		
+		if _telemetry != null:
+			_telemetry.log_event("bazaar_buy", {"ts": Time.get_unix_time_from_system(), "character_id": buyer_char, "seller_id": seller_char, "listing_id": listing_id, "price": price})
+			_telemetry.log_event("bazaar_sell_revenue", {"ts": Time.get_unix_time_from_system(), "character_id": seller_char, "buyer_id": buyer_char, "listing_id": listing_id, "price": price})
+			
+		_push_sheet(buyer_peer, buyer_record)
+		bazaar_buy_result.rpc_id(buyer_peer, {"ok": true})
+		_broadcast_bazaar_listings()
+
+	else:
+		bazaar_buy_result.rpc_id(buyer_peer, {"ok": false, "reason": outcome.get("reason", "failed")})
+
+func send_bazaar_buy(listing_id: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_bazaar_buy.rpc_id(1, listing_id)
+
+@rpc("authority", "call_remote", "reliable")
+func bazaar_buy_result(result: Dictionary) -> void:
+	bazaar_buy_replied.emit(result)
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_request_bazaar_listings() -> void:
+	if mode != Mode.SERVER:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	bazaar_listings_received.rpc_id(sender, _bazaar_listings)
+
+func send_request_bazaar_listings() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_request_bazaar_listings.rpc_id(1)
+
+@rpc("authority", "call_remote", "reliable")
+func bazaar_listings_received(listings: Dictionary) -> void:
+	bazaar_listings_updated.emit(listings)
+
+func _broadcast_bazaar_listings() -> void:
+	for peer in _peer_characters.keys():
+		bazaar_listings_received.rpc_id(peer, _bazaar_listings)
+
+# --- Server-Authoritative Space Travel & Cargo Loop (SWG Playable Alpha/Beta) ---
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_launch_ship(ship_id: String = "") -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	
+	var owned_ships: Array = sheet.get("ships", [])
+	if owned_ships.is_empty():
+		launch_ship_result.rpc_id(sender, {"ok": false, "reason": "no_ships_owned"})
+		return
+		
+	var selected_ship_id := ship_id
+	if selected_ship_id == "" or not owned_ships.has(selected_ship_id):
+		selected_ship_id = String(owned_ships[0])
+		
+	var default_cargo: Array = []
+	var space_state: Dictionary = sheet.get("space_state", {})
+	if space_state.is_empty():
+		space_state = {
+			"current_system": "Tatooine",
+			"in_space": false,
+			"ship_id": selected_ship_id,
+			"ship_name": selected_ship_id.capitalize(),
+			"ship_cargo": default_cargo
+		}
+	else:
+		space_state["ship_id"] = selected_ship_id
+		
+	space_state["in_space"] = true
+	sheet["space_state"] = space_state
+	record["sheet"] = sheet
+	_cached_save(character_id, record)
+	
+	_push_sheet(sender, record)
+	launch_ship_result.rpc_id(sender, {"ok": true, "space_state": space_state})
+
+func send_launch_ship(ship_id: String = "") -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_launch_ship.rpc_id(1, ship_id)
+
+@rpc("authority", "call_remote", "reliable")
+func launch_ship_result(result: Dictionary) -> void:
+	launch_ship_replied.emit(result)
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_land_ship() -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	
+	var docking_fee := 50
+	var credits := int(sheet.get("credits", 0))
+	if credits < docking_fee:
+		land_ship_result.rpc_id(sender, {"ok": false, "reason": "insufficient_credits"})
+		return
+		
+	var space_state: Dictionary = sheet.get("space_state", {})
+	if not space_state.is_empty():
+		space_state["in_space"] = false
+		
+		# Transfer cargo to inventory
+		var inventory: Array = sheet.get("inventory", [])
+		var cargo: Array = space_state.get("ship_cargo", [])
+		for item in cargo:
+			inventory.append(item)
+		space_state["ship_cargo"] = []
+		sheet["inventory"] = inventory
+		
+		# Pay docking fee
+		sheet["credits"] = credits - docking_fee
+		sheet["space_state"] = space_state
+		record["sheet"] = sheet
+		_cached_save(character_id, record)
+		_push_sheet(sender, record)
+		
+		if _telemetry != null:
+			_telemetry.log_event("sink_fee", {
+				"ts": Time.get_unix_time_from_system(),
+				"character_id": character_id,
+				"fee_type": "docking",
+				"amount": docking_fee,
+				"remaining_credits": sheet["credits"]
+			})
+		
+	land_ship_result.rpc_id(sender, {"ok": true})
+
+func send_land_ship() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_land_ship.rpc_id(1)
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_space_harvest(target_key: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var space_state: Dictionary = sheet.get("space_state", {})
+	if space_state.is_empty() or not bool(space_state.get("in_space", false)):
+		return
+		
+	var cargo: Array = space_state.get("ship_cargo", [])
+	
+	# Generate a space resource item instance
+	var harvest_key := target_key
+	if harvest_key == "":
+		harvest_key = "starship_salvage"
+		
+	var item_instance := {
+		"instance_id": str(randi()),
+		"template_id": harvest_key,
+		"quantity": 1
+	}
+	cargo.append(item_instance)
+	space_state["ship_cargo"] = cargo
+	sheet["space_state"] = space_state
+	record["sheet"] = sheet
+	
+	_cached_save(character_id, record)
+	_push_sheet(sender, record)
+	
+	if _telemetry != null:
+		_telemetry.log_event("faucet_harvest", {
+			"ts": Time.get_unix_time_from_system(),
+			"character_id": character_id,
+			"item_template": harvest_key,
+			"context": "space_harvest"
+		})
+
+func send_space_harvest(target_key: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_space_harvest.rpc_id(1, target_key)
+
+@rpc("authority", "call_remote", "reliable")
+func land_ship_result(result: Dictionary) -> void:
+	land_ship_replied.emit(result)
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_space_hyperjump(destination: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var space_state: Dictionary = sheet.get("space_state", {})
+	if space_state.is_empty() or not bool(space_state.get("in_space", false)):
+		hyperjump_result.rpc_id(sender, {"ok": false, "reason": "not_in_space"})
+		return
+		
+	var nav_pool := String(sheet.get("astrogation", sheet.get("navigator_pool", "2D")))
+	var pool: Dictionary = D6Rules.parse_pool(nav_pool)
+	var seed_val := _server_rng.randi()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_val
+	var roll: Dictionary = D6Rules.roll_pool(pool, rng)
+	var difficulty := 12
+	
+	if int(roll.get("total", 0)) >= difficulty:
+		space_state["current_system"] = destination
+		sheet["space_state"] = space_state
+		record["sheet"] = sheet
+		_cached_save(character_id, record)
+		_push_sheet(sender, record)
+		hyperjump_result.rpc_id(sender, {"ok": true, "system": destination, "roll": int(roll.get("total", 0))})
+	else:
+		hyperjump_result.rpc_id(sender, {"ok": false, "reason": "astrogation roll failed", "roll": int(roll.get("total", 0))})
+
+func send_space_hyperjump(destination: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_space_hyperjump.rpc_id(1, destination)
+
+@rpc("authority", "call_remote", "reliable")
+func hyperjump_result(result: Dictionary) -> void:
+	hyperjump_replied.emit(result)
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_space_mine(asteroid_id: String) -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var space_state: Dictionary = sheet.get("space_state", {})
+	if space_state.is_empty() or not bool(space_state.get("in_space", false)):
+		space_mine_result.rpc_id(sender, {"ok": false, "reason": "not_in_space"})
+		return
+		
+	var cargo: Array = space_state.get("ship_cargo", [])
+	
+	var item_instance := {
+		"instance_id": str(randi()),
+		"template_id": "copper_ore",
+		"quantity": 5
+	}
+	cargo.append(item_instance)
+	
+	space_state["ship_cargo"] = cargo
+	sheet["space_state"] = space_state
+	record["sheet"] = sheet
+	_cached_save(character_id, record)
+	
+	_push_sheet(sender, record)
+	if _telemetry != null:
+		_telemetry.log_event("space_mine", {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "resource": "copper_ore", "count": 5})
+	space_mine_result.rpc_id(sender, {"ok": true, "resource": "copper_ore", "count": 5})
+
+func send_space_mine(asteroid_id: String) -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_space_mine.rpc_id(1, asteroid_id)
+
+@rpc("authority", "call_remote", "reliable")
+func space_mine_result(result: Dictionary) -> void:
+	space_mine_replied.emit(result)
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_space_sell_cargo() -> void:
+	if mode != Mode.SERVER or store == null:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _rate_ok(sender):
+		return
+	var character_id := String(_peer_characters.get(sender, ""))
+	if character_id == "":
+		return
+	var record := _cached_load(character_id)
+	if record.is_empty():
+		return
+	var sheet: Dictionary = record.get("sheet", {})
+	var space_state: Dictionary = sheet.get("space_state", {})
+	if space_state.is_empty():
+		space_sell_cargo_result.rpc_id(sender, {"ok": false, "reason": "no_space_state"})
+		return
+		
+	var cargo: Array = space_state.get("ship_cargo", [])
+	var copper_count := 0
+	var new_cargo: Array = []
+	for item in cargo:
+		if String(item.get("template_id", "")) == "copper_ore":
+			copper_count += int(item.get("quantity", 1))
+		else:
+			new_cargo.append(item)
+			
+	if copper_count <= 0:
+		space_sell_cargo_result.rpc_id(sender, {"ok": false, "reason": "no_cargo_to_sell"})
+		return
+		
+	var earnings := copper_count * 10
+	sheet["credits"] = int(sheet.get("credits", 0)) + earnings
+	space_state["ship_cargo"] = new_cargo
+	sheet["space_state"] = space_state
+	record["sheet"] = sheet
+	_cached_save(character_id, record)
+	
+	_push_sheet(sender, record)
+	if _telemetry != null:
+		_telemetry.log_event("space_sell_cargo", {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "credits_earned": earnings})
+	space_sell_cargo_result.rpc_id(sender, {"ok": true, "credits_earned": earnings})
+
+func send_space_sell_cargo() -> void:
+	if mode == Mode.CLIENT and connected:
+		submit_space_sell_cargo.rpc_id(1)
+
+@rpc("authority", "call_remote", "reliable")
+func space_sell_cargo_result(result: Dictionary) -> void:
+	space_sell_cargo_replied.emit(result)
+
+
+
 # --- DIV-0014: inter-zone travel (command fast-travel between the loaded zones) ---
+
 # client -> server: move to a loaded zone. Server updates the peer's zone (snapshot routing,
 # zone-scoped chat, ambient, and the territory view all follow `_peer_zones`), persists it on
 # the record (restored on next login), and replies. No adjacency/route/cost modeled yet.
@@ -1602,6 +2375,33 @@ func submit_chat(channel: String, text: String) -> void:
 	if not state.has_player(sender):
 		return
 	var speaker := String(state.get_player(sender).get("name", "Spacer-%d" % sender))
+	
+	if text.begins_with("/admin "):
+		var character_id = _peer_characters.get(sender, "")
+		if not admin_allowlist.has(character_id):
+			apply_chat.rpc_id(sender, {
+				"channel": "system",
+				"speaker": "Server",
+				"text": "Permission denied.",
+				"timestamp": Time.get_unix_time_from_system()
+			})
+			return
+			
+		var parts = text.split(" ")
+		var cmd = parts[1]
+		var args = parts.slice(2, parts.size())
+		var AdminCommands = preload("res://scripts/net/admin_commands.gd")
+		if character_id != "":
+			var result_text = AdminCommands.process_command(cmd, args, character_id, self)
+			var response_message = {
+				"channel": "system",
+				"speaker": "Server",
+				"text": result_text,
+				"timestamp": Time.get_unix_time_from_system()
+			}
+			apply_chat.rpc_id(sender, response_message)
+		return
+		
 	var result: Dictionary = ChatModel.normalize(channel, text, speaker)
 	if not bool(result["ok"]):
 		print("[chat] peer %d rejected (%s)" % [sender, String(result.get("reason", ""))])
@@ -1720,6 +2520,7 @@ func _sheet_summary(record: Dictionary) -> Dictionary:
 		"armor": String(equipment.get("armor", "")),
 		"cp_wallet": sheet.get("cp_wallet", {}),
 		"credits": int(sheet.get("credits", 0)),  # Wave F economy: show the wallet balance on the sheet
+		"inventory": sheet.get("inventory", []),
 		"force_sensitive": bool(sheet.get("force_sensitive", false)),
 	}
 
@@ -1965,20 +2766,18 @@ func submit_buy(item_key: String) -> void:
 			buy_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "cannot_afford", "price": pack_price})
 			return
 		sheet["credits"] = int(sheet.get("credits", 0)) - pack_price
-		var pack_ammo: Dictionary = sheet.get("ammo", {})
-		AmmoModel.add_packs(pack_ammo, 1)
-		sheet["ammo"] = pack_ammo
+		AmmoModel.add_packs(sheet, 1)
 		record["sheet"] = sheet
 		_cached_save(character_id, record)
 		apply_credits.rpc_id(sender, int(sheet.get("credits", 0)))
 		_push_sheet(sender, record)
-		print("[buy] peer %d bought power_pack for %d (packs now %d, credits %d)" % [sender, pack_price, AmmoModel.packs(pack_ammo), int(sheet.get("credits", 0))])
+		print("[buy] peer %d bought power_pack for %d (packs now %d, credits %d)" % [sender, pack_price, AmmoModel.packs(sheet), int(sheet.get("credits", 0))])
 		if _telemetry != null:  # Seam 5: a pack buy is a normal economy SINK — counted here (the reload event is NOT)
 			_telemetry.log_event("buy", {
 				"ts": Time.get_unix_time_from_system(), "character_id": character_id,
 				"item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)),
 			})
-		buy_result.rpc_id(sender, {"ok": true, "item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)), "packs": AmmoModel.packs(pack_ammo)})
+		buy_result.rpc_id(sender, {"ok": true, "item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)), "packs": AmmoModel.packs(sheet)})
 		return
 	var price := _buy_price_for(sender, record, int((_buy_catalog[key] as Dictionary).get("cost", 0)))
 	var result: Dictionary = EconomyModel.buy(sheet, key, price, _buy_catalog)
@@ -2032,13 +2831,13 @@ func submit_sell(item_key: String) -> void:
 		_cached_save(character_id, record)
 		apply_credits.rpc_id(sender, int(sheet.get("credits", 0)))
 		_push_sheet(sender, record)
-		print("[sell] peer %d sold power_pack for %d (packs now %d, credits %d)" % [sender, pack_price, AmmoModel.packs(pack_ammo), int(sheet.get("credits", 0))])
+		print("[sell] peer %d sold power_pack for %d (packs now %d, credits %d)" % [sender, pack_price, AmmoModel.packs(sheet), int(sheet.get("credits", 0))])
 		if _telemetry != null:  # Seam 5: pack buy-back is a normal economy INFLOW (sell)
 			_telemetry.log_event("sell", {
 				"ts": Time.get_unix_time_from_system(), "character_id": character_id,
 				"item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)),
 			})
-		sell_result.rpc_id(sender, {"ok": true, "item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)), "packs": AmmoModel.packs(pack_ammo)})
+		sell_result.rpc_id(sender, {"ok": true, "item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)), "packs": AmmoModel.packs(sheet)})
 		return
 	var price := EconomyModel.sell_price(int((_buy_catalog[key] as Dictionary).get("cost", 0)))
 	var result: Dictionary = EconomyModel.sell(sheet, key, price)
@@ -2352,6 +3151,7 @@ func _save_world_state() -> void:
 	if territory != null:
 		world["territory"] = territory.to_dict()  # F59: org claims + treasuries
 	world["bounties"] = PvpConsent.bounties_to_dict(_consent)  # DIV-0022: persisted bounty contracts (duels are in-memory)
+	world["bazaar_listings"] = _bazaar_listings
 	store.save_world(world)
 
 func _load_world_state() -> void:
@@ -2376,10 +3176,12 @@ func _load_world_state() -> void:
 	if territory != null:
 		territory.apply_persisted(world.get("territory", {}))  # F59: restore org claims + treasuries
 	_consent = PvpConsent.apply_persisted_bounties(_consent, world.get("bounties", {}))  # DIV-0022: restore the standing bounty book
-	print("[persist] world state restored (tick_index=%d, pending=%d, claims=%d, ti_orgs=%d, bounties=%d)" % [
+	_bazaar_listings = world.get("bazaar_listings", {})
+	print("[persist] world state restored (tick_index=%d, pending=%d, claims=%d, ti_orgs=%d, bounties=%d, bazaar=%d)" % [
 		zones.tick_index, _pending_zone_influence.size(),
 		territory.claim_count() if territory != null else 0, _territory_influence.size(),
-		(_consent.get("bounties", {}) as Dictionary).size()])
+		(_consent.get("bounties", {}) as Dictionary).size(),
+		_bazaar_listings.size()])
 
 # E27: advance each zone's ambient NPC roster (Director-paced, deterministic, hash-seeded
 # like zone_state). Folded into the per-peer snapshot as npcs[].
@@ -3373,15 +4175,14 @@ func _ammo_summary(peer_id: int) -> Dictionary:
 	var sheet: Dictionary = record.get("sheet", {})
 	var weapon_key := String((sheet.get("equipment", {}) as Dictionary).get("weapon", ""))
 	var wdict: Dictionary = _weapons_catalog.get(weapon_key, {})
-	var ammo: Dictionary = sheet.get("ammo", {})
 	if not AmmoModel.uses_ammo(wdict):
-		return {"weapon": weapon_key, "uses_ammo": false, "packs": AmmoModel.packs(ammo)}
+		return {"weapon": weapon_key, "uses_ammo": false, "packs": AmmoModel.packs(sheet)}
 	return {
 		"weapon": weapon_key,
 		"uses_ammo": true,
-		"shots": AmmoModel.shots_left(ammo, weapon_key, wdict),
+		"shots": AmmoModel.shots_left(sheet, weapon_key, wdict),
 		"capacity": AmmoModel.shots_per_weapon(wdict),
-		"packs": AmmoModel.packs(ammo),
+		"packs": AmmoModel.packs(sheet),
 	}
 
 # Seed the server's zone roster from data/zones_clone_wars.json (the Director ticks
@@ -3461,7 +4262,7 @@ func _consume_ammo_for_shot(peer_id: int) -> void:
 	if not AmmoModel.uses_ammo(wdict):
 		return  # melee / single_use — nothing to spend (single_use stays latent)
 	var ammo: Dictionary = sheet.get("ammo", {})
-	var before_shots := AmmoModel.shots_left(ammo, weapon_key, wdict)
+	var before_shots := AmmoModel.shots_left(sheet, weapon_key, wdict)
 	var r := AmmoModel.consume(ammo, weapon_key, wdict)
 	sheet["ammo"] = ammo
 	record["sheet"] = sheet
@@ -3631,3 +4432,47 @@ func _save_peer(peer_id: int) -> void:
 		record = PersistenceStore.apply_combat(record, arena.player_state(peer_id))
 	record["name"] = String(player.get("name", ""))
 	_cached_save(character_id, record)
+
+# --- Admin API (RWD Priority 9) ---
+# Used by admin_commands.gd to manipulate state without direct map poking.
+
+func admin_get_online_players() -> Dictionary:
+	return _peer_characters.duplicate()
+
+func admin_get_peer_zone(peer: int) -> String:
+	return String(_peer_zones.get(peer, "unknown"))
+
+func admin_set_peer_zone(peer: int, zone: String) -> void:
+	if _peer_zones.has(peer):
+		_peer_zones[peer] = zone
+
+func admin_kick_peer(peer: int) -> void:
+	if peer > 0:
+		multiplayer.multiplayer_peer.disconnect_peer(peer)
+
+func admin_clear_bazaar_listing(listing_id: String) -> bool:
+	if _bazaar_listings.has(listing_id):
+		_bazaar_listings.erase(listing_id)
+		return true
+	return false
+
+func admin_load_record(character_id: String) -> Dictionary:
+	return _cached_load(character_id)
+
+func admin_save_record(character_id: String, record: Dictionary) -> void:
+	_cached_save(character_id, record)
+
+func admin_push_sheet(peer: int, record: Dictionary) -> void:
+	if peer > 0:
+		_push_sheet(peer, record)
+		# Omit request_snapshot.rpc_id(peer) as it doesn't exist
+
+func admin_get_peer_by_character(character_id: String) -> int:
+	for peer in _peer_characters:
+		if _peer_characters[peer] == character_id:
+			return peer
+	return 0
+
+func admin_log_telemetry(event: String, data: Dictionary) -> void:
+	if _telemetry != null:
+		_telemetry.log_event(event, data)

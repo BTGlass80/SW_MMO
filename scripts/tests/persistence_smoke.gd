@@ -19,7 +19,7 @@ func _init() -> void:
 	_assert_true(store.load_record("nobody").is_empty(), "loading an unknown record returns empty")
 
 	# Default for a new character.
-	var spawn := Vector3(-20.0, 1.2, -6.0)
+	var spawn := Vector3(-20.0, 1.2, -4.0)
 	var fresh := store.load_or_create("char_a", "acct_a", "Mara", spawn)
 	_assert_equal(int(fresh.get("schema_version", -1)), 1, "default record schema version")
 	_assert_equal(String(fresh.get("name", "")), "Mara", "default record keeps name")

@@ -1,0 +1,145 @@
+{
+  "character_id": "republic_officer",
+  "display_name": "Republic Officer (High Fidelity)",
+  "cell_size": 0.08,
+  "output_dir": "res://docs/google/modeling/asset_factory/generated/republic_officer_v1",
+  "palette": {
+    "606a75": "uniform_grey",
+    "414850": "uniform_shadow",
+    "ffd626": "rank_yellow",
+    "f0efed": "skin_peach",
+    "15191d": "boots_black"
+  },
+  "parts": {
+    "head": {"front": [10, 10], "side": [10, 10]},
+    "torso": {"front": [12, 16], "side": [10, 16]},
+    "upper_arm": {"front": [4, 8], "side": [4, 8]},
+    "forearm": {"front": [4, 8], "side": [4, 8]},
+    "thigh": {"front": [4, 10], "side": [4, 10]},
+    "shin": {"front": [4, 10], "side": [4, 10]},
+    "blaster": {"front": [18, 8], "side": [4, 8]}
+  },
+  "skeleton": {
+    "root": "torso",
+    "bones": {
+      "torso": {
+        "parent": "",
+        "pivot": [0, 0, 0],
+        "default_position": [0, 1.15, 0]
+      },
+      "head": {
+        "parent": "torso",
+        "pivot": [0, -0.4, 0],
+        "default_position": [0, 0.88, -0.02]
+      },
+      "left_upper_arm": {
+        "parent": "torso",
+        "pivot": [0.12, 0.26, 0],
+        "default_position": [-0.52, 0.22, 0]
+      },
+      "left_forearm": {
+        "parent": "left_upper_arm",
+        "pivot": [0, 0.28, 0],
+        "default_position": [0, -0.56, -0.02]
+      },
+      "right_upper_arm": {
+        "parent": "torso",
+        "pivot": [-0.12, 0.26, 0],
+        "default_position": [0.52, 0.22, 0]
+      },
+      "right_forearm": {
+        "parent": "right_upper_arm",
+        "pivot": [0, 0.28, 0],
+        "default_position": [0, -0.56, -0.02]
+      },
+      "left_thigh": {
+        "parent": "torso",
+        "pivot": [0, 0.35, 0],
+        "default_position": [-0.22, -0.75, 0]
+      },
+      "left_shin": {
+        "parent": "left_thigh",
+        "pivot": [0, 0.35, 0],
+        "default_position": [0, -0.75, 0]
+      },
+      "right_thigh": {
+        "parent": "torso",
+        "pivot": [0, 0.35, 0],
+        "default_position": [0.22, -0.75, 0]
+      },
+      "right_shin": {
+        "parent": "right_thigh",
+        "pivot": [0, 0.35, 0],
+        "default_position": [0, -0.75, 0]
+      },
+      "blaster": {
+        "parent": "right_forearm",
+        "pivot": [0, -0.25, 0],
+        "default_position": [0.12, -0.35, -0.25]
+      }
+    }
+  },
+  "animations": {
+    "walk": {
+      "loop": true,
+      "length": 1.0,
+      "keyframes": [
+        {
+          "time": 0.0,
+          "bones": {
+            "left_thigh": {"rotation": [20, 0, 0]},
+            "left_shin": {"rotation": [10, 0, 0]},
+            "right_thigh": {"rotation": [-20, 0, 0]},
+            "right_shin": {"rotation": [0, 0, 0]},
+            "left_upper_arm": {"rotation": [-15, 0, 0]},
+            "right_upper_arm": {"rotation": [15, 0, 0]}
+          }
+        },
+        {
+          "time": 0.25,
+          "bones": {
+            "left_thigh": {"rotation": [0, 0, 0]},
+            "left_shin": {"rotation": [25, 0, 0]},
+            "right_thigh": {"rotation": [0, 0, 0]},
+            "right_shin": {"rotation": [5, 0, 0]}
+          }
+        },
+        {
+          "time": 0.5,
+          "bones": {
+            "left_thigh": {"rotation": [-20, 0, 0]},
+            "left_shin": {"rotation": [0, 0, 0]},
+            "right_thigh": {"rotation": [20, 0, 0]},
+            "right_shin": {"rotation": [10, 0, 0]},
+            "left_upper_arm": {"rotation": [15, 0, 0]},
+            "right_upper_arm": {"rotation": [-15, 0, 0]}
+          }
+        },
+        {
+          "time": 0.75,
+          "bones": {
+            "left_thigh": {"rotation": [0, 0, 0]},
+            "left_shin": {"rotation": [5, 0, 0]},
+            "right_thigh": {"rotation": [0, 0, 0]},
+            "right_shin": {"rotation": [25, 0, 0]}
+          }
+        }
+      ]
+    },
+    "aim": {
+      "loop": false,
+      "length": 0.8,
+      "keyframes": [
+        {
+          "time": 0.0,
+          "bones": {
+            "right_upper_arm": {"rotation": [-45, -20, 0]},
+            "right_forearm": {"rotation": [-30, 10, 0]},
+            "left_upper_arm": {"rotation": [-20, 25, 0]},
+            "left_forearm": {"rotation": [-40, 0, 0]}
+          }
+        }
+      ]
+    }
+  }
+}

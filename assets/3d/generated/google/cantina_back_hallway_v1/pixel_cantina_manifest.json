@@ -1,0 +1,291 @@
+{
+	"captures": [
+		{
+			"capture_path": "res://assets/3d/generated/google/cantina_back_hallway_v1/captures/runtime_collision_nav_overlay.png",
+			"description": "Walkable rectangles in green and merged collision rectangles in red, generated from the same layered Cantina cards.",
+			"id": "runtime_collision_nav_overlay",
+			"scene_path": "res://assets/3d/generated/google/cantina_back_hallway_v1/review_scenes/runtime_collision_nav_overlay.tscn"
+		},
+		{
+			"capture_path": "res://assets/3d/generated/google/cantina_back_hallway_v1/captures/runtime_socket_map.png",
+			"description": "Named interaction and spawn sockets generated from the semantic room cards: entrance, bar, booths, service door, lights, and clutter sockets.",
+			"id": "runtime_socket_map",
+			"scene_path": "res://assets/3d/generated/google/cantina_back_hallway_v1/review_scenes/runtime_socket_map.tscn"
+		},
+		{
+			"capture_path": "res://assets/3d/generated/google/cantina_back_hallway_v1/captures/runtime_actor_path_probe.png",
+			"description": "Grid-routed actor/path probe using nearest-walkable socket resolution and the generated walkable mask.",
+			"id": "runtime_actor_path_probe",
+			"scene_path": "res://assets/3d/generated/google/cantina_back_hallway_v1/review_scenes/runtime_actor_path_probe.tscn"
+		},
+		{
+			"capture_path": "res://assets/3d/generated/google/cantina_back_hallway_v1/captures/runtime_room_pipeline_composite.png",
+			"description": "Layered room geometry, collision/walkable overlay, sockets, and placeholder actors together as a runtime-pipeline proof.",
+			"id": "runtime_room_pipeline_composite",
+			"scene_path": "res://assets/3d/generated/google/cantina_back_hallway_v1/review_scenes/runtime_room_pipeline_composite.tscn"
+		}
+	],
+	"display_name": "Chalmun's Cantina - Back Hallway & Sabacc Room",
+	"generator": "docs/google/modeling/asset_factory/scripts/godot_pixel_cantina_generator.gd",
+	"room_id": "cantina_back_hallway",
+	"sockets": [
+		{
+			"grid": {
+				"x": 48,
+				"y": 43
+			},
+			"id": "hallway_entry",
+			"kind": "spawn",
+			"path_walkable": true,
+			"resolved_from_blocked": false,
+			"resolved_grid": {
+				"x": 48,
+				"y": 43
+			},
+			"resolved_world": {
+				"x": 0.4,
+				"y": 0.08,
+				"z": -3.6
+			},
+			"tags": [
+				"entry",
+				"player"
+			],
+			"walkable": true,
+			"world": {
+				"x": 0.4,
+				"y": 0.08,
+				"z": -3.6
+			}
+		},
+		{
+			"grid": {
+				"x": 18,
+				"y": 42
+			},
+			"id": "restroom_a",
+			"kind": "transition",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 18,
+				"y": 41
+			},
+			"resolved_world": {
+				"x": -23.6,
+				"y": 0.08,
+				"z": -5.2
+			},
+			"tags": [
+				"restroom",
+				"door"
+			],
+			"walkable": false,
+			"world": {
+				"x": -23.6,
+				"y": 0.08,
+				"z": -4.4
+			}
+		},
+		{
+			"grid": {
+				"x": 30,
+				"y": 42
+			},
+			"id": "restroom_b",
+			"kind": "transition",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 30,
+				"y": 41
+			},
+			"resolved_world": {
+				"x": -14.0,
+				"y": 0.08,
+				"z": -5.2
+			},
+			"tags": [
+				"restroom",
+				"door"
+			],
+			"walkable": false,
+			"world": {
+				"x": -14.0,
+				"y": 0.08,
+				"z": -4.4
+			}
+		},
+		{
+			"grid": {
+				"x": 42,
+				"y": 42
+			},
+			"id": "restroom_c",
+			"kind": "transition",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 42,
+				"y": 41
+			},
+			"resolved_world": {
+				"x": -4.4,
+				"y": 0.08,
+				"z": -5.2
+			},
+			"tags": [
+				"restroom",
+				"door"
+			],
+			"walkable": false,
+			"world": {
+				"x": -4.4,
+				"y": 0.08,
+				"z": -4.4
+			}
+		},
+		{
+			"grid": {
+				"x": 23,
+				"y": 48
+			},
+			"id": "cellar_trapdoor",
+			"kind": "interaction",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 23,
+				"y": 46
+			},
+			"resolved_world": {
+				"x": -19.6,
+				"y": 0.08,
+				"z": -1.2
+			},
+			"tags": [
+				"cellar",
+				"floor"
+			],
+			"walkable": false,
+			"world": {
+				"x": -19.6,
+				"y": 0.08,
+				"z": 0.4
+			}
+		},
+		{
+			"grid": {
+				"x": 40,
+				"y": 53
+			},
+			"id": "office_door",
+			"kind": "transition",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 40,
+				"y": 52
+			},
+			"resolved_world": {
+				"x": -6.0,
+				"y": 0.08,
+				"z": 3.6
+			},
+			"tags": [
+				"office",
+				"door"
+			],
+			"walkable": false,
+			"world": {
+				"x": -6.0,
+				"y": 0.08,
+				"z": 4.4
+			}
+		},
+		{
+			"grid": {
+				"x": 70,
+				"y": 48
+			},
+			"id": "sabacc_table",
+			"kind": "social_table",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 59,
+				"y": 48
+			},
+			"resolved_world": {
+				"x": 9.2,
+				"y": 0.08,
+				"z": 0.4
+			},
+			"tags": [
+				"sabacc",
+				"seated"
+			],
+			"walkable": false,
+			"world": {
+				"x": 18.0,
+				"y": 0.08,
+				"z": 0.4
+			}
+		},
+		{
+			"grid": {
+				"x": 70,
+				"y": 48
+			},
+			"id": "sabacc_light",
+			"kind": "light_socket",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 59,
+				"y": 48
+			},
+			"resolved_world": {
+				"x": 9.2,
+				"y": 0.08,
+				"z": 0.4
+			},
+			"tags": [
+				"sabacc",
+				"light"
+			],
+			"walkable": false,
+			"world": {
+				"x": 18.0,
+				"y": 0.08,
+				"z": 0.4
+			}
+		}
+	],
+	"source_images": {
+		"collision": "res://assets/3d/generated/google/cantina_back_hallway_v1/source_images/cantina_collision_mask_96x96.png",
+		"detail": "res://assets/3d/generated/google/cantina_back_hallway_v1/source_images/cantina_detail_elevation_96x96.png",
+		"floorplan": "res://assets/3d/generated/google/cantina_back_hallway_v1/source_images/cantina_floorplan_96x96.png",
+		"walkable": "res://assets/3d/generated/google/cantina_back_hallway_v1/source_images/cantina_walkable_mask_96x96.png"
+	},
+	"spec_path": "res://docs/google/modeling/asset_factory/specs/cantina_back_hallway.json",
+	"stats": {
+		"actor_probe_route_cells": 28,
+		"blocker_pixels": 741,
+		"collision_rectangles": 124,
+		"collision_shape_reduction_vs_pixels": 83.3,
+		"collision_shapes": 124,
+		"composite_probe_route_cells": 0,
+		"detail_nonempty_pixels": 303,
+		"detail_rectangles": 68,
+		"floor_nonempty_pixels": 1441,
+		"floor_rectangles": 118,
+		"grid_size": "96x96",
+		"nonwalkable_socket_count": 7,
+		"resolved_socket_count": 7,
+		"socket_count": 8,
+		"walk_node_reduction_vs_pixels": 97.8,
+		"walkable_pixels": 866,
+		"walkable_rectangles": 19
+	}
+}

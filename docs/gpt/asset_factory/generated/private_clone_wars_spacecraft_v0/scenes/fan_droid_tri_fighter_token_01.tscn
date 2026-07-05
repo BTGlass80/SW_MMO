@@ -1,0 +1,79 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_puf4y"]
+albedo_color = Color(0.7254902, 0.60784316, 0.3882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_xbl2a"]
+size = Vector3(0.56, 0.28, 0.62)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gviel"]
+albedo_color = Color(1, 0.41568628, 0.1882353, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(1, 0.41568628, 0.1882353, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_kec30"]
+size = Vector3(0.24, 0.08, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_25efy"]
+albedo_color = Color(0.42745098, 0.3529412, 0.21960784, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_nes0j"]
+size = Vector3(0.22, 0.1, 0.9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sckvn"]
+size = Vector3(0.9, 0.1, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fuhf4"]
+size = Vector3(0.9, 0.1, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_18x3q"]
+size = Vector3(0.18, 0.12, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pr4eq"]
+size = Vector3(0.18, 0.12, 0.18)
+
+[node name="fan_droid_tri_fighter_token_01" type="Node3D" unique_id=728892774]
+metadata/asset_id = "fan_droid_tri_fighter_token_01"
+metadata/display_name = "Fan Droid Tri-Fighter Token 01"
+metadata/category = "spacecraft_token"
+metadata/gameplay_role = "CIS-style nimble droid fighter token for private fan table"
+metadata/prompt = "blockcraft droid tri-fighter with tan core, three dark fins, orange sensor eye, and spidery profile"
+
+[node name="core" type="MeshInstance3D" parent="." unique_id=620771033]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0)
+material_override = SubResource("StandardMaterial3D_puf4y")
+mesh = SubResource("BoxMesh_xbl2a")
+
+[node name="sensor_eye" type="MeshInstance3D" parent="." unique_id=1190880839]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.44, -0.36)
+material_override = SubResource("StandardMaterial3D_gviel")
+mesh = SubResource("BoxMesh_kec30")
+
+[node name="front_fin" type="MeshInstance3D" parent="." unique_id=2073749664]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.28, -0.86)
+material_override = SubResource("StandardMaterial3D_25efy")
+mesh = SubResource("BoxMesh_nes0j")
+
+[node name="left_fin" type="MeshInstance3D" parent="." unique_id=422034980]
+transform = Transform3D(0.9135454, 0, -0.40673664, 0, 1, 0, 0.40673664, 0, 0.9135454, -0.68, 0.26, 0.28)
+material_override = SubResource("StandardMaterial3D_25efy")
+mesh = SubResource("BoxMesh_sckvn")
+
+[node name="right_fin" type="MeshInstance3D" parent="." unique_id=1574742324]
+transform = Transform3D(0.9135454, 0, 0.40673664, 0, 1, 0, -0.40673664, 0, 0.9135454, 0.68, 0.26, 0.28)
+material_override = SubResource("StandardMaterial3D_25efy")
+mesh = SubResource("BoxMesh_fuhf4")
+
+[node name="left_tip" type="MeshInstance3D" parent="." unique_id=2145759176]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.08, 0.28, 0.56)
+material_override = SubResource("StandardMaterial3D_gviel")
+mesh = SubResource("BoxMesh_18x3q")
+
+[node name="right_tip" type="MeshInstance3D" parent="." unique_id=966304180]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.08, 0.28, 0.56)
+material_override = SubResource("StandardMaterial3D_gviel")
+mesh = SubResource("BoxMesh_pr4eq")

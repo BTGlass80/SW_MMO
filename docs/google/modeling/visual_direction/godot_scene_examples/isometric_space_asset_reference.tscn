@@ -1,0 +1,180 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/craft_racer.glb" id="1_racer"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/craft_miner.glb" id="2_miner"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/craft_cargoA.glb" id="3_cargo"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/meteor.glb" id="4_meteor"]
+[ext_resource type="PackedScene" path="res://assets/3d/kenney/space-kit/Models/GLTF format/meteor_detailed.glb" id="5_meteor_detailed"]
+
+[sub_resource type="StandardMaterial3D" id="mat_space_floor"]
+albedo_color = Color(0.015, 0.038, 0.07, 0.88)
+transparency = 1
+emission_enabled = true
+emission = Color(0.0, 0.05, 0.12, 1.0)
+emission_energy_multiplier = 0.55
+
+[sub_resource type="StandardMaterial3D" id="mat_grid"]
+albedo_color = Color(0.0, 0.32, 0.75, 0.42)
+transparency = 1
+emission_enabled = true
+emission = Color(0.0, 0.35, 0.95, 1.0)
+emission_energy_multiplier = 0.9
+
+[sub_resource type="StandardMaterial3D" id="mat_blue_ring"]
+albedo_color = Color(0.0, 0.7, 1.0, 0.46)
+transparency = 1
+emission_enabled = true
+emission = Color(0.0, 0.7, 1.0, 1.0)
+emission_energy_multiplier = 1.7
+
+[sub_resource type="StandardMaterial3D" id="mat_orange_ring"]
+albedo_color = Color(1.0, 0.34, 0.1, 0.5)
+transparency = 1
+emission_enabled = true
+emission = Color(1.0, 0.26, 0.04, 1.0)
+emission_energy_multiplier = 1.55
+
+[sub_resource type="PlaneMesh" id="mesh_floor"]
+size = Vector2(28, 28)
+
+[sub_resource type="BoxMesh" id="mesh_grid_x"]
+size = Vector3(28, 0.02, 0.035)
+
+[sub_resource type="BoxMesh" id="mesh_grid_z"]
+size = Vector3(0.035, 0.02, 28)
+
+[sub_resource type="TorusMesh" id="mesh_ring"]
+inner_radius = 0.72
+outer_radius = 0.78
+ring_segments = 72
+sides = 8
+
+[node name="IsometricSpaceAssetReference" type="Node3D"]
+metadata/notes = "Docs-only reference. Uses existing project GLB craft/meteors on a flat x/z tactical plane with an orthographic isometric camera."
+
+[node name="SpacePlane" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh_floor")
+surface_material_override/0 = SubResource("mat_space_floor")
+
+[node name="Grid" type="Node3D" parent="."]
+
+[node name="GridX_-12" type="MeshInstance3D" parent="Grid"]
+position = Vector3(0, 0.015, -12)
+mesh = SubResource("mesh_grid_x")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridX_-8" type="MeshInstance3D" parent="Grid"]
+position = Vector3(0, 0.015, -8)
+mesh = SubResource("mesh_grid_x")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridX_-4" type="MeshInstance3D" parent="Grid"]
+position = Vector3(0, 0.015, -4)
+mesh = SubResource("mesh_grid_x")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridX_0" type="MeshInstance3D" parent="Grid"]
+position = Vector3(0, 0.015, 0)
+mesh = SubResource("mesh_grid_x")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridX_4" type="MeshInstance3D" parent="Grid"]
+position = Vector3(0, 0.015, 4)
+mesh = SubResource("mesh_grid_x")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridX_8" type="MeshInstance3D" parent="Grid"]
+position = Vector3(0, 0.015, 8)
+mesh = SubResource("mesh_grid_x")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridX_12" type="MeshInstance3D" parent="Grid"]
+position = Vector3(0, 0.015, 12)
+mesh = SubResource("mesh_grid_x")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridZ_-12" type="MeshInstance3D" parent="Grid"]
+position = Vector3(-12, 0.015, 0)
+mesh = SubResource("mesh_grid_z")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridZ_-8" type="MeshInstance3D" parent="Grid"]
+position = Vector3(-8, 0.015, 0)
+mesh = SubResource("mesh_grid_z")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridZ_-4" type="MeshInstance3D" parent="Grid"]
+position = Vector3(-4, 0.015, 0)
+mesh = SubResource("mesh_grid_z")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridZ_0" type="MeshInstance3D" parent="Grid"]
+position = Vector3(0, 0.015, 0)
+mesh = SubResource("mesh_grid_z")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridZ_4" type="MeshInstance3D" parent="Grid"]
+position = Vector3(4, 0.015, 0)
+mesh = SubResource("mesh_grid_z")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridZ_8" type="MeshInstance3D" parent="Grid"]
+position = Vector3(8, 0.015, 0)
+mesh = SubResource("mesh_grid_z")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="GridZ_12" type="MeshInstance3D" parent="Grid"]
+position = Vector3(12, 0.015, 0)
+mesh = SubResource("mesh_grid_z")
+surface_material_override/0 = SubResource("mat_grid")
+
+[node name="PlayerRacer" parent="." instance=ExtResource("1_racer")]
+position = Vector3(-5.5, 0.38, 4.3)
+rotation = Vector3(0, -0.75, 0)
+scale = Vector3(1.25, 1.25, 1.25)
+
+[node name="PlayerRing" type="MeshInstance3D" parent="."]
+position = Vector3(-5.5, 0.08, 4.3)
+mesh = SubResource("mesh_ring")
+surface_material_override/0 = SubResource("mat_blue_ring")
+
+[node name="WingmanMiner" parent="." instance=ExtResource("2_miner")]
+position = Vector3(-8.4, 0.38, 1.2)
+rotation = Vector3(0, -0.75, 0)
+
+[node name="EnemyCargo" parent="." instance=ExtResource("3_cargo")]
+position = Vector3(5.2, 0.38, -3.4)
+rotation = Vector3(0, 2.35, 0)
+scale = Vector3(1.2, 1.2, 1.2)
+
+[node name="EnemyRing" type="MeshInstance3D" parent="."]
+position = Vector3(5.2, 0.08, -3.4)
+mesh = SubResource("mesh_ring")
+surface_material_override/0 = SubResource("mat_orange_ring")
+
+[node name="AsteroidA" parent="." instance=ExtResource("4_meteor")]
+position = Vector3(1.4, 0.4, 2.5)
+scale = Vector3(1.8, 1.8, 1.8)
+
+[node name="AsteroidB" parent="." instance=ExtResource("5_meteor_detailed")]
+position = Vector3(3.5, 0.55, 4.2)
+rotation = Vector3(0.2, 0.6, 0.1)
+scale = Vector3(1.1, 1.1, 1.1)
+
+[node name="AsteroidC" parent="." instance=ExtResource("4_meteor")]
+position = Vector3(-1.5, 0.3, -3.8)
+rotation = Vector3(-0.1, 1.4, 0.2)
+scale = Vector3(1.25, 1.25, 1.25)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(13, 12, 13)
+rotation = Vector3(-0.955316, 0.785398, 0)
+projection = 1
+size = 18.5
+current = true
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.88, -0.7, 0.0)
+light_energy = 1.9
+shadow_enabled = true
+

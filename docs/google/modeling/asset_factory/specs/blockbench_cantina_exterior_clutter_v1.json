@@ -1,0 +1,105 @@
+{
+  "schema": "gpt_blockbench_cubecraft_v0",
+  "pack_id": "blockbench_cantina_exterior_clutter_v1",
+  "display_name": "Blockbench Cantina Exterior Clutter v1",
+  "output_folder": "generated/blockbench_cantina_exterior_clutter_v1",
+  "preview_background": "#7f9298",
+  "notes": [
+    "One-variable follow-up to cantina_mood_ab_v1.",
+    "Changed variable: convert the mood-pass proof pipes, utility clutter, crates, scrap, and dust berms into reusable editable Blockbench modules.",
+    "Keep the kept entrance GLB, sign workflow, camera family, and Cantina geometry fixed.",
+    "This is a custom identity/filler boundary kit: more authored than raw Kenney, less precious than hero landmark geometry."
+  ],
+  "palette": {
+    "sand_dust": "#b87938",
+    "sand_shadow": "#81562f",
+    "sand_light": "#d6a75b",
+    "rust_dark": "#5c3d26",
+    "soot_dark": "#211915",
+    "metal_mid": "#555d62",
+    "metal_dark": "#30363a",
+    "wire_dark": "#1f272b",
+    "lamp_amber": "#ffb14a",
+    "scanner_cyan": "#27d7ff",
+    "crate_wood": "#7b5631",
+    "crate_lid": "#a0713a",
+    "scrap_red": "#8f2e24",
+    "stone_gray": "#6a6256"
+  },
+  "assets": [
+    {
+      "id": "cantina_pipe_cluster_v1",
+      "display_name": "Cantina Pipe Cluster v1",
+      "category": "blockbench_environment_clutter",
+      "gameplay_role": "wall-mounted utility silhouette that adds lived-in spaceport density beside adobe facade modules",
+      "cubes": [
+        {"name": "wall_mount_top_strip", "position": [0.0, 1.56, 0.05], "size": [0.78, 0.08, 0.08], "material": "rust_dark"},
+        {"name": "wall_mount_mid_strip", "position": [0.03, 0.94, 0.05], "size": [0.58, 0.07, 0.08], "material": "rust_dark"},
+        {"name": "wall_mount_low_strip", "position": [-0.04, 0.28, 0.05], "size": [0.66, 0.07, 0.08], "material": "rust_dark"},
+        {"name": "left_mount_spacer", "position": [-0.43, 0.84, 0.05], "size": [0.08, 1.34, 0.08], "material": "soot_dark"},
+        {"name": "right_mount_spacer", "position": [0.43, 0.76, 0.05], "size": [0.08, 1.02, 0.08], "material": "soot_dark"},
+        {"name": "vertical_pipe_a", "position": [-0.26, 0.86, -0.02], "size": [0.09, 1.58, 0.09], "material": "metal_mid"},
+        {"name": "vertical_pipe_b", "position": [-0.03, 0.74, -0.04], "size": [0.07, 1.22, 0.07], "material": "metal_dark"},
+        {"name": "vertical_pipe_c", "position": [0.22, 0.94, -0.03], "size": [0.08, 1.38, 0.08], "material": "metal_mid"},
+        {"name": "top_cross_pipe", "position": [-0.02, 1.55, -0.04], "size": [0.68, 0.08, 0.08], "material": "metal_mid"},
+        {"name": "mid_cross_pipe", "position": [0.08, 1.05, -0.05], "size": [0.44, 0.06, 0.06], "material": "metal_dark"},
+        {"name": "bottom_elbow_left", "position": [-0.28, 0.13, -0.05], "size": [0.24, 0.08, 0.08], "material": "metal_mid"},
+        {"name": "bottom_elbow_right", "position": [0.28, 0.24, -0.05], "size": [0.2, 0.07, 0.07], "material": "metal_mid"},
+        {"name": "valve_block", "position": [0.38, 1.06, -0.08], "size": [0.14, 0.16, 0.1], "material": "scrap_red"},
+        {"name": "clamp_top_a", "position": [-0.26, 1.32, -0.08], "size": [0.2, 0.06, 0.08], "material": "soot_dark"},
+        {"name": "clamp_mid_b", "position": [-0.03, 0.62, -0.08], "size": [0.18, 0.05, 0.08], "material": "soot_dark"},
+        {"name": "small_junction_box", "position": [0.39, 0.54, -0.02], "size": [0.24, 0.28, 0.12], "material": "metal_dark"},
+        {"name": "junction_light", "position": [0.39, 0.62, -0.11], "size": [0.13, 0.04, 0.04], "material": "scanner_cyan"}
+      ]
+    },
+    {
+      "id": "cantina_utility_box_v1",
+      "display_name": "Cantina Utility Box v1",
+      "category": "blockbench_environment_clutter",
+      "gameplay_role": "wall utility box with amber lamp and wire runs for frontier service infrastructure",
+      "cubes": [
+        {"name": "main_box", "position": [0.0, 0.38, 0.0], "size": [0.52, 0.58, 0.3], "material": "soot_dark"},
+        {"name": "front_plate", "position": [0.0, 0.42, -0.18], "size": [0.42, 0.36, 0.06], "material": "metal_dark"},
+        {"name": "amber_lamp", "position": [0.0, 0.76, -0.2], "size": [0.25, 0.1, 0.07], "material": "lamp_amber"},
+        {"name": "cyan_status_dot", "position": [-0.14, 0.44, -0.23], "size": [0.07, 0.07, 0.04], "material": "scanner_cyan"},
+        {"name": "red_warning_tag", "position": [0.13, 0.29, -0.23], "size": [0.16, 0.06, 0.04], "material": "scrap_red"},
+        {"name": "left_wire_upper", "position": [-0.48, 0.74, -0.08], "size": [0.56, 0.05, 0.05], "material": "wire_dark"},
+        {"name": "left_wire_lower", "position": [-0.43, 0.54, -0.08], "size": [0.46, 0.04, 0.04], "material": "wire_dark"},
+        {"name": "right_conduit", "position": [0.48, 0.38, -0.05], "size": [0.08, 0.86, 0.08], "material": "metal_mid"},
+        {"name": "top_cap", "position": [0.0, 0.71, 0.0], "size": [0.6, 0.08, 0.34], "material": "metal_mid"},
+        {"name": "bottom_shadow_foot", "position": [0.0, 0.06, 0.02], "size": [0.6, 0.09, 0.34], "material": "rust_dark"}
+      ]
+    },
+    {
+      "id": "cantina_crate_scrap_stack_v1",
+      "display_name": "Cantina Crate Scrap Stack v1",
+      "category": "blockbench_environment_clutter",
+      "gameplay_role": "low street clutter and cover-scale scrap cluster for Cantina exterior approach",
+      "cubes": [
+        {"name": "crate_body", "position": [-0.28, 0.28, 0.0], "size": [0.58, 0.52, 0.5], "material": "crate_wood"},
+        {"name": "crate_lid", "position": [-0.28, 0.58, 0.0], "size": [0.66, 0.08, 0.56], "material": "crate_lid"},
+        {"name": "crate_band_front", "position": [-0.28, 0.31, -0.28], "size": [0.64, 0.07, 0.05], "material": "rust_dark"},
+        {"name": "small_side_box", "position": [0.24, 0.19, 0.08], "size": [0.34, 0.34, 0.38], "material": "metal_dark"},
+        {"name": "scrap_slab", "position": [0.52, 0.43, -0.08], "size": [0.62, 0.12, 0.42], "material": "metal_mid"},
+        {"name": "red_panel", "position": [0.52, 0.53, -0.32], "size": [0.5, 0.08, 0.05], "material": "scrap_red"},
+        {"name": "loose_pipe", "position": [0.5, 0.17, 0.32], "size": [0.7, 0.08, 0.08], "material": "metal_mid"},
+        {"name": "dark_shadow_block", "position": [0.02, 0.06, 0.0], "size": [1.28, 0.08, 0.74], "material": "soot_dark"}
+      ]
+    },
+    {
+      "id": "cantina_dust_berm_v1",
+      "display_name": "Cantina Dust Berm v1",
+      "category": "blockbench_environment_clutter",
+      "gameplay_role": "chunky dust buildup and rock scatter that breaks the clean toy-floor read around frontier buildings",
+      "cubes": [
+        {"name": "berm_main", "position": [0.0, 0.12, 0.0], "size": [1.55, 0.22, 0.68], "material": "sand_shadow"},
+        {"name": "berm_top_light", "position": [-0.18, 0.27, -0.04], "size": [0.98, 0.12, 0.42], "material": "sand_dust"},
+        {"name": "berm_small_step", "position": [0.48, 0.22, 0.18], "size": [0.46, 0.12, 0.32], "material": "sand_light"},
+        {"name": "left_rock", "position": [-0.62, 0.34, -0.12], "size": [0.22, 0.2, 0.2], "material": "stone_gray"},
+        {"name": "right_rock", "position": [0.68, 0.33, 0.04], "size": [0.28, 0.18, 0.22], "material": "stone_gray"},
+        {"name": "rust_scrap_half_buried", "position": [0.12, 0.34, -0.32], "size": [0.4, 0.08, 0.08], "material": "rust_dark"},
+        {"name": "dark_gap_under_berm", "position": [0.0, 0.035, 0.08], "size": [1.42, 0.06, 0.5], "material": "soot_dark"}
+      ]
+    }
+  ]
+}

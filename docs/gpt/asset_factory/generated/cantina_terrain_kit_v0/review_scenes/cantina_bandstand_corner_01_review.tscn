@@ -1,0 +1,235 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/cantina_terrain_kit_v0/scenes/cantina_bandstand_corner_01.tscn" id="1_8hl5c"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ll87l"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_ayw3y"]
+size = Vector3(8.5, 0.08, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v56mg"]
+albedo_color = Color(0.18039216, 0.14509805, 0.1254902, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_1a7wv"]
+size = Vector3(4.4, 0.08, 3.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2r5wf"]
+albedo_color = Color(0.7254902, 0.50980395, 0.27058825, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_2t0yp"]
+size = Vector3(4.2, 2, 0.34)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vmryd"]
+albedo_color = Color(0.8745098, 0.7294118, 0.44705883, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.8745098, 0.7294118, 0.44705883, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_b8u7f"]
+top_radius = 1.35
+bottom_radius = 1.35
+height = 0.36
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ec8bc"]
+albedo_color = Color(0.47843137, 0.3372549, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_m78ns"]
+size = Vector3(2.15, 0.26, 0.16)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jck7p"]
+albedo_color = Color(0.43529412, 0.26666668, 0.14901961, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_ad6pl"]
+size = Vector3(0.12, 1.05, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_swajs"]
+albedo_color = Color(0.84313726, 0.654902, 0.21176471, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_5nb87"]
+size = Vector3(0.5, 0.26, 0.28)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_s60nq"]
+top_radius = 0.32
+bottom_radius = 0.32
+height = 0.55
+radial_segments = 10
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r8iln"]
+albedo_color = Color(0.6431373, 0.6862745, 0.7019608, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.6431373, 0.6862745, 0.7019608, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ihdvh"]
+top_radius = 0.34
+bottom_radius = 0.34
+height = 0.06
+radial_segments = 10
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ppwyi"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_a16ph"]
+size = Vector3(0.84, 0.24, 0.32)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jwici"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_vjw1f"]
+size = Vector3(0.56, 0.06, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n80xj"]
+albedo_color = Color(0.84313726, 0.654902, 0.21176471, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.84313726, 0.654902, 0.21176471, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_fgl24"]
+size = Vector3(0.34, 0.12, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_o6de5"]
+size = Vector3(0.34, 0.12, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2ff0a"]
+albedo_color = Color(0.14117648, 0.84313726, 0.84313726, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14117648, 0.84313726, 0.84313726, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_0nhyj"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fg8hj"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xh1k8"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7otxw"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[node name="cantina_bandstand_corner_01_review" type="Node3D" unique_id=1070528102]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=134551945]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_ll87l")
+mesh = SubResource("BoxMesh_ayw3y")
+
+[node name="cantina_bandstand_corner_01" type="Node3D" parent="." unique_id=1398884585 instance=ExtResource("1_8hl5c")]
+metadata/asset_id = "cantina_bandstand_corner_01"
+metadata/display_name = "Cantina Bandstand Corner 01"
+metadata/category = "terrain_module"
+metadata/gameplay_role = "music/bandstand identity corner"
+metadata/prompt = "blockcraft cantina bandstand with raised stage, instruments, music lights, and acoustic wall alcove"
+
+[node name="floor_plate" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=525596663]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+material_override = SubResource("StandardMaterial3D_v56mg")
+mesh = SubResource("BoxMesh_1a7wv")
+
+[node name="rear_wall" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=323112390]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1.45)
+material_override = SubResource("StandardMaterial3D_2r5wf")
+mesh = SubResource("BoxMesh_2t0yp")
+
+[node name="stage_base" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=1460549614]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0.1)
+material_override = SubResource("StandardMaterial3D_vmryd")
+mesh = SubResource("CylinderMesh_b8u7f")
+
+[node name="stage_front_shadow" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=1924815381]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, -0.96)
+material_override = SubResource("StandardMaterial3D_ec8bc")
+mesh = SubResource("BoxMesh_m78ns")
+
+[node name="instrument_tall_stand" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=247549731]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.56, 0.9, 0.08)
+material_override = SubResource("StandardMaterial3D_jck7p")
+mesh = SubResource("BoxMesh_ad6pl")
+
+[node name="instrument_tall_bell" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=1032637756]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.56, 1.48, -0.08)
+material_override = SubResource("StandardMaterial3D_swajs")
+mesh = SubResource("BoxMesh_5nb87")
+
+[node name="drum_body" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=1330160541]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, 0.78, 0)
+material_override = SubResource("StandardMaterial3D_jck7p")
+mesh = SubResource("CylinderMesh_s60nq")
+
+[node name="drum_skin" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=838396883]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, 1.08, 0)
+material_override = SubResource("StandardMaterial3D_r8iln")
+mesh = SubResource("CylinderMesh_ihdvh")
+
+[node name="small_synth" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=1008867817]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74, 0.62)
+material_override = SubResource("StandardMaterial3D_ppwyi")
+mesh = SubResource("BoxMesh_a16ph")
+
+[node name="synth_lights" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=1012632149]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0.42)
+material_override = SubResource("StandardMaterial3D_jwici")
+mesh = SubResource("BoxMesh_vjw1f")
+
+[node name="music_light_left" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=514420454]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.25, 1.56, 1.24)
+material_override = SubResource("StandardMaterial3D_n80xj")
+mesh = SubResource("BoxMesh_fgl24")
+
+[node name="music_light_right" type="MeshInstance3D" parent="cantina_bandstand_corner_01" unique_id=1722243613]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 1.56, 1.24)
+material_override = SubResource("StandardMaterial3D_n80xj")
+mesh = SubResource("BoxMesh_o6de5")
+
+[node name="BlockSelectionMarker" type="Node3D" parent="." unique_id=914114387]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+
+[node name="front" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=590101646]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.7)
+material_override = SubResource("StandardMaterial3D_2ff0a")
+mesh = SubResource("BoxMesh_0nhyj")
+
+[node name="back" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=74701724]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.7)
+material_override = SubResource("StandardMaterial3D_2ff0a")
+mesh = SubResource("BoxMesh_fg8hj")
+
+[node name="left" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=892841247]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_2ff0a")
+mesh = SubResource("BoxMesh_xh1k8")
+
+[node name="right" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1600220656]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_2ff0a")
+mesh = SubResource("BoxMesh_7otxw")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=252535393]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=1779454565]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 8.0
+far = 120.0

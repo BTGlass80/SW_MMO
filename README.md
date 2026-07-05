@@ -53,6 +53,14 @@ The solo experience above is unchanged (`scenes/main.tscn` is still the project'
 main scene). A separate server-authoritative networked world lives in
 `scenes/net_world.tscn`. See `docs/MULTIPLAYER_FOUNDATION.md` for the architecture.
 
+Run both the server and client concurrently (recommended):
+
+```cmd
+.\start_game.bat
+```
+
+Or run them individually in separate shells:
+
 Run a dedicated headless server:
 
 ```powershell
@@ -64,6 +72,7 @@ Run a client (default host 127.0.0.1, port 24555):
 ```powershell
 & "C:\Godot 4\Godot_v4.6.3-stable_win64.exe" --path . res://scenes/net_world.tscn -- --connect 127.0.0.1
 ```
+
 
 Everything after `--` is a user arg. The server owns all positions; clients send
 input intents and render authoritative snapshots.

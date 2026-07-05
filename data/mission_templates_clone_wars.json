@@ -1,0 +1,33 @@
+{
+  "mission_templates": [
+    {
+      "key": "bounty_local_thug",
+      "name": "Bounty: Local Trouble",
+      "type": "bounty",
+      "difficulty": 1,
+      "target_faction": "hutt",
+      "reward_credits": 500,
+      "reward_faction": "independent"
+    },
+    {
+      "key": "smuggle_spice",
+      "name": "Smuggle Contraband",
+      "type": "smuggling",
+      "difficulty": 3,
+      "cargo_template": "cargo_crate",
+      "cargo_legal": false,
+      "reward_credits": 2500,
+      "reward_faction": "hutt"
+    },
+    {
+      "key": "supply_run_medical",
+      "name": "Deliver Medical Supplies",
+      "type": "delivery",
+      "difficulty": 1,
+      "cargo_template": "cargo_crate",
+      "cargo_legal": true,
+      "reward_credits": 300,
+      "reward_faction": "republic"
+    }
+  ]
+}

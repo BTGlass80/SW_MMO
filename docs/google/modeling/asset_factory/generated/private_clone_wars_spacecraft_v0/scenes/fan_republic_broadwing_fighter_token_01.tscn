@@ -1,0 +1,99 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6frkc"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_cbe3j"]
+size = Vector3(0.56, 0.36, 1.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bx87h"]
+size = Vector3(0.42, 0.22, 0.34)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8kqd5"]
+albedo_color = Color(0.6039216, 0.64705884, 0.6666667, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_7wa4w"]
+size = Vector3(1.2, 0.12, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rdhn7"]
+size = Vector3(1.2, 0.12, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fn2vn"]
+albedo_color = Color(0.76862746, 0.23137255, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_m2oyr"]
+size = Vector3(0.72, 0.08, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5mvm4"]
+size = Vector3(0.72, 0.08, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jaqlw"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_n8kpk"]
+size = Vector3(0.34, 0.16, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_y4b6g"]
+size = Vector3(0.24, 0.18, 0.14)
+
+[sub_resource type="BoxMesh" id="BoxMesh_o3iyw"]
+size = Vector3(0.24, 0.18, 0.14)
+
+[node name="fan_republic_broadwing_fighter_token_01" type="Node3D" unique_id=235420135]
+metadata/asset_id = "fan_republic_broadwing_fighter_token_01"
+metadata/display_name = "Fan Republic Broadwing Fighter Token 01"
+metadata/category = "spacecraft_token"
+metadata/gameplay_role = "sturdier Republic-friendly heavy fighter token for private fan table"
+metadata/prompt = "blockcraft broad-wing Republic heavy fighter with white center pod, red armor panels, twin blue engines, and squadron silhouette"
+
+[node name="center_pod" type="MeshInstance3D" parent="." unique_id=1105153590]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, -0.05)
+material_override = SubResource("StandardMaterial3D_6frkc")
+mesh = SubResource("BoxMesh_cbe3j")
+
+[node name="nose_block" type="MeshInstance3D" parent="." unique_id=832261433]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.33, -0.92)
+material_override = SubResource("StandardMaterial3D_6frkc")
+mesh = SubResource("BoxMesh_bx87h")
+
+[node name="left_wing_root" type="MeshInstance3D" parent="." unique_id=1502521025]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.78, 0.28, -0.05)
+material_override = SubResource("StandardMaterial3D_8kqd5")
+mesh = SubResource("BoxMesh_7wa4w")
+
+[node name="right_wing_root" type="MeshInstance3D" parent="." unique_id=667782752]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 0.28, -0.05)
+material_override = SubResource("StandardMaterial3D_8kqd5")
+mesh = SubResource("BoxMesh_rdhn7")
+
+[node name="left_red_plate" type="MeshInstance3D" parent="." unique_id=1621130761]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.98, 0.34, -0.25)
+material_override = SubResource("StandardMaterial3D_fn2vn")
+mesh = SubResource("BoxMesh_m2oyr")
+
+[node name="right_red_plate" type="MeshInstance3D" parent="." unique_id=1449044633]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.98, 0.34, -0.25)
+material_override = SubResource("StandardMaterial3D_fn2vn")
+mesh = SubResource("BoxMesh_5mvm4")
+
+[node name="cockpit" type="MeshInstance3D" parent="." unique_id=245620108]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58, -0.34)
+material_override = SubResource("StandardMaterial3D_jaqlw")
+mesh = SubResource("BoxMesh_n8kpk")
+
+[node name="left_engine" type="MeshInstance3D" parent="." unique_id=1605312478]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32, 0.34, 0.72)
+material_override = SubResource("StandardMaterial3D_jaqlw")
+mesh = SubResource("BoxMesh_y4b6g")
+
+[node name="right_engine" type="MeshInstance3D" parent="." unique_id=910244221]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, 0.34, 0.72)
+material_override = SubResource("StandardMaterial3D_jaqlw")
+mesh = SubResource("BoxMesh_o3iyw")

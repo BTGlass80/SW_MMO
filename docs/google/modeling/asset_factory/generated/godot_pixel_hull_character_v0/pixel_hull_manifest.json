@@ -1,0 +1,92 @@
+{
+	"captures": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_character_v0/captures/pixel_hull_source_cards.png",
+			"description": "Original project-owned front and side pixel cards used as deterministic volume masks. No external art source.",
+			"id": "pixel_hull_source_cards",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_character_v0/review_scenes/pixel_hull_source_cards.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_character_v0/captures/pixel_hull_flat_vs_volume.png",
+			"description": "Same front card. Left: flat front extrusion. Right: front+side visual hull with z-run merged voxels.",
+			"id": "pixel_hull_flat_vs_volume",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_character_v0/review_scenes/pixel_hull_flat_vs_volume.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_character_v0/captures/pixel_hull_trooper_three_quarter.png",
+			"description": "Three-quarter Godot camera proof for a deterministic front+side pixel-card humanoid volume.",
+			"id": "pixel_hull_trooper_three_quarter",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_character_v0/review_scenes/pixel_hull_trooper_three_quarter.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_character_v0/captures/pixel_hull_trooper_rotation_contact_sheet.png",
+			"description": "Rotation contact sheet at 0, 90, 180, and 270 degree yaw. This checks whether the visual-hull character has real 3D volume or just a paper cutout.",
+			"id": "pixel_hull_trooper_rotation_contact_sheet",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_character_v0/review_scenes/pixel_hull_trooper_rotation_contact_sheet.tscn"
+		}
+	],
+	"generator": "docs/gpt/asset_factory/scripts/godot_pixel_hull_character_proof.gd",
+	"source_images": {
+		"front": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_character_v0/source_images/trooper_front_card_16x28.png",
+		"side": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_character_v0/source_images/trooper_side_card_10x28.png"
+	},
+	"stats": {
+		"flat_front_extrude": {
+			"boxes": 92,
+			"mode": "front_card_same_color_horizontal_runs",
+			"pixels": 448
+		},
+		"front_card_display": {
+			"boxes": 92,
+			"mode": "front_card_same_color_horizontal_runs",
+			"pixels": 448
+		},
+		"front_side_visual_hull": {
+			"boxes": 247,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1376,
+			"side_pixels": 280
+		},
+		"side_card_display": {
+			"boxes": 72,
+			"mode": "front_card_same_color_horizontal_runs",
+			"pixels": 280
+		},
+		"trooper_visual_hull": {
+			"boxes": 247,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1376,
+			"side_pixels": 280
+		},
+		"trooper_visual_hull_yaw_0": {
+			"boxes": 247,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1376,
+			"side_pixels": 280
+		},
+		"trooper_visual_hull_yaw_180": {
+			"boxes": 247,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1376,
+			"side_pixels": 280
+		},
+		"trooper_visual_hull_yaw_270": {
+			"boxes": 247,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1376,
+			"side_pixels": 280
+		},
+		"trooper_visual_hull_yaw_90": {
+			"boxes": 247,
+			"front_pixels": 448,
+			"mode": "front_side_visual_hull_z_runs",
+			"raw_voxels": 1376,
+			"side_pixels": 280
+		}
+	}
+}

@@ -24,7 +24,9 @@ class HazardZone:
 		draw_arc(center, radius, 0.0, TAU, 48, line_color, 2.0)
 
 var _root: Control
+var _actions_panel: ColorRect
 var _scan_label: Label
+
 var _gunnery_label: Label
 var _shield_label: Label
 var _traffic_label: Label
@@ -63,6 +65,8 @@ var _live_traffic_tick_count := 0
 var _last_viewport_size := Vector2.ZERO
 var _last_bridge_cue := ""
 var _pending_action_log_cue_level := ""
+var _current_system := "Tatooine"
+
 
 func _ready() -> void:
 	layer = 20
@@ -81,6 +85,18 @@ func _ready() -> void:
 	_build_overlay()
 	_last_viewport_size = get_viewport().get_visible_rect().size
 	visible = false
+
+	# Connect authoritative server signals
+	var global_net = get_node_or_null("/root/Net")
+	if global_net != null:
+		if not global_net.launch_ship_replied.is_connected(_on_server_launch):
+			global_net.launch_ship_replied.connect(_on_server_launch)
+		if not global_net.land_ship_replied.is_connected(_on_server_land):
+			global_net.land_ship_replied.connect(_on_server_land)
+		if not global_net.hyperjump_replied.is_connected(_on_server_hyperjump):
+			global_net.hyperjump_replied.connect(_on_server_hyperjump)
+		if not global_net.space_mine_replied.is_connected(_on_server_mine):
+			global_net.space_mine_replied.connect(_on_server_mine)
 
 func _process(delta: float) -> void:
 	if visible and Input.mouse_mode != Input.MOUSE_MODE_VISIBLE:
@@ -104,13 +120,6 @@ func _process(delta: float) -> void:
 	_update_traffic_label()
 
 func _input(event: InputEvent) -> void:
-	# Bridge keys are handled on the physical key-down only. Without the is_echo() guard, an
-	# OS auto-repeat while a key is held (very easy to trigger on M when tapping it to leave the
-	# bridge) re-fires this handler several times for what the player experiences as a single
-	# press. _set_open(not visible) is NOT idempotent, so an even number of repeat toggles lands
-	# right back on "open" — the bridge silently refuses to close and reads as "stuck in space".
-	# ESC/action keys route through _set_open too, so the same guard keeps every bridge action
-	# (including gunnery/sensor rolls) to one resolution per press.
 	if event is InputEventKey and event.pressed and event.is_echo():
 		return
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and visible:
@@ -128,14 +137,31 @@ func _input(event: InputEvent) -> void:
 func _set_open(open: bool) -> void:
 	if open == visible:
 		return
+	var global_net = get_node_or_null("/root/Net")
 	if open:
-		_mouse_mode_before_open = Input.mouse_mode
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		visible = true
-		_update_mode_label()
+		if global_net != null and global_net.connected:
+			global_net.send_launch_ship()
+		else:
+			_on_launch_success()
 	else:
-		visible = false
+		if global_net != null and global_net.connected:
+			global_net.send_land_ship()
+		else:
+			_on_land_success()
+
+func _on_launch_success() -> void:
+	_mouse_mode_before_open = Input.mouse_mode
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	visible = true
+	_update_mode_label()
+
+func _on_land_success() -> void:
+	if _mouse_mode_before_open != Input.mouse_mode:
 		Input.mouse_mode = _mouse_mode_before_open
+	visible = false
+	_last_bridge_cue = ""
+	_rebuild_action_buttons()
+
 
 func _on_viewport_size_changed() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
@@ -199,6 +225,7 @@ func _build_overlay() -> void:
 	_root.add_child(shade)
 
 	var title := Label.new()
+	title.name = "TitleLabel"
 	title.position = Vector2(32, 22)
 	title.text = "Mos Eisley Approach - 2.5D Tactical Plane"
 	title.add_theme_font_size_override("font_size", 24)
@@ -384,19 +411,14 @@ func _current_route_preview() -> Dictionary:
 	return _model.maneuver_route_preview(_player_ship, _gunnery_drill.get("maneuver_action", {}))
 
 func _add_map_surface() -> void:
-	# DIV-0004's "2.5D plane with 3D ships/camera": an isometric-angled Camera3D replaces the
-	# old flat top-down ColorRect + axis-line plane. The border frames it like the rest of the
-	# panel's instrument styling; the 3D scene draws its own ground plane + axis bars.
-	var border := ColorRect.new()
-	border.position = _map_origin - Vector2(2, 2)
-	border.size = _map_size + Vector2(4, 4)
-	border.color = Color(0.20, 0.27, 0.29, 0.9)
-	_root.add_child(border)
+	# Add a styled panel frame behind/around the map viewport
+	_add_styled_panel(_root, _map_origin - Vector2(4, 4), _map_size + Vector2(8, 8), "TACTICAL GRID READOUT", Color(0.18, 0.65, 0.85, 0.4))
 
 	_view3d = SpaceTacticalView3D.new()
 	_view3d.position = _map_origin
 	_root.add_child(_view3d)
 	_view3d.configure(_map_size)
+
 
 func _add_range_rings() -> void:
 	var center := _view3d_screen_position(Vector2.ZERO)
@@ -509,17 +531,20 @@ func _add_contacts() -> void:
 func _add_station_strip() -> void:
 	_station_labels.clear()
 	var rows := SpaceStationStripModel.station_rows(_player_ship, _space_state)
-	var column_width := maxf(_panel_width() * 0.5, 96.0)
+	var column_width := maxf((_panel_width() - 16.0) * 0.5, 96.0)
+	
+	var panel = _add_styled_panel(_root, Vector2(_panel_x(), 324), Vector2(_panel_width(), 130), "CREW STATION MONITOR")
+	
 	for i in range(rows.size()):
 		var row: Dictionary = rows[i]
 		var label := Label.new()
-		label.position = Vector2(_panel_x() + (i % 2) * column_width, 166 + int(i / 2) * 24)
-		label.size = Vector2(column_width - 8.0, 22)
+		label.position = Vector2(8 + (i % 2) * column_width, 22 + int(i / 2) * 16)
+		label.size = Vector2(column_width - 8.0, 16)
 		label.text = SpaceStationStripModel.station_line(row)
 		label.clip_text = true
-		label.add_theme_font_size_override("font_size", 12)
+		label.add_theme_font_size_override("font_size", 11)
 		label.modulate = _station_row_color(row)
-		_root.add_child(label)
+		panel.add_child(label)
 		_station_labels[String(row.get("station", ""))] = label
 
 func _update_station_strip() -> void:
@@ -542,31 +567,40 @@ func _station_row_color(row: Dictionary) -> Color:
 		return Color(0.92, 0.78, 0.46)
 	return Color(0.72, 0.82, 0.84)
 
+
 func _add_action_log_readout() -> void:
+	var panel = _add_styled_panel(_root, Vector2(_panel_x(), 258), Vector2(_panel_width(), 58), "TACTICAL LOG FEED")
 	_action_log_label = Label.new()
-	_action_log_label.position = Vector2(_panel_x(), 254)
-	_action_log_label.size = Vector2(_panel_width(), 58)
+	_action_log_label.position = Vector2(8, 20)
+	_action_log_label.size = Vector2(_panel_width() - 16, 34)
 	_action_log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_action_log_label.text = SpaceActionLogModel.summary_text(_space_action_log)
-	_action_log_label.add_theme_font_size_override("font_size", 12)
+	_action_log_label.add_theme_font_size_override("font_size", 10)
 	_action_log_label.modulate = Color(0.67, 0.74, 0.72)
-	_root.add_child(_action_log_label)
+	panel.add_child(_action_log_label)
+
+
+
 
 func _add_action_buttons() -> void:
 	var bridge_cue := _current_bridge_cue()
 	_last_bridge_cue = bridge_cue
 	var actions := SpaceOverlayModeModel.action_definitions(_live_traffic_enabled, _current_route_preview(), bridge_cue)
-	var x := _panel_x()
-	var y := 24.0
+	
 	var button_width := 94.0
 	var button_height := 28.0
 	var gap := 8.0
-	var buttons_per_row := maxi(int(floor((_panel_width() + gap) / (button_width + gap))), 1)
+	var buttons_per_row := maxi(int(floor((_panel_width() - 16.0 + gap) / (button_width + gap))), 1)
+	var rows := maxi(int(ceil(float(actions.size()) / buttons_per_row)), 1)
+	var panel_h := 24.0 + rows * (button_height + gap)
+	
+	_actions_panel = _add_styled_panel(_root, Vector2(_panel_x(), 12), Vector2(_panel_width(), panel_h), "SYSTEM BRIDGE ACTIONS")
+	
 	for i in range(actions.size()):
 		var action: Dictionary = actions[i]
 		var button := Button.new()
 		button.add_to_group("space_action_button")
-		button.position = Vector2(x + (i % buttons_per_row) * (button_width + gap), y + int(i / buttons_per_row) * (button_height + gap))
+		button.position = Vector2(8 + (i % buttons_per_row) * (button_width + gap), 22 + int(i / buttons_per_row) * (button_height + gap))
 		button.size = Vector2(button_width, button_height)
 		button.text = String(action["button_text"])
 		if action.has("tooltip_text"):
@@ -578,13 +612,8 @@ func _add_action_buttons() -> void:
 		button.focus_mode = Control.FOCUS_NONE
 		button.mouse_filter = Control.MOUSE_FILTER_STOP
 		button.pressed.connect(Callable(self, "_resolve_space_action_key").bind(action["key"]))
-		_root.add_child(button)
+		_actions_panel.add_child(button)
 
-	# Close gets a fixed top-right slot instead of the next open grid cell. Appending it to the
-	# dynamic action grid (its old spot) let it land in the same row as the last 1-2 action
-	# buttons, which the Selected Target readout (fixed at panel y=118) draws over — Close was
-	# rendered underneath that label, unreadable and easy to miss even though still clickable.
-	# A fixed corner slot keeps it visible and reachable no matter how many actions are live.
 	var close_button := Button.new()
 	close_button.add_to_group("space_action_button")
 	var viewport_size := get_viewport().get_visible_rect().size
@@ -595,6 +624,7 @@ func _add_action_buttons() -> void:
 	close_button.mouse_filter = Control.MOUSE_FILTER_STOP
 	close_button.pressed.connect(Callable(self, "_set_open").bind(false))
 	_root.add_child(close_button)
+
 
 func _cue_button_color_for_level(level: String) -> Color:
 	match level:
@@ -622,50 +652,63 @@ func _rebuild_action_buttons() -> void:
 	if _root == null:
 		return
 	for button in get_tree().get_nodes_in_group("space_action_button"):
-		if button is Node and _root.is_ancestor_of(button):
+		if button is Node and is_instance_valid(button):
 			(button as Node).queue_free()
+	if _actions_panel != null and is_instance_valid(_actions_panel):
+		_actions_panel.queue_free()
+		_actions_panel = null
 	_add_action_buttons()
 
+
 func _add_selected_target_readout() -> void:
+	var panel = _add_styled_panel(_root, Vector2(_panel_x(), 150), Vector2(_panel_width(), 100), "SELECTED CONTACT INFORMATION", Color(0.95, 0.84, 0.28, 0.4))
 	_selected_target_label = Label.new()
-	_selected_target_label.position = Vector2(_panel_x(), 118)
-	_selected_target_label.size = Vector2(_panel_width(), 42)
+	_selected_target_label.position = Vector2(8, 20)
+	_selected_target_label.size = Vector2(_panel_width() - 16, 76)
 	_selected_target_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_selected_target_label.text = ""
-	_selected_target_label.add_theme_font_size_override("font_size", 12)
+	_selected_target_label.add_theme_font_size_override("font_size", 10)
 	_selected_target_label.modulate = Color(0.88, 0.80, 0.56)
-	_root.add_child(_selected_target_label)
+	panel.add_child(_selected_target_label)
 	_update_selected_target_readout()
 
+
+
+
 func _add_scan_readout() -> void:
+	var panel = _add_styled_panel(_root, Vector2(_panel_x(), 462), Vector2(_panel_width(), 78), "SENSOR DEEP SCAN SATELLITE")
 	_scan_label = Label.new()
-	_scan_label.position = Vector2(_panel_x(), 324)
-	_scan_label.size = Vector2(_panel_width(), 136)
+	_scan_label.position = Vector2(8, 20)
+	_scan_label.size = Vector2(_panel_width() - 16, 50)
 	_scan_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_scan_label.text = "Sensors idle."
-	_scan_label.add_theme_font_size_override("font_size", 14)
+	_scan_label.add_theme_font_size_override("font_size", 12)
 	_scan_label.modulate = Color(0.78, 0.84, 0.82)
-	_root.add_child(_scan_label)
+	panel.add_child(_scan_label)
 
 func _add_gunnery_readout() -> void:
+	var panel = _add_styled_panel(_root, Vector2(_panel_x(), 548), Vector2(_panel_width(), 78), "GUNNERY FIRE CONTROL BANDS")
 	_gunnery_label = Label.new()
-	_gunnery_label.position = Vector2(_panel_x(), 462)
-	_gunnery_label.size = Vector2(_panel_width(), 132)
+	_gunnery_label.position = Vector2(8, 20)
+	_gunnery_label.size = Vector2(_panel_width() - 16, 50)
 	_gunnery_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_gunnery_label.text = "Gunnery idle."
-	_gunnery_label.add_theme_font_size_override("font_size", 14)
+	_gunnery_label.add_theme_font_size_override("font_size", 12)
 	_gunnery_label.modulate = Color(0.84, 0.80, 0.70)
-	_root.add_child(_gunnery_label)
+	panel.add_child(_gunnery_label)
 
 func _add_shield_readout() -> void:
+	var panel = _add_styled_panel(_root, Vector2(_panel_x(), 634), Vector2(_panel_width(), 78), "DEFLECTOR SHIELD EMITTERS")
 	_shield_label = Label.new()
-	_shield_label.position = Vector2(_panel_x(), 596)
-	_shield_label.size = Vector2(_panel_width(), 104)
+	_shield_label.position = Vector2(8, 20)
+	_shield_label.size = Vector2(_panel_width() - 16, 50)
 	_shield_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_shield_label.text = "Shields idle."
-	_shield_label.add_theme_font_size_override("font_size", 14)
+	_shield_label.add_theme_font_size_override("font_size", 12)
 	_shield_label.modulate = Color(0.70, 0.84, 0.90)
-	_root.add_child(_shield_label)
+	panel.add_child(_shield_label)
+
+
 
 func _resolve_sensor_sweep() -> void:
 	var seed := int(_scan_rng.randi() & 0x7fffffff)
@@ -730,6 +773,16 @@ func _resolve_gunnery_drill() -> void:
 	if target.is_empty():
 		_gunnery_label.text = "No gunnery target."
 		return
+		
+	if "asteroid" in target_id or String(target.get("subtype", "")) == "asteroid":
+		if Net != null and Net.connected:
+			Net.send_space_mine(target_id)
+		else:
+			# local simulated mining success
+			_shield_label.text = "MINING (Offline): Extracted 5 copper ore from asteroid!"
+			_record_space_action("Mine", _shield_label.text)
+		return
+
 
 	var seed := int(_gunnery_rng.randi() & 0x7fffffff)
 	var result: Dictionary = _model.resolve_gunnery_exchange_with_counterfire(D6Rules, _space_state, _player_ship, target, seed)
@@ -844,7 +897,41 @@ func _resolve_astrogation_plot() -> void:
 	var event: Dictionary = result["event"]
 	_shield_label.text = SpaceStatusModel.astrogation_plot_text(event, _player_ship, seed)
 	_record_space_action("Astro", _shield_label.text)
+	
+	if event.get("success", false):
+		if Net != null and Net.connected:
+			if _selected_contact_id == "corellia_orbit_beacon":
+				Net.send_space_hyperjump("Corellia")
+			elif _selected_contact_id == "nar_shaddaa_orbit_beacon":
+				Net.send_space_hyperjump("Nar Shaddaa")
+			elif _selected_contact_id == "kessel_orbit_beacon":
+				Net.send_space_hyperjump("Kessel")
+			elif _selected_contact_id == "bay94_beacon":
+				Net.send_space_hyperjump("Tatooine")
+		else:
+			if _selected_contact_id == "corellia_orbit_beacon":
+				_perform_system_jump("Corellia")
+			elif _selected_contact_id == "nar_shaddaa_orbit_beacon":
+				_perform_system_jump("Nar Shaddaa")
+			elif _selected_contact_id == "kessel_orbit_beacon":
+				_perform_system_jump("Kessel")
+			elif _selected_contact_id == "bay94_beacon":
+				_perform_system_jump("Tatooine")
+
+
 	_update_traffic_label()
+
+func _perform_system_jump(system_name: String) -> void:
+	_current_system = system_name
+	if _root != null:
+		var title_lbl = _root.find_child("TitleLabel", true, false) as Label
+		if title_lbl != null:
+			title_lbl.text = _current_system + " Orbit - 2.5D Tactical Plane"
+	if _view3d != null and _view3d.has_method("set_system"):
+		_view3d.set_system(_current_system)
+	_shield_label.text = "HYPERJUMP SUCCESSFUL: Arrived at " + _current_system + "!"
+	_record_space_action("Hyperjump", "Entered " + _current_system + " orbit via hyperspace lane.")
+
 
 func _resolve_station_assist() -> void:
 	if _player_ship.is_empty():
@@ -1027,3 +1114,63 @@ func _contact_color(kind: String) -> Color:
 			return Color(0.92, 0.36, 0.34)
 		_:
 			return Color(0.82, 0.84, 0.78)
+
+func _add_styled_panel(parent: Node, pos: Vector2, size: Vector2, title_text: String, border_color: Color = Color(0.18, 0.32, 0.44, 0.5)) -> ColorRect:
+	var rect := ColorRect.new()
+	rect.position = pos
+	rect.size = size
+	rect.color = Color(0.08, 0.09, 0.11, 0.8)
+	parent.add_child(rect)
+
+	# Thin borders
+	var border_width := 1.0
+	for offset in [
+		[Vector2(0,0), Vector2(size.x, border_width)], # Top
+		[Vector2(0, size.y - border_width), Vector2(size.x, border_width)], # Bottom
+		[Vector2(0,0), Vector2(border_width, size.y)], # Left
+		[Vector2(size.x - border_width, 0), Vector2(border_width, size.y)] # Right
+	]:
+		var border := ColorRect.new()
+		border.position = offset[0]
+		border.size = offset[1]
+		border.color = border_color
+		rect.add_child(border)
+
+	if title_text != "":
+		var title := Label.new()
+		title.position = Vector2(8, 4)
+		title.text = title_text
+		title.add_theme_font_size_override("font_size", 10)
+		title.modulate = Color(0.18, 0.65, 0.85) # Neon teal
+		rect.add_child(title)
+		
+	return rect
+
+func _on_server_launch(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		_on_launch_success()
+	else:
+		_shield_label.text = "LAUNCH REJECTED: " + String(result.get("reason", "failed"))
+
+func _on_server_land(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		_on_land_success()
+
+func _on_server_hyperjump(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		var dest: String = result["system"]
+		_perform_system_jump(dest)
+	else:
+		_shield_label.text = "HYPERJUMP REJECTED: " + String(result.get("reason", "failed"))
+		_record_space_action("Astro", _shield_label.text)
+
+func _on_server_mine(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		var res: String = result["resource"]
+		var count := int(result["count"])
+		_shield_label.text = "MINING SUCCESS: Extracted %d units of %s to cargo!" % [count, res.capitalize()]
+		_record_space_action("Mine", _shield_label.text)
+	else:
+		_shield_label.text = "MINING REJECTED: " + String(result.get("reason", "failed"))
+
+

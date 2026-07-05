@@ -1,0 +1,103 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6vemo"]
+albedo_color = Color(0.0627451, 0.078431375, 0.09803922, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_a7o44"]
+size = Vector3(0.68, 0.24, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_baa6c"]
+albedo_color = Color(0.68235296, 0.72156864, 0.73333335, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_opbsp"]
+size = Vector3(0.55, 0.7, 0.34)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vlwhm"]
+albedo_color = Color(0.9019608, 0.9254902, 0.92156863, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_usu4l"]
+size = Vector3(0.82, 0.72, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5thon"]
+albedo_color = Color(0.18431373, 0.56078434, 0.8392157, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.18431373, 0.56078434, 0.8392157, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_rttrd"]
+size = Vector3(0.28, 0.3, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_oo52w"]
+size = Vector3(0.7, 0.52, 0.58)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xfjig"]
+size = Vector3(0.48, 0.14, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i17ko"]
+size = Vector3(0.24, 0.72, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_exhq3"]
+size = Vector3(0.24, 0.72, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8o7bj"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_e4v8c"]
+size = Vector3(0.18, 0.16, 0.82)
+
+[node name="blockcraft_white_armored_pawn_01" type="Node3D" unique_id=2102437082]
+metadata/asset_id = "blockcraft_white_armored_pawn_01"
+metadata/display_name = "Blockcraft White Armored Pawn 01"
+metadata/category = "character_token"
+metadata/gameplay_role = "generic friendly infantry pawn scale test"
+metadata/prompt = "blocky white armored sci-fi infantry pawn with blue unit marking and black visor"
+
+[node name="boots" type="MeshInstance3D" parent="." unique_id=1127152142]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+material_override = SubResource("StandardMaterial3D_6vemo")
+mesh = SubResource("BoxMesh_a7o44")
+
+[node name="legs" type="MeshInstance3D" parent="." unique_id=1271366010]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+material_override = SubResource("StandardMaterial3D_baa6c")
+mesh = SubResource("BoxMesh_opbsp")
+
+[node name="torso" type="MeshInstance3D" parent="." unique_id=1609766406]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+material_override = SubResource("StandardMaterial3D_vlwhm")
+mesh = SubResource("BoxMesh_usu4l")
+
+[node name="blue_chest_mark" type="MeshInstance3D" parent="." unique_id=1373749728]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.26, -0.24)
+material_override = SubResource("StandardMaterial3D_5thon")
+mesh = SubResource("BoxMesh_rttrd")
+
+[node name="helmet" type="MeshInstance3D" parent="." unique_id=644494275]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+material_override = SubResource("StandardMaterial3D_vlwhm")
+mesh = SubResource("BoxMesh_oo52w")
+
+[node name="visor" type="MeshInstance3D" parent="." unique_id=956776790]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.79, -0.31)
+material_override = SubResource("StandardMaterial3D_6vemo")
+mesh = SubResource("BoxMesh_xfjig")
+
+[node name="left_arm" type="MeshInstance3D" parent="." unique_id=23681772]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.58, 1.08, 0)
+material_override = SubResource("StandardMaterial3D_vlwhm")
+mesh = SubResource("BoxMesh_i17ko")
+
+[node name="right_arm" type="MeshInstance3D" parent="." unique_id=858149176]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.58, 1.08, -0.05)
+material_override = SubResource("StandardMaterial3D_vlwhm")
+mesh = SubResource("BoxMesh_exhq3")
+
+[node name="blaster" type="MeshInstance3D" parent="." unique_id=1199527551]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 1.04, -0.45)
+material_override = SubResource("StandardMaterial3D_8o7bj")
+mesh = SubResource("BoxMesh_e4v8c")

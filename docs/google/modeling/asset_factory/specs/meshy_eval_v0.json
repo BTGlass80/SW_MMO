@@ -1,0 +1,133 @@
+{
+  "assets": [
+    {
+      "id": "meshy_cantina_service_terminal_v0",
+      "display_name": "Cantina Service Terminal Meshy Preview v0",
+      "category": "cantina_interior_prop",
+      "style_lane": "private_blockcraft_reference_safe",
+      "provider": "meshy",
+      "endpoint": "text-to-3d-v2",
+      "mode": "preview",
+      "baseline": "blockbench_cantina_bar_booth_bay_v1 and blockbench_cantina_exterior_clutter_v1",
+      "prompt": "Chunky low-poly blockcraft sci-fi desert cantina back hallway service terminal prop. Squat wall console with pipes, vent slats, cable bundle, cyan scanner light, beige worn plaster shell, dark metal panels. Game asset, readable silhouette, no text, no logos, no characters, no famous franchise shapes.",
+      "api_body": {
+        "mode": "preview",
+        "model_type": "lowpoly",
+        "target_formats": ["glb"],
+        "alpha_thumbnail": true,
+        "auto_size": false,
+        "origin_at": "bottom",
+        "moderation": true
+      },
+      "target_format": "glb",
+      "max_preview_credits": 25,
+      "allow_refine": false,
+      "review_required": true,
+      "acceptance_notes": [
+        "Must beat a simple Blockbench utility box in silhouette or material inspiration.",
+        "Must not require official/fan reference art.",
+        "Must be useful as either a direct prop candidate or a rebuild reference for Blockbench."
+      ]
+    },
+    {
+      "id": "meshy_cantina_service_terminal_voxel_lowpoly_v1",
+      "display_name": "Cantina Service Terminal Meshy Lowpoly Voxel Prompt v1",
+      "category": "cantina_interior_prop",
+      "style_lane": "private_blockcraft_reference_safe",
+      "provider": "meshy",
+      "endpoint": "text-to-3d-v2",
+      "mode": "preview",
+      "baseline": "meshy_cantina_service_terminal_v0 and blockbench_cantina_exterior_clutter_v1",
+      "changed_variable": "Prompt only; keep Meshy lowpoly model_type, increase cuboid/voxel/blockcraft language.",
+      "prompt": "Strict cuboid voxel blockcraft sci-fi desert cantina wall service terminal prop. Built from chunky square blocks and boxy panels, Minecraft-like cube grammar, squat console, block pipes, block vent slats, cable bundle, cyan scanner cube, beige worn plaster shell, dark metal panels. Readable game silhouette, no smooth organic surfaces, no text, no logos, no characters, no famous franchise shapes.",
+      "api_body": {
+        "mode": "preview",
+        "model_type": "lowpoly",
+        "target_formats": ["glb"],
+        "alpha_thumbnail": true,
+        "auto_size": false,
+        "origin_at": "bottom",
+        "moderation": true
+      },
+      "target_format": "glb",
+      "max_preview_credits": 25,
+      "allow_refine": false,
+      "review_required": true,
+      "acceptance_notes": [
+        "Must improve blockcraft cohesion versus meshy_cantina_service_terminal_v0.",
+        "Must preserve the useful greeble rhythm of the first Meshy attempt.",
+        "Must still compare honestly against the simpler Blockbench utility module."
+      ]
+    },
+    {
+      "id": "meshy_cantina_service_terminal_meshy5_draft_v1",
+      "display_name": "Cantina Service Terminal Meshy 5 Draft Selection Probe v1",
+      "category": "cantina_interior_prop",
+      "style_lane": "private_blockcraft_reference_safe",
+      "provider": "meshy",
+      "endpoint": "text-to-3d-v2",
+      "mode": "preview",
+      "baseline": "meshy_cantina_service_terminal_v0 and meshy_cantina_service_terminal_voxel_lowpoly_v1",
+      "changed_variable": "Switch from lowpoly route to standard Meshy 5 draft/concept route to test four-draft selection economics if the API exposes it.",
+      "prompt": "Cuboid blockcraft sci-fi desert cantina wall service terminal prop. Chunky square panels, squat wall console, box pipes, vent slats, cable bundle, cyan scanner light, beige worn plaster shell, dark metal panels. Concept exploration for a voxel game asset, readable silhouette, no text, no logos, no characters, no famous franchise shapes.",
+      "api_body": {
+        "mode": "preview",
+        "model_type": "standard",
+        "ai_model": "meshy-5",
+        "target_formats": ["glb"],
+        "alpha_thumbnail": true,
+        "auto_size": false,
+        "origin_at": "bottom",
+        "moderation": true
+      },
+      "refine_body": {
+        "mode": "refine",
+        "ai_model": "meshy-5",
+        "target_formats": ["glb"],
+        "texture_prompt": "Stylized low-poly game texture for a cuboid desert sci-fi cantina service terminal. Warm beige worn plaster, dark gunmetal panels, subtle grime, painted edge wear, small cyan scanner glow, hand-painted blockcraft style, flat readable colors, no text, no logos, no decals, no photorealism.",
+        "enable_pbr": false,
+        "moderation": true
+      },
+      "target_format": "glb",
+      "max_preview_credits": 15,
+      "allow_refine": false,
+      "review_required": true,
+      "acceptance_notes": [
+        "Use only as a draft-selection/cost probe, not as the style default.",
+        "If the API returns multiple drafts, choose the best silhouette and rebuild or repair it rather than treating all drafts as keeps.",
+        "Reject if standard Meshy 5 produces smooth or realistic shapes that fight the blockcraft grammar."
+      ]
+    },
+    {
+      "id": "meshy_blockcraft_patrol_skiff_meshy5_v1",
+      "display_name": "Blockcraft Patrol Skiff Meshy 5 Silhouette Probe v1",
+      "category": "isometric_space_vehicle",
+      "style_lane": "private_blockcraft_reference_safe",
+      "provider": "meshy",
+      "endpoint": "text-to-3d-v2",
+      "mode": "preview",
+      "baseline": "micro_arc_interceptor_panel_v2 and blockbench_ship_micro_v1",
+      "changed_variable": "Switch from authored Blockbench ship silhouette to cheap Meshy 5 option-mining for a hard vehicle silhouette.",
+      "prompt": "Chunky cuboid blockcraft space-opera patrol skiff starfighter token. Toy-like voxel game asset, wedge nose, raised cockpit block, twin side fins, two rear engine blocks, broad readable silhouette for isometric tactics, warm white and tan panels, dark gray mechanical underside, cyan engine glow, no text, no logos, no characters, no famous franchise shapes.",
+      "api_body": {
+        "mode": "preview",
+        "model_type": "standard",
+        "ai_model": "meshy-5",
+        "target_formats": ["glb"],
+        "alpha_thumbnail": true,
+        "auto_size": false,
+        "origin_at": "bottom",
+        "moderation": true
+      },
+      "target_format": "glb",
+      "max_preview_credits": 10,
+      "allow_refine": false,
+      "review_required": true,
+      "acceptance_notes": [
+        "Must give a stronger vehicle silhouette lesson than the current Blockbench microfighter baseline.",
+        "Must be judged from an isometric tactical camera, not only a provider thumbnail.",
+        "Reject as direct runtime art if it becomes smooth, melted, or too realistic; keep as reference only if the silhouette teaches something."
+      ]
+    }
+  ]
+}

@@ -21,12 +21,35 @@ func _input(event: InputEvent) -> void:
 
 		var collider: Object = hit.get("collider")
 		if collider is Node and collider.has_meta("combat_target"):
+			var wound := int(collider.get_meta("wound_severity", 0))
+			if wound >= 3 and collider.is_in_group("wildlife_targets"):
+				var target_name = String(collider.get_meta("target_name", collider.name))
+				var credits_gained := randi() % 201 + 100
+				_show("You harvest hide and meat from the defeated %s, earning %d credits worth of salvage!" % [target_name, credits_gained])
+				_add_credits_to_character(credits_gained)
+				collider.queue_free()
+				return
 			_show(_range_target_text(collider))
 			return
+
+		if collider is Node and collider.has_meta("npc_id"):
+			var dialogue_overlay = get_tree().root.find_child("DialogueOverlay", true, false)
+			if dialogue_overlay != null:
+				var npc_id := String(collider.get_meta("npc_id", ""))
+				var npc_name := String(collider.get_meta("title", "NPC"))
+				var npc_role := String(collider.get_meta("npc_role", "Civilian"))
+				var npc_desc := String(collider.get_meta("description", ""))
+				var dialogue_lines := Array(collider.get_meta("dialogue_lines", []))
+				dialogue_overlay.open_dialogue(npc_id, npc_name, npc_role, npc_desc, dialogue_lines)
+				return
+
 		if collider is Node and collider.has_meta("inspectable"):
 			var title := String(collider.get_meta("title", "Location"))
 			var description := String(collider.get_meta("description", ""))
 			_show("%s: %s" % [title, description])
+			if collider.has_method("inspect_interact"):
+				collider.call("inspect_interact")
+
 
 func _raycast_from_camera(camera: Camera3D) -> Dictionary:
 	var mouse_pos := get_viewport().get_mouse_position()
@@ -79,3 +102,26 @@ func _live_range_controller() -> Node:
 
 func _modal_overlay_active() -> bool:
 	return ModalOverlayModel.is_modal_overlay_active(get_tree())
+
+func _add_credits_to_character(amount: int) -> void:
+	var path := "res://data/prototype_characters.json"
+	if not FileAccess.file_exists(path):
+		return
+	var file := FileAccess.open(path, FileAccess.READ)
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) == TYPE_DICTIONARY:
+		var characters: Dictionary = parsed.get("characters", {})
+		var sheet: Dictionary = characters.get("range_trainee", {})
+		var current_cr = int(sheet.get("credits", 5000))
+		sheet["credits"] = current_cr + amount
+		
+		var write_file := FileAccess.open(path, FileAccess.WRITE)
+		write_file.store_string(JSON.stringify(parsed, "  "))
+		
+		# Refresh UI if open
+		var tree := get_tree()
+		if tree != null:
+			var sheet_overlay = tree.root.find_child("CharacterSheetOverlay", true, false)
+			if sheet_overlay != null and sheet_overlay.has_method("_refresh"):
+				sheet_overlay.call("_refresh")
+

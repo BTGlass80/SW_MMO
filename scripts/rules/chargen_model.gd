@@ -81,7 +81,7 @@ static func is_reserved_name(name: String) -> bool:
 ## {valid, errors, sheet}. `attributes`/`skills` are {key: "XD+y"} dice codes.
 ## `character_name`, when non-empty, is checked against the reserved-name policy above;
 ## an empty string skips the name check (callers that don't yet have a name to validate).
-static func validate_build(rules: Object, species: Dictionary, attributes: Dictionary, skills: Dictionary = {}, character_name: String = "") -> Dictionary:
+static func validate_build(rules: Object, species: Dictionary, attributes: Dictionary, skills: Dictionary = {}, character_name: String = "", starter_package: Dictionary = {}) -> Dictionary:
 	var errors: Array = []
 	var ranges: Dictionary = species.get("attributes", {})
 
@@ -117,17 +117,28 @@ static func validate_build(rules: Object, species: Dictionary, attributes: Dicti
 		"valid": valid,
 		"errors": errors,
 		"skill_pips_spent": skill_total,
-		"sheet": build_sheet(rules, attributes, skills) if valid else {},
+		"sheet": build_sheet(rules, attributes, skills, starter_package) if valid else {},
 	}
 
 ## Produce the persisted `sheet` from a (validated) allocation.
-static func build_sheet(rules: Object, attributes: Dictionary, skills: Dictionary = {}) -> Dictionary:
+static func build_sheet(rules: Object, attributes: Dictionary, skills: Dictionary = {}, starter_package: Dictionary = {}) -> Dictionary:
 	var attr := {}
 	for attribute in ATTRS:
 		attr[attribute] = String(rules.pool_to_string(rules.parse_pool(String(attributes.get(attribute, "2D")))))
 	var sk := {}
+	# Base skills from the starter package if present
+	if starter_package.has("skills"):
+		var package_skills: Dictionary = starter_package["skills"]
+		for key in package_skills:
+			sk[key] = String(rules.pool_to_string(rules.parse_pool(String(package_skills[key]))))
+	# Player-allocated skills override or add to package skills
 	for key in skills:
 		sk[key] = String(rules.pool_to_string(rules.parse_pool(String(skills[key]))))
+
+	var start_credits := int(starter_package.get("credits", EconomyModel.STARTING_CREDITS))
+	var start_equip: Dictionary = starter_package.get("equipment", {"weapon": STARTER_WEAPON, "armor": STARTER_ARMOR})
+	var start_inv: Array = starter_package.get("inventory", STARTER_INVENTORY)
+
 	return {
 		"attributes": attr,
 		"skills": sk,
@@ -137,10 +148,10 @@ static func build_sheet(rules: Object, attributes: Dictionary, skills: Dictionar
 		"force_skills": ForceSkillsModel.initial_force_skills(),
 		"force_unlock": ForceAwakeningModel.initial_unlock(),  # DIV-0011: dormant SWG-Village track
 		"wound_state": "healthy",
-		"credits": EconomyModel.STARTING_CREDITS,  # Wave F: WEG-anchored economy (DIV-0018)
-		"equipment": {"weapon": STARTER_WEAPON, "armor": STARTER_ARMOR},
-		"inventory": STARTER_INVENTORY.duplicate(),
-		"ammo": AmmoModel.initial_ammo(),  # DIV-0029: STARTING_PACKS grace; the equipped weapon lazy-inits to full on first fire
+		"credits": start_credits,
+		"equipment": start_equip,
+		"inventory": start_inv + AmmoModel.initial_packs(),
+		"ammo": {},
 	}
 
 ## A deterministic quick-start attribute allocation: each attribute at its species

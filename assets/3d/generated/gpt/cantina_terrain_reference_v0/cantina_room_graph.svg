@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="SW_MUSH Cantina room graph converted into an internal SVG">
+  <rect width="1280" height="720" fill="#101820"/>
+  <text x="54" y="56" fill="#dbe8ed" font-family="Arial, sans-serif" font-size="32" font-weight="700">Chalmun's Cantina: SW_MUSH Multi-Room Contract</text>
+  <text x="56" y="90" fill="#9fb2c1" font-family="Arial, sans-serif" font-size="16">Our SVG from room descriptions/YAML. SW_MUSH supplies text and map data, not a source SVG.</text>
+
+  <g transform="translate(120 150)">
+    <rect x="0" y="0" width="1040" height="480" rx="18" fill="#1c2630" stroke="#3b4d5f" stroke-width="3"/>
+
+    <g transform="translate(94 110)">
+      <rect x="0" y="0" width="250" height="168" rx="10" fill="#b88d58" stroke="#ffd58a" stroke-width="4"/>
+      <text x="24" y="38" fill="#101820" font-family="Arial, sans-serif" font-size="24" font-weight="700">Entrance</text>
+      <text x="24" y="72" fill="#2b2118" font-family="Arial, sans-serif" font-size="16">• elevated threshold</text>
+      <text x="24" y="100" fill="#2b2118" font-family="Arial, sans-serif" font-size="16">• no-droids sign</text>
+      <text x="24" y="128" fill="#2b2118" font-family="Arial, sans-serif" font-size="16">• droid detector</text>
+      <text x="24" y="154" fill="#2b2118" font-family="Arial, sans-serif" font-size="16">• arrival scrutiny</text>
+    </g>
+
+    <g transform="translate(390 80)">
+      <rect x="0" y="0" width="280" height="230" rx="10" fill="#5b4631" stroke="#ffd58a" stroke-width="4"/>
+      <text x="24" y="40" fill="#ffd58a" font-family="Arial, sans-serif" font-size="26" font-weight="700">Main Bar</text>
+      <text x="24" y="78" fill="#f3d8a8" font-family="Arial, sans-serif" font-size="16">• high-tech bar wall</text>
+      <text x="24" y="106" fill="#f3d8a8" font-family="Arial, sans-serif" font-size="16">• curved booth ring</text>
+      <text x="24" y="134" fill="#f3d8a8" font-family="Arial, sans-serif" font-size="16">• bandstand / music</text>
+      <text x="24" y="162" fill="#f3d8a8" font-family="Arial, sans-serif" font-size="16">• Wuher / Chalmun</text>
+      <text x="24" y="190" fill="#f3d8a8" font-family="Arial, sans-serif" font-size="16">• secured social hub</text>
+    </g>
+
+    <g transform="translate(730 110)">
+      <rect x="0" y="0" width="250" height="168" rx="10" fill="#30343a" stroke="#8ad7ff" stroke-width="4"/>
+      <text x="24" y="38" fill="#dbe8ed" font-family="Arial, sans-serif" font-size="24" font-weight="700">Back Hallway</text>
+      <text x="24" y="72" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="16">• restrooms</text>
+      <text x="24" y="100" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="16">• cellar trapdoor</text>
+      <text x="24" y="128" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="16">• curtained office</text>
+      <text x="24" y="154" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="16">• escape route</text>
+    </g>
+
+    <path d="M344 194 C366 194 368 194 390 194" stroke="#25c4ff" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
+    <path d="M670 194 C696 194 704 194 730 194" stroke="#25c4ff" stroke-width="8" fill="none" marker-end="url(#arrow)"/>
+
+    <g transform="translate(162 346)">
+      <rect x="0" y="0" width="760" height="76" rx="8" fill="#23303a" stroke="#607080" stroke-width="2"/>
+      <text x="24" y="30" fill="#dbe8ed" font-family="Arial, sans-serif" font-size="18" font-weight="700">Terrain interpretation</text>
+      <text x="24" y="58" fill="#c4d0d8" font-family="Arial, sans-serif" font-size="16">Outside danger and crowd pressure should live at the doorstep; the interior should read as a protected social/economy hub.</text>
+    </g>
+  </g>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L8,3 z" fill="#25c4ff"/>
+    </marker>
+  </defs>
+</svg>

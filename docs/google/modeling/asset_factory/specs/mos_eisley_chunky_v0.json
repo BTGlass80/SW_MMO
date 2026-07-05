@@ -1,0 +1,161 @@
+{
+  "schema": "gpt_asset_factory_v0",
+  "pack_id": "mos_eisley_chunky_v0",
+  "display_name": "Mos Eisley Chunky Prototype Pack v0",
+  "style_grammar": "chunky_low_poly_space_opera_frontier",
+  "notes": [
+    "Generic sci-fi frontier assets, not protected franchise models.",
+    "Designed for automated Godot procedural generation first.",
+    "Parts use simple primitives and a tiny material palette."
+  ],
+  "palette": {
+    "sand_plaster": "#b88d58",
+    "sun_bleached": "#d2b37a",
+    "shadow_brown": "#5b4631",
+    "dark_metal": "#30343a",
+    "teal_accent": "#1e8589",
+    "cyan_light": "#25c4ff",
+    "awning_red": "#bf3a20",
+    "dust_floor": "#c89555",
+    "space_plane": "#0b1724",
+    "grid_blue": "#1765a8",
+    "player_blue": "#3cc8ff",
+    "enemy_orange": "#ff6a30",
+    "neutral_rock": "#7a7170",
+    "ship_white": "#dbe8ed",
+    "ship_dark": "#343a42"
+  },
+  "assets": [
+    {
+      "id": "mos_eisley_shade_stall_01",
+      "display_name": "Mos Eisley Shade Stall 01",
+      "category": "vendor_stall",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [5.0, 3.0],
+      "gameplay_role": "vendor or quest-giver landmark",
+      "prompt": "generic low-poly desert sci-fi market shade stall with cargo, awning, and small power unit",
+      "parts": [
+        {"name": "counter", "shape": "box", "position": [0, 0.55, 0], "size": [3.8, 1.0, 1.1], "material": "dark_metal"},
+        {"name": "left_post", "shape": "cylinder", "position": [-2.1, 1.25, -1.0], "radius": 0.08, "height": 2.4, "segments": 8, "material": "dark_metal"},
+        {"name": "right_post", "shape": "cylinder", "position": [2.1, 1.25, -1.0], "radius": 0.08, "height": 2.4, "segments": 8, "material": "dark_metal"},
+        {"name": "awning", "shape": "box", "position": [0, 2.35, -0.25], "size": [5.2, 0.12, 2.4], "rotation_degrees": [0, 0, -5], "material": "awning_red"},
+        {"name": "back_wall", "shape": "box", "position": [0, 1.1, 0.9], "size": [4.4, 2.0, 0.22], "material": "sand_plaster"},
+        {"name": "teal_band", "shape": "box", "position": [0, 1.7, 1.03], "size": [4.5, 0.2, 0.08], "material": "teal_accent"},
+        {"name": "power_unit", "shape": "box", "position": [-1.6, 0.45, -1.1], "size": [0.8, 0.8, 0.8], "material": "dark_metal"},
+        {"name": "cyan_light", "shape": "box", "position": [-1.6, 0.78, -1.52], "size": [0.5, 0.12, 0.05], "material": "cyan_light", "emissive": true},
+        {"name": "cargo_a", "shape": "box", "position": [1.45, 0.35, -1.05], "size": [0.75, 0.7, 0.75], "material": "shadow_brown"},
+        {"name": "cargo_b", "shape": "box", "position": [2.15, 0.25, -0.35], "size": [0.55, 0.5, 0.55], "material": "shadow_brown"}
+      ]
+    },
+    {
+      "id": "mos_eisley_cover_barricade_01",
+      "display_name": "Mos Eisley Cover Barricade 01",
+      "category": "combat_cover",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [3.8, 1.2],
+      "gameplay_role": "readable 1/4 to 1/2 cover object",
+      "prompt": "generic low-poly sci-fi desert barricade with crates and angled metal panels",
+      "parts": [
+        {"name": "main_slab", "shape": "box", "position": [0, 0.55, 0], "size": [3.2, 1.1, 0.45], "rotation_degrees": [0, 0, -4], "material": "dark_metal"},
+        {"name": "sand_base", "shape": "box", "position": [0, 0.18, 0.25], "size": [3.6, 0.35, 0.85], "material": "sand_plaster"},
+        {"name": "left_crate", "shape": "box", "position": [-1.45, 0.38, -0.55], "size": [0.8, 0.75, 0.7], "material": "shadow_brown"},
+        {"name": "right_crate", "shape": "box", "position": [1.3, 0.34, -0.45], "size": [0.9, 0.68, 0.7], "material": "shadow_brown"},
+        {"name": "warning_light", "shape": "box", "position": [0, 1.17, -0.25], "size": [0.52, 0.1, 0.08], "material": "cyan_light", "emissive": true}
+      ]
+    },
+    {
+      "id": "mos_eisley_vaporator_01",
+      "display_name": "Mos Eisley Vaporator 01",
+      "category": "landmark_prop",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [1.4, 1.4],
+      "gameplay_role": "desert landmark or harvest/repair prop",
+      "prompt": "generic low-poly desert moisture vaporator tower with dish, fins, and cyan status light",
+      "parts": [
+        {"name": "base", "shape": "cylinder", "position": [0, 0.25, 0], "radius": 0.45, "height": 0.5, "segments": 10, "material": "dark_metal"},
+        {"name": "tower", "shape": "cylinder", "position": [0, 1.25, 0], "radius": 0.16, "height": 2.0, "segments": 8, "material": "sun_bleached"},
+        {"name": "top_cap", "shape": "cylinder", "position": [0, 2.35, 0], "radius": 0.32, "height": 0.24, "segments": 10, "material": "dark_metal"},
+        {"name": "dish", "shape": "box", "position": [0.0, 2.58, -0.38], "size": [0.95, 0.08, 0.42], "rotation_degrees": [-18, 0, 0], "material": "teal_accent"},
+        {"name": "fin_a", "shape": "box", "position": [0.42, 1.35, 0], "size": [0.08, 1.2, 0.5], "material": "dark_metal"},
+        {"name": "fin_b", "shape": "box", "position": [-0.42, 1.35, 0], "size": [0.08, 1.2, 0.5], "material": "dark_metal"},
+        {"name": "status_light", "shape": "box", "position": [0, 0.85, -0.17], "size": [0.18, 0.1, 0.04], "material": "cyan_light", "emissive": true}
+      ]
+    },
+    {
+      "id": "mos_eisley_dome_hut_01",
+      "display_name": "Mos Eisley Dome Hut 01",
+      "category": "building",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [5.5, 5.5],
+      "gameplay_role": "starter district building chunk",
+      "prompt": "generic low-poly desert dome building with teal band, small antenna, and pipe cluster",
+      "parts": [
+        {"name": "round_base", "shape": "cylinder", "position": [0, 1.0, 0], "radius": 2.35, "height": 2.0, "segments": 18, "material": "sand_plaster"},
+        {"name": "dome", "shape": "dome", "position": [0, 2.1, 0], "radius": 2.25, "scale": [1.0, 0.45, 1.0], "material": "sun_bleached"},
+        {"name": "teal_band", "shape": "cylinder", "position": [0, 1.55, 0], "radius": 2.42, "height": 0.18, "segments": 18, "material": "teal_accent"},
+        {"name": "door", "shape": "box", "position": [0, 0.75, -2.26], "size": [0.9, 1.35, 0.12], "material": "dark_metal"},
+        {"name": "door_light", "shape": "box", "position": [0, 1.42, -2.34], "size": [0.55, 0.08, 0.05], "material": "cyan_light", "emissive": true},
+        {"name": "antenna", "shape": "cylinder", "position": [0.8, 3.55, -0.4], "radius": 0.04, "height": 1.25, "segments": 8, "material": "dark_metal"},
+        {"name": "pipe_left", "shape": "cylinder", "position": [-2.1, 1.05, 0.8], "radius": 0.12, "height": 2.2, "segments": 8, "rotation_degrees": [0, 0, 90], "material": "dark_metal"}
+      ]
+    },
+    {
+      "id": "iso_space_fighter_01",
+      "display_name": "Isometric Space Fighter 01",
+      "category": "space_ship_token",
+      "lane": "godot_procedural",
+      "review_camera": "space",
+      "footprint": [2.4, 2.4],
+      "gameplay_role": "2.5D tactical player/enemy ship token",
+      "prompt": "generic chunky low-poly isometric tactical space fighter, no recognizable franchise silhouette",
+      "parts": [
+        {"name": "hull", "shape": "box", "position": [0, 0.35, 0], "size": [0.55, 0.28, 1.35], "material": "ship_white"},
+        {"name": "nose", "shape": "box", "position": [0, 0.37, -0.78], "size": [0.34, 0.2, 0.55], "material": "ship_white"},
+        {"name": "wing_left", "shape": "box", "position": [-0.68, 0.28, 0.18], "size": [1.2, 0.1, 0.42], "rotation_degrees": [0, 0, 0], "material": "ship_dark"},
+        {"name": "wing_right", "shape": "box", "position": [0.68, 0.28, 0.18], "size": [1.2, 0.1, 0.42], "rotation_degrees": [0, 0, 0], "material": "ship_dark"},
+        {"name": "engine", "shape": "box", "position": [0, 0.35, 0.86], "size": [0.35, 0.22, 0.24], "material": "player_blue", "emissive": true},
+        {"name": "selection_ring", "shape": "torus", "position": [0, 0.05, 0], "inner_radius": 0.85, "outer_radius": 0.92, "material": "player_blue", "emissive": true}
+      ]
+    },
+    {
+      "id": "iso_space_freighter_01",
+      "display_name": "Isometric Space Freighter 01",
+      "category": "space_ship_token",
+      "lane": "godot_procedural",
+      "review_camera": "space",
+      "footprint": [4.5, 3.5],
+      "gameplay_role": "2.5D tactical larger ship token",
+      "prompt": "generic chunky low-poly isometric tactical space freighter, broad and slow-looking",
+      "parts": [
+        {"name": "main_body", "shape": "box", "position": [0, 0.45, 0], "size": [1.4, 0.45, 2.6], "material": "ship_dark"},
+        {"name": "cargo_pod_left", "shape": "box", "position": [-0.95, 0.42, 0.2], "size": [0.8, 0.38, 1.7], "material": "ship_white"},
+        {"name": "cargo_pod_right", "shape": "box", "position": [0.95, 0.42, 0.2], "size": [0.8, 0.38, 1.7], "material": "ship_white"},
+        {"name": "bridge", "shape": "box", "position": [0, 0.78, -1.2], "size": [0.75, 0.32, 0.55], "material": "ship_white"},
+        {"name": "engine_left", "shape": "box", "position": [-0.55, 0.45, 1.45], "size": [0.35, 0.28, 0.24], "material": "enemy_orange", "emissive": true},
+        {"name": "engine_right", "shape": "box", "position": [0.55, 0.45, 1.45], "size": [0.35, 0.28, 0.24], "material": "enemy_orange", "emissive": true},
+        {"name": "selection_ring", "shape": "torus", "position": [0, 0.05, 0], "inner_radius": 1.35, "outer_radius": 1.45, "material": "enemy_orange", "emissive": true}
+      ]
+    },
+    {
+      "id": "iso_space_asteroid_cluster_01",
+      "display_name": "Isometric Space Asteroid Cluster 01",
+      "category": "space_hazard",
+      "lane": "godot_procedural",
+      "review_camera": "space",
+      "footprint": [4.0, 3.0],
+      "gameplay_role": "2.5D obstacle or sensor occlusion prop",
+      "prompt": "generic low-poly asteroid cluster for isometric tactical space",
+      "parts": [
+        {"name": "rock_a", "shape": "sphere", "position": [-0.9, 0.55, 0.0], "radius": 0.55, "scale": [1.3, 0.9, 1.0], "material": "neutral_rock"},
+        {"name": "rock_b", "shape": "sphere", "position": [0.25, 0.42, 0.35], "radius": 0.42, "scale": [1.0, 0.8, 1.4], "material": "neutral_rock"},
+        {"name": "rock_c", "shape": "sphere", "position": [1.05, 0.35, -0.45], "radius": 0.36, "scale": [0.9, 0.75, 1.1], "material": "neutral_rock"},
+        {"name": "hazard_ring", "shape": "torus", "position": [0, 0.05, 0], "inner_radius": 1.85, "outer_radius": 1.92, "material": "enemy_orange", "emissive": true}
+      ]
+    }
+  ]
+}
+

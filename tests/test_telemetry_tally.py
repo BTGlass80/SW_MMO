@@ -70,6 +70,29 @@ class TelemetryTallyTests(unittest.TestCase):
         self.assertEqual(per_char["char_target"]["outflow"], 750)   # pay-off settlement sink
         self.assertFalse(unknown)  # none flagged as unknown credit-bearing types
 
+    def test_rwd_economy_loop_events_counted(self):
+        # RWD Priority 1: bazaar fee, bazaar buy/sell transfer, space cargo sale, and docking fee.
+        events = [
+            {"type": "space_sell_cargo", "character_id": "char_space", "credits_earned": 1000, "ts": 100},
+            {"type": "sink_fee", "character_id": "char_space", "amount": 100, "reason": "docking", "ts": 110},
+            {"type": "bazaar_list_fee", "character_id": "char_trader", "amount": 50, "ts": 120},
+            {"type": "bazaar_sell_revenue", "character_id": "char_trader", "price": 400, "ts": 130},
+            {"type": "bazaar_buy", "character_id": "char_buyer", "price": 400, "ts": 130},
+        ]
+        path = _write_jsonl([json.dumps(event) for event in events])
+        try:
+            per_char, unknown, _ = telemetry_tally.tally(
+                telemetry_tally.read_events(path))
+        finally:
+            os.unlink(path)
+        self.assertEqual(per_char["char_space"]["inflow"], 1000)
+        self.assertEqual(per_char["char_space"]["outflow"], 100)
+        self.assertEqual(per_char["char_trader"]["inflow"], 400)
+        self.assertEqual(per_char["char_trader"]["outflow"], 50)
+        self.assertEqual(per_char["char_buyer"]["inflow"], 0)
+        self.assertEqual(per_char["char_buyer"]["outflow"], 400)
+        self.assertFalse(unknown)
+
     def test_unknown_credit_bearing_type_is_reported_not_ignored(self):
         # A future faucet (e.g. quest rewards) must surface in the tally the day it
         # ships — the faucets-and-sinks rule depends on this being loud.

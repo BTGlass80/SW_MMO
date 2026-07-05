@@ -1,0 +1,193 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://docs/gpt/asset_factory/generated/blockcraft_space_opera_v1/scenes/blockcraft_droid_heavy_02.tscn" id="1_vbs1y"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_44uv3"]
+albedo_color = Color(0.78431374, 0.58431375, 0.33333334, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_1clsh"]
+size = Vector3(8.5, 0.08, 7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c5eha"]
+albedo_color = Color(0.42745098, 0.3529412, 0.21960784, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_u2jw5"]
+size = Vector3(0.78, 0.24, 0.48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g5sba"]
+albedo_color = Color(0.7254902, 0.60784316, 0.3882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_h6qoa"]
+size = Vector3(0.56, 0.72, 0.32)
+
+[sub_resource type="BoxMesh" id="BoxMesh_n6c2y"]
+size = Vector3(0.78, 0.78, 0.38)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5oah5"]
+size = Vector3(0.62, 0.64, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_j36e1"]
+size = Vector3(0.66, 0.42, 0.46)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kwfum"]
+albedo_color = Color(1, 0.47843137, 0.17254902, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(1, 0.47843137, 0.17254902, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_u2cml"]
+size = Vector3(0.36, 0.1, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3yk4i"]
+size = Vector3(0.22, 0.26, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7g0rr"]
+size = Vector3(0.22, 0.26, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_81n8y"]
+size = Vector3(0.16, 0.68, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bts0c"]
+size = Vector3(0.18, 0.56, 0.24)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_oxb8f"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_gvrxb"]
+size = Vector3(0.3, 0.22, 0.55)
+
+[sub_resource type="BoxMesh" id="BoxMesh_q1ua2"]
+size = Vector3(0.18, 0.14, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u2rmh"]
+albedo_color = Color(0.14117648, 0.84313726, 0.84313726, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.14117648, 0.84313726, 0.84313726, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_cmiql"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_f536o"]
+size = Vector3(3.4, 0.08, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jxbrt"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rtxvn"]
+size = Vector3(0.08, 0.08, 3.4)
+
+[node name="blockcraft_droid_heavy_02_review" type="Node3D" unique_id=165024102]
+
+[node name="ReviewPlane" type="MeshInstance3D" parent="." unique_id=936058621]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
+material_override = SubResource("StandardMaterial3D_44uv3")
+mesh = SubResource("BoxMesh_1clsh")
+
+[node name="blockcraft_droid_heavy_02" type="Node3D" parent="." unique_id=557207222 instance=ExtResource("1_vbs1y")]
+metadata/asset_id = "blockcraft_droid_heavy_02"
+metadata/display_name = "Blockcraft Heavy Droid 02"
+metadata/category = "character_token"
+metadata/gameplay_role = "hostile heavy droid silhouette test"
+metadata/prompt = "generic blocky tan heavy droid with shield plate and orange weapon glow"
+
+[node name="feet" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=1022445917]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+material_override = SubResource("StandardMaterial3D_c5eha")
+mesh = SubResource("BoxMesh_u2jw5")
+
+[node name="legs" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=1901510180]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+material_override = SubResource("StandardMaterial3D_g5sba")
+mesh = SubResource("BoxMesh_h6qoa")
+
+[node name="torso" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=1292777256]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.22, 0)
+material_override = SubResource("StandardMaterial3D_g5sba")
+mesh = SubResource("BoxMesh_n6c2y")
+
+[node name="front_armor" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=1512265817]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.22, -0.25)
+material_override = SubResource("StandardMaterial3D_c5eha")
+mesh = SubResource("BoxMesh_5oah5")
+
+[node name="head" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=442410578]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.82, 0)
+material_override = SubResource("StandardMaterial3D_g5sba")
+mesh = SubResource("BoxMesh_j36e1")
+
+[node name="eye" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=193858799]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.82, -0.28)
+material_override = SubResource("StandardMaterial3D_kwfum")
+mesh = SubResource("BoxMesh_u2cml")
+
+[node name="left_shoulder" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=1944501409]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.58, 1.42, 0)
+material_override = SubResource("StandardMaterial3D_c5eha")
+mesh = SubResource("BoxMesh_3yk4i")
+
+[node name="right_shoulder" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=1424830476]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.58, 1.42, 0)
+material_override = SubResource("StandardMaterial3D_c5eha")
+mesh = SubResource("BoxMesh_7g0rr")
+
+[node name="left_arm" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=2060774960]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.62, 1, -0.08)
+material_override = SubResource("StandardMaterial3D_g5sba")
+mesh = SubResource("BoxMesh_81n8y")
+
+[node name="right_weapon_arm" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=314549679]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.67, 1.04, -0.35)
+material_override = SubResource("StandardMaterial3D_g5sba")
+mesh = SubResource("BoxMesh_bts0c")
+
+[node name="weapon_block" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=1166808801]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 0.95, -0.78)
+material_override = SubResource("StandardMaterial3D_oxb8f")
+mesh = SubResource("BoxMesh_gvrxb")
+
+[node name="muzzle_glow" type="MeshInstance3D" parent="blockcraft_droid_heavy_02" unique_id=310716972]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 0.95, -1.08)
+material_override = SubResource("StandardMaterial3D_kwfum")
+mesh = SubResource("BoxMesh_q1ua2")
+
+[node name="BlockSelectionMarker" type="Node3D" parent="." unique_id=1907740994]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+
+[node name="front" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=884603853]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.7)
+material_override = SubResource("StandardMaterial3D_u2rmh")
+mesh = SubResource("BoxMesh_cmiql")
+
+[node name="back" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=353562958]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.7)
+material_override = SubResource("StandardMaterial3D_u2rmh")
+mesh = SubResource("BoxMesh_f536o")
+
+[node name="left" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1604694576]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_u2rmh")
+mesh = SubResource("BoxMesh_jxbrt")
+
+[node name="right" type="MeshInstance3D" parent="BlockSelectionMarker" unique_id=1984125983]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0, 0)
+material_override = SubResource("StandardMaterial3D_u2rmh")
+mesh = SubResource("BoxMesh_rtxvn")
+
+[node name="ReviewSun" type="DirectionalLight3D" parent="." unique_id=1781250778]
+transform = Transform3D(0.7251193, 0.6049526, -0.32898995, -0.09960051, 0.56486255, 0.81915206, 0.68138224, -0.5612154, 0.46984634, 0, 0, 0)
+light_energy = 2.4
+shadow_enabled = true
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=93567319]
+transform = Transform3D(-0.70710677, -0.37204581, 0.6013168, 0, 0.8503904, 0.52615225, -0.70710677, 0.37204581, -0.6013168, 12.026337, 11.373044, -12.026337)
+projection = 1
+current = true
+size = 8.0
+far = 120.0

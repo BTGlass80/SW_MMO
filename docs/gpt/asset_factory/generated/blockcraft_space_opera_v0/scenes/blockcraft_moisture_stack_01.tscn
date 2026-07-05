@@ -1,0 +1,101 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8o7bj"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_5cl8g"]
+size = Vector3(0.95, 0.5, 0.95)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4py3p"]
+albedo_color = Color(0.8745098, 0.7294118, 0.44705883, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.8745098, 0.7294118, 0.44705883, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_vku8y"]
+size = Vector3(0.35, 0.9, 0.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_h0jcr"]
+size = Vector3(0.28, 0.8, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hpxnr"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_lk3d8"]
+size = Vector3(0.78, 0.34, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5thon"]
+albedo_color = Color(0.18431373, 0.56078434, 0.8392157, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.18431373, 0.56078434, 0.8392157, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_tae80"]
+size = Vector3(1.35, 0.16, 0.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_kia5k"]
+size = Vector3(0.12, 1.15, 0.55)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pk2xn"]
+size = Vector3(0.12, 1.15, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6rwxq"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_54w7t"]
+size = Vector3(0.2, 0.18, 0.05)
+
+[node name="blockcraft_moisture_stack_01" type="Node3D" unique_id=879154006]
+metadata/asset_id = "blockcraft_moisture_stack_01"
+metadata/display_name = "Blockcraft Moisture Stack 01"
+metadata/category = "landmark_prop"
+metadata/gameplay_role = "repair/harvest interaction prop"
+metadata/prompt = "blocky desert utility tower with square fins and cyan status lamps"
+
+[node name="base" type="MeshInstance3D" parent="." unique_id=679479029]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+material_override = SubResource("StandardMaterial3D_8o7bj")
+mesh = SubResource("BoxMesh_5cl8g")
+
+[node name="shaft_lower" type="MeshInstance3D" parent="." unique_id=2113889267]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+material_override = SubResource("StandardMaterial3D_4py3p")
+mesh = SubResource("BoxMesh_vku8y")
+
+[node name="shaft_upper" type="MeshInstance3D" parent="." unique_id=108487152]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+material_override = SubResource("StandardMaterial3D_4py3p")
+mesh = SubResource("BoxMesh_h0jcr")
+
+[node name="top_block" type="MeshInstance3D" parent="." unique_id=586746117]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+material_override = SubResource("StandardMaterial3D_hpxnr")
+mesh = SubResource("BoxMesh_lk3d8")
+
+[node name="dish_bar" type="MeshInstance3D" parent="." unique_id=1336774365]
+transform = Transform3D(1, 0, 0, 0, 0.9781476, 0.2079117, 0, -0.2079117, 0.9781476, 0, 2.62, -0.42)
+material_override = SubResource("StandardMaterial3D_5thon")
+mesh = SubResource("BoxMesh_tae80")
+
+[node name="left_fin" type="MeshInstance3D" parent="." unique_id=1692595304]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.52, 1.25, 0)
+material_override = SubResource("StandardMaterial3D_hpxnr")
+mesh = SubResource("BoxMesh_kia5k")
+
+[node name="right_fin" type="MeshInstance3D" parent="." unique_id=555665158]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.52, 1.25, 0)
+material_override = SubResource("StandardMaterial3D_hpxnr")
+mesh = SubResource("BoxMesh_pk2xn")
+
+[node name="status_lamp" type="MeshInstance3D" parent="." unique_id=2136708425]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, -0.21)
+material_override = SubResource("StandardMaterial3D_6rwxq")
+mesh = SubResource("BoxMesh_54w7t")

@@ -1,0 +1,91 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hpxnr"]
+albedo_color = Color(0.40784314, 0.44705883, 0.47843137, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_111mg"]
+size = Vector3(2.8, 0.35, 1.05)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nkgk6"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_il6yb"]
+size = Vector3(2.2, 0.24, 0.32)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6rwxq"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_uor2d"]
+size = Vector3(0.55, 0.08, 0.75)
+
+[sub_resource type="BoxMesh" id="BoxMesh_h53fx"]
+size = Vector3(0.55, 0.08, 0.75)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eo0f2"]
+albedo_color = Color(0.47843137, 0.3372549, 0.19607843, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_vx1ni"]
+size = Vector3(0.9, 0.55, 0.72)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8d6qb"]
+albedo_color = Color(0.41960785, 0.2901961, 0.18431373, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_bfn01"]
+size = Vector3(0.62, 0.42, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8o7bj"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_ku4qa"]
+size = Vector3(0.1, 0.7, 0.12)
+
+[node name="blockcraft_hover_sled_01" type="Node3D" unique_id=1406499265]
+metadata/asset_id = "blockcraft_hover_sled_01"
+metadata/display_name = "Blockcraft Hover Sled 01"
+metadata/category = "vehicle_prop"
+metadata/gameplay_role = "small vehicle prop, cargo escort objective, or travel pad marker"
+metadata/prompt = "blocky hovering cargo sled with blue underside glow and stacked crates"
+
+[node name="sled_body" type="MeshInstance3D" parent="." unique_id=2056564776]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+material_override = SubResource("StandardMaterial3D_hpxnr")
+mesh = SubResource("BoxMesh_111mg")
+
+[node name="front_wedge_fake" type="MeshInstance3D" parent="." unique_id=1347399722]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.72)
+material_override = SubResource("StandardMaterial3D_nkgk6")
+mesh = SubResource("BoxMesh_il6yb")
+
+[node name="left_glow" type="MeshInstance3D" parent="." unique_id=1842893684]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.22, 0)
+material_override = SubResource("StandardMaterial3D_6rwxq")
+mesh = SubResource("BoxMesh_uor2d")
+
+[node name="right_glow" type="MeshInstance3D" parent="." unique_id=579243170]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.22, 0)
+material_override = SubResource("StandardMaterial3D_6rwxq")
+mesh = SubResource("BoxMesh_h53fx")
+
+[node name="cargo_big" type="MeshInstance3D" parent="." unique_id=1298737399]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0.88, 0.08)
+material_override = SubResource("StandardMaterial3D_eo0f2")
+mesh = SubResource("BoxMesh_vx1ni")
+
+[node name="cargo_small" type="MeshInstance3D" parent="." unique_id=809527469]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.48, 0.8, 0.12)
+material_override = SubResource("StandardMaterial3D_8d6qb")
+mesh = SubResource("BoxMesh_bfn01")
+
+[node name="handle_bar" type="MeshInstance3D" parent="." unique_id=1813927162]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0.95, -0.48)
+material_override = SubResource("StandardMaterial3D_8o7bj")
+mesh = SubResource("BoxMesh_ku4qa")

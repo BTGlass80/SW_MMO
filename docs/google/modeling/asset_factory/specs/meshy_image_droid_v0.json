@@ -1,0 +1,33 @@
+{
+  "assets": [
+    {
+      "id": "meshy_image_segmented_droid_meshy5_geometry_v0",
+      "display_name": "Meshy Image Segmented Droid Meshy 5 Geometry Probe v0",
+      "category": "background_droid_npc",
+      "style_lane": "private_blockcraft_reference_safe",
+      "provider": "meshy",
+      "endpoint": "image-to-3d-v1",
+      "mode": "geometry",
+      "baseline": "godot deterministic segmented droid source in generated/meshy_image_droid_v0",
+      "changed_variable": "Use our own project-generated blockcraft droid render as image-to-3D source; no texture/refine pass.",
+      "source_image_path": "docs/gpt/asset_factory/generated/meshy_image_droid_v0/source_reference/blockcraft_segmented_droid_source.png",
+      "api_body": {
+        "ai_model": "meshy-5",
+        "should_texture": false,
+        "target_formats": ["glb"],
+        "enable_pbr": false,
+        "moderation": true
+      },
+      "target_format": "glb",
+      "max_preview_credits": 10,
+      "allow_refine": false,
+      "review_required": true,
+      "acceptance_notes": [
+        "Must preserve the segmented blockcraft droid silhouette better than text prompts did.",
+        "Must not become a smooth organic low-poly figure.",
+        "Direct keep requires clean GLB validation and a Godot capture beside the deterministic baseline.",
+        "If it fails, keep only as evidence that image-to-3D does not solve the voxel style lock."
+      ]
+    }
+  ]
+}

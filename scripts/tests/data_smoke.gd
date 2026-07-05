@@ -113,7 +113,7 @@ func _init() -> void:
 	var player_ship: Dictionary = space_data.get("player_ship", {})
 	var gunnery_drill: Dictionary = space_data.get("gunnery_drill", {})
 	_assert_equal(space_data.get("area_key", ""), "tatooine.mos_eisley.approach", "space tactical area key")
-	_assert_equal(contacts.size(), 5, "space tactical contact count")
+	_assert_equal(contacts.size(), 10, "space tactical contact count")
 	_assert_equal(range_bands.size(), 4, "space tactical range band count")
 	_assert_equal(stations.has("pilot"), true, "space tactical pilot station")
 	_assert_equal(stations.has("sensors"), true, "space tactical sensors station")

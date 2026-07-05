@@ -1,110 +1,160 @@
 extends RefCounted
-## Pure WEG ammo / power-pack recurring-sink model (DIV-0029). No nodes, RNG, or sockets — it is
-## the deterministic decision core the server wraps. WEG R&E: each ranged weapon carries an `ammo`
-## count (shots per power pack) and a fresh pack costs 25 credits + refills the weapon to full; the
-## MMO approximates WEG's reload-as-action by the sink itself (the pack IS the reload).
-##
-## STATE SHAPE (lives on the character sheet, persistence-friendly plain Dictionary of ints):
-##   sheet.ammo = { <weapon_key>: shots_left(int), "packs": pack_count(int) }
-## A weapon absent from the map is treated as a FULL magazine (lazy init on first fire, so an
-## existing character with no `ammo` block is never stranded). MELEE weapons (no `ammo`) and
-## single_use ordnance (grenades / thermal detonator) are NOT ammo-tracked — uses_ammo() returns
-## false for them, so they never decrement or reject (single_use stays latent).
-##
-## Everything here is static + pure; the mutating helpers (consume / auto_reload / add_packs /
-## remove_pack) operate ON and RETURN the plain `ammo` sub-dictionary so callers persist it as-is.
+## Pure WEG ammo / power-pack recurring-sink model (DIV-0029). 
+## Upgraded to use actual item instances in the inventory.
 
-const PACK_COST := 25         # WEG R&E: a blaster power pack, 25 credits, refills to full (TUNABLE default, not an owner ruling)
-const STARTING_PACKS := 2     # chargen grace kit — keeps a broke newbie off a no-ammo softlock (TUNABLE default)
-const PACK_ITEM_KEY := "power_pack"   # the universal vendor pack (fits any pack-using weapon — a documented simplification)
-const PACKS_KEY := "packs"    # the reserved key inside sheet.ammo holding the carried-pack count
+const PACK_COST := 25
+const STARTING_PACKS := 2
+const PACK_ITEM_KEY := "blaster_power_pack"
 
-## The weapon's full magazine size = the WEG `ammo` field. 0 / absent = not ammo-tracked.
 static func shots_per_weapon(weapon_dict: Dictionary) -> int:
 	return maxi(int(weapon_dict.get("ammo", 0)), 0)
 
-## True when the weapon draws from a power pack: a positive `ammo` count AND not single_use. A
-## single_use item (frag/thermal/incendiary grenade, flare) is one-and-done, not reloadable — it
-## stays latent (never gated, never decremented) here.
 static func uses_ammo(weapon_dict: Dictionary) -> bool:
 	if bool(weapon_dict.get("single_use", false)):
 		return false
 	return shots_per_weapon(weapon_dict) > 0
 
-## The starting ammo block chargen grants: STARTING_PACKS carried, no per-weapon entry yet (the
-## equipped weapon lazy-inits to full on its first real shot). Plain-ints Dictionary.
-static func initial_ammo() -> Dictionary:
-	return {PACKS_KEY: STARTING_PACKS}
+## The starting inventory items chargen grants.
+static func initial_packs() -> Array:
+	var arr = []
+	for i in range(STARTING_PACKS):
+		arr.append({
+			"id": "starter_pack_" + str(i),
+			"template_key": PACK_ITEM_KEY,
+			"kind": "ammo",
+			"name": "Blaster Power Pack",
+			"quantity": 1,
+			"quality": 50.0
+		})
+	return arr
 
-## Carried power-pack count (defaults to STARTING_PACKS when the block predates this system, so a
-## legacy character's HUD/first-fire sees the migrated grace packs).
-static func packs(ammo: Dictionary) -> int:
-	return maxi(int(ammo.get(PACKS_KEY, STARTING_PACKS)), 0)
+static func packs(sheet: Dictionary) -> int:
+	var inventory: Array = sheet.get("inventory", [])
+	var count = 0
+	for item in inventory:
+		if typeof(item) == TYPE_DICTIONARY:
+			var tkey = item.get("template_key", item.get("template_id", ""))
+			if tkey == PACK_ITEM_KEY or tkey == "power_pack":
+				count += int(item.get("quantity", 1))
+	return count
 
-## Shots left in the given weapon's magazine. An untracked weapon (no entry yet) reads as FULL —
-## a fresh magazine — so lazy migration never presents an empty gun.
-static func shots_left(ammo: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> int:
+static func shots_left(sheet: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> int:
+	var ammo: Dictionary = sheet.get("ammo", {})
 	return maxi(int(ammo.get(weapon_key, shots_per_weapon(weapon_dict))), 0)
 
-## Ensure the ammo block is initialized for this weapon (lazy migration). A block that predates the
-## system (no `packs` key at all) is granted STARTING_PACKS; a known block simply gains this weapon
-## at full shots. Mutates + returns `ammo`. No-op for a non-ammo weapon.
-static func ensure_init(ammo: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> Dictionary:
+static func ensure_init(sheet: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> Dictionary:
 	if not uses_ammo(weapon_dict):
-		return ammo
-	if not ammo.has(PACKS_KEY):
-		ammo[PACKS_KEY] = STARTING_PACKS
+		return sheet
+	var ammo: Dictionary = sheet.get("ammo", {})
+	
+	if not ammo.has("migrated_packs"):
+		ammo["migrated_packs"] = true
+		add_packs(sheet, STARTING_PACKS)
+		
 	if not ammo.has(weapon_key):
 		ammo[weapon_key] = shots_per_weapon(weapon_dict)
-	return ammo
+		
+	sheet["ammo"] = ammo
+	return sheet
 
-## Can this weapon fire right now? Always true for a non-ammo weapon (melee / single_use). For an
-## ammo weapon: a shot in the magazine, OR a carried pack to reload from. This is the SUBMIT-time
-## gate; a false result is the `out_of_ammo` reject (empty AND no pack).
-static func can_fire(ammo: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> bool:
+static func can_fire(sheet: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> bool:
 	if not uses_ammo(weapon_dict):
 		return true
-	if shots_left(ammo, weapon_key, weapon_dict) > 0:
+	if shots_left(sheet, weapon_key, weapon_dict) > 0:
 		return true
-	return packs(ammo) > 0
+	return packs(sheet) > 0
 
-## Reload from a carried pack: spend one pack, refill this weapon to full. Returns {ok, packs_left}.
-## ok=false (no pack) leaves state untouched. Mutates `ammo`.
-static func auto_reload(ammo: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> Dictionary:
-	var have := packs(ammo)
-	if have <= 0:
+static func auto_reload(sheet: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> Dictionary:
+	var inventory: Array = sheet.get("inventory", [])
+	var found_idx = -1
+	for i in range(inventory.size()):
+		var item = inventory[i]
+		if typeof(item) == TYPE_DICTIONARY:
+			var tkey = item.get("template_key", item.get("template_id", ""))
+			if tkey == PACK_ITEM_KEY or tkey == "power_pack":
+				found_idx = i
+				break
+			
+	if found_idx == -1:
 		return {"ok": false, "packs_left": 0}
-	ammo[PACKS_KEY] = have - 1
+		
+	var item = inventory[found_idx]
+	var qty = int(item.get("quantity", 1))
+	if qty <= 1:
+		inventory.remove_at(found_idx)
+	else:
+		item["quantity"] = qty - 1
+		inventory[found_idx] = item
+		
+	sheet["inventory"] = inventory
+	
+	var ammo: Dictionary = sheet.get("ammo", {})
 	ammo[weapon_key] = shots_per_weapon(weapon_dict)
-	return {"ok": true, "packs_left": have - 1}
+	sheet["ammo"] = ammo
+	
+	return {"ok": true, "packs_left": packs(sheet)}
 
-## Consume one shot for a RESOLVED real shot. Auto-reloads from a pack when the magazine is empty
-## (the WEG reload-as-action, approximated by the sink). Returns {ok, shots_left, reloaded,
-## packs_left}. ok=false ONLY when empty AND no pack (the submit gate normally prevents reaching
-## here). A non-ammo weapon is a no-op success (ok=true, shots_left=-1). Mutates `ammo`.
-static func consume(ammo: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> Dictionary:
+static func consume(sheet: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> Dictionary:
 	if not uses_ammo(weapon_dict):
-		return {"ok": true, "shots_left": -1, "reloaded": false, "packs_left": packs(ammo)}
-	ensure_init(ammo, weapon_key, weapon_dict)
+		return {"ok": true, "shots_left": -1, "reloaded": false, "packs_left": packs(sheet)}
+	ensure_init(sheet, weapon_key, weapon_dict)
+	
+	var ammo: Dictionary = sheet.get("ammo", {})
 	var reloaded := false
 	if int(ammo.get(weapon_key, 0)) <= 0:
-		var r := auto_reload(ammo, weapon_key, weapon_dict)
+		var r := auto_reload(sheet, weapon_key, weapon_dict)
 		if not bool(r.get("ok", false)):
 			return {"ok": false, "shots_left": 0, "reloaded": false, "packs_left": 0}
 		reloaded = true
+		ammo = sheet.get("ammo", {}) # refresh reference
+		
 	ammo[weapon_key] = int(ammo[weapon_key]) - 1
-	return {"ok": true, "shots_left": int(ammo[weapon_key]), "reloaded": reloaded, "packs_left": packs(ammo)}
+	sheet["ammo"] = ammo
+	return {"ok": true, "shots_left": int(ammo[weapon_key]), "reloaded": reloaded, "packs_left": packs(sheet)}
 
-## Add `n` power packs (the vendor buy path — packs stack onto sheet.ammo.packs, not inventory).
-## Mutates + returns `ammo`.
-static func add_packs(ammo: Dictionary, n: int) -> Dictionary:
-	ammo[PACKS_KEY] = packs(ammo) + maxi(n, 0)
-	return ammo
+static func add_packs(sheet: Dictionary, n: int) -> Dictionary:
+	var inventory: Array = sheet.get("inventory", [])
+	# Since it's stackable, try to find existing to stack
+	var found = false
+	for item in inventory:
+		if typeof(item) == TYPE_DICTIONARY:
+			var tkey = item.get("template_key", item.get("template_id", ""))
+			if tkey == PACK_ITEM_KEY or tkey == "power_pack":
+				item["quantity"] = int(item.get("quantity", 1)) + n
+				found = true
+				break
+	if not found:
+		inventory.append({
+			"id": "pack_" + str(Time.get_unix_time_from_system()),
+			"template_key": PACK_ITEM_KEY,
+			"kind": "ammo",
+			"name": "Blaster Power Pack",
+			"quantity": n,
+			"quality": 50.0
+		})
+	sheet["inventory"] = inventory
+	return sheet
 
-## Remove one power pack (the vendor SELL path). Returns {ok, packs_left}; ok=false when none held.
-static func remove_pack(ammo: Dictionary) -> Dictionary:
-	var have := packs(ammo)
-	if have <= 0:
+static func remove_pack(sheet: Dictionary) -> Dictionary:
+	var inventory: Array = sheet.get("inventory", [])
+	var found_idx = -1
+	for i in range(inventory.size()):
+		var item = inventory[i]
+		if typeof(item) == TYPE_DICTIONARY:
+			var tkey = item.get("template_key", item.get("template_id", ""))
+			if tkey == PACK_ITEM_KEY or tkey == "power_pack":
+				found_idx = i
+				break
+	if found_idx == -1:
 		return {"ok": false, "packs_left": 0}
-	ammo[PACKS_KEY] = have - 1
-	return {"ok": true, "packs_left": have - 1}
+		
+	var item = inventory[found_idx]
+	var qty = int(item.get("quantity", 1))
+	if qty <= 1:
+		inventory.remove_at(found_idx)
+	else:
+		item["quantity"] = qty - 1
+		inventory[found_idx] = item
+	
+	sheet["inventory"] = inventory
+	return {"ok": true, "packs_left": packs(sheet)}

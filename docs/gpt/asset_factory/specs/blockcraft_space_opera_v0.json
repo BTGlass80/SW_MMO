@@ -1,0 +1,271 @@
+{
+  "schema": "gpt_asset_factory_v0",
+  "pack_id": "blockcraft_space_opera_v0",
+  "display_name": "Blockcraft Space Opera Prototype Pack v0",
+  "style_grammar": "blockcraft_space_opera_frontier",
+  "output_folder": "generated/blockcraft_space_opera_v0",
+  "notes": [
+    "Generic blocky space-opera assets for testing a Star-Wars-adjacent Minecraft-like production lane without copying protected silhouettes.",
+    "Mostly cuboids by design: the style should make modeling closer to level construction.",
+    "Designed to compare against the earlier chunky low-poly pack."
+  ],
+  "palette": {
+    "sand_block": "#b98245",
+    "sand_light": "#dfba72",
+    "sand_shadow": "#7a5632",
+    "adobe_dark": "#6b4a2f",
+    "basalt_dark": "#20252b",
+    "panel_gray": "#68727a",
+    "armor_white": "#e6eceb",
+    "armor_shadow": "#aeb8bb",
+    "visor_black": "#101419",
+    "teal_accent": "#24d7d7",
+    "republic_blue": "#2f8fd6",
+    "droid_tan": "#b99b63",
+    "warning_orange": "#ff7a2c",
+    "tech_cyan": "#27d7ff",
+    "canvas_red": "#b94330",
+    "dust_floor": "#c89555",
+    "space_plane": "#0b1724",
+    "grid_blue": "#1765a8",
+    "player_blue": "#3cc8ff",
+    "enemy_orange": "#ff6a30",
+    "neutral_rock": "#77706d",
+    "ship_white": "#dbe8ed",
+    "ship_dark": "#343a42"
+  },
+  "assets": [
+    {
+      "id": "blockcraft_desert_tile_4x4_01",
+      "display_name": "Blockcraft Desert Tile 4x4 01",
+      "category": "terrain_tile",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [4.0, 4.0],
+      "gameplay_role": "repeatable desert ground tile with height-step readability",
+      "prompt": "blocky desert ground tile with simple ledge, rocks, and panel scraps",
+      "parts": [
+        {"name": "base", "shape": "box", "position": [0, 0.12, 0], "size": [4.0, 0.24, 4.0], "material": "sand_block"},
+        {"name": "raised_corner", "shape": "box", "position": [-1.15, 0.38, -1.15], "size": [1.4, 0.45, 1.4], "material": "sand_light"},
+        {"name": "step_shadow", "shape": "box", "position": [-0.3, 0.24, -1.15], "size": [0.18, 0.25, 1.4], "material": "sand_shadow"},
+        {"name": "panel_scrap", "shape": "box", "position": [1.0, 0.28, 0.65], "size": [1.1, 0.08, 0.55], "rotation_degrees": [0, 20, 0], "material": "panel_gray"},
+        {"name": "small_rock_a", "shape": "box", "position": [-1.3, 0.34, 1.2], "size": [0.38, 0.26, 0.32], "rotation_degrees": [0, 12, 0], "material": "neutral_rock"},
+        {"name": "small_rock_b", "shape": "box", "position": [1.55, 0.31, -1.3], "size": [0.28, 0.22, 0.42], "rotation_degrees": [0, -18, 0], "material": "neutral_rock"}
+      ]
+    },
+    {
+      "id": "blockcraft_frontier_gate_01",
+      "display_name": "Blockcraft Frontier Gate 01",
+      "category": "settlement_module",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [5.0, 2.0],
+      "gameplay_role": "starter district threshold or checkpoint landmark",
+      "prompt": "blocky desert sci-fi settlement gate with blue light strips and squared arch",
+      "parts": [
+        {"name": "left_column_lower", "shape": "box", "position": [-1.85, 0.75, 0], "size": [0.8, 1.5, 0.9], "material": "sand_block"},
+        {"name": "left_column_upper", "shape": "box", "position": [-1.85, 1.85, 0], "size": [1.05, 0.7, 1.05], "material": "sand_light"},
+        {"name": "right_column_lower", "shape": "box", "position": [1.85, 0.75, 0], "size": [0.8, 1.5, 0.9], "material": "sand_block"},
+        {"name": "right_column_upper", "shape": "box", "position": [1.85, 1.85, 0], "size": [1.05, 0.7, 1.05], "material": "sand_light"},
+        {"name": "top_beam", "shape": "box", "position": [0, 2.45, 0], "size": [4.7, 0.55, 0.75], "material": "sand_light"},
+        {"name": "inner_shadow", "shape": "box", "position": [0, 1.65, 0.08], "size": [2.7, 0.22, 0.86], "material": "adobe_dark"},
+        {"name": "left_blue_strip", "shape": "box", "position": [-2.31, 1.0, -0.48], "size": [0.08, 1.05, 0.05], "material": "tech_cyan", "emissive": true},
+        {"name": "right_blue_strip", "shape": "box", "position": [2.31, 1.0, -0.48], "size": [0.08, 1.05, 0.05], "material": "tech_cyan", "emissive": true},
+        {"name": "sign_panel", "shape": "box", "position": [0, 2.48, -0.43], "size": [1.5, 0.22, 0.08], "material": "panel_gray"}
+      ]
+    },
+    {
+      "id": "blockcraft_market_stall_01",
+      "display_name": "Blockcraft Market Stall 01",
+      "category": "vendor_stall",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [4.5, 3.2],
+      "gameplay_role": "vendor, quest-giver, or repair terminal landmark",
+      "prompt": "blocky desert market stall with red canopy, crates, and glowing terminal",
+      "parts": [
+        {"name": "back_wall", "shape": "box", "position": [0, 1.0, 0.8], "size": [3.9, 2.0, 0.35], "material": "sand_block"},
+        {"name": "counter", "shape": "box", "position": [0, 0.55, -0.75], "size": [3.4, 1.1, 0.8], "material": "basalt_dark"},
+        {"name": "canopy", "shape": "box", "position": [0, 2.35, -0.15], "size": [4.8, 0.25, 2.45], "material": "canvas_red"},
+        {"name": "left_post", "shape": "box", "position": [-2.0, 1.2, -1.15], "size": [0.18, 2.0, 0.18], "material": "basalt_dark"},
+        {"name": "right_post", "shape": "box", "position": [2.0, 1.2, -1.15], "size": [0.18, 2.0, 0.18], "material": "basalt_dark"},
+        {"name": "terminal_body", "shape": "box", "position": [-1.45, 0.85, -1.35], "size": [0.7, 0.75, 0.35], "material": "panel_gray"},
+        {"name": "terminal_screen", "shape": "box", "position": [-1.45, 1.0, -1.55], "size": [0.48, 0.28, 0.04], "material": "tech_cyan", "emissive": true},
+        {"name": "crate_a", "shape": "box", "position": [1.2, 0.35, -1.28], "size": [0.62, 0.62, 0.62], "material": "sand_shadow"},
+        {"name": "crate_b", "shape": "box", "position": [1.8, 0.25, -0.55], "size": [0.48, 0.48, 0.48], "material": "sand_shadow"}
+      ]
+    },
+    {
+      "id": "blockcraft_moisture_stack_01",
+      "display_name": "Blockcraft Moisture Stack 01",
+      "category": "landmark_prop",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [1.8, 1.8],
+      "gameplay_role": "repair/harvest interaction prop",
+      "prompt": "blocky desert utility tower with square fins and cyan status lamps",
+      "parts": [
+        {"name": "base", "shape": "box", "position": [0, 0.25, 0], "size": [0.95, 0.5, 0.95], "material": "basalt_dark"},
+        {"name": "shaft_lower", "shape": "box", "position": [0, 0.95, 0], "size": [0.35, 0.9, 0.35], "material": "sand_light"},
+        {"name": "shaft_upper", "shape": "box", "position": [0, 1.75, 0], "size": [0.28, 0.8, 0.28], "material": "sand_light"},
+        {"name": "top_block", "shape": "box", "position": [0, 2.3, 0], "size": [0.78, 0.34, 0.55], "material": "panel_gray"},
+        {"name": "dish_bar", "shape": "box", "position": [0, 2.62, -0.42], "size": [1.35, 0.16, 0.35], "rotation_degrees": [-12, 0, 0], "material": "republic_blue"},
+        {"name": "left_fin", "shape": "box", "position": [-0.52, 1.25, 0], "size": [0.12, 1.15, 0.55], "material": "panel_gray"},
+        {"name": "right_fin", "shape": "box", "position": [0.52, 1.25, 0], "size": [0.12, 1.15, 0.55], "material": "panel_gray"},
+        {"name": "status_lamp", "shape": "box", "position": [0, 0.9, -0.21], "size": [0.2, 0.18, 0.05], "material": "tech_cyan", "emissive": true}
+      ]
+    },
+    {
+      "id": "blockcraft_white_armored_pawn_01",
+      "display_name": "Blockcraft White Armored Pawn 01",
+      "category": "character_token",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [1.0, 1.0],
+      "gameplay_role": "generic friendly infantry pawn scale test",
+      "prompt": "blocky white armored sci-fi infantry pawn with blue unit marking and black visor",
+      "parts": [
+        {"name": "boots", "shape": "box", "position": [0, 0.12, 0], "size": [0.68, 0.24, 0.42], "material": "visor_black"},
+        {"name": "legs", "shape": "box", "position": [0, 0.55, 0], "size": [0.55, 0.7, 0.34], "material": "armor_shadow"},
+        {"name": "torso", "shape": "box", "position": [0, 1.15, 0], "size": [0.82, 0.72, 0.42], "material": "armor_white"},
+        {"name": "blue_chest_mark", "shape": "box", "position": [0, 1.26, -0.24], "size": [0.28, 0.3, 0.04], "material": "republic_blue"},
+        {"name": "helmet", "shape": "box", "position": [0, 1.75, 0], "size": [0.7, 0.52, 0.58], "material": "armor_white"},
+        {"name": "visor", "shape": "box", "position": [0, 1.79, -0.31], "size": [0.48, 0.14, 0.04], "material": "visor_black"},
+        {"name": "left_arm", "shape": "box", "position": [-0.58, 1.08, 0], "size": [0.24, 0.72, 0.28], "material": "armor_white"},
+        {"name": "right_arm", "shape": "box", "position": [0.58, 1.08, -0.05], "size": [0.24, 0.72, 0.28], "material": "armor_white"},
+        {"name": "blaster", "shape": "box", "position": [0.78, 1.04, -0.45], "size": [0.18, 0.16, 0.82], "material": "basalt_dark"}
+      ]
+    },
+    {
+      "id": "blockcraft_tan_service_droid_01",
+      "display_name": "Blockcraft Tan Service Droid 01",
+      "category": "character_token",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [1.0, 1.0],
+      "gameplay_role": "generic neutral or hostile thin droid pawn scale test",
+      "prompt": "blocky tan utility droid pawn with thin limbs and cyan sensor",
+      "parts": [
+        {"name": "feet", "shape": "box", "position": [0, 0.1, 0], "size": [0.55, 0.2, 0.42], "material": "droid_tan"},
+        {"name": "left_leg", "shape": "box", "position": [-0.16, 0.5, 0], "size": [0.12, 0.75, 0.16], "material": "droid_tan"},
+        {"name": "right_leg", "shape": "box", "position": [0.16, 0.5, 0], "size": [0.12, 0.75, 0.16], "material": "droid_tan"},
+        {"name": "body", "shape": "box", "position": [0, 1.1, 0], "size": [0.52, 0.7, 0.28], "material": "droid_tan"},
+        {"name": "head", "shape": "box", "position": [0, 1.63, -0.02], "size": [0.45, 0.32, 0.36], "material": "droid_tan"},
+        {"name": "sensor", "shape": "box", "position": [0, 1.64, -0.23], "size": [0.22, 0.08, 0.04], "material": "tech_cyan", "emissive": true},
+        {"name": "left_arm", "shape": "box", "position": [-0.42, 1.08, 0], "size": [0.1, 0.72, 0.12], "material": "droid_tan"},
+        {"name": "right_arm", "shape": "box", "position": [0.42, 1.08, 0], "size": [0.1, 0.72, 0.12], "material": "droid_tan"}
+      ]
+    },
+    {
+      "id": "blockcraft_hover_sled_01",
+      "display_name": "Blockcraft Hover Sled 01",
+      "category": "vehicle_prop",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [3.5, 1.6],
+      "gameplay_role": "small vehicle prop, cargo escort objective, or travel pad marker",
+      "prompt": "blocky hovering cargo sled with blue underside glow and stacked crates",
+      "parts": [
+        {"name": "sled_body", "shape": "box", "position": [0, 0.45, 0], "size": [2.8, 0.35, 1.05], "material": "panel_gray"},
+        {"name": "front_wedge_fake", "shape": "box", "position": [0, 0.5, -0.72], "size": [2.2, 0.24, 0.32], "material": "ship_white"},
+        {"name": "left_glow", "shape": "box", "position": [-0.8, 0.22, 0.0], "size": [0.55, 0.08, 0.75], "material": "tech_cyan", "emissive": true},
+        {"name": "right_glow", "shape": "box", "position": [0.8, 0.22, 0.0], "size": [0.55, 0.08, 0.75], "material": "tech_cyan", "emissive": true},
+        {"name": "cargo_big", "shape": "box", "position": [-0.55, 0.88, 0.08], "size": [0.9, 0.55, 0.72], "material": "sand_shadow"},
+        {"name": "cargo_small", "shape": "box", "position": [0.48, 0.8, 0.12], "size": [0.62, 0.42, 0.55], "material": "adobe_dark"},
+        {"name": "handle_bar", "shape": "box", "position": [1.35, 0.95, -0.48], "size": [0.1, 0.7, 0.12], "material": "basalt_dark"}
+      ]
+    },
+    {
+      "id": "blockcraft_frontier_micro_slice_01",
+      "display_name": "Blockcraft Frontier Micro Slice 01",
+      "category": "scene_slice",
+      "lane": "godot_procedural",
+      "review_camera": "ground",
+      "footprint": [8.0, 6.0],
+      "gameplay_role": "one-screen proof of the blockcraft MMO visual direction",
+      "prompt": "small blocky desert sci-fi MMO slice with gate, market counter, utility stack, pawn, droid, and hover cargo",
+      "parts": [
+        {"name": "base_tile", "shape": "box", "position": [0, 0.08, 0], "size": [7.4, 0.16, 5.4], "material": "sand_block"},
+        {"name": "raised_step", "shape": "box", "position": [-2.7, 0.32, -1.55], "size": [1.45, 0.42, 1.2], "material": "sand_light"},
+        {"name": "gate_left", "shape": "box", "position": [-2.35, 0.95, 1.55], "size": [0.58, 1.75, 0.7], "material": "sand_light"},
+        {"name": "gate_right", "shape": "box", "position": [-0.65, 0.95, 1.55], "size": [0.58, 1.75, 0.7], "material": "sand_light"},
+        {"name": "gate_beam", "shape": "box", "position": [-1.5, 1.98, 1.55], "size": [2.25, 0.42, 0.62], "material": "sand_light"},
+        {"name": "gate_light_left", "shape": "box", "position": [-2.66, 0.92, 1.15], "size": [0.06, 0.72, 0.04], "material": "tech_cyan", "emissive": true},
+        {"name": "gate_light_right", "shape": "box", "position": [-0.34, 0.92, 1.15], "size": [0.06, 0.72, 0.04], "material": "tech_cyan", "emissive": true},
+        {"name": "stall_wall", "shape": "box", "position": [1.55, 0.85, 1.1], "size": [2.2, 1.55, 0.28], "material": "sand_block"},
+        {"name": "stall_counter", "shape": "box", "position": [1.55, 0.45, 0.35], "size": [2.0, 0.72, 0.55], "material": "basalt_dark"},
+        {"name": "stall_canopy", "shape": "box", "position": [1.55, 1.82, 0.65], "size": [2.7, 0.2, 1.45], "material": "canvas_red"},
+        {"name": "tower_base", "shape": "box", "position": [3.0, 0.28, -1.45], "size": [0.62, 0.55, 0.62], "material": "basalt_dark"},
+        {"name": "tower_shaft", "shape": "box", "position": [3.0, 0.92, -1.45], "size": [0.24, 0.86, 0.24], "material": "sand_light"},
+        {"name": "tower_head", "shape": "box", "position": [3.0, 1.5, -1.45], "size": [0.72, 0.28, 0.42], "material": "panel_gray"},
+        {"name": "tower_light", "shape": "box", "position": [3.0, 1.52, -1.7], "size": [0.28, 0.07, 0.04], "material": "tech_cyan", "emissive": true},
+        {"name": "pawn_body", "shape": "box", "position": [-0.15, 0.7, -1.2], "size": [0.38, 0.72, 0.28], "material": "armor_white"},
+        {"name": "pawn_head", "shape": "box", "position": [-0.15, 1.22, -1.2], "size": [0.42, 0.34, 0.36], "material": "armor_white"},
+        {"name": "pawn_visor", "shape": "box", "position": [-0.15, 1.24, -1.4], "size": [0.28, 0.08, 0.04], "material": "visor_black"},
+        {"name": "pawn_mark", "shape": "box", "position": [-0.15, 0.82, -1.35], "size": [0.18, 0.22, 0.04], "material": "republic_blue"},
+        {"name": "droid_body", "shape": "box", "position": [0.65, 0.68, -1.05], "size": [0.26, 0.7, 0.18], "material": "droid_tan"},
+        {"name": "droid_head", "shape": "box", "position": [0.65, 1.18, -1.05], "size": [0.32, 0.24, 0.26], "material": "droid_tan"},
+        {"name": "droid_sensor", "shape": "box", "position": [0.65, 1.19, -1.21], "size": [0.16, 0.05, 0.04], "material": "tech_cyan", "emissive": true},
+        {"name": "sled_body", "shape": "box", "position": [1.6, 0.34, -1.35], "size": [1.55, 0.28, 0.72], "material": "panel_gray"},
+        {"name": "sled_glow", "shape": "box", "position": [1.6, 0.18, -1.35], "size": [0.9, 0.06, 0.48], "material": "tech_cyan", "emissive": true},
+        {"name": "cargo_a", "shape": "box", "position": [1.3, 0.7, -1.35], "size": [0.5, 0.42, 0.48], "material": "sand_shadow"},
+        {"name": "cargo_b", "shape": "box", "position": [1.92, 0.62, -1.28], "size": [0.42, 0.32, 0.4], "material": "adobe_dark"}
+      ]
+    },
+    {
+      "id": "blockcraft_iso_fighter_02",
+      "display_name": "Blockcraft Isometric Fighter 02",
+      "category": "space_ship_token",
+      "lane": "godot_procedural",
+      "review_camera": "space",
+      "footprint": [2.6, 2.4],
+      "gameplay_role": "flat-plane tactical ship token",
+      "prompt": "blocky generic space fighter token for isometric tactical space",
+      "parts": [
+        {"name": "main_hull", "shape": "box", "position": [0, 0.34, 0], "size": [0.55, 0.28, 1.55], "material": "ship_white"},
+        {"name": "nose_block", "shape": "box", "position": [0, 0.35, -0.95], "size": [0.34, 0.22, 0.48], "material": "armor_white"},
+        {"name": "left_wing", "shape": "box", "position": [-0.82, 0.28, 0.18], "size": [1.32, 0.12, 0.48], "material": "ship_dark"},
+        {"name": "right_wing", "shape": "box", "position": [0.82, 0.28, 0.18], "size": [1.32, 0.12, 0.48], "material": "ship_dark"},
+        {"name": "left_blue_mark", "shape": "box", "position": [-0.82, 0.36, -0.05], "size": [0.85, 0.05, 0.08], "material": "player_blue", "emissive": true},
+        {"name": "right_blue_mark", "shape": "box", "position": [0.82, 0.36, -0.05], "size": [0.85, 0.05, 0.08], "material": "player_blue", "emissive": true},
+        {"name": "engine_glow", "shape": "box", "position": [0, 0.34, 0.96], "size": [0.42, 0.2, 0.18], "material": "tech_cyan", "emissive": true}
+      ]
+    },
+    {
+      "id": "blockcraft_iso_freighter_02",
+      "display_name": "Blockcraft Isometric Freighter 02",
+      "category": "space_ship_token",
+      "lane": "godot_procedural",
+      "review_camera": "space",
+      "footprint": [4.6, 3.6],
+      "gameplay_role": "larger flat-plane tactical ship token",
+      "prompt": "blocky generic cargo freighter token for isometric tactical space",
+      "parts": [
+        {"name": "spine", "shape": "box", "position": [0, 0.42, 0], "size": [0.72, 0.42, 2.8], "material": "ship_dark"},
+        {"name": "left_pod", "shape": "box", "position": [-0.95, 0.42, 0.15], "size": [0.82, 0.36, 1.8], "material": "ship_white"},
+        {"name": "right_pod", "shape": "box", "position": [0.95, 0.42, 0.15], "size": [0.82, 0.36, 1.8], "material": "ship_white"},
+        {"name": "front_bridge", "shape": "box", "position": [0, 0.72, -1.32], "size": [1.08, 0.32, 0.48], "material": "armor_white"},
+        {"name": "left_engine", "shape": "box", "position": [-0.52, 0.42, 1.55], "size": [0.38, 0.24, 0.18], "material": "warning_orange", "emissive": true},
+        {"name": "right_engine", "shape": "box", "position": [0.52, 0.42, 1.55], "size": [0.38, 0.24, 0.18], "material": "warning_orange", "emissive": true},
+        {"name": "cargo_mark", "shape": "box", "position": [0, 0.66, 0.2], "size": [0.46, 0.06, 1.25], "material": "panel_gray"}
+      ]
+    },
+    {
+      "id": "blockcraft_iso_debris_field_01",
+      "display_name": "Blockcraft Isometric Debris Field 01",
+      "category": "space_hazard",
+      "lane": "godot_procedural",
+      "review_camera": "space",
+      "footprint": [4.0, 3.0],
+      "gameplay_role": "flat-plane obstacle, cover, or sensor occlusion marker",
+      "prompt": "blocky asteroid and wreckage debris field for isometric tactical space",
+      "parts": [
+        {"name": "rock_a", "shape": "box", "position": [-0.95, 0.42, 0.0], "size": [0.78, 0.72, 0.66], "rotation_degrees": [0, 18, 8], "material": "neutral_rock"},
+        {"name": "rock_b", "shape": "box", "position": [0.15, 0.3, 0.42], "size": [0.58, 0.46, 0.92], "rotation_degrees": [0, -22, -6], "material": "neutral_rock"},
+        {"name": "rock_c", "shape": "box", "position": [1.0, 0.28, -0.48], "size": [0.45, 0.38, 0.62], "rotation_degrees": [0, 34, 10], "material": "neutral_rock"},
+        {"name": "wreck_panel", "shape": "box", "position": [0.52, 0.18, -0.02], "size": [0.95, 0.08, 0.32], "rotation_degrees": [0, 12, 0], "material": "panel_gray"},
+        {"name": "warning_glow", "shape": "box", "position": [0.28, 0.25, -0.22], "size": [0.24, 0.08, 0.08], "material": "warning_orange", "emissive": true}
+      ]
+    }
+  ]
+}

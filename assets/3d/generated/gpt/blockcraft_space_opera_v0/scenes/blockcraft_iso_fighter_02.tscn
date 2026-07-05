@@ -1,0 +1,91 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nkgk6"]
+albedo_color = Color(0.85882354, 0.9098039, 0.92941177, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_c5ck4"]
+size = Vector3(0.55, 0.28, 1.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vlwhm"]
+albedo_color = Color(0.9019608, 0.9254902, 0.92156863, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_qoo5i"]
+size = Vector3(0.34, 0.22, 0.48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3aau5"]
+albedo_color = Color(0.20392157, 0.22745098, 0.25882354, 1)
+metallic = 0.25
+roughness = 0.62
+
+[sub_resource type="BoxMesh" id="BoxMesh_x5iw6"]
+size = Vector3(1.32, 0.12, 0.48)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6n3qb"]
+size = Vector3(1.32, 0.12, 0.48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lw5u1"]
+albedo_color = Color(0.23529412, 0.78431374, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.23529412, 0.78431374, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_odjde"]
+size = Vector3(0.85, 0.05, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_noye2"]
+size = Vector3(0.85, 0.05, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6rwxq"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_5j78e"]
+size = Vector3(0.42, 0.2, 0.18)
+
+[node name="blockcraft_iso_fighter_02" type="Node3D" unique_id=2133071600]
+metadata/asset_id = "blockcraft_iso_fighter_02"
+metadata/display_name = "Blockcraft Isometric Fighter 02"
+metadata/category = "space_ship_token"
+metadata/gameplay_role = "flat-plane tactical ship token"
+metadata/prompt = "blocky generic space fighter token for isometric tactical space"
+
+[node name="main_hull" type="MeshInstance3D" parent="." unique_id=2015553185]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0)
+material_override = SubResource("StandardMaterial3D_nkgk6")
+mesh = SubResource("BoxMesh_c5ck4")
+
+[node name="nose_block" type="MeshInstance3D" parent="." unique_id=1758841717]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -0.95)
+material_override = SubResource("StandardMaterial3D_vlwhm")
+mesh = SubResource("BoxMesh_qoo5i")
+
+[node name="left_wing" type="MeshInstance3D" parent="." unique_id=1386311442]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.82, 0.28, 0.18)
+material_override = SubResource("StandardMaterial3D_3aau5")
+mesh = SubResource("BoxMesh_x5iw6")
+
+[node name="right_wing" type="MeshInstance3D" parent="." unique_id=836451392]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.82, 0.28, 0.18)
+material_override = SubResource("StandardMaterial3D_3aau5")
+mesh = SubResource("BoxMesh_6n3qb")
+
+[node name="left_blue_mark" type="MeshInstance3D" parent="." unique_id=2141495313]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.82, 0.36, -0.05)
+material_override = SubResource("StandardMaterial3D_lw5u1")
+mesh = SubResource("BoxMesh_odjde")
+
+[node name="right_blue_mark" type="MeshInstance3D" parent="." unique_id=798174468]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.82, 0.36, -0.05)
+material_override = SubResource("StandardMaterial3D_lw5u1")
+mesh = SubResource("BoxMesh_noye2")
+
+[node name="engine_glow" type="MeshInstance3D" parent="." unique_id=602783004]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0.96)
+material_override = SubResource("StandardMaterial3D_6rwxq")
+mesh = SubResource("BoxMesh_5j78e")

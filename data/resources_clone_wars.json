@@ -1,0 +1,194 @@
+{
+  "resources": [
+    {
+      "key": "ferrous_metal",
+      "name": "Ferrous Metal Deposit",
+      "family": "metal",
+      "subtype": "ferrous",
+      "regions": ["tatooine.mos_eisley.approach", "tatooine.wilderness", "space.asteroid_field"],
+      "base_value": 5,
+      "survey_difficulty": 8,
+      "spawn_weight": 50,
+      "quality_stats": {
+        "conductivity": 30,
+        "durability": 85,
+        "malleability": 40,
+        "density": 90,
+        "potential_energy": 0,
+        "purity": 70,
+        "medicinal_value": 0
+      }
+    },
+    {
+      "key": "nonferrous_metal",
+      "name": "Non-Ferrous Metal Vein",
+      "family": "metal",
+      "subtype": "nonferrous",
+      "regions": ["tatooine.mos_eisley.approach", "tatooine.wilderness"],
+      "base_value": 8,
+      "survey_difficulty": 10,
+      "spawn_weight": 40,
+      "quality_stats": {
+        "conductivity": 85,
+        "durability": 60,
+        "malleability": 75,
+        "density": 70,
+        "potential_energy": 5,
+        "purity": 80,
+        "medicinal_value": 0
+      }
+    },
+    {
+      "key": "silicate",
+      "name": "Silicate Sand Deposit",
+      "family": "silicate",
+      "subtype": "sand",
+      "regions": ["tatooine.mos_eisley.approach", "tatooine.wilderness"],
+      "base_value": 4,
+      "survey_difficulty": 6,
+      "spawn_weight": 60,
+      "quality_stats": {
+        "conductivity": 10,
+        "durability": 45,
+        "malleability": 20,
+        "density": 40,
+        "potential_energy": 5,
+        "purity": 60,
+        "medicinal_value": 0
+      }
+    },
+    {
+      "key": "chemical_compound",
+      "name": "Volatile Chemical Pool",
+      "family": "chemical",
+      "subtype": "volatile",
+      "regions": ["tatooine.wilderness"],
+      "base_value": 12,
+      "survey_difficulty": 12,
+      "spawn_weight": 30,
+      "quality_stats": {
+        "conductivity": 40,
+        "durability": 15,
+        "malleability": 10,
+        "density": 50,
+        "potential_energy": 85,
+        "purity": 75,
+        "medicinal_value": 25
+      }
+    },
+    {
+      "key": "organic_tissue",
+      "name": "Feral Creature Hide",
+      "family": "organic",
+      "subtype": "tissue",
+      "regions": ["tatooine.mos_eisley.approach", "tatooine.wilderness"],
+      "base_value": 6,
+      "survey_difficulty": 10,
+      "spawn_weight": 40,
+      "quality_stats": {
+        "conductivity": 5,
+        "durability": 65,
+        "malleability": 85,
+        "density": 35,
+        "potential_energy": 10,
+        "purity": 70,
+        "medicinal_value": 15
+      }
+    },
+    {
+      "key": "energy_crystal",
+      "name": "Resonant Energy Crystal",
+      "family": "crystal",
+      "subtype": "resonant",
+      "regions": ["tatooine.wilderness"],
+      "base_value": 25,
+      "survey_difficulty": 16,
+      "spawn_weight": 10,
+      "quality_stats": {
+        "conductivity": 95,
+        "durability": 75,
+        "malleability": 5,
+        "density": 80,
+        "potential_energy": 98,
+        "purity": 90,
+        "medicinal_value": 0
+      }
+    },
+    {
+      "key": "electronic_parts",
+      "name": "Scrapped Electronics",
+      "family": "component",
+      "subtype": "electronics",
+      "regions": ["tatooine.mos_eisley.approach"],
+      "base_value": 10,
+      "survey_difficulty": 8,
+      "spawn_weight": 35,
+      "quality_stats": {
+        "conductivity": 80,
+        "durability": 40,
+        "malleability": 30,
+        "density": 45,
+        "potential_energy": 15,
+        "purity": 50,
+        "medicinal_value": 0
+      }
+    },
+    {
+      "key": "rare_alloy",
+      "name": "Discarded Rare Alloy",
+      "family": "metal",
+      "subtype": "alloy",
+      "regions": ["tatooine.mos_eisley.approach", "tatooine.wilderness", "space.asteroid_field", "space.debris_field"],
+      "base_value": 20,
+      "survey_difficulty": 15,
+      "spawn_weight": 15,
+      "quality_stats": {
+        "conductivity": 75,
+        "durability": 95,
+        "malleability": 60,
+        "density": 85,
+        "potential_energy": 20,
+        "purity": 85,
+        "medicinal_value": 0
+      }
+    },
+    {
+      "key": "starship_salvage",
+      "name": "Wrecked Starship Salvage",
+      "family": "component",
+      "subtype": "salvage",
+      "regions": ["tatooine.wilderness", "space.debris_field"],
+      "base_value": 18,
+      "survey_difficulty": 14,
+      "spawn_weight": 20,
+      "quality_stats": {
+        "conductivity": 50,
+        "durability": 80,
+        "malleability": 40,
+        "density": 70,
+        "potential_energy": 10,
+        "purity": 40,
+        "medicinal_value": 0
+      }
+    },
+    {
+      "key": "medical_biogel",
+      "name": "Medicinal Biogel Extract",
+      "family": "organic",
+      "subtype": "biogel",
+      "regions": ["tatooine.mos_eisley.approach", "tatooine.wilderness"],
+      "base_value": 15,
+      "survey_difficulty": 12,
+      "spawn_weight": 25,
+      "quality_stats": {
+        "conductivity": 10,
+        "durability": 10,
+        "malleability": 90,
+        "density": 25,
+        "potential_energy": 5,
+        "purity": 85,
+        "medicinal_value": 95
+      }
+    }
+  ]
+}

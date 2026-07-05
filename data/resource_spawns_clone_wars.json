@@ -1,0 +1,34 @@
+{
+  "resource_spawns": [
+    {
+      "zone_id": "tatooine.mos_eisley.approach",
+      "active_resources": [
+        "ferrous_metal",
+        "nonferrous_metal",
+        "silicate",
+        "organic_tissue",
+        "electronic_parts",
+        "rare_alloy",
+        "medical_biogel"
+      ],
+      "density_modifier": 1.0,
+      "quality_modifier": 1.0
+    },
+    {
+      "zone_id": "tatooine.wilderness",
+      "active_resources": [
+        "ferrous_metal",
+        "nonferrous_metal",
+        "silicate",
+        "chemical_compound",
+        "organic_tissue",
+        "energy_crystal",
+        "rare_alloy",
+        "starship_salvage",
+        "medical_biogel"
+      ],
+      "density_modifier": 1.5,
+      "quality_modifier": 1.2
+    }
+  ]
+}

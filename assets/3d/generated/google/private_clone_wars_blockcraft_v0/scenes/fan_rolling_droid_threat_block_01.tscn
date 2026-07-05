@@ -1,0 +1,122 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ijf6e"]
+albedo_color = Color(0.42745098, 0.3529412, 0.21960784, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_fj6v3"]
+size = Vector3(0.28, 1, 0.86)
+
+[sub_resource type="BoxMesh" id="BoxMesh_l3h14"]
+size = Vector3(0.28, 1, 0.86)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2rbc"]
+albedo_color = Color(0.7254902, 0.60784316, 0.3882353, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_vsk0w"]
+size = Vector3(0.68, 0.52, 0.62)
+
+[sub_resource type="BoxMesh" id="BoxMesh_uqpsa"]
+size = Vector3(0.54, 0.22, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_aesm6"]
+albedo_color = Color(1, 0.47843137, 0.17254902, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(1, 0.47843137, 0.17254902, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_m3vdx"]
+size = Vector3(0.32, 0.06, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r4roa"]
+albedo_color = Color(0.1254902, 0.14509805, 0.16862746, 1)
+roughness = 0.86
+
+[sub_resource type="BoxMesh" id="BoxMesh_a30el"]
+size = Vector3(0.12, 0.12, 0.76)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ta0jg"]
+size = Vector3(0.12, 0.12, 0.76)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cnejc"]
+size = Vector3(0.12, 0.12, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sgeqi"]
+size = Vector3(0.12, 0.12, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a17if"]
+albedo_color = Color(0.15294118, 0.84313726, 1, 1)
+roughness = 0.86
+emission_enabled = true
+emission = Color(0.15294118, 0.84313726, 1, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_i2tkd"]
+size = Vector3(1.25, 0.04, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wfsgn"]
+size = Vector3(1.25, 0.04, 0.04)
+
+[node name="fan_rolling_droid_threat_block_01" type="Node3D" unique_id=600678863]
+metadata/asset_id = "fan_rolling_droid_threat_block_01"
+metadata/display_name = "Fan Rolling Droid Threat Block 01"
+metadata/category = "character_token"
+metadata/gameplay_role = "droideka-inspired rolling shield threat for private fan table"
+metadata/prompt = "blockcraft rolling droid threat with folded wheel body, twin blasters, and small shield projector cues"
+
+[node name="wheel_left" type="MeshInstance3D" parent="." unique_id=1456873858]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 0.62, 0)
+material_override = SubResource("StandardMaterial3D_ijf6e")
+mesh = SubResource("BoxMesh_fj6v3")
+
+[node name="wheel_right" type="MeshInstance3D" parent="." unique_id=91785996]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.62, 0)
+material_override = SubResource("StandardMaterial3D_ijf6e")
+mesh = SubResource("BoxMesh_l3h14")
+
+[node name="core" type="MeshInstance3D" parent="." unique_id=1438201543]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.78, -0.05)
+material_override = SubResource("StandardMaterial3D_h2rbc")
+mesh = SubResource("BoxMesh_vsk0w")
+
+[node name="head_plate" type="MeshInstance3D" parent="." unique_id=815722597]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.18, -0.28)
+material_override = SubResource("StandardMaterial3D_h2rbc")
+mesh = SubResource("BoxMesh_uqpsa")
+
+[node name="eye_slit" type="MeshInstance3D" parent="." unique_id=1260086828]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -0.43)
+material_override = SubResource("StandardMaterial3D_aesm6")
+mesh = SubResource("BoxMesh_m3vdx")
+
+[node name="left_gun" type="MeshInstance3D" parent="." unique_id=1854167183]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.46, 0.82, -0.78)
+material_override = SubResource("StandardMaterial3D_r4roa")
+mesh = SubResource("BoxMesh_a30el")
+
+[node name="right_gun" type="MeshInstance3D" parent="." unique_id=2125637753]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.46, 0.82, -0.78)
+material_override = SubResource("StandardMaterial3D_r4roa")
+mesh = SubResource("BoxMesh_ta0jg")
+
+[node name="left_muzzle" type="MeshInstance3D" parent="." unique_id=1812062528]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.46, 0.82, -1.22)
+material_override = SubResource("StandardMaterial3D_aesm6")
+mesh = SubResource("BoxMesh_cnejc")
+
+[node name="right_muzzle" type="MeshInstance3D" parent="." unique_id=1172331702]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.46, 0.82, -1.22)
+material_override = SubResource("StandardMaterial3D_aesm6")
+mesh = SubResource("BoxMesh_sgeqi")
+
+[node name="shield_tick_front" type="MeshInstance3D" parent="." unique_id=1971315744]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, -0.92)
+material_override = SubResource("StandardMaterial3D_a17if")
+mesh = SubResource("BoxMesh_i2tkd")
+
+[node name="shield_tick_back" type="MeshInstance3D" parent="." unique_id=890451753]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0.78)
+material_override = SubResource("StandardMaterial3D_a17if")
+mesh = SubResource("BoxMesh_wfsgn")

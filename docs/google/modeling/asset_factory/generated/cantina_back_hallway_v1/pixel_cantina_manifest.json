@@ -1,0 +1,291 @@
+{
+	"captures": [
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/captures/runtime_collision_nav_overlay.png",
+			"description": "Walkable rectangles in green and merged collision rectangles in red, generated from the same layered Cantina cards.",
+			"id": "runtime_collision_nav_overlay",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/review_scenes/runtime_collision_nav_overlay.tscn"
+		},
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/captures/runtime_socket_map.png",
+			"description": "Named interaction and spawn sockets generated from the semantic room cards: entrance, bar, booths, service door, lights, and clutter sockets.",
+			"id": "runtime_socket_map",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/review_scenes/runtime_socket_map.tscn"
+		},
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/captures/runtime_actor_path_probe.png",
+			"description": "Grid-routed actor/path probe using nearest-walkable socket resolution and the generated walkable mask.",
+			"id": "runtime_actor_path_probe",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/review_scenes/runtime_actor_path_probe.tscn"
+		},
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/captures/runtime_room_pipeline_composite.png",
+			"description": "Layered room geometry, collision/walkable overlay, sockets, and placeholder actors together as a runtime-pipeline proof.",
+			"id": "runtime_room_pipeline_composite",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/review_scenes/runtime_room_pipeline_composite.tscn"
+		}
+	],
+	"display_name": "Chalmun's Cantina - Back Hallway & Sabacc Room",
+	"generator": "docs/google/modeling/asset_factory/scripts/godot_pixel_cantina_generator.gd",
+	"room_id": "cantina_back_hallway",
+	"sockets": [
+		{
+			"grid": {
+				"x": 5,
+				"y": 11
+			},
+			"id": "hallway_entry",
+			"kind": "spawn",
+			"path_walkable": true,
+			"resolved_from_blocked": false,
+			"resolved_grid": {
+				"x": 5,
+				"y": 11
+			},
+			"resolved_world": {
+				"x": -2.96,
+				"y": 0.08,
+				"z": -0.72
+			},
+			"tags": [
+				"entry",
+				"player"
+			],
+			"walkable": true,
+			"world": {
+				"x": -2.96,
+				"y": 0.08,
+				"z": -0.72
+			}
+		},
+		{
+			"grid": {
+				"x": 11,
+				"y": 9
+			},
+			"id": "restroom_a",
+			"kind": "transition",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 11,
+				"y": 8
+			},
+			"resolved_world": {
+				"x": -2.0,
+				"y": 0.08,
+				"z": -1.2
+			},
+			"tags": [
+				"restroom",
+				"door"
+			],
+			"walkable": false,
+			"world": {
+				"x": -2.0,
+				"y": 0.08,
+				"z": -1.04
+			}
+		},
+		{
+			"grid": {
+				"x": 17,
+				"y": 9
+			},
+			"id": "restroom_b",
+			"kind": "transition",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 17,
+				"y": 8
+			},
+			"resolved_world": {
+				"x": -1.04,
+				"y": 0.08,
+				"z": -1.2
+			},
+			"tags": [
+				"restroom",
+				"door"
+			],
+			"walkable": false,
+			"world": {
+				"x": -1.04,
+				"y": 0.08,
+				"z": -1.04
+			}
+		},
+		{
+			"grid": {
+				"x": 23,
+				"y": 9
+			},
+			"id": "restroom_c",
+			"kind": "transition",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 23,
+				"y": 8
+			},
+			"resolved_world": {
+				"x": -0.08,
+				"y": 0.08,
+				"z": -1.2
+			},
+			"tags": [
+				"restroom",
+				"door"
+			],
+			"walkable": false,
+			"world": {
+				"x": -0.08,
+				"y": 0.08,
+				"z": -1.04
+			}
+		},
+		{
+			"grid": {
+				"x": 8,
+				"y": 11
+			},
+			"id": "cellar_trapdoor",
+			"kind": "interaction",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 8,
+				"y": 10
+			},
+			"resolved_world": {
+				"x": -2.48,
+				"y": 0.08,
+				"z": -0.88
+			},
+			"tags": [
+				"cellar",
+				"floor"
+			],
+			"walkable": false,
+			"world": {
+				"x": -2.48,
+				"y": 0.08,
+				"z": -0.72
+			}
+		},
+		{
+			"grid": {
+				"x": 30,
+				"y": 13
+			},
+			"id": "office_door",
+			"kind": "transition",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 30,
+				"y": 12
+			},
+			"resolved_world": {
+				"x": 1.04,
+				"y": 0.08,
+				"z": -0.56
+			},
+			"tags": [
+				"office",
+				"door"
+			],
+			"walkable": false,
+			"world": {
+				"x": 1.04,
+				"y": 0.08,
+				"z": -0.4
+			}
+		},
+		{
+			"grid": {
+				"x": 37,
+				"y": 16
+			},
+			"id": "sabacc_table",
+			"kind": "social_table",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 36,
+				"y": 16
+			},
+			"resolved_world": {
+				"x": 2.0,
+				"y": 0.08,
+				"z": 0.08
+			},
+			"tags": [
+				"sabacc",
+				"seated"
+			],
+			"walkable": false,
+			"world": {
+				"x": 2.16,
+				"y": 0.08,
+				"z": 0.08
+			}
+		},
+		{
+			"grid": {
+				"x": 37,
+				"y": 16
+			},
+			"id": "sabacc_light",
+			"kind": "light_socket",
+			"path_walkable": true,
+			"resolved_from_blocked": true,
+			"resolved_grid": {
+				"x": 36,
+				"y": 16
+			},
+			"resolved_world": {
+				"x": 2.0,
+				"y": 0.08,
+				"z": 0.08
+			},
+			"tags": [
+				"sabacc",
+				"light"
+			],
+			"walkable": false,
+			"world": {
+				"x": 2.16,
+				"y": 0.08,
+				"z": 0.08
+			}
+		}
+	],
+	"source_images": {
+		"collision": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/source_images/cantina_collision_mask_48x32.png",
+		"detail": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/source_images/cantina_detail_elevation_48x32.png",
+		"floorplan": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/source_images/cantina_floorplan_48x32.png",
+		"walkable": "res://docs/google/modeling/asset_factory/generated/cantina_back_hallway_v1/source_images/cantina_walkable_mask_48x32.png"
+	},
+	"spec_path": "res://docs/google/modeling/asset_factory/specs/cantina_back_hallway.json",
+	"stats": {
+		"actor_probe_route_cells": 4,
+		"blocker_pixels": 207,
+		"collision_rectangles": 35,
+		"collision_shape_reduction_vs_pixels": 83.1,
+		"collision_shapes": 35,
+		"composite_probe_route_cells": 0,
+		"detail_nonempty_pixels": 53,
+		"detail_rectangles": 12,
+		"floor_nonempty_pixels": 423,
+		"floor_rectangles": 58,
+		"grid_size": "48x32",
+		"nonwalkable_socket_count": 7,
+		"resolved_socket_count": 7,
+		"socket_count": 8,
+		"walk_node_reduction_vs_pixels": 91.7,
+		"walkable_pixels": 216,
+		"walkable_rectangles": 18
+	}
+}

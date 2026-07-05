@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "source_note": "Manifest mapping model paths to placement/hover physics offsets.",
+  "models": {
+    "res://assets/3d/kenney/space-kit/Models/GLTF format/craft_cargoA.glb": {
+      "hover": true,
+      "hover_height": 0.45,
+      "bottom_offset": 0.0,
+      "visual_scale": 2.4,
+      "collision_radius": 2.0
+    },
+    "res://assets/3d/kenney/space-kit/Models/GLTF format/craft_speederA.glb": {
+      "hover": true,
+      "hover_height": 0.55,
+      "bottom_offset": 0.0,
+      "visual_scale": 2.2,
+      "collision_radius": 1.5
+    },
+    "res://assets/3d/kenney/space-kit/Models/GLTF format/craft_miner.glb": {
+      "hover": true,
+      "hover_height": 0.4,
+      "bottom_offset": 0.0,
+      "visual_scale": 1.8,
+      "collision_radius": 1.5
+    },
+    "res://assets/3d/kenney/survival-kit/Models/GLB format/barrel.glb": {
+      "hover": false,
+      "hover_height": 0.0,
+      "bottom_offset": 0.0,
+      "visual_scale": 1.0,
+      "collision_radius": 0.5
+    },
+    "res://assets/3d/kenney/survival-kit/Models/GLB format/crate.glb": {
+      "hover": false,
+      "hover_height": 0.0,
+      "bottom_offset": 0.0,
+      "visual_scale": 1.0,
+      "collision_radius": 0.6
+    }
+  }
+}

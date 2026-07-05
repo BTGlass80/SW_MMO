@@ -1,0 +1,167 @@
+{
+	"captures": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/captures/body_part_source_cards.png",
+			"description": "Original project-owned per-body-part pixel cards. Each body part has separate front and side silhouettes so it can become a rigid animation piece.",
+			"id": "body_part_source_cards",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/review_scenes/body_part_source_cards.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/captures/body_part_neutral_vs_ready.png",
+			"description": "Same voxel parts, two poses. Left: neutral test assembly. Right: rifle-ready pose using rotations/translations on separate head, torso, arm, leg, backpack, and weapon nodes.",
+			"id": "body_part_neutral_vs_ready",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/review_scenes/body_part_neutral_vs_ready.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/captures/body_part_rotation_contact_sheet.png",
+			"description": "Four yaw angles for the assembled body-part hull. This checks whether the split parts read as one 3D actor instead of a paper cutout.",
+			"id": "body_part_rotation_contact_sheet",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/review_scenes/body_part_rotation_contact_sheet.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/captures/body_part_cover_pose_ab.png",
+			"description": "Rifle-ready versus simple cover-lean pose. This tests whether the deterministic hull pieces expose enough handles for MMO combat animation requests.",
+			"id": "body_part_cover_pose_ab",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/review_scenes/body_part_cover_pose_ab.tscn"
+		}
+	],
+	"generator": "docs/gpt/asset_factory/scripts/godot_pixel_hull_body_parts_proof.gd",
+	"source_images": {
+		"backpack": {
+			"front": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/backpack_front.png",
+			"side": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/backpack_side.png"
+		},
+		"forearm": {
+			"front": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/forearm_front.png",
+			"side": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/forearm_side.png"
+		},
+		"head": {
+			"front": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/head_front.png",
+			"side": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/head_side.png"
+		},
+		"leg": {
+			"front": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/leg_front.png",
+			"side": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/leg_side.png"
+		},
+		"rifle": {
+			"front": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/rifle_front.png",
+			"side": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/rifle_side.png"
+		},
+		"torso": {
+			"front": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/torso_front.png",
+			"side": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/torso_side.png"
+		},
+		"upper_arm": {
+			"front": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/upper_arm_front.png",
+			"side": "res://docs/gpt/asset_factory/generated/godot_pixel_hull_body_parts_v0/source_images/upper_arm_side.png"
+		}
+	},
+	"stats": {
+		"backpack": {
+			"boxes": 35,
+			"mode": "body_part_front_side_visual_hull_z_runs",
+			"raw_voxels": 105
+		},
+		"backpack_front_card": {
+			"boxes": 15,
+			"mode": "source_card_same_color_runs"
+		},
+		"backpack_side_card": {
+			"boxes": 11,
+			"mode": "source_card_same_color_runs"
+		},
+		"forearm_front_card": {
+			"boxes": 7,
+			"mode": "source_card_same_color_runs"
+		},
+		"forearm_side_card": {
+			"boxes": 7,
+			"mode": "source_card_same_color_runs"
+		},
+		"head": {
+			"boxes": 26,
+			"mode": "body_part_front_side_visual_hull_z_runs",
+			"raw_voxels": 140
+		},
+		"head_front_card": {
+			"boxes": 13,
+			"mode": "source_card_same_color_runs"
+		},
+		"head_side_card": {
+			"boxes": 12,
+			"mode": "source_card_same_color_runs"
+		},
+		"left_forearm": {
+			"boxes": 21,
+			"mode": "body_part_front_side_visual_hull_z_runs",
+			"raw_voxels": 63
+		},
+		"left_leg": {
+			"boxes": 40,
+			"mode": "body_part_front_side_visual_hull_z_runs",
+			"raw_voxels": 160
+		},
+		"left_upper_arm": {
+			"boxes": 24,
+			"mode": "body_part_front_side_visual_hull_z_runs",
+			"raw_voxels": 72
+		},
+		"leg_front_card": {
+			"boxes": 15,
+			"mode": "source_card_same_color_runs"
+		},
+		"leg_side_card": {
+			"boxes": 15,
+			"mode": "source_card_same_color_runs"
+		},
+		"rifle": {
+			"boxes": 43,
+			"mode": "body_part_front_side_visual_hull_z_runs",
+			"raw_voxels": 123
+		},
+		"rifle_front_card": {
+			"boxes": 10,
+			"mode": "source_card_same_color_runs"
+		},
+		"rifle_side_card": {
+			"boxes": 7,
+			"mode": "source_card_same_color_runs"
+		},
+		"right_forearm": {
+			"boxes": 21,
+			"mode": "body_part_front_side_visual_hull_z_runs",
+			"raw_voxels": 63
+		},
+		"right_leg": {
+			"boxes": 40,
+			"mode": "body_part_front_side_visual_hull_z_runs",
+			"raw_voxels": 160
+		},
+		"right_upper_arm": {
+			"boxes": 24,
+			"mode": "body_part_front_side_visual_hull_z_runs",
+			"raw_voxels": 72
+		},
+		"torso": {
+			"boxes": 70,
+			"mode": "body_part_front_side_visual_hull_z_runs",
+			"raw_voxels": 320
+		},
+		"torso_front_card": {
+			"boxes": 30,
+			"mode": "source_card_same_color_runs"
+		},
+		"torso_side_card": {
+			"boxes": 30,
+			"mode": "source_card_same_color_runs"
+		},
+		"upper_arm_front_card": {
+			"boxes": 12,
+			"mode": "source_card_same_color_runs"
+		},
+		"upper_arm_side_card": {
+			"boxes": 12,
+			"mode": "source_card_same_color_runs"
+		}
+	}
+}

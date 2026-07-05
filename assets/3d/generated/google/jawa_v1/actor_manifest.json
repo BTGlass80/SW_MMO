@@ -1,0 +1,96 @@
+{
+	"captures": [
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/jawa_v1/captures/body_part_source_cards.png",
+			"description": "Original B1 Battle Droid body-part front and side pixel cards, generated programmatically from the spec JSON.",
+			"id": "body_part_source_cards",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/jawa_v1/review_scenes/body_part_source_cards.tscn"
+		},
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/jawa_v1/captures/body_part_neutral_vs_aim.png",
+			"description": "B1 Battle Droid model. Left: neutral structural assembly using local bone pivots. Right: aim pose with E-5 blaster aimed forward.",
+			"id": "body_part_neutral_vs_aim",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/jawa_v1/review_scenes/body_part_neutral_vs_aim.tscn"
+		},
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/jawa_v1/captures/body_part_rotation_contact_sheet.png",
+			"description": "Four yaw angles (0, 90, 180, 270) of the assembled B1 Battle Droid model, demonstrating full 3D visual volume consistency.",
+			"id": "body_part_rotation_contact_sheet",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/jawa_v1/review_scenes/body_part_rotation_contact_sheet.tscn"
+		},
+		{
+			"capture_path": "res://docs/google/modeling/asset_factory/generated/jawa_v1/captures/body_part_walk_cycle_contact_sheet.png",
+			"description": "Four frames of the B1 Battle Droid walk animation (0.0s, 0.3s, 0.6s, 0.9s), demonstrating keyframe interpolation on joint nodes.",
+			"id": "body_part_walk_cycle_contact_sheet",
+			"scene_path": "res://docs/google/modeling/asset_factory/generated/jawa_v1/review_scenes/body_part_walk_cycle_contact_sheet.tscn"
+		}
+	],
+	"character_id": "jawa",
+	"display_name": "Jawa (High Fidelity)",
+	"generator": "docs/google/modeling/asset_factory/scripts/godot_pixel_actor_generator.gd",
+	"source_images": {
+		"blaster": {
+			"front": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/blaster_front.png",
+			"side": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/blaster_side.png"
+		},
+		"forearm": {
+			"front": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/forearm_front.png",
+			"side": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/forearm_side.png"
+		},
+		"head": {
+			"front": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/head_front.png",
+			"side": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/head_side.png"
+		},
+		"leg": {
+			"front": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/leg_front.png",
+			"side": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/leg_side.png"
+		},
+		"torso": {
+			"front": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/torso_front.png",
+			"side": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/torso_side.png"
+		},
+		"upper_arm": {
+			"front": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/upper_arm_front.png",
+			"side": "res://docs/google/modeling/asset_factory/generated/jawa_v1/source_images/upper_arm_side.png"
+		}
+	},
+	"spec_path": "res://docs/google/modeling/asset_factory/specs/jawa.json",
+	"stats": {
+		"blaster_mesh": {
+			"boxes": 32,
+			"raw_voxels": 64
+		},
+		"head_mesh": {
+			"boxes": 64,
+			"raw_voxels": 512
+		},
+		"left_forearm_mesh": {
+			"boxes": 18,
+			"raw_voxels": 54
+		},
+		"left_leg_mesh": {
+			"boxes": 18,
+			"raw_voxels": 54
+		},
+		"left_upper_arm_mesh": {
+			"boxes": 18,
+			"raw_voxels": 54
+		},
+		"right_forearm_mesh": {
+			"boxes": 18,
+			"raw_voxels": 54
+		},
+		"right_leg_mesh": {
+			"boxes": 18,
+			"raw_voxels": 54
+		},
+		"right_upper_arm_mesh": {
+			"boxes": 18,
+			"raw_voxels": 54
+		},
+		"torso_mesh": {
+			"boxes": 112,
+			"raw_voxels": 672
+		}
+	}
+}

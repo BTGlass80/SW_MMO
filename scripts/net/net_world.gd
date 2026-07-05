@@ -22,12 +22,22 @@ const DialogueModel := preload("res://scripts/rules/dialogue_model.gd")
 const PlayerStatusBadgeModel := preload("res://scripts/rules/player_status_badge_model.gd")  # venom/restraint/wound status readout
 const AmmoStatusModel := preload("res://scripts/rules/ammo_status_model.gd")  # DIV-0029: equipped-weapon ammo HUD readout + reload inference
 
+const DialogueOverlay := preload("res://scripts/world/dialogue_overlay.gd")
+const UnifiedHUD := preload("res://scripts/world/unified_hud.gd")
+const SpaceMapOverlay := preload("res://scripts/world/space_map_overlay.gd")
+const CraftingModel := preload("res://scripts/rules/crafting_model.gd")
+
+
+
 var _builder: WorldBuilder
+var _hud: CanvasLayer
+
 var _is_server := false
 var _connect_attempts := 0
 var _local_id := 0
 var _yaw := 0.0
 var _pitch := -0.18
+
 var _camera: Camera3D
 var _status: Label
 var _snapshots_logged := 0
@@ -118,6 +128,8 @@ var _condition_label: Label
 var _last_condition := "healthy|0|false"   # composite (wound|poison|held) so we log status CHANGES only
 var _target_label: Label           # F47: at-a-glance target status (companion to the condition HUD)
 var _last_target := ""             # so we log target-status CHANGES only
+var _highlighted_target: Dictionary = {}
+
 var _org_label: Label
 var _last_org_line := ""           # so we log org/territory CHANGES only
 var _boost_label: Label
@@ -125,7 +137,7 @@ var _last_boost := ""              # so we log combat CP/FP CHANGES only
 var _ammo_label: Label            # DIV-0029: equipped-weapon ammo readout (hidden for melee / no-ammo)
 var _last_ammo := ""              # so we log ammo-readout CHANGES only
 var _prev_ammo: Dictionary = {}   # previous snapshot's "you".ammo block — client-side auto-reload inference
-var _sheet_panel: Label            # F24: character sheet (toggle with V); hidden by default
+var _sheet_panel: ColorRect            # F24: character sheet (toggle with V); hidden by default
 var _combat_log: Label
 var _combat_lines: Array[String] = []
 var _zone_label: Label
@@ -146,7 +158,30 @@ var _pvp_marker_ttl := 0.0
 var _shop_open := false           # the shop overlay owns the cursor while open (like the chat box)
 var _shop_panel: Panel
 var _shop_title: Label
+
+var _econ_test_server := false
+var _space_cargo_test_server := false
+var _econ_test_c1 := false
+var _econ_test_c2 := false
+var _econ_c1_started := false
+var _econ_c2_started := false
+var _space_cargo_test_c1 := false
+var _space_cargo_c1_started := false
 var _shop_list: VBoxContainer
+var _quest_open := false
+var _quest_panel: Panel
+var _my_sheet := {}
+var _quest_list: VBoxContainer
+var _crafting_open := false
+var _crafting_panel: Panel
+var _crafting_list: VBoxContainer
+var _bazaar_open := false
+var _bazaar_panel: Panel
+var _bazaar_list: VBoxContainer
+var _inventory_sell_list: VBoxContainer
+var _bazaar_listings := {}
+
+
 var _death_overlay: ColorRect     # DIV-0006: brief full-screen "you were killed" card
 var _death_label: Label
 var _downed_panel: Label          # DIV-0027: persistent amber "you are DOWN — press Y to yield" panel
@@ -157,6 +192,8 @@ var _duel := ""              # --duel <name>: challenge the named player once af
 var _duel_sent := false
 var _duel_accept := false    # --duel-accept: accept the single pending challenge
 var _duel_accept_sent := false
+var _quit_after: float = 0.0
+var _quit_accum: float = 0.0
 var _yield_duel := false     # --yield-duel: concede an active duel once
 var _yield_duel_sent := false
 var _place_bounty := ""      # --place-bounty <name>:<amount>: place a bounty once after connecting
@@ -201,6 +238,14 @@ func _ready() -> void:
 	Net.duel_notified.connect(_on_duel_notified)            # DIV-0022: duel state change involving me
 	Net.bounty_replied.connect(_on_bounty_replied)          # DIV-0022: bounty command outcome
 	Net.bounty_notified.connect(_on_bounty_notified)        # DIV-0022: bounty placed on me / collected
+	Net.survey_replied.connect(_on_survey_replied)
+	Net.harvest_replied.connect(_on_harvest_replied)
+	Net.craft_replied.connect(_on_craft_replied)
+	Net.bazaar_listings_updated.connect(_on_bazaar_listings_updated)
+	Net.bazaar_list_replied.connect(_on_bazaar_list_replied)
+	Net.bazaar_buy_replied.connect(_on_bazaar_buy_replied)
+
+
 
 	if _is_server:
 		var combat_window := _arg_value("--combat-window")
@@ -217,7 +262,44 @@ func _ready() -> void:
 		Net.allow_test_org = OS.get_cmdline_user_args().has("--allow-test-org")
 		Net.force_hostile_key = _arg_value("--force-hostile")  # TEST-ONLY: force a specific lethal creature to spawn
 		Net.force_awaken_now = OS.get_cmdline_user_args().has("--force-awaken")  # TEST-ONLY: force a Force awakening
-		Net.start_server()
+		if OS.get_cmdline_user_args().has("--dev-admin-allowlist"):
+			Net.admin_allowlist = ["admin", "operator"]
+		
+		if _econ_test_server or _space_cargo_test_server:
+			Net.allow_test_org = true
+			
+		var port_arg := _arg_value("--port")
+		var port := int(port_arg) if port_arg != "" else 24555
+		Net.start_server(port)
+		
+		if _space_cargo_test_server:
+			await get_tree().create_timer(1.0).timeout
+			var s_p1_record = Net._cached_load("pilot_1")
+			if s_p1_record.is_empty():
+				s_p1_record = {"id": "pilot_1", "sheet": {}}
+			s_p1_record["sheet"]["credits"] = 5000
+			s_p1_record["sheet"]["ships"] = ["ship_1"]
+			Net._cached_save("pilot_1", s_p1_record)
+			
+		if _econ_test_server:
+			await get_tree().create_timer(1.0).timeout
+			var s_c1_record = Net._cached_load("crafter_1")
+			if s_c1_record.is_empty():
+				s_c1_record = {"id": "crafter_1", "sheet": {}}
+			s_c1_record["sheet"]["credits"] = 1000
+			s_c1_record["sheet"]["wounds"] = 0
+			s_c1_record["sheet"]["inventory"] = [
+				{"instance_id": "res1", "template_id": "resource_stack", "stack_count": 5, "stats": {"resource_type": "organic_tissue"}},
+				{"instance_id": "res2", "template_id": "resource_stack", "stack_count": 5, "stats": {"resource_type": "medical_biogel"}}
+			]
+			Net._cached_save("crafter_1", s_c1_record)
+			var s_c2_record = Net._cached_load("buyer_1")
+			if s_c2_record.is_empty():
+				s_c2_record = {"id": "buyer_1", "sheet": {}}
+			s_c2_record["sheet"]["credits"] = 5000
+			s_c2_record["sheet"]["wounds"] = 2
+			Net._cached_save("buyer_1", s_c2_record)
+			
 		return
 
 	_builder = WorldBuilder.new()
@@ -225,14 +307,106 @@ func _ready() -> void:
 	_builder.build_ground(self)
 	_builder.build_settlement(self)
 	# Signature landmark east of Spaceport Row (settlement core ends ~x=30): a Mos Eisley cantina plaza
-	# so the shared world reads as a place, not a prototype. Client-side geometry only (tunable origin).
-	LandmarkBuilder.new().build_cantina_plaza(self, Vector3(40, 0, 6))
+	LandmarkBuilder.new().build_cantina_plaza(self, Vector3(65, 0, 0))
+
 	_monster_builder = MonsterBuilder.new()
 	_npc_builder = NpcBuilder.new()
 	_build_camera()
 	_build_hud()
+	var dialogue_overlay := DialogueOverlay.new()
+	dialogue_overlay.name = "DialogueOverlay"
+	add_child(dialogue_overlay)
+
+	var space_map := SpaceMapOverlay.new()
+	space_map.name = "SpaceMapOverlay"
+	add_child(space_map)
+
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	Net.start_client(_resolve_host())
+	_set_status("Connecting...")
+	var port_arg := _arg_value("--port")
+	var port := int(port_arg) if port_arg != "" else 24555
+	Net.start_client(_resolve_host(), port)
+
+func _run_econ_c1() -> void:
+	await get_tree().create_timer(1.0).timeout
+	var item_instance = ""
+	for i in range(5):
+		Net.send_craft("basic_medpac")
+		var result = await Net.craft_replied
+		var outcome = result[0] if result is Array else result
+		print("[c1] Craft outcome: ", outcome)
+		item_instance = outcome.get("item", {}).get("instance_id", "")
+		if item_instance != "":
+			break
+		await get_tree().create_timer(0.5).timeout
+		
+	if item_instance != "":
+		print("[c1] Sending bazaar list for ", item_instance)
+		Net.send_bazaar_list(item_instance, 1500)
+	else:
+		print("[c1] ERROR: No medpac found in craft result!")
+	await get_tree().create_timer(2.0).timeout
+	get_tree().quit(0)
+
+func _run_econ_c2() -> void:
+	await get_tree().create_timer(1.0).timeout
+	Net.send_request_bazaar_listings()
+	await get_tree().create_timer(1.0).timeout
+	var found_listing = ""
+	for l_id in _bazaar_listings.keys():
+		var l = _bazaar_listings[l_id]
+		if l.get("item", {}).get("template_id") == "medpac":
+			found_listing = l_id
+	if found_listing != "":
+		Net.send_bazaar_buy(found_listing)
+	await get_tree().create_timer(1.0).timeout
+	get_tree().quit(0)
+
+func _run_space_cargo_c1() -> void:
+	print("[space] Starting _run_space_cargo_c1...")
+	if _my_sheet.is_empty():
+		print("[space] Waiting for sheet_updated...")
+		await Net.sheet_updated
+	print("[space] Sheet received! Launching ship...")
+	Net.send_launch_ship()
+	var launch_result = await Net.launch_ship_replied
+	var launch_outcome = launch_result[0] if launch_result is Array else launch_result
+	print("[space] Launch outcome: ", launch_outcome)
+	
+	if bool(launch_outcome.get("ok", false)):
+		await get_tree().create_timer(1.0).timeout
+		print("[space] Harvesting asteroid...")
+		Net.send_space_harvest("asteroid_field")
+		
+		await get_tree().create_timer(1.0).timeout
+		print("[space] Landing ship...")
+		Net.send_land_ship()
+		var land_result = await Net.land_ship_replied
+		var land_outcome = land_result[0] if land_result is Array else land_result
+		print("[space] Land outcome: ", land_outcome)
+		
+		# Wait for the sheet update from the landing sequence
+		await get_tree().create_timer(0.5).timeout
+		
+		# Assert the cargo transfer
+		var found_cargo = false
+		var inventory: Array = _my_sheet.get("inventory", [])
+		print("[space] Inventory after landing: ", inventory)
+		for item in inventory:
+			if item is Dictionary and item.get("template_id", "") == "asteroid_field":
+				found_cargo = true
+				break
+		if found_cargo:
+			print("[space] OK: Cargo successfully transferred to personal inventory.")
+		else:
+			print("[space] ERROR: Cargo was NOT found in personal inventory!")
+			get_tree().quit(1)
+			return
+	else:
+		print("[space] ERROR: Failed to launch.")
+		
+	await get_tree().create_timer(1.0).timeout
+	get_tree().quit(0)
 
 func _parse_args() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -242,7 +416,13 @@ func _parse_args() -> void:
 	var account := _arg_value("--account")
 	if account != "":
 		_account = account
-	_name = _arg_value("--name")
+
+
+
+	if _no_register:
+		return
+	if _quickstart:
+		_name = _arg_value("--name")
 	_species = _arg_value("--species")
 	_quickstart = args.has("--quickstart")
 	_no_register = args.has("--no-register")
@@ -276,10 +456,26 @@ func _parse_args() -> void:
 	_claim_quest = _arg_value("--claim-quest")    # headless DIV-0020: claim a quest once, late
 	_yield_on_down = args.has("--yield")          # headless DIV-0027: auto-yield when downed (two-process test hook)
 	_duel = _arg_value("--duel")                  # headless DIV-0022: challenge the named player to a duel
-	_duel_accept = args.has("--duel-accept")      # headless DIV-0022: accept the single pending duel offer
+	
+	_econ_test_server = args.has("--economy-test-server")
+	_space_cargo_test_server = args.has("--space-cargo-test-server")
+	_econ_test_c1 = args.has("--economy-test-c1")
+	_econ_test_c2 = args.has("--economy-test-c2")
+	_duel_accept = args.has("--duel-accept")      # headless DIV-0022: accept the single pending duel
 	_yield_duel = args.has("--yield-duel")        # headless DIV-0022: concede an active duel
 	_place_bounty = _arg_value("--place-bounty")  # headless DIV-0022: "name:amount" bounty placement
 	_leave_after = _arg_value("--leave-after")    # headless DIV-0022: travel out LATE (zone-leave duel-abort test)
+	var qa := _arg_value("--quit-after")
+	if qa != "":
+		_quit_after = float(qa)
+	_space_cargo_test_c1 = args.has("--space-cargo-test-c1")
+
+	if _econ_test_c1:
+		_account = "crafter_1"
+	if _econ_test_c2:
+		_account = "buyer_1"
+	if _space_cargo_test_c1:
+		_account = "pilot_1"
 
 func _resolve_host() -> String:
 	var host := _arg_value("--connect")
@@ -298,6 +494,30 @@ func _process(delta: float) -> void:
 	_send_local_input()
 	_update_camera()
 	_update_combat_target(delta)
+
+	# Sweep for target under the crosshair in first person
+	var target_info := _find_target_under_crosshair()
+	if target_info != _highlighted_target:
+		_highlighted_target = target_info
+		if not _highlighted_target.is_empty():
+			if _target_label != null:
+				_target_label.text = "Target: %s" % _highlighted_target["name"]
+		else:
+			if _target_label != null:
+				_target_label.text = "Target: None"
+
+	if _econ_test_c1 and Net.connected and not _econ_c1_started:
+		_econ_c1_started = true
+		_run_econ_c1()
+	
+	if _econ_test_c2 and Net.connected and not _econ_c2_started:
+		_econ_c2_started = true
+		_run_econ_c2()
+
+	if _space_cargo_test_c1 and Net.connected and not _space_cargo_c1_started:
+		_space_cargo_c1_started = true
+		_run_space_cargo_c1()
+
 	if _yield_on_down and _is_downed and Net.connected:
 		Net.send_yield()  # headless DIV-0027: auto-yield when downed (two-process test hook; server is idempotent + rate-limited)
 	# DIV-0022 headless PvP-consent: challenge / accept / place-bounty / yield-duel, staggered so both
@@ -330,6 +550,12 @@ func _process(delta: float) -> void:
 			_leave_after_sent = true  # travel out AFTER the duel is active -> server aborts the active duel
 			Net.send_change_zone(_leave_after)
 			print("[duel] client leaving the zone to %s (zone-leave abort test)" % _leave_after)
+	if _quit_after > 0.0:
+		_quit_accum += delta
+		if _quit_accum >= _quit_after:
+			print("[test] --quit-after timeout reached, exiting.")
+			get_tree().quit(0)
+			
 	if (_autofire or _autodefend) and Net.connected:
 		_autofire_accum += delta
 		if _autofire_accum >= 0.4:
@@ -445,13 +671,27 @@ func _send_local_input() -> void:
 func _input(event: InputEvent) -> void:
 	if _is_server:
 		return
-	# While the shop overlay is open it owns the cursor: only B/Esc (close) act; everything
-	# else is swallowed here so it never fires/recaptures the mouse. The Buy/Sell Buttons still
-	# receive their clicks via the normal GUI pass (we don't mark the event handled).
+	# While a panel overlay is open it owns the cursor: only its key/Esc (close) act; everything
+	# else is swallowed here so it never fires/recaptures the mouse.
+	if _quest_open:
+		if event is InputEventKey and event.pressed and (event.keycode == KEY_J or event.keycode == KEY_ESCAPE):
+			_close_quest_panel()
+		return
 	if _shop_open:
 		if event is InputEventKey and event.pressed and (event.keycode == KEY_B or event.keycode == KEY_ESCAPE):
 			_close_shop()
 		return
+	if _crafting_open:
+		if event is InputEventKey and event.pressed and (event.keycode == KEY_O or event.keycode == KEY_ESCAPE):
+			_close_crafting_panel()
+		return
+	if _bazaar_open:
+		if event is InputEventKey and event.pressed and (event.keycode == KEY_L or event.keycode == KEY_ESCAPE):
+			_close_bazaar_panel()
+		return
+
+
+
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		_yaw -= event.relative.x * MOUSE_SENSITIVITY
 		_pitch = clampf(_pitch - event.relative.y * MOUSE_SENSITIVITY, -1.25, 0.8)
@@ -490,7 +730,20 @@ func _input(event: InputEvent) -> void:
 				_set_status("Traveling to %s…" % String(z.get("name", z.get("id", ""))))
 		elif event.keycode == KEY_B:
 			_toggle_shop()  # Wave F economy: open/close the shop overlay (server-priced stock)
+		elif event.keycode == KEY_J:
+			_toggle_quest_panel() # open/close quest journal bulletin board
+		elif event.keycode == KEY_U:
+			Net.send_survey()
+			_set_status("Scanning area for resources...")
+		elif event.keycode == KEY_I:
+			Net.send_harvest()
+			_set_status("Extracting resource deposit...")
+		elif event.keycode == KEY_O:
+			_toggle_crafting_panel()
+		elif event.keycode == KEY_L:
+			_toggle_bazaar_panel()
 		elif event.keycode == KEY_E:
+
 			_talk_to_nearest_npc()  # talk to the nearest named NPC (dialogue_model)
 		elif event.keycode == KEY_C:
 			_spend_cp = (_spend_cp + 1) % 6  # cycle 0..5 CP staged for the next shot (WEG: +1D each)
@@ -514,12 +767,39 @@ func _input(event: InputEvent) -> void:
 			_aim = mini(_aim + 1, 3)
 			_announce_next_shot()
 		elif event.button_index == MOUSE_BUTTON_LEFT:
-			Net.send_fire_intent({"aim": _aim, "cover": _cover, "cp": _spend_cp, "fp": _use_fp, "dodge": _dodge})
+			var target_peer := 0
+			var target_npc := ""
+			if _highlighted_target.has("peer_id"):
+				target_peer = _highlighted_target["peer_id"]
+			elif _highlighted_target.has("npc_id"):
+				target_npc = _highlighted_target["npc_id"]
+			
+			Net.send_fire_intent({
+				"aim": _aim,
+				"cover": _cover,
+				"cp": _spend_cp,
+				"fp": _use_fp,
+				"dodge": _dodge,
+				"target_peer": target_peer,
+				"target_npc": target_npc
+			})
+			
+			# Trigger instant client-side muzzle flash and laser tracer
+			_spawn_muzzle_flash()
+			if _camera != null:
+				var basis := _camera.global_transform.basis
+				var muzzle_pos := _camera.global_position - basis.z * 0.9 - basis.y * 0.25 + basis.x * 0.2
+				var target_pos := _camera.global_position - basis.z * 35.0
+				if _highlighted_target.has("pos"):
+					target_pos = _highlighted_target["pos"]
+				_spawn_laser_tracer(muzzle_pos, target_pos)
+			
 			_aim = 0
 			_spend_cp = 0
 			_use_fp = false
 			_cover = 0
 			_dodge = false
+
 
 func _update_camera() -> void:
 	if _camera == null or _local_id == 0:
@@ -564,7 +844,11 @@ func _on_client_failed() -> void:
 	_connect_attempts += 1
 	if _connect_attempts <= 5:
 		_set_status("Connect failed; retry %d/5..." % _connect_attempts)
-		Net.start_client(_resolve_host())
+		var port_arg := _arg_value("--port")
+		var port := int(port_arg) if port_arg != "" else 24555
+		var err := Net.start_client(_resolve_host(), port)
+		if err != OK:
+			print("Failed to start client")
 	else:
 		_set_status("Could not reach server.")
 
@@ -819,129 +1103,165 @@ func _build_camera() -> void:
 	_camera.fov = 74
 	_camera.current = true
 	add_child(_camera)  # must be in the tree BEFORE global_position (else !is_inside_tree() spam)
-	_camera.global_position = Vector3(-20, 1.75, -6)
+	_camera.global_position = Vector3(-20, 1.75, -4.0)
 
 func _build_hud() -> void:
-	var layer := CanvasLayer.new()
-	layer.name = "HUD"
-	add_child(layer)
-	_status = Label.new()
-	_status.position = Vector2(18, 16)
-	_status.text = "Connecting..."
-	_status.add_theme_font_size_override("font_size", 17)
-	_status.modulate = Color(0.09, 0.08, 0.06)
-	layer.add_child(_status)
-
-	var controls := Label.new()
-	controls.position = Vector2(18, 40)
-	controls.text = "WASD move · mouse look · RMB aim · C cycle CP · F Force Point · LMB fire · H First Aid · E talk · T travel · B shop · V sheet · Enter chat · Esc release"
-	controls.add_theme_font_size_override("font_size", 14)
-	controls.modulate = Color(0.09, 0.08, 0.06)
-	layer.add_child(controls)
-
-	_combat_log = Label.new()
-	_combat_log.position = Vector2(18, 70)
-	_combat_log.size = Vector2(900, 220)
-	_combat_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_combat_log.text = "Combat log:"
-	_combat_log.add_theme_font_size_override("font_size", 14)
-	_combat_log.modulate = Color(0.12, 0.10, 0.07)
-	layer.add_child(_combat_log)
-
-	_zone_label = Label.new()
-	_zone_label.position = Vector2(760, 16)
-	_zone_label.text = "Zone: ..."
-	_zone_label.add_theme_font_size_override("font_size", 15)
-	_zone_label.modulate = Color(0.10, 0.09, 0.07)
-	layer.add_child(_zone_label)
-
+	_hud = UnifiedHUD.new()
+	_hud.name = "HUD"
+	add_child(_hud)
+	
+	# Map standard status and logs to the bottom log feed
+	_status = _hud._log_label
+	_combat_log = _hud._log_label
+	_zone_label = _hud._telemetry_label
+	
+	# Place client-side status badges inside the left panel
 	_wallet_label = Label.new()
-	_wallet_label.position = Vector2(760, 40)
-	_wallet_label.text = "CP: -   (K: raise Blaster)"
-	_wallet_label.add_theme_font_size_override("font_size", 14)
-	_wallet_label.modulate = Color(0.10, 0.09, 0.07)
-	layer.add_child(_wallet_label)
-
-	_credits_label = Label.new()  # Wave F economy: credit balance (B: shop)
-	_credits_label.position = Vector2(760, 140)
-	_credits_label.text = "Credits: -   (B: shop)"
-	_credits_label.add_theme_font_size_override("font_size", 14)
-	_credits_label.modulate = Color(0.16, 0.14, 0.05)
-	layer.add_child(_credits_label)
-
+	_wallet_label.add_theme_font_size_override("font_size", 12)
+	_hud._left_panel.add_child(_wallet_label)
+	_wallet_label.position = Vector2(12, 34)
+	
 	_condition_label = Label.new()
-	_condition_label.position = Vector2(760, 60)
-	_condition_label.text = "Condition: Healthy"
-	_condition_label.add_theme_font_size_override("font_size", 14)
-	_condition_label.modulate = _condition_color("healthy")
-	layer.add_child(_condition_label)
-
+	_condition_label.add_theme_font_size_override("font_size", 12)
+	_hud._left_panel.add_child(_condition_label)
+	_condition_label.position = Vector2(12, 54)
+	
 	_boost_label = Label.new()
-	_boost_label.position = Vector2(760, 100)
-	_boost_label.text = "Boost (C/F): - CP · - FP"
-	_boost_label.add_theme_font_size_override("font_size", 14)
-	_boost_label.modulate = Color(0.10, 0.10, 0.13)
-	layer.add_child(_boost_label)
+	_boost_label.add_theme_font_size_override("font_size", 12)
+	_hud._left_panel.add_child(_boost_label)
+	_boost_label.position = Vector2(12, 74)
+	
+	_ammo_label = Label.new()
+	_ammo_label.add_theme_font_size_override("font_size", 12)
+	_hud._left_panel.add_child(_ammo_label)
+	_ammo_label.position = Vector2(12, 94)
 
-	_ammo_label = Label.new()  # DIV-0029: equipped-weapon ammo (shots/capacity + carried packs); blank for melee/no-ammo
-	_ammo_label.position = Vector2(760, 160)
-	_ammo_label.text = ""
-	_ammo_label.add_theme_font_size_override("font_size", 14)
-	_ammo_label.modulate = _status_color("healthy")
-	layer.add_child(_ammo_label)
+	_credits_label = Label.new()
+	_credits_label.add_theme_font_size_override("font_size", 12)
+	_hud._left_panel.add_child(_credits_label)
+	_credits_label.position = Vector2(12, 114)
 
-	_target_label = Label.new()  # F47: persistent target status (the combat log only shows it on a hit)
-	_target_label.position = Vector2(760, 120)
-	_target_label.text = ""
-	_target_label.add_theme_font_size_override("font_size", 14)
-	_target_label.modulate = Color(0.16, 0.09, 0.08)
-	layer.add_child(_target_label)
+	_target_label = Label.new()
+	_target_label.add_theme_font_size_override("font_size", 12)
+	_hud._left_panel.add_child(_target_label)
+	_target_label.position = Vector2(12, 134)
 
 	_org_label = Label.new()
-	_org_label.position = Vector2(760, 80)
-	_org_label.text = ""
-	_org_label.add_theme_font_size_override("font_size", 14)
-	_org_label.modulate = Color(0.12, 0.10, 0.16)
-	layer.add_child(_org_label)
+	_org_label.add_theme_font_size_override("font_size", 12)
+	_hud._left_panel.add_child(_org_label)
+	_org_label.position = Vector2(12, 154)
+	
+	# Resize left panel to fit all network labels
+	_hud._left_panel.size = Vector2(250, 185)
 
+	# Hide default stats loop of UnifiedHUD since multiplayer tracks its own sheet
+	_hud.set_process(false)
+	if _hud._health_label != null:
+		_hud._health_label.visible = false
+	if _hud._force_points_label != null:
+		_hud._force_points_label.visible = false
+	if _hud._defense_label != null:
+		_hud._defense_label.visible = false
+
+	# Add a simple center reticule for combat targeting
+	var reticule := ColorRect.new()
+	reticule.color = Color(1, 1, 1, 0.5)
+	reticule.custom_minimum_size = Vector2(4, 4)
+	reticule.set_anchors_preset(Control.PRESET_CENTER)
+	_hud.add_child(reticule)
+
+	# Update HUD controls cheat sheet with the actual multiplayer keybinds
+	if _hud._help_label != null:
+		_hud._help_label.text = "Movement: WASD / Space\nLook: Mouse\nAim Blaster: RMB (+1D)\nFire Blaster: LMB\nInteract / Talk: E\n\n[V] Character Sheet\n[M] Space Map / Bridge\n[B] Open Shop\n[J] Quest Bulletin\n[U] Survey Area\n[I] Manual Harvest\n[O] Crafting Station\n[H] First Aid (nearest)\n[C] Spend CP (+1D/ea)\n[F] Toggle Force Point\n[X] Toggle Cover (1/4)\n[Z] Toggle Active Dodge\n[G] Defensive Full Dodge\n[T] Change Zone (travel)"
+		_hud._right_panel.size = Vector2(250, 310)
+
+
+
+
+	# Position Chat and news on the main container
 	_news_label = Label.new()
-	_news_label.position = Vector2(18, 300)
-	_news_label.size = Vector2(900, 40)
+	_news_label.position = Vector2(290, 70)
+	_news_label.size = Vector2(700, 36)
 	_news_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_news_label.text = ""
-	_news_label.add_theme_font_size_override("font_size", 14)
-	_news_label.modulate = Color(0.30, 0.16, 0.10)
-	layer.add_child(_news_label)
+	_news_label.add_theme_font_size_override("font_size", 13)
+	_news_label.modulate = Color(0.9, 0.8, 0.4)
+	_hud._root.add_child(_news_label)
 
 	_chat_log = Label.new()
-	_chat_log.position = Vector2(18, 350)
-	_chat_log.size = Vector2(900, 150)
+	_chat_log.position = Vector2(290, 114)
+	_chat_log.size = Vector2(700, 320)
 	_chat_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_chat_log.text = "Chat:"
-	_chat_log.add_theme_font_size_override("font_size", 14)
-	_chat_log.modulate = Color(0.09, 0.10, 0.15)
-	layer.add_child(_chat_log)
+	_chat_log.text = "Chat log idle."
+	_chat_log.add_theme_font_size_override("font_size", 13)
+	_chat_log.modulate = Color(0.8, 0.85, 0.9)
+	_hud._root.add_child(_chat_log)
 
-	_chat_input = LineEdit.new()  # F22: GUI chat entry (Enter opens, type, Enter sends, Esc cancels)
-	_chat_input.placeholder_text = "Enter: chat (/say /ooc /org /emote) or a command (/help lists them)"
-	_chat_input.position = Vector2(18, 510)
-	_chat_input.size = Vector2(560, 30)
-	_chat_input.add_theme_font_size_override("font_size", 15)
+	_chat_input = LineEdit.new()
+	_chat_input.placeholder_text = "Press Enter to chat (/say /ooc /org /emote) or /help..."
+	_chat_input.position = Vector2(290, 450)
+	_chat_input.size = Vector2(700, 34)
+	_chat_input.add_theme_font_size_override("font_size", 14)
 	_chat_input.text_submitted.connect(_on_chat_submitted)
-	layer.add_child(_chat_input)
+	_hud._root.add_child(_chat_input)
 
-	_sheet_panel = Label.new()  # F24: character sheet, toggled with V (hidden until then)
-	_sheet_panel.position = Vector2(18, 90)
-	_sheet_panel.text = "Character Sheet (press V)…"
-	_sheet_panel.add_theme_font_size_override("font_size", 14)
-	_sheet_panel.modulate = Color(0.07, 0.09, 0.12)
+	# Styled character sheet panel with background
+	_sheet_panel = ColorRect.new()
+	_sheet_panel.position = Vector2(1012, 320)
+	_sheet_panel.size = Vector2(250, 220)
+	_sheet_panel.color = Color(0.08, 0.09, 0.11, 0.85)
 	_sheet_panel.visible = false
-	layer.add_child(_sheet_panel)
+	_hud._root.add_child(_sheet_panel)
+	
+	var border := ReferenceRect.new()
+	border.set_anchors_preset(Control.PRESET_FULL_RECT)
+	border.border_color = Color(0.35, 0.38, 0.42, 0.5)
+	border.border_width = 1.0
+	border.editor_only = false
+	_sheet_panel.add_child(border)
+	
+	var sheet_label := Label.new()
+	sheet_label.name = "SheetLabel"
+	sheet_label.position = Vector2(12, 10)
+	sheet_label.size = Vector2(226, 200)
+	sheet_label.text = "Character Sheet Loading..."
+	sheet_label.add_theme_font_size_override("font_size", 12)
+	sheet_label.modulate = Color(0.85, 0.9, 0.85)
+	sheet_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_sheet_panel.add_child(sheet_label)
 
-	_build_shop_panel(layer)     # Wave F economy: real shop overlay (B), replaces the console dump
-	_build_toast(layer)          # transient credit/loot/buy/sell/force-awaken feedback
-	_build_death_overlay(layer)  # DIV-0006: full-screen "you were killed" card
-	_build_downed_panel(layer)   # DIV-0027: persistent amber "you are DOWN — press Y" panel
+
+	# Reticle HUD: a small, translucent neon-cyan crosshair in the center of the screen
+	var reticle := Control.new()
+	reticle.name = "Reticle"
+	reticle.anchors_preset = Control.PRESET_CENTER
+	_hud.add_child(reticle)
+
+	
+	# Horizontal line
+	var h_line := ColorRect.new()
+	h_line.size = Vector2(16, 2)
+	h_line.position = Vector2(-8, -1)
+	h_line.color = Color(0.18, 0.90, 0.96, 0.65) # neon cyan
+	reticle.add_child(h_line)
+	
+	# Vertical line
+	var v_line := ColorRect.new()
+	v_line.size = Vector2(2, 16)
+	v_line.position = Vector2(-1, -8)
+	v_line.color = Color(0.18, 0.90, 0.96, 0.65)
+	reticle.add_child(v_line)
+
+
+	_build_shop_panel(_hud)
+	_build_quest_panel(_hud)
+	_build_crafting_panel(_hud)
+	_build_bazaar_panel(_hud)
+	_build_toast(_hud)
+	_build_death_overlay(_hud)
+	_build_downed_panel(_hud)
+
+
 
 # Wave F economy: a real, clickable shop overlay (hidden until B). Populated from the
 # server-priced vendor_listed payload; Buy/Sell buttons call Net.send_buy/Net.send_sell.
@@ -978,7 +1298,643 @@ func _build_shop_panel(layer: CanvasLayer) -> void:
 	_shop_list.add_theme_constant_override("separation", 4)
 	scroll.add_child(_shop_list)
 
+func _build_quest_panel(layer: CanvasLayer) -> void:
+	_quest_panel = Panel.new()
+	_quest_panel.name = "QuestPanel"
+	_quest_panel.position = Vector2(360, 96)
+	_quest_panel.size = Vector2(600, 430)
+	_quest_panel.visible = false
+	layer.add_child(_quest_panel)
+
+	# Style panel background
+	var style_box := StyleBoxFlat.new()
+	style_box.bg_color = Color(0.08, 0.09, 0.11, 0.92)
+	style_box.border_width_left = 1
+	style_box.border_width_right = 1
+	style_box.border_width_top = 1
+	style_box.border_width_bottom = 1
+	style_box.border_color = Color(0.35, 0.38, 0.42, 0.6)
+	_quest_panel.add_theme_stylebox_override("panel", style_box)
+
+	var vbox := VBoxContainer.new()
+	vbox.position = Vector2(16, 12)
+	vbox.size = Vector2(568, 406)
+	vbox.add_theme_constant_override("separation", 6)
+	_quest_panel.add_child(vbox)
+
+	var header := Label.new()
+	header.text = "MISSION BULLETIN & JOURNAL"
+	header.add_theme_font_size_override("font_size", 16)
+	header.modulate = Color(0.18, 0.90, 0.96) # bright cyan
+	vbox.add_child(header)
+
+	var hint := Label.new()
+	hint.text = "Accept missions from the bulletin or claim completed rewards. J or Esc to close."
+	hint.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(hint)
+
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(568, 356)
+	vbox.add_child(scroll)
+
+	_quest_list = VBoxContainer.new()
+	_quest_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_quest_list.add_theme_constant_override("separation", 10)
+	scroll.add_child(_quest_list)
+
+func _toggle_quest_panel() -> void:
+	if _quest_open:
+		_close_quest_panel()
+	else:
+		_open_quest_panel()
+
+func _open_quest_panel() -> void:
+	if _shop_open:
+		_close_shop()
+	_quest_open = true
+	if _quest_panel != null:
+		_quest_panel.visible = true
+		_refresh_quest_panel()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_set_status("Journal open — click Accept/Claim · J or Esc to close.")
+
+func _close_quest_panel() -> void:
+	_quest_open = false
+	if _quest_panel != null:
+		_quest_panel.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+func _refresh_quest_panel() -> void:
+	if _quest_list == null:
+		return
+	
+	for child in _quest_list.get_children():
+		child.queue_free()
+		
+	var catalog := Net.quest_catalog
+	var player_quests := Net.last_quests
+	
+	if catalog.is_empty():
+		var label := Label.new()
+		label.text = "Bulletin Board empty. Loading missions..."
+		label.add_theme_font_size_override("font_size", 13)
+		_quest_list.add_child(label)
+		return
+		
+	for qid in catalog.keys():
+		var def: Dictionary = catalog[qid]
+		var qname := String(def.get("name", qid))
+		var qdesc := String(def.get("description", ""))
+		var reward_creds := int((def.get("reward", {}) as Dictionary).get("credits", 0))
+		var reward_cp := int((def.get("reward", {}) as Dictionary).get("cp", 0))
+		
+		var obj: Dictionary = def.get("objective", {})
+		var obj_kind := String(obj.get("kind", ""))
+		var obj_count := int(obj.get("count", 1))
+		var obj_detail := ""
+		match obj_kind:
+			"disable":
+				var target := String(obj.get("target_key", ""))
+				if target != "":
+					obj_detail = "Eliminate %d %s" % [obj_count, target.capitalize()]
+				else:
+					obj_detail = "Eliminate %d hostiles" % obj_count
+			"reach_zone":
+				obj_detail = "Reach security zone: %s" % String(obj.get("zone_id", ""))
+			"earn_credits":
+				obj_detail = "Accrue %d credits" % obj_count
+			_:
+				obj_detail = "Complete objective"
+				
+		var row := ColorRect.new()
+		row.custom_minimum_size = Vector2(568, 80)
+		row.color = Color(0.12, 0.14, 0.16, 0.6)
+		_quest_list.add_child(row)
+		
+		var title_label := Label.new()
+		title_label.text = qname
+		title_label.position = Vector2(10, 8)
+		title_label.add_theme_font_size_override("font_size", 14)
+		title_label.modulate = Color(0.9, 0.9, 0.8)
+		row.add_child(title_label)
+		
+		var desc_label := Label.new()
+		desc_label.text = "%s\nObjective: %s" % [qdesc, obj_detail]
+		desc_label.position = Vector2(10, 26)
+		desc_label.size = Vector2(400, 50)
+		desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc_label.add_theme_font_size_override("font_size", 11)
+		desc_label.modulate = Color(0.7, 0.7, 0.7)
+		row.add_child(desc_label)
+		
+		var reward_label := Label.new()
+		reward_label.text = "Reward: %d cr | %d CP" % [reward_creds, reward_cp]
+		reward_label.position = Vector2(420, 8)
+		reward_label.add_theme_font_size_override("font_size", 11)
+		reward_label.modulate = Color(0.48, 0.90, 0.55)
+		row.add_child(reward_label)
+		
+		var action_btn := Button.new()
+		action_btn.size = Vector2(120, 26)
+		action_btn.position = Vector2(420, 34)
+		action_btn.add_theme_font_size_override("font_size", 11)
+		row.add_child(action_btn)
+		
+		if not player_quests.has(qid):
+			action_btn.text = "Accept"
+			# We use a helper function to avoid lambda scope capture issues in connect
+			action_btn.pressed.connect(_on_accept_quest_btn.bind(qid, qname))
+		else:
+			var st: Dictionary = player_quests[qid]
+			var complete := bool(st.get("complete", false))
+			var claimed := bool(st.get("claimed", false))
+			var progress := int(st.get("progress", 0))
+			
+			if claimed:
+				action_btn.text = "Completed"
+				action_btn.disabled = true
+			elif complete:
+				action_btn.text = "Claim Reward"
+				action_btn.modulate = Color(0.4, 1.0, 0.4)
+				action_btn.pressed.connect(_on_claim_quest_btn.bind(qid, qname))
+			else:
+				action_btn.text = "Progress: %d/%d" % [progress, obj_count]
+				action_btn.disabled = true
+
+func _on_accept_quest_btn(qid: String, qname: String) -> void:
+	Net.send_accept_quest(qid)
+	_set_status("Accepted quest: %s" % qname)
+	_toast("Quest Accepted: %s" % qname, Color(0.18, 0.90, 0.96))
+	get_tree().create_timer(0.25).timeout.connect(_refresh_quest_panel)
+
+func _on_claim_quest_btn(qid: String, qname: String) -> void:
+	Net.send_claim_quest(qid)
+	_set_status("Claiming reward for quest: %s" % qname)
+	get_tree().create_timer(0.25).timeout.connect(_refresh_quest_panel)
+
+# --- Surveying and Crafting UI (SWG Playable Alpha Loop) ---
+
+func _build_crafting_panel(layer: CanvasLayer) -> void:
+	_crafting_panel = Panel.new()
+	_crafting_panel.name = "CraftingPanel"
+	_crafting_panel.position = Vector2(360, 96)
+	_crafting_panel.size = Vector2(600, 430)
+	_crafting_panel.visible = false
+	layer.add_child(_crafting_panel)
+
+	# Style panel background (glassmorphism/premium look matching quest/shop)
+	var style_box := StyleBoxFlat.new()
+	style_box.bg_color = Color(0.09, 0.08, 0.12, 0.94)
+	style_box.border_width_left = 1
+	style_box.border_width_right = 1
+	style_box.border_width_top = 1
+	style_box.border_width_bottom = 1
+	style_box.border_color = Color(0.40, 0.35, 0.48, 0.6)
+	_crafting_panel.add_theme_stylebox_override("panel", style_box)
+
+	var vbox := VBoxContainer.new()
+	vbox.position = Vector2(16, 12)
+	vbox.size = Vector2(568, 406)
+	vbox.add_theme_constant_override("separation", 6)
+	_crafting_panel.add_child(vbox)
+
+	var header := Label.new()
+	header.text = "SWG CRAFTING WORKSTATION & SCHEMATICS"
+	header.add_theme_font_size_override("font_size", 16)
+	header.modulate = Color(0.70, 0.50, 0.95) # violet/purple tint
+	vbox.add_child(header)
+
+	var hint := Label.new()
+	hint.text = "Synthesize items from raw resources. O or Esc to close."
+	hint.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(hint)
+
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(568, 356)
+	vbox.add_child(scroll)
+
+	_crafting_list = VBoxContainer.new()
+	_crafting_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_crafting_list.add_theme_constant_override("separation", 10)
+	scroll.add_child(_crafting_list)
+
+func _toggle_crafting_panel() -> void:
+	if _crafting_open:
+		_close_crafting_panel()
+	else:
+		_open_crafting_panel()
+
+func _open_crafting_panel() -> void:
+	_close_all_overlays() # Close quest and shop panels to avoid UI overlap
+	_crafting_open = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if _crafting_panel != null:
+		_crafting_panel.visible = true
+		_refresh_crafting_panel()
+
+func _close_crafting_panel() -> void:
+	_crafting_open = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if _crafting_panel != null:
+		_crafting_panel.visible = false
+
+func _refresh_crafting_panel() -> void:
+	if _crafting_list == null:
+		return
+	for child in _crafting_list.get_children():
+		child.queue_free()
+
+	var sheet: Dictionary = {}
+	if Net.mode == Net.Mode.CLIENT and Net._local_sheet.has("sheet"):
+		sheet = Net._local_sheet.get("sheet", {})
+	
+	var resources: Dictionary = sheet.get("resources", {})
+	
+	var mat_header := Label.new()
+	mat_header.text = "YOUR STASH:"
+	mat_header.add_theme_font_size_override("font_size", 11)
+	mat_header.modulate = Color(0.6, 0.6, 0.7)
+	_crafting_list.add_child(mat_header)
+	
+	var ores = resources.get("copper_ore", {"count": 0, "quality": 0.0})
+	var sands = resources.get("silicate_sand", {"count": 0, "quality": 0.0})
+	var hides = resources.get("animal_hide", {"count": 0, "quality": 0.0})
+	
+	var stash_lbl := Label.new()
+	stash_lbl.text = "• Copper Ore: %d units (Q: %d%%)   • Silicate Sand: %d units (Q: %d%%)   • Animal Hides: %d units (Q: %d%%)" % [
+		int(ores.get("count", 0)), int(ores.get("quality", 0.0)),
+		int(sands.get("count", 0)), int(sands.get("quality", 0.0)),
+		int(hides.get("count", 0)), int(hides.get("quality", 0.0))
+	]
+	stash_lbl.add_theme_font_size_override("font_size", 12)
+	stash_lbl.modulate = Color(0.85, 0.85, 0.90)
+	_crafting_list.add_child(stash_lbl)
+	
+	var spacer := ColorRect.new()
+	spacer.custom_minimum_size = Vector2(568, 1)
+	spacer.color = Color(0.3, 0.3, 0.35, 0.5)
+	_crafting_list.add_child(spacer)
+
+	var schematics: Array = CraftingModel.get_schematics()
+	for sch_val in schematics:
+		if not sch_val is Dictionary:
+			continue
+		var sch := sch_val as Dictionary
+		var key: String = sch.get("key", "")
+		var item_name: String = sch.get("name", "")
+		var reqs: Dictionary = sch.get("requires", {})
+
+		
+		var panel := PanelContainer.new()
+		panel.custom_minimum_size = Vector2(550, 75)
+		
+		var box := StyleBoxFlat.new()
+		box.bg_color = Color(0.12, 0.11, 0.15, 0.85)
+		box.border_width_left = 1
+		box.border_color = Color(0.45, 0.40, 0.55, 0.4)
+		panel.add_theme_stylebox_override("panel", box)
+		
+		var hbox := HBoxContainer.new()
+		hbox.add_theme_constant_override("separation", 12)
+		panel.add_child(hbox)
+		
+		var info_vbox := VBoxContainer.new()
+		info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		info_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		hbox.add_child(info_vbox)
+		
+		var name_lbl := Label.new()
+		name_lbl.text = item_name
+		name_lbl.add_theme_font_size_override("font_size", 14)
+		name_lbl.modulate = Color(0.82, 0.72, 0.98)
+		info_vbox.add_child(name_lbl)
+		
+		var req_str := "Requires: "
+		var can_craft := true
+		for res_type in reqs.keys():
+			var req_cnt = int(reqs[res_type])
+			var cur_cnt = int(resources.get(res_type, {}).get("count", 0))
+			var color_tag = "[color=#66ff66]" if cur_cnt >= req_cnt else "[color=#ff6666]"
+			var r_name = res_type.replace("_", " ").capitalize()
+			req_str += "%s%d/%d %s[/color]  " % [color_tag, cur_cnt, req_cnt, r_name]
+			if cur_cnt < req_cnt:
+				can_craft = false
+				
+		var req_lbl := RichTextLabel.new()
+		req_lbl.bbcode_enabled = true
+		req_lbl.text = req_str
+		req_lbl.custom_minimum_size = Vector2(360, 24)
+		req_lbl.scroll_active = false
+		info_vbox.add_child(req_lbl)
+		
+		var btn_container := VBoxContainer.new()
+		btn_container.alignment = BoxContainer.ALIGNMENT_CENTER
+		hbox.add_child(btn_container)
+		
+		var craft_btn := Button.new()
+		craft_btn.text = "Craft Schematic"
+		craft_btn.disabled = not can_craft
+		craft_btn.custom_minimum_size = Vector2(130, 32)
+		craft_btn.pressed.connect(_on_craft_btn.bind(key))
+		btn_container.add_child(craft_btn)
+		
+		_crafting_list.add_child(panel)
+
+func _on_craft_btn(item_type: String) -> void:
+	Net.send_craft(item_type)
+	_set_status("Synthesizing: %s..." % item_type.capitalize())
+
+func _build_bazaar_panel(layer: CanvasLayer) -> void:
+	_bazaar_panel = Panel.new()
+	_bazaar_panel.name = "BazaarPanel"
+	_bazaar_panel.position = Vector2(360, 96)
+	_bazaar_panel.size = Vector2(600, 430)
+	_bazaar_panel.visible = false
+	layer.add_child(_bazaar_panel)
+
+	var style_box := StyleBoxFlat.new()
+	style_box.bg_color = Color(0.08, 0.10, 0.12, 0.94)
+	style_box.border_width_left = 1
+	style_box.border_width_right = 1
+	style_box.border_width_top = 1
+	style_box.border_width_bottom = 1
+	style_box.border_color = Color(0.18, 0.65, 0.70, 0.6) # teal border
+	_bazaar_panel.add_theme_stylebox_override("panel", style_box)
+
+	var vbox := VBoxContainer.new()
+	vbox.position = Vector2(16, 12)
+	vbox.size = Vector2(568, 406)
+	vbox.add_theme_constant_override("separation", 6)
+	_bazaar_panel.add_child(vbox)
+
+	var header := Label.new()
+	header.text = "PLAYER BAZAAR MARKETPLACE"
+	header.add_theme_font_size_override("font_size", 16)
+	header.modulate = Color(0.18, 0.90, 0.96) # bright cyan
+	vbox.add_child(header)
+
+	var hint := Label.new()
+	hint.text = "List your crafted goods or purchase items. L or Esc to close."
+	hint.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(hint)
+
+	var tabs := TabContainer.new()
+	tabs.custom_minimum_size = Vector2(568, 356)
+	vbox.add_child(tabs)
+
+	# Tab 1: Browse Market
+	var browse_vbox := VBoxContainer.new()
+	browse_vbox.name = "Browse Market"
+	tabs.add_child(browse_vbox)
+
+	var browse_scroll := ScrollContainer.new()
+	browse_scroll.custom_minimum_size = Vector2(550, 310)
+	browse_vbox.add_child(browse_scroll)
+
+	_bazaar_list = VBoxContainer.new()
+	_bazaar_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_bazaar_list.add_theme_constant_override("separation", 8)
+	browse_scroll.add_child(_bazaar_list)
+
+	# Tab 2: Sell Items
+	var sell_vbox := VBoxContainer.new()
+	sell_vbox.name = "List Items"
+	tabs.add_child(sell_vbox)
+
+	var sell_scroll := ScrollContainer.new()
+	sell_scroll.custom_minimum_size = Vector2(550, 310)
+	sell_vbox.add_child(sell_scroll)
+
+	_inventory_sell_list = VBoxContainer.new()
+	_inventory_sell_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_inventory_sell_list.add_theme_constant_override("separation", 8)
+	sell_scroll.add_child(_inventory_sell_list)
+
+func _toggle_bazaar_panel() -> void:
+	if _bazaar_open:
+		_close_bazaar_panel()
+	else:
+		_open_bazaar_panel()
+
+func _open_bazaar_panel() -> void:
+	_close_all_overlays()
+	_bazaar_open = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if _bazaar_panel != null:
+		_bazaar_panel.visible = true
+		Net.send_request_bazaar_listings()
+		_refresh_bazaar_panel()
+	_set_status("Bazaar open — click Buy or List Items.")
+
+func _close_bazaar_panel() -> void:
+	_bazaar_open = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if _bazaar_panel != null:
+		_bazaar_panel.visible = false
+
+func _refresh_bazaar_panel() -> void:
+	if _bazaar_list == null or _inventory_sell_list == null:
+		return
+	
+	# Clear lists
+	for child in _bazaar_list.get_children():
+		child.queue_free()
+	for child in _inventory_sell_list.get_children():
+		child.queue_free()
+
+	# Populate Active Listings
+	if _bazaar_listings.is_empty():
+		var label := Label.new()
+		label.text = "No listings currently active on the Bazaar."
+		label.add_theme_font_size_override("font_size", 12)
+		_bazaar_list.add_child(label)
+	else:
+		for listing_id in _bazaar_listings.keys():
+			var l: Dictionary = _bazaar_listings[listing_id]
+			var price := int(l.get("price", 0))
+			var item: Dictionary = l.get("item", {})
+			var name := String(item.get("display_name", item.get("name", "Unknown Item")))
+			var quality := float(item.get("quality", 50.0))
+			var cond := int(item.get("condition", 1))
+			var max_cond := int(item.get("max_condition", 1))
+			var seller := String(l.get("seller_id", "Unknown Seller"))
+
+			var row := ColorRect.new()
+			row.custom_minimum_size = Vector2(540, 60)
+			row.color = Color(0.12, 0.14, 0.16, 0.6)
+			_bazaar_list.add_child(row)
+
+			var info_lbl := Label.new()
+			info_lbl.text = "%s (Q: %.1f%%, Cond: %d/%d)\nSeller: %s · Price: %d credits" % [name, quality, cond, max_cond, seller, price]
+			info_lbl.position = Vector2(12, 10)
+			info_lbl.add_theme_font_size_override("font_size", 12)
+			info_lbl.modulate = Color(0.85, 0.95, 0.95)
+			row.add_child(info_lbl)
+
+			var buy_btn := Button.new()
+			buy_btn.text = "Buy Item"
+			buy_btn.size = Vector2(100, 26)
+			buy_btn.position = Vector2(430, 17)
+			buy_btn.add_theme_font_size_override("font_size", 11)
+			buy_btn.pressed.connect(_on_buy_bazaar_item.bind(listing_id))
+			row.add_child(buy_btn)
+
+	# Populate Player Inventory for selling
+	var sheet: Dictionary = Net.last_sheet
+
+	var inventory: Array = sheet.get("inventory", [])
+	var filtered_inv: Array = []
+	for val in inventory:
+		if val is Dictionary:
+			filtered_inv.append(val)
+
+	if filtered_inv.is_empty():
+		var label := Label.new()
+		label.text = "You have no items in your inventory that can be listed."
+		label.add_theme_font_size_override("font_size", 12)
+		_inventory_sell_list.add_child(label)
+	else:
+		for item in filtered_inv:
+			var item_id := String(item.get("instance_id", item.get("id", "")))
+			if item_id == "":
+				continue
+			var name := String(item.get("display_name", item.get("name", "Unknown Item")))
+			var quality := float(item.get("quality", 50.0))
+			var cond := int(item.get("condition", 1))
+			var max_cond := int(item.get("max_condition", 1))
+
+			var row := ColorRect.new()
+			row.custom_minimum_size = Vector2(540, 60)
+			row.color = Color(0.12, 0.14, 0.16, 0.6)
+			_inventory_sell_list.add_child(row)
+
+			var info_lbl := Label.new()
+			info_lbl.text = "%s (Q: %.1f%%, Cond: %d/%d)" % [name, quality, cond, max_cond]
+			info_lbl.position = Vector2(12, 20)
+			info_lbl.add_theme_font_size_override("font_size", 12)
+			info_lbl.modulate = Color(0.85, 0.95, 0.95)
+			row.add_child(info_lbl)
+
+			var price_edit := LineEdit.new()
+			price_edit.placeholder_text = "Price"
+			price_edit.size = Vector2(80, 26)
+			price_edit.position = Vector2(330, 17)
+			price_edit.add_theme_font_size_override("font_size", 11)
+			row.add_child(price_edit)
+
+			var list_btn := Button.new()
+			list_btn.text = "List (5% fee)"
+			list_btn.size = Vector2(100, 26)
+			list_btn.position = Vector2(430, 17)
+			list_btn.add_theme_font_size_override("font_size", 11)
+			list_btn.pressed.connect(_on_list_bazaar_item.bind(item_id, price_edit))
+			row.add_child(list_btn)
+
+func _on_buy_bazaar_item(listing_id: String) -> void:
+	Net.send_bazaar_buy(listing_id)
+	_set_status("Sending purchase request to server...")
+
+func _on_list_bazaar_item(item_id: String, price_edit: LineEdit) -> void:
+	var price_text := price_edit.text
+	var price := int(price_text)
+	if price <= 0:
+		_set_status("Invalid price: must be greater than 0.")
+		_toast("Invalid Price", Color(0.9, 0.3, 0.3))
+		return
+	Net.send_bazaar_list(item_id, price)
+	_set_status("Sending listing request to server...")
+
+func _on_bazaar_listings_updated(listings: Dictionary) -> void:
+	_bazaar_listings = listings
+	if _bazaar_open:
+		_refresh_bazaar_panel()
+
+func _on_bazaar_list_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		_set_status("Item listed on Bazaar successfully!")
+		_toast("Item Listed!", Color(0.18, 0.90, 0.55))
+		if _bazaar_open:
+			_refresh_bazaar_panel()
+	else:
+		var reason = String(result.get("reason", "failed"))
+		_set_status("Listing failed: " + reason)
+		_toast("Listing Failed", Color(0.9, 0.3, 0.3))
+
+func _on_bazaar_buy_replied(result: Dictionary) -> void:
+	if bool(result.get("ok", false)):
+		_set_status("Purchased item from Bazaar successfully!")
+		_toast("Item Purchased!", Color(0.18, 0.90, 0.55))
+		if _bazaar_open:
+			_refresh_bazaar_panel()
+	else:
+		var reason = String(result.get("reason", "failed"))
+		_set_status("Purchase failed: " + reason)
+		_toast("Purchase Failed", Color(0.9, 0.3, 0.3))
+
+func _close_all_overlays() -> void:
+	if _quest_open:
+		_close_quest_panel()
+	if _shop_open:
+		_close_shop()
+	if _crafting_open:
+		_close_crafting_panel()
+	if _bazaar_open:
+		_close_bazaar_panel()
+
+
+func _on_survey_replied(res: Dictionary) -> void:
+	if not res.get("ok", false):
+		_set_status("Survey scan returned no results.")
+		return
+	var r_name: String = res.get("name", "")
+	var dist = int(res.get("distance", 0))
+	var qual = int(res.get("quality", 0))
+	var msg := "Survey: Located %s (Quality: %d%%) at distance %dm. Press I to harvest!" % [
+		r_name, qual, dist
+	]
+	_log_message(msg)
+	_toast("Resource Spotted!", Color(0.70, 0.50, 0.95))
+
+func _on_harvest_replied(res: Dictionary) -> void:
+	if not res.get("ok", false):
+		_set_status("Harvest failed: " + String(res.get("reason", "unknown error")))
+		return
+	var r_type: String = res.get("type", "")
+	var count = int(res.get("count", 0))
+	var qual = int(res.get("quality", 0))
+	var r_name = r_type.replace("_", " ").capitalize()
+	var msg := "Harvest: Extracted %d units of %s (Quality: %d%%)!" % [count, r_name, qual]
+	_log_message(msg)
+	_toast("+%d %s" % [count, r_name], Color(0.40, 0.95, 0.40))
+	if _crafting_open:
+		_refresh_crafting_panel()
+
+func _on_craft_replied(res: Dictionary) -> void:
+	if not res.get("ok", false):
+		_set_status("Craft failed: " + String(res.get("reason", "unknown error")))
+		_toast("Synthesis Failed", Color(0.95, 0.40, 0.40))
+		return
+	var item_type: String = res.get("item_type", "")
+	var qual = int(res.get("quality", 0))
+	var msg := "Craft: Successfully synthesized %s (Item Quality: %d%%)!" % [
+		item_type.capitalize(), qual
+	]
+	_log_message(msg)
+	_toast("Synthesis Successful!", Color(0.70, 0.50, 0.95))
+	if _crafting_open:
+		_refresh_crafting_panel()
+
+func _log_message(msg: String) -> void:
+	print("[system] %s" % msg)
+	_combat_lines.append(msg)
+	while _combat_lines.size() > 8:
+		_combat_lines.pop_front()
+	if _combat_log != null:
+		_combat_log.text = "Combat log:\n" + "\n".join(_combat_lines)
+
 # Transient HUD toast (fades out): loot/credit gains, buy/sell, Force-awakening.
+
+
 func _build_toast(layer: CanvasLayer) -> void:
 	_toast_label = Label.new()
 	_toast_label.name = "Toast"
@@ -1335,6 +2291,8 @@ func _on_credits_updated(credits: int) -> void:
 # DIV-0020: the notice-board quest catalog arrived (login). Client stores it in Net.quest_catalog.
 func _on_quest_catalog(defs: Dictionary) -> void:
 	print("[quest] notice board: %d quests available" % defs.size())
+	if _quest_open:
+		_refresh_quest_panel()
 
 # DIV-0020: this client's authoritative quest progress changed. Toast complete/claim transitions and
 # print a greppable per-quest state line (the full quest panel is a follow-up presentation slice).
@@ -1350,6 +2308,9 @@ func _on_quests_updated(quests: Dictionary) -> void:
 		print("[quest] %s progress=%d complete=%s claimed=%s" % [
 			qid, int(st.get("progress", 0)), str(bool(st.get("complete", false))), str(bool(st.get("claimed", false)))])
 	_prev_quests = quests.duplicate(true)
+	if _quest_open:
+		_refresh_quest_panel()
+
 
 # Wave F economy: the vendor's priced stock. Logs it + shows a compact line on the status bar.
 func _on_vendor_listed(payload: Dictionary) -> void:
@@ -1744,7 +2705,9 @@ func _on_heal_replied(result: Dictionary) -> void:
 		print("[firstaid] heal failed (%s)" % String(result.get("reason", "")))
 		_set_status("First Aid failed (%s)." % String(result.get("reason", "")))
 
-func _on_sheet_updated(summary: Dictionary) -> void:
+func _on_sheet_updated(sheet: Dictionary) -> void:
+	_my_sheet = sheet
+	var summary: Dictionary = sheet.get("summary", {})
 	var attrs: Dictionary = summary.get("attributes", {})
 	var skills: Dictionary = summary.get("skills", {})
 	var lines: Array = ["— Character Sheet —"]
@@ -1761,12 +2724,17 @@ func _on_sheet_updated(summary: Dictionary) -> void:
 			sstr += "%s %s   " % [String(s), String(skills[s])]
 		lines.append("Skills: " + sstr.strip_edges())
 	lines.append("Gear: weapon=%s · armor=%s" % [String(summary.get("weapon", "-")), String(summary.get("armor", "-"))])
+	var inv: Array = summary.get("inventory", [])
+	if not inv.is_empty():
+		lines.append("Inventory: " + ", ".join(inv))
 	lines.append("Credits: %d" % int(summary.get("credits", 0)))
 	var w: Dictionary = summary.get("cp_wallet", {})
 	lines.append("CP wallet: %d gameplay · %d prestige" % [int(w.get("gameplay_cp", 0)), int(w.get("rp_cp", 0))])
 	lines.append("(press V to hide)")
 	if _sheet_panel != null:
-		_sheet_panel.text = "\n".join(lines)
+		var sheet_label: Label = _sheet_panel.get_node("SheetLabel") as Label
+		if sheet_label != null:
+			sheet_label.text = "\n".join(lines)
 	print("[sheet] species=%s dex=%s weapon=%s skills=%d cp=%d" % [
 		String(summary.get("species", "?")), String(attrs.get("dexterity", "?")),
 		String(summary.get("weapon", "-")), skills.size(),
@@ -2184,3 +3152,108 @@ func _show_death_card(title: String, subtitle: String) -> void:
 func _hide_death_overlay() -> void:
 	if _death_overlay != null:
 		_death_overlay.visible = false
+
+# Find dynamic player or NPC target under the center-screen crosshair/reticle
+func _find_target_under_crosshair() -> Dictionary:
+	if _camera == null:
+		return {}
+	var camera_pos := _camera.global_position
+	var look_dir := -_camera.global_transform.basis.z.normalized()
+	
+	var best_target: Dictionary = {}
+	var best_score := 0.85 # dot product of ~30 deg
+	var best_dist := 9999.0
+	
+	# Sweep player avatars
+	for peer_id in _avatars.keys():
+		if peer_id == _local_id:
+			continue
+		var entry = _avatars[peer_id]
+		var root = entry.get("root")
+		if not is_instance_valid(root):
+			continue
+		var pos = root.global_position + Vector3(0.0, 1.0, 0.0)
+		var dir_to_target = (pos - camera_pos).normalized()
+		var dist = camera_pos.distance_to(pos)
+		if dist > 35.0:
+			continue
+		var dot = look_dir.dot(dir_to_target)
+		if dot > best_score:
+			best_score = dot
+			best_target = {
+				"peer_id": peer_id,
+				"name": String(entry.get("name", "Player-%d" % peer_id)),
+				"pos": pos
+			}
+			best_dist = dist
+			
+	# Sweep named NPCs
+	for npc_id in _named_npc_nodes.keys():
+		var root = _named_npc_nodes[npc_id]["root"]
+		if not is_instance_valid(root):
+			continue
+		var pos = root.global_position + Vector3(0.0, 1.0, 0.0)
+		var dir_to_target = (pos - camera_pos).normalized()
+		var dist = camera_pos.distance_to(pos)
+		if dist > 35.0:
+			continue
+		var dot = look_dir.dot(dir_to_target)
+		if dot > best_score:
+			best_score = dot
+			best_target = {
+				"npc_id": npc_id,
+				"name": npc_id,
+				"pos": pos
+			}
+			best_dist = dist
+			
+	# Sweep ambient NPCs/monsters
+	for npc_id in _npc_nodes.keys():
+		var root = _npc_nodes[npc_id]["root"]
+		if not is_instance_valid(root):
+			continue
+		var pos = root.global_position + Vector3(0.0, 1.0, 0.0)
+		var dir_to_target = (pos - camera_pos).normalized()
+		var dist = camera_pos.distance_to(pos)
+		if dist > 35.0:
+			continue
+		var dot = look_dir.dot(dir_to_target)
+		if dot > best_score:
+			best_score = dot
+			best_target = {
+				"npc_id": npc_id,
+				"name": npc_id,
+				"pos": pos
+			}
+			best_dist = dist
+			
+	return best_target
+
+# Instantly draw a thin, glowing red cylinder representing a blaster laser beam tracer
+func _spawn_laser_tracer(from: Vector3, to: Vector3) -> void:
+	var tracer := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 0.015
+	cyl.bottom_radius = 0.015
+	cyl.height = from.distance_to(to)
+	tracer.mesh = cyl
+	
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(1.0, 0.15, 0.15, 0.9)
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.15, 0.15)
+	mat.emission_energy_multiplier = 4.5
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tracer.material_override = mat
+	
+	add_child(tracer)
+	
+	tracer.global_position = (from + to) / 2.0
+	tracer.look_at(to, Vector3.UP)
+	tracer.rotate_object_local(Vector3.RIGHT, PI/2.0)
+	
+	var tw := create_tween()
+	tw.tween_property(tracer.material_override, "albedo_color:a", 0.0, 0.12)
+	tw.tween_callback(tracer.queue_free)
+

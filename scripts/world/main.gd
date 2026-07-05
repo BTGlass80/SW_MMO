@@ -10,20 +10,32 @@ const BlasterRange = preload("res://scripts/world/blaster_range.gd")
 const InspectController = preload("res://scripts/world/inspect_controller.gd")
 const SpaceMapOverlay = preload("res://scripts/world/space_map_overlay.gd")
 const CharacterSheetOverlay = preload("res://scripts/world/character_sheet_overlay.gd")
+const DialogueOverlay = preload("res://scripts/world/dialogue_overlay.gd")
 const MovingTargetController = preload("res://scripts/world/moving_target_controller.gd")
 const WorldBuilder = preload("res://scripts/world/world_builder.gd")
+const MonsterBuilder = preload("res://scripts/world/monster_builder.gd")
+const NpcBuilder = preload("res://scripts/world/npc_builder.gd")
+const UnifiedHUD = preload("res://scripts/world/unified_hud.gd")
+const LandmarkBuilder = preload("res://scripts/world/landmark_builder.gd")
+
 
 var _builder: WorldBuilder
-var _hud_result_label: Label
-var _hud_status_label: Label
-var _hud_telemetry_label: Label
+var _hud: CanvasLayer
 var _ground_layer_visible_before_modal := {}
+
 
 func _ready() -> void:
 	_builder = WorldBuilder.new()
 	_builder.build_lighting(self)
 	_builder.build_ground(self)
 	_builder.build_settlement(self)
+	LandmarkBuilder.new().build_cantina_plaza(self, Vector3(65.0, 0.0, 0.0), 1138)
+	_spawn_solo_npcs()
+	_spawn_wildlife()
+	if OS.get_cmdline_args().has("--asset-gallery"):
+		_builder.build_asset_library(self)
+
+
 	_build_blaster_range()
 	_build_player()
 	_build_hud()
@@ -32,6 +44,8 @@ func _ready() -> void:
 	_build_inspection_controller()
 	_build_space_map_overlay()
 	_build_character_sheet_overlay()
+	_build_dialogue_overlay()
+
 
 func _process(_delta: float) -> void:
 	_sync_ground_gameplay_layers()
@@ -40,7 +54,7 @@ func _build_player() -> void:
 	var player := CharacterBody3D.new()
 	player.name = "Player"
 	player.set_script(PlayerController)
-	player.position = Vector3(-20, 1.2, -6)
+	player.position = Vector3(-20, 1.2, -4.0)
 
 	var head := Node3D.new()
 	head.name = "Head"
@@ -56,70 +70,28 @@ func _build_player() -> void:
 	add_child(player)
 
 func _build_hud() -> void:
-	var layer := CanvasLayer.new()
-	layer.name = "HUD"
-	layer.add_to_group("ground_gameplay_layer")
-	add_child(layer)
-
-	var label := Label.new()
-	label.position = Vector2(18, 16)
-	label.text = "Mos Eisley Spaceport Row, 20 BBY | Move: WASD / Mouse / Space | Ground: LMB fire / RMB aim / E inspect / H sheet / C cover / Q dodge / F full dodge / V force volley / Z pause remotes / P-O CP / G FP / R reset | Space: M map / N sensors / T pause traffic / B gunnery / U assist / Esc or M close"
-	label.add_theme_font_size_override("font_size", 17)
-	label.modulate = Color(0.09, 0.08, 0.06)
-	layer.add_child(label)
-
-	var roll := D6Rules.check(D6Rules.parse_pool("4D+2"), "moderate")
-	var margin := int(roll["margin"])
-	var margin_text := "+%d" % margin if margin >= 0 else "%d" % margin
-	var dice_label := Label.new()
-	dice_label.position = Vector2(18, 44)
-	dice_label.text = "Sample D6 check: %s vs %s => %d (%s)" % [roll["pool"], roll["difficulty"], roll["total"], margin_text]
-	dice_label.add_theme_font_size_override("font_size", 15)
-	dice_label.modulate = Color(0.09, 0.08, 0.06)
-	layer.add_child(dice_label)
-
-	_hud_result_label = Label.new()
-	_hud_result_label.position = Vector2(18, 98)
-	_hud_result_label.size = Vector2(980, 80)
-	_hud_result_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hud_result_label.text = "Combat log: LMB fires at a B1 remote."
-	_hud_result_label.add_theme_font_size_override("font_size", 15)
-	_hud_result_label.modulate = Color(0.09, 0.08, 0.06)
-	layer.add_child(_hud_result_label)
-
-	_hud_telemetry_label = Label.new()
-	_hud_telemetry_label.position = Vector2(18, 180)
-	_hud_telemetry_label.size = Vector2(980, 24)
-	_hud_telemetry_label.text = "Range state: loading."
-	_hud_telemetry_label.add_theme_font_size_override("font_size", 14)
-	_hud_telemetry_label.modulate = Color(0.09, 0.08, 0.06)
-	layer.add_child(_hud_telemetry_label)
-
-	_hud_status_label = Label.new()
-	_hud_status_label.position = Vector2(18, 72)
-	_hud_status_label.size = Vector2(980, 24)
-	_hud_status_label.text = "Status: Live remotes fire every few seconds. RMB aims up to +3D. C cover. Q/F dodge. P/O queue CP. G queues FP. R resets."
-	_hud_status_label.add_theme_font_size_override("font_size", 15)
-	_hud_status_label.modulate = Color(0.09, 0.08, 0.06)
-	layer.add_child(_hud_status_label)
-	_add_crosshair(layer)
-	_set_mouse_filter_recursive(layer)
+	_hud = UnifiedHUD.new()
+	_hud.name = "HUD"
+	_hud.add_to_group("ground_gameplay_layer")
+	add_child(_hud)
+	_add_crosshair(_hud)
 
 func _build_range_controller() -> void:
 	var controller := Node.new()
 	controller.name = "BlasterRangeController"
 	controller.set_script(BlasterRange)
-	controller.result_label = _hud_result_label
-	controller.status_label = _hud_status_label
-	controller.telemetry_label = _hud_telemetry_label
+	controller.result_label = _hud._log_label
+	controller.status_label = _hud._log_label
+	controller.telemetry_label = _hud._telemetry_label
 	add_child(controller)
 
 func _build_inspection_controller() -> void:
 	var controller := Node.new()
 	controller.name = "InspectController"
 	controller.set_script(InspectController)
-	controller.result_label = _hud_status_label
+	controller.result_label = _hud._log_label
 	add_child(controller)
+
 
 func _build_space_map_overlay() -> void:
 	var overlay := SpaceMapOverlay.new()
@@ -275,3 +247,319 @@ func _apply_behavior_metadata(body: Node3D, behavior: Dictionary) -> void:
 	body.set_meta("covering_fire_ticks", maxi(int(behavior.get("covering_fire_ticks", 0)), 0))
 	body.set_meta("covering_fire_cadence_ticks", maxi(int(behavior.get("covering_fire_cadence_ticks", 0)), 0))
 	body.set_meta("covering_fire_phase_ticks", int(behavior.get("covering_fire_phase_ticks", behavior.get("fire_phase_ticks", 0))))
+
+func _build_dialogue_overlay() -> void:
+	var overlay := DialogueOverlay.new()
+	overlay.name = "DialogueOverlay"
+	add_child(overlay)
+
+func _spawn_solo_npcs() -> void:
+	var npcs := [
+		{
+			"pos": Vector3(-3.0, 0.0, 9.5),
+			"npc_id": "ct2207_stamp",
+			"name": "CT-2207 \"Stamp\"",
+			"role": "Republic Customs Liaison",
+			"kind": "official",
+			"faction": "republic",
+			"desc": "A clone trooper customs officer processing cargo manifests.",
+			"dialogue": [
+				"Republic Checkpoint. Manifest please, citizen.",
+				"No flags. Welcome to Tatooine.",
+				"Inspections are random and rare. The Hutts run the rest of the planet."
+			]
+		},
+		{
+			"pos": Vector3(-7.0, 0.0, -20.0),
+			"npc_id": "lt_vesh_talon",
+			"name": "Lt. Vesh Talon",
+			"role": "Republic Traffic Officer",
+			"kind": "official",
+			"faction": "republic",
+			"desc": "A Republic Navy lieutenant logging spaceport landings.",
+			"dialogue": [
+				"Mos Eisley Spaceport Control. Lieutenant Talon. Authorized?",
+				"Two hundred movements a day. I log the manifests.",
+				"Six months in, six to go. Then back to a Venator."
+			]
+		},
+		{
+			"pos": Vector3(-20.0, 0.0, -8.0),
+			"npc_id": "venn_kator",
+			"name": "Venn Kator",
+			"role": "Starship Mechanic",
+			"kind": "mechanic",
+			"faction": "independent",
+			"desc": "An oil-stained Corellian starship engineer.",
+			"dialogue": [
+				"You need something fixed, or you just here to watch?",
+				"Corellian Engineering -- best in the galaxy.",
+				"Need weapon repairs or new parts? I have standard catalog weapons for trade."
+			]
+		},
+		{
+			"pos": Vector3(9.0, 0.0, -15.0),
+			"npc_id": "ruzz_tha",
+			"name": "Ruzz-tha",
+			"role": "Jawa Trade-Elder",
+			"kind": "vendor",
+			"faction": "independent",
+			"desc": "A Jawa merchant in a dark hood with glowing yellow eyes.",
+			"dialogue": [
+				"M'ni toba! Looking for quality salvage or custom parts?",
+				"I have scrap and gear directly from the sandcrawlers. Very reliable.",
+				"Need a blaster or a thermal detonator? Let's trade."
+			]
+		},
+		{
+			"pos": Vector3(3.0, 0.0, 7.8),
+			"npc_id": "greeshk",
+			"name": "Greeshk",
+			"role": "Hutt Cartel Guard",
+			"kind": "thug",
+			"faction": "hutt",
+			"desc": "A bulkily armored Weequay cartel enforcer.",
+			"dialogue": [
+				"Jabba's business is Jabba's business. Keep walking, outlander.",
+				"Draw a weapon in Jabba's streets and see what happens."
+			]
+		},
+		{
+			"pos": Vector3(36.0, 0.0, 38.0),
+			"npc_id": "djas_puhr",
+			"name": "Djas Puhr",
+			"role": "Abyssinian Bounty Hunter",
+			"kind": "hunter",
+			"faction": "bounty_hunters_guild",
+			"desc": "A green-skinned Abyssinian with a single glowing central red eye.",
+			"dialogue": [
+				"Looking for a bounty? Or are you the bounty?",
+				"The Guild has strict rules on Tatooine. Respect them."
+			]
+		},
+		{
+			"pos": Vector3(65.0, 0.0, 1.0),
+			"npc_id": "wuher",
+			"name": "Wuher",
+			"role": "Cantina Bartender",
+			"kind": "civilian",
+			"faction": "independent",
+			"desc": "A dour, sour-faced bartender wiping down the glasses behind the counter.",
+			"dialogue": [
+				"We don't serve their kind here! Your droids, they'll have to wait outside.",
+				"Keep it orderly, or you're out. I don't need no trouble with the local guards."
+			]
+		},
+		{
+			"pos": Vector3(65.0 + 3.2, 0.0, -1.6),
+			"npc_id": "chalmun",
+			"name": "Chalmun",
+			"role": "Cantina Proprietor",
+			"kind": "civilian",
+			"faction": "independent",
+			"desc": "The imposing, grey-furred Wookiee proprietor of the establishment.",
+			"dialogue": [
+				"*Low, rumbling Wookiee growl*",
+				"Welcome to the cantina, friend. Keep your blasters holstered.",
+				"Business is good, but the taxes Jabba demands get steeper every season."
+			]
+		},
+		{
+			"pos": Vector3(65.0 - 5.0, 0.0, -15.0),
+			"npc_id": "figrin_dan",
+			"name": "Figrin D'an",
+			"role": "Bith Holo-Musician",
+			"kind": "civilian",
+			"faction": "independent",
+			"desc": "The front-man of the Modal Nodes, checking his Kloo horn valves and muttering about booking rates.",
+			"dialogue": [
+				"Play it again? We play the same tune all night. The crowd expects it.",
+				"Bookings are slim in the Outer Rim. Still better than performing on a Republic cruiser."
+			]
+		},
+		{
+			"pos": Vector3(62.5, 0.0, -1.0),
+			"npc_id": "kabe",
+			"name": "Kabe",
+			"role": "Chadra-Fan Scavenger",
+			"kind": "civilian",
+			"faction": "independent",
+			"desc": "A small, bat-eared Chadra-Fan nursing a cup of spotchka, looking for open pockets or dropped credits.",
+			"dialogue": [
+				"You buying the next round? Spotchka is pricey today.",
+				"Watch your pockets, stranger. The cantina has quick fingers."
+			]
+		},
+		{
+			"pos": Vector3(72.0, 0.0, 7.0),
+			"npc_id": "momaw_nadon",
+			"name": "Momaw Nadon",
+			"role": "Ithorian exile and botanist",
+			"kind": "civilian",
+			"faction": "independent",
+			"desc": "A tall, slow-speaking Ithorian exile sitting quietly in the booth recesses, nursing his drink.",
+			"dialogue": [
+				"Peace be with you. The desert is quiet, but the town is loud.",
+				"I miss the forests of Ithor. Here, only the weeds survive."
+			]
+		},
+		{
+			"pos": Vector3(75.0, 0.0, -12.0),
+			"npc_id": "clone_trooper_patrol",
+			"name": "CT-5532",
+			"role": "Off-duty Clone Trooper",
+			"kind": "official",
+			"faction": "republic",
+			"desc": "An off-duty Republic Clone Trooper with his helmet under his arm, looking tired.",
+			"dialogue": [
+				"The Outer Rim sieges are taking a toll. Even clones need a drink.",
+				"Keep your nose clean, citizen. We're here to keep the peace, not start a war."
+			]
+		},
+		{
+			"pos": Vector3(55.0, 0.0, 15.0),
+			"npc_id": "separatist_spy",
+			"name": "Neimoidian Contact",
+			"role": "CIS Information Broker",
+			"kind": "broker",
+			"faction": "cis",
+			"desc": "A nervous Neimoidian constantly checking his datapad and glancing at the door.",
+			"dialogue": [
+				"I am waiting for someone. Leave me be.",
+				"The Trade Federation offers very generous rates... if you know the right people."
+			]
+		},
+		{
+			"pos": Vector3(80.0, 0.0, 8.0),
+			"npc_id": "booth_smuggler",
+			"name": "Ketsu",
+			"role": "Independent Smuggler",
+			"kind": "pilot",
+			"faction": "independent",
+			"desc": "A seasoned spacer in worn flight gear with a heavy blaster strapped to her thigh.",
+			"dialogue": [
+				"I can make the Kessel Run, but right now I'm just making time.",
+				"Republic or Separatist, their credits all spend the same."
+			]
+		},
+		{
+			"pos": Vector3(52.0, 0.0, -10.0),
+			"npc_id": "weequay_guard",
+			"name": "Ak-rev",
+			"role": "Hutt Cartel Guard",
+			"kind": "thug",
+			"faction": "hutt",
+			"desc": "A heavily scarred Weequay guard keeping a close eye on the Cantina's back rooms.",
+			"dialogue": [
+				"The Hutts run this world. The Republic just pretends to.",
+				"Step back. This area is for Cartel associates only."
+			]
+		},
+		{
+			"pos": Vector3(65.0, 0.0, 12.0),
+			"npc_id": "devaronian_trader",
+			"name": "Vilmarh",
+			"role": "Devaronian Hustler",
+			"kind": "vendor",
+			"faction": "independent",
+			"desc": "A red-skinned Devaronian with a wide grin and a coat full of questionable goods.",
+			"dialogue": [
+				"Looking for blaster parts? Maybe some death sticks? I have everything you need!",
+				"My prices are the best in Mos Eisley, guaranteed!"
+			]
+		},
+		{
+			"pos": Vector3(60.0, 0.0, 5.0),
+			"npc_id": "bith_patron",
+			"name": "Lirin",
+			"role": "Cantina Patron",
+			"kind": "civilian",
+			"faction": "independent",
+			"desc": "A Bith patron nodding along to the music, occasionally taking a sip of his drink.",
+			"dialogue": [
+				"Ah, the Modal Nodes are playing my favorite tune.",
+				"It's good to relax after a long rotation in the spaceport."
+			]
+		}
+
+
+
+	]
+
+
+	for npc in npcs:
+		_spawn_solo_npc(
+			npc["pos"], npc["npc_id"], npc["name"], npc["role"],
+			npc["kind"], npc["faction"], npc["desc"], npc["dialogue"]
+		)
+
+func _spawn_solo_npc(pos: Vector3, npc_id: String, display_name: String, role: String, kind: String, faction_axis: String, desc: String, dialogue: Array) -> void:
+	var npc_builder = NpcBuilder.new()
+	var visual: Node3D = npc_builder.build_npc(kind, display_name, faction_axis)
+	
+	var body := StaticBody3D.new()
+	body.name = "NPC_" + npc_id
+	body.position = pos
+	add_child(body)
+	
+	# Add visual
+	body.add_child(visual)
+	
+	# Add collision shape
+	var collision := CollisionShape3D.new()
+	var shape := CapsuleShape3D.new()
+	shape.radius = 0.4
+	shape.height = 1.8
+	collision.shape = shape
+	collision.position.y = 0.9
+	body.add_child(collision)
+	
+	# Add metadata for Dialogue Overlay
+	body.set_meta("npc_id", npc_id)
+	body.set_meta("title", display_name)
+	body.set_meta("npc_role", role)
+	body.set_meta("description", desc)
+	body.set_meta("dialogue_lines", dialogue)
+
+func _spawn_wildlife() -> void:
+	var beasts := [
+		{"pos": Vector3(-38.0, 0.0, -38.0), "name": "Wild Bantha", "profile": "bantha_target"},
+		{"pos": Vector3(38.0, 0.0, -38.0), "name": "Wild Dewback", "profile": "dewback_target"},
+		{"pos": Vector3(-38.0, 0.0, 38.0), "name": "Wild Womp Rat", "profile": "womp_rat_target"}
+	]
+	
+	for beast in beasts:
+		_spawn_wildlife_target(beast["pos"], beast["name"], beast["profile"])
+
+func _spawn_wildlife_target(pos: Vector3, target_name: String, target_profile: String) -> void:
+	var body := StaticBody3D.new()
+	body.name = target_name
+	body.position = pos
+	body.set_meta("combat_target", true)
+	body.set_meta("target_name", target_name)
+	body.set_meta("target_profile", target_profile)
+	body.set_meta("cover_level", 0)
+	body.set_meta("wound_severity", 0)
+	body.add_to_group("range_targets")
+	body.add_to_group("wildlife_targets")
+	add_child(body)
+
+	var collision := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	var size_val := Vector3(1.2, 1.2, 1.2)
+	if target_profile == "womp_rat_target":
+		size_val = Vector3(0.6, 0.6, 0.6)
+	elif target_profile == "bantha_target" or target_profile == "dewback_target":
+		size_val = Vector3(2.5, 2.5, 2.5)
+	shape.size = size_val
+	collision.shape = shape
+	collision.position.y = size_val.y * 0.5
+	body.add_child(collision)
+
+	# Build monster/beast visual
+	var mb = MonsterBuilder.new()
+	var visual = mb.build_target("monster", target_name)
+	body.add_child(visual)
+
+
+

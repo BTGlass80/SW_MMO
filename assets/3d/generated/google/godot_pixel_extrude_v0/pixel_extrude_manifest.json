@@ -1,0 +1,98 @@
+{
+	"captures": [
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/captures/pixel_blaster_per_pixel_cubes.png",
+			"description": "A 32x16 side-view pixel blaster extruded into one MeshInstance3D cube per non-transparent pixel. This tests the strictest version of Gemini's Option 3.",
+			"id": "pixel_blaster_per_pixel_cubes",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/review_scenes/pixel_blaster_per_pixel_cubes.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/captures/pixel_terminal_wall_module.png",
+			"description": "A 24x24 front-view service terminal pixel image extruded into a chunky wall module. This is the zero-credit alternative to a Meshy terminal prompt.",
+			"id": "pixel_terminal_wall_module",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/review_scenes/pixel_terminal_wall_module.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/captures/pixel_ship_vs_blockbench_isometric.png",
+			"description": "Left: kept Blockbench microfighter baseline. Right: a 32x32 top-down pixel ship extruded into true grid cubes for isometric tactical space.",
+			"id": "pixel_ship_vs_blockbench_isometric",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/review_scenes/pixel_ship_vs_blockbench_isometric.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/captures/pixel_extrude_three_family_sheet.png",
+			"description": "Contact sheet for the three tested pixel-to-cube families: weapon, wall prop, and tactical ship token.",
+			"id": "pixel_extrude_three_family_sheet",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/review_scenes/pixel_extrude_three_family_sheet.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/captures/pixel_blaster_pixel_vs_runmerge.png",
+			"description": "Same 32x16 blaster source image. Left: one MeshInstance3D cube per pixel. Right: contiguous same-color pixels merged into rectangular voxel bars.",
+			"id": "pixel_blaster_pixel_vs_runmerge",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/review_scenes/pixel_blaster_pixel_vs_runmerge.tscn"
+		},
+		{
+			"capture_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/captures/pixel_ship_pixel_vs_runmerge.png",
+			"description": "Same 32x32 top-down ship source image. Left: one cube per pixel. Right: same-color horizontal runs merged before extrusion.",
+			"id": "pixel_ship_pixel_vs_runmerge",
+			"scene_path": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/review_scenes/pixel_ship_pixel_vs_runmerge.tscn"
+		}
+	],
+	"generator": "docs/gpt/asset_factory/scripts/godot_pixel_extrude_proof.gd",
+	"source_images": {
+		"blaster": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/source_images/pixel_blaster_side_32x16.png",
+		"ship": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/source_images/pixel_patrol_ship_top_32x32.png",
+		"terminal": "res://docs/gpt/asset_factory/generated/godot_pixel_extrude_v0/source_images/pixel_service_terminal_front_24x24.png"
+	},
+	"stats": {
+		"family_blaster": {
+			"cubes": 146,
+			"mode": "front_extrude_meshinstance_per_pixel",
+			"pixels": 512
+		},
+		"family_ship": {
+			"cubes": 322,
+			"mode": "top_extrude_meshinstance_per_pixel",
+			"pixels": 1024
+		},
+		"family_terminal": {
+			"cubes": 332,
+			"mode": "front_extrude_meshinstance_per_pixel",
+			"pixels": 576
+		},
+		"pixel_blaster": {
+			"cubes": 146,
+			"mode": "front_extrude_meshinstance_per_pixel",
+			"pixels": 512
+		},
+		"pixel_blaster_per_pixel_ab": {
+			"cubes": 146,
+			"mode": "front_extrude_meshinstance_per_pixel",
+			"pixels": 512
+		},
+		"pixel_blaster_runmerge_ab": {
+			"cubes": 32,
+			"mode": "front_extrude_same_color_horizontal_runs",
+			"pixels": 512
+		},
+		"pixel_ship_per_pixel_ab": {
+			"cubes": 322,
+			"mode": "top_extrude_meshinstance_per_pixel",
+			"pixels": 1024
+		},
+		"pixel_ship_runmerge_ab": {
+			"cubes": 94,
+			"mode": "top_extrude_same_color_horizontal_runs",
+			"pixels": 1024
+		},
+		"pixel_ship_token": {
+			"cubes": 322,
+			"mode": "top_extrude_meshinstance_per_pixel",
+			"pixels": 1024
+		},
+		"pixel_terminal": {
+			"cubes": 332,
+			"mode": "front_extrude_meshinstance_per_pixel",
+			"pixels": 576
+		}
+	}
+}

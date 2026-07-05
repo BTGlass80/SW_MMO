@@ -1,0 +1,92 @@
+{
+  "item_templates": [
+    {
+      "key": "resource_stack",
+      "name": "Resource Stack",
+      "kind": "resource",
+      "stackable": true,
+      "base_mass": 1.0,
+      "base_volume": 1.0
+    },
+    {
+      "key": "consumable",
+      "name": "Consumable",
+      "kind": "consumable",
+      "stackable": true,
+      "base_mass": 0.5,
+      "base_volume": 0.5
+    },
+    {
+      "key": "power_pack",
+      "name": "Power Pack",
+      "kind": "ammo",
+      "stackable": true,
+      "base_mass": 0.2,
+      "base_volume": 0.2
+    },
+    {
+      "key": "weapon_service_kit",
+      "name": "Weapon Service Kit",
+      "kind": "weapon_repair",
+      "stackable": false,
+      "base_mass": 2.0,
+      "base_volume": 2.0
+    },
+    {
+      "key": "ship_repair_patch",
+      "name": "Ship Repair Patch",
+      "kind": "space_repair",
+      "stackable": true,
+      "base_mass": 10.0,
+      "base_volume": 15.0
+    },
+    {
+      "key": "intel_report",
+      "name": "Intel Report",
+      "kind": "intel",
+      "stackable": true,
+      "base_mass": 0.1,
+      "base_volume": 0.1
+    },
+    {
+      "key": "cargo_crate",
+      "name": "Cargo Crate",
+      "kind": "cargo",
+      "stackable": false,
+      "base_mass": 100.0,
+      "base_volume": 100.0
+    },
+    {
+      "key": "schematic",
+      "name": "Schematic Data",
+      "kind": "schematic",
+      "stackable": false,
+      "base_mass": 0.1,
+      "base_volume": 0.1
+    },
+    {
+      "key": "survey_tool",
+      "name": "Survey Tool",
+      "kind": "tool",
+      "stackable": false,
+      "base_mass": 3.0,
+      "base_volume": 2.0
+    },
+    {
+      "key": "stimpack",
+      "name": "Medical Stim",
+      "kind": "medical",
+      "stackable": true,
+      "base_mass": 0.5,
+      "base_volume": 0.5
+    },
+    {
+      "key": "medpac",
+      "name": "Medpac",
+      "kind": "medical",
+      "stackable": false,
+      "base_mass": 1.5,
+      "base_volume": 1.0
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+	"pack_id": "blockbench_cubecraft_v0",
+	"display_name": "Blockbench Cubecraft Excursion v0",
+	"source_spec": "docs/gpt/asset_factory/specs/blockbench_cubecraft_v0.json",
+	"generated_at": "2026-07-04T04:54:22.447Z",
+	"assets": [
+		{
+			"id": "cubecraft_clone_rifleman_01",
+			"display_name": "Cubecraft Clone Rifleman 01",
+			"category": "blockbench_character",
+			"gameplay_role": "low-element clone rifleman source model",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/blockbench/cubecraft_clone_rifleman_01.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/previews/cubecraft_clone_rifleman_01.png"
+		},
+		{
+			"id": "cubecraft_clone_heavy_01",
+			"display_name": "Cubecraft Clone Heavy 01",
+			"category": "blockbench_character",
+			"gameplay_role": "low-element clone heavy source model",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/blockbench/cubecraft_clone_heavy_01.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/previews/cubecraft_clone_heavy_01.png"
+		},
+		{
+			"id": "cubecraft_b1_droid_01",
+			"display_name": "Cubecraft B1 Droid 01",
+			"category": "blockbench_character",
+			"gameplay_role": "low-element skinny battle droid source model",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/blockbench/cubecraft_b1_droid_01.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/previews/cubecraft_b1_droid_01.png"
+		},
+		{
+			"id": "cubecraft_outpost_gate_tile_01",
+			"display_name": "Cubecraft Outpost Gate Tile 01",
+			"category": "blockbench_environment",
+			"gameplay_role": "editable Blockbench desert gate kit tile",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/blockbench/cubecraft_outpost_gate_tile_01.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/previews/cubecraft_outpost_gate_tile_01.png"
+		},
+		{
+			"id": "cubecraft_space_tableau_01",
+			"display_name": "Cubecraft Space Tableau 01",
+			"category": "blockbench_space",
+			"gameplay_role": "Blockbench-authored 2.5D tactical space tableau source model",
+			"blockbench_path": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/blockbench/cubecraft_space_tableau_01.bbmodel",
+			"preview_path": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/previews/cubecraft_space_tableau_01.png"
+		}
+	],
+	"contact_sheet": "docs/gpt/asset_factory/generated/blockbench_cubecraft_v0/previews/contact_sheet.png"
+}

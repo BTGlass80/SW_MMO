@@ -161,6 +161,106 @@
         {"id": "shadow_pilot", "name": "Shadow Pilot", "station": "pilot", "soak": "3D"},
         {"id": "shadow_gunner", "name": "Shadow Gunner", "station": "gunner", "damage_group": "gunners", "soak": "3D"}
       ]
+    },
+    {
+      "id": "asteroid_mining_alpha",
+      "name": "Rich Asteroid Node [Copper Ore]",
+      "kind": "asteroid",
+      "position": {"x": -60, "y": -45},
+      "heading_degrees": 45,
+      "status": "scan returns rich copper ore veins",
+      "scale": "starfighter",
+      "transponder": {
+        "declared_name": "Ore Rich Debris-Alpha",
+        "registry": "MINE-AST-01",
+        "affiliation": "unclaimed mining event",
+        "threat": "neutral",
+        "profile": "Jagged asteroid ore body suitable for beam mining"
+      },
+      "comms": {
+        "success_response": "Asteroid returns a steady transponder bounce of high density metallic density.",
+        "failure_response": "No response from non-comms ore body."
+      }
+    },
+    {
+      "id": "asteroid_mining_beta",
+      "name": "Dense Asteroid Node [Iron Ore]",
+      "kind": "asteroid",
+      "position": {"x": 80, "y": -90},
+      "heading_degrees": 120,
+      "status": "dense scanner spike",
+      "scale": "starfighter",
+      "transponder": {
+        "declared_name": "Ore Rich Debris-Beta",
+        "registry": "MINE-AST-02",
+        "affiliation": "unclaimed mining event",
+        "threat": "neutral",
+        "profile": "Medium size dense iron asteroid node"
+      },
+      "comms": {
+        "success_response": "Asteroid scans indicate deep subterranean iron deposits.",
+        "failure_response": "No response from inert rock."
+      }
+    },
+    {
+      "id": "corellia_orbit_beacon",
+      "name": "Corellia Orbit Beacon",
+      "kind": "landing_beacon",
+      "position": {"x": -250, "y": 150},
+      "heading_degrees": 0,
+      "status": "corellian trade spine gateway",
+      "scale": "battlestation",
+      "transponder": {
+        "declared_name": "Corellia Orbit Beacon",
+        "registry": "COR-ORB-01",
+        "affiliation": "Corellian Security Force",
+        "threat": "friendly",
+        "profile": "Hyperlane navigation beacon for Corellian Trade Spine"
+      },
+      "comms": {
+        "success_response": "Corellia port control confirms active flight corridors and CEC yard clearances.",
+        "failure_response": "Corellia orbit beacon signals automated queue standby."
+      }
+    },
+    {
+      "id": "nar_shaddaa_orbit_beacon",
+      "name": "Nar Shaddaa Orbit Beacon",
+      "kind": "landing_beacon",
+      "position": {"x": 280, "y": -140},
+      "heading_degrees": 180,
+      "status": "smugglers moon approach",
+      "scale": "battlestation",
+      "transponder": {
+        "declared_name": "Nar Shaddaa Orbit Beacon",
+        "registry": "NS-ORB-02",
+        "affiliation": "Hutt Cartel",
+        "threat": "uncertain",
+        "profile": "Hyperspace approach beacon for Evocar Sector"
+      },
+      "comms": {
+        "success_response": "Nar Shaddaa traffic control signals landing platform availability (landing fee 50cr).",
+        "failure_response": "Hutt transit beacon reports channel congested."
+      }
+    },
+    {
+      "id": "kessel_orbit_beacon",
+      "name": "Kessel Orbit Beacon [HAZARD]",
+      "kind": "landing_beacon",
+      "position": {"x": 10, "y": 200},
+      "heading_degrees": 90,
+      "status": "maw cluster approach",
+      "scale": "battlestation",
+      "transponder": {
+        "declared_name": "Kessel Orbit Beacon",
+        "registry": "KES-ORB-03",
+        "affiliation": "Kessel Royal Administration",
+        "threat": "neutral",
+        "profile": "Dangerous approach beacon near the Maw Black Hole Cluster"
+      },
+      "comms": {
+        "success_response": "Kessel operations warns you to stay in marked corridors to avoid black hole gravity shears.",
+        "failure_response": "Inertial beacon repeats gravity warning loop."
+      }
     }
   ],
   "player_ship": {
