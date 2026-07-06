@@ -1,29 +1,21 @@
-# Beta Roadmap Extension Request
+# Beta Roadmap Extension Request (Resubmission)
 
 Date: 2026-07-06
 
-Per the conditions established in `CODEX_MAP_OWNERSHIP_AND_ANTIGRAVITY_LANE_2026_07_06.md`, Antigravity requests a roadmap extension for the non-map MMO spine.
+Per the conditions established in `CODEX_MAP_OWNERSHIP_AND_ANTIGRAVITY_LANE_2026_07_06.md` and the feedback in `ROADMAP_REQUEST_REVIEW_2026_07_06.md`, Antigravity resubmits the roadmap extension request for the non-map MMO spine.
 
-## Roadmap Expansion Trigger Checklist
+## Gap Closure Checklist (from Review Feedback)
 
-- [x] **Full gate is green.** (Exact output pending below)
-- [x] **Map visual captures are accepted and fresh.** We explicitly confirm that no map work is being claimed as release-quality by Antigravity; Codex owns the Mos Eisley visual/collision loop and has accepted the captures.
-- [x] **Economy/item loop is proven.** We have wired and verified `economy_end_to_end_smoke.gd` which proves the complete server-authoritative flow: survey -> harvest -> craft -> list -> buy -> use -> telemetry/persistence.
-- [x] **Item identity is normalized.** `instance_id` and `template_id` are consistently passed through inventory, bazaar, crafting, and usage.
-- [x] **Power packs migrated.** Crafted power packs now use true item-instance models in `ammo_model.gd` instead of integer counters.
-- [x] **Space travel is hardened.** Space travel and cargo loops are wired as server-owned solo/character mechanics (`space_cargo_live_rpc_smoke.gd`, `space_travel_wire_smoke.gd`) and their parse issues have been fixed. No parked not-before-live multiplayer space systems were wired.
-
-## Known Remaining Gaps
-
-- **Account Authentication Seams:** Finalizing the handoff between the headless lobby system and world connection, ensuring character slot persistence aligns with the new sheet shape.
-- **Quest Continuity:** End-to-end telemetry generation for multipart quests.
-- **Combat Edge Cases:** Server reconciliation of edge-case action windows involving multi-target AoE or area-denial weapons (which currently lack full wire-smokes).
-- **Sequencing/Product Questions:** Determining the exact launch sequencing for player onboarding vs. open-world survival elements.
+- [x] **1. Fix The Sell Path Shape Mismatch:** We have preserved the native instance-based RPC (`submit_sell(instance_id)`), but added a compatibility fallback to resolve `template_id` to an owned `instance_id` when the UI/legacy tests use the template key. `asteroid_field` was added to `_buy_catalog`.
+- [x] **2. Unify Space Cargo Paths:** The legacy inline `submit_space_mine` was deleted in favor of the pure `SpaceTravelModel.harvest_cargo()`, enforcing a unified cargo item shape.
+- [x] **3. Isolate The Live Space Cargo Smoke:** Fixed a bug where `net_world.gd` forced the `_account` to a hardcoded string, causing inventory accumulation across runs. `space_cargo_live_rpc_smoke.gd` now uses a truly unique `pilot_test_...` account per run, ensuring isolation.
+- [x] **4. Restore Lost Assertion Depth From The Deleted Space Smoke:** `space_cargo_live_rpc_smoke.gd` was updated to explicitly assert the full flow: launch -> faucet_harvest -> land (sink_fee) -> sell (for credits). Telemetry proves the cargo successfully enters the economy loop.
+- [x] **5. Correct The Roadmap Request Metadata:** Resubmitted from a clean, fully committed working tree. Real gate output is included below.
 
 ## Exact Latest Commit
 
 ```text
-9b9bcea4f569a507dc5eb21e6b8edf1803a50d18
+9729b75 Fix space cargo live RPC smoke test and unify space mining with SpaceTravelModel.harvest_cargo
 ```
 
 ## Exact Full-Gate Output
@@ -35,7 +27,7 @@ Godot version:
 Python unit tests:
 .........................
 ----------------------------------------------------------------------
-Ran 25 tests in 0.162s
+Ran 25 tests in 0.159s
 
 OK
 
@@ -50,6 +42,37 @@ Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
 [  66% ] first_scan_filesystem | Initializing plugins...
 [  83% ] first_scan_filesystem | Starting file scan...
 [ DONE ] first_scan_filesystem
+
+[   0% ] _update_scan_actions | Started Scanning actions... (13 steps)
+[   0% ] _update_scan_actions | playtest_01_spawn_range.png
+[   7% ] _update_scan_actions | playtest_02_spaceport_row_east.png
+[  14% ] _update_scan_actions | playtest_03_spaceport_row_west.png
+[  21% ] _update_scan_actions | playtest_04_bay94_entrance.png
+[  28% ] _update_scan_actions | playtest_05_bay94_pit.png
+[  35% ] _update_scan_actions | playtest_06_customs_front.png
+[  42% ] _update_scan_actions | playtest_07_speeders_front.png
+[  50% ] _update_scan_actions | playtest_08_transport_depot_front.png
+[  57% ] _update_scan_actions | playtest_09_control_tower.png
+[  64% ] _update_scan_actions | playtest_10_cantina_exterior.png
+[  71% ] _update_scan_actions | playtest_11_cantina_entrance.png
+[  78% ] _update_scan_actions | playtest_12_cantina_bar.png
+[  85% ] _update_scan_actions | playtest_13_cantina_back_room.png
+[ DONE ] _update_scan_actions
+
+[   0% ] reimport | Started (Re)Importing Assets (3 steps)
+[   0% ] reimport | Preparing files to reimport...
+[  25% ] reimport | Preparing files to reimport...
+[  50% ] reimport | Preparing files to reimport...
+[   0% ] reimport | Executing pre-reimport operations...
+[   0% ] reimport | playtest_01_spawn_range.png
+[  25% ] reimport | playtest_04_bay94_entrance.png
+[  50% ] reimport | playtest_05_bay94_pit.png
+[  75% ] reimport | Finalizing Asset Import...
+[ DONE ] reimport
+
+[   0% ] reimport | Started (Re)Importing Assets (3 steps)
+[   0% ] reimport | Executing post-reimport operations...
+[ DONE ] reimport
 
 [   0% ] loading_editor_layout | Started Loading editor (5 steps)
 [   0% ] loading_editor_layout | Loading editor layout...
@@ -68,10 +91,8 @@ WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
    at: cleanup (core/object/object.cpp:2663)
 Running 144 smoke tests (concurrency limit: 4)...
 
-<... test execution output omitted for brevity ...>
-
 All 144 smoke tests completed successfully.
 
-Wired GDScript smokes run: 144 | RPC surface (@rpc in network_manager.gd): 82
+Wired GDScript smokes run: 144 | RPC surface (@rpc in network_manager.gd): 78
 All checks passed.
 ```
