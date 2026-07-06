@@ -54,14 +54,18 @@ func _run() -> void:
 	# Hide gameplay UI completely
 	var _remove_canvas_layers = func(node: Node, _func) -> void:
 		if node is CanvasLayer:
+			node.visible = false
 			node.queue_free()
 			return
 		if node is Control:
+			node.visible = false
 			node.queue_free()
 			return
 		if node.has_method("_update_range_state_badges"):
 			node.set_process(false)
-		if node is Label3D and node.name == "RangeStateBadge":
+			node.set_physics_process(false)
+		if node is Label3D:
+			node.visible = false
 			node.queue_free()
 			return
 		for child in node.get_children():
