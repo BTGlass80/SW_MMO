@@ -104,7 +104,7 @@ def main():
     
     godot_cmd = os.environ.get("GODOT_CONSOLE", "godot-console")
     
-    max_workers = min(16, (os.cpu_count() or 1) + 4)
+    max_workers = 4
     print(f"Running {len(test_files)} smoke tests (concurrency limit: {max_workers})...", flush=True)
     
     failures = []

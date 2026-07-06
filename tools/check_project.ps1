@@ -47,8 +47,11 @@ Invoke-GodotStep "Import check:" @("--headless", "--path", $projectRoot, "--impo
 
 Invoke-GodotStep "Runtime launch check:" @("--headless", "--path", $projectRoot, "--quit-after", "2")
 
+$oldAction = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 $smokeOutput = & python "$projectRoot\tools\run_smoke_tests.py" 2>&1
 $smokeExitCode = $LASTEXITCODE
+$ErrorActionPreference = $oldAction
 $smokeOutput | ForEach-Object {
     if ($_ -match "SMOKE_COUNT:(\d+)") {
         $script:smokeCount = [int]$Matches[1]
