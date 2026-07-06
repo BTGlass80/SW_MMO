@@ -14,14 +14,16 @@ The latest Codex map pass:
 - rebuilt Bay 94's service/cargo dressing so it no longer shows white default-material panels or red/yellow debug cube stacks;
 - raised low awnings/scanner arches that created stray player-capsule collision;
 - regenerated the 13 canonical playtest captures;
-- confirmed the full gate green:
+- confirmed the full gate green. Trust the current gate output for smoke/RPC counts
+  rather than the historical literals in review docs. The latest Codex acceptance run
+  passed Python tests, import, runtime launch, all wired GDScript smokes, and the
+  world capture/collision/grounding checks:
 
 ```text
-All 143 smoke tests completed successfully.
+All checks passed.
 World Collision Route Smoke: OK - Checked 13 probes against blocking geometry
 World Capture Points Smoke: OK - Found 13 capture points
-World Grounding Smoke: OK - Verified grounding metadata: 1 hover, 41 grounded models
-All checks passed.
+World Grounding Smoke: OK
 ```
 
 This does not mean the map is release-quality art. It means the worst visible regressions and stale-evidence failures are fixed, and the map is back to a controlled improvement lane.

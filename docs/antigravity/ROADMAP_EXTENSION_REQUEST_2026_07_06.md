@@ -7,7 +7,7 @@ Per the conditions established in `CODEX_MAP_OWNERSHIP_AND_ANTIGRAVITY_LANE_2026
 ## Gap Closure Checklist (from Review Feedback)
 
 - [x] **1. Fix The Sell Path Shape Mismatch:** We have preserved the native instance-based RPC (`submit_sell(instance_id)`), but added a compatibility fallback to resolve `template_id` to an owned `instance_id` when the UI/legacy tests use the template key. `asteroid_field` was added to `_buy_catalog`.
-- [x] **2. Unify Space Cargo Paths:** The legacy inline `submit_space_mine` was deleted in favor of the pure `SpaceTravelModel.harvest_cargo()`, enforcing a unified cargo item shape. (Note: this was fully deleted from `network_manager.gd` in commit `9729b75`).
+- [x] **2. Unify Space Cargo Paths:** The legacy inline `submit_space_mine` was deleted in favor of the pure `SpaceTravelModel.harvest_cargo()`, enforcing a unified cargo item shape. `space_map_overlay.gd` now routes asteroid extraction through `Net.send_space_harvest("asteroid_field")` instead of the deleted `send_space_mine` client API.
 - [x] **3. Isolate The Live Space Cargo Smoke:** Fixed a bug where `net_world.gd` forced the `_account` to a hardcoded string, causing inventory accumulation across runs. `space_cargo_live_rpc_smoke.gd` now uses a truly unique `pilot_test_...` account per run, ensuring isolation.
 - [x] **4. Restore Lost Assertion Depth From The Deleted Space Smoke:** `space_cargo_live_rpc_smoke.gd` was updated to explicitly assert the full flow: launch -> faucet_harvest -> land (sink_fee) -> sell (for credits). Telemetry proves the cargo successfully enters the economy loop.
 - [x] **5. Correct The Roadmap Request Metadata:** Resubmitted from a clean, fully committed working tree. `temp_delete.txt` was a scratch file checked in by mistake and has now been removed. Real gate output is included below.
@@ -15,7 +15,8 @@ Per the conditions established in `CODEX_MAP_OWNERSHIP_AND_ANTIGRAVITY_LANE_2026
 ## Exact Latest Commit
 
 - **Implementation commit:** `9729b75`
-- **Review/request commit:** `80a8385` (current HEAD)
+- **Cleanup/request commit:** `b6705c6`
+- **Codex acceptance/roadmap expansion pass:** current working tree; full gate green on 2026-07-06 after fresh visual captures
 
 ## Exact Full-Gate Output
 

@@ -6,6 +6,12 @@ Project: SW_MMO_Prototype
 Pivot target: Star Wars Galaxies-scale sandbox MMO, powered by WEG Star Wars D6  
 Status: Beta roadmap - 5x to 10x larger than the alpha plan  
 
+2026-07-06 scope update: this document is now historical/aspirational context,
+not the active beta critical path. The active roadmap extension is
+`docs/antigravity/BETA_ROADMAP_EXTENSION_2026_07_06.md`, which defines beta as a
+thin live MMO track and explicitly keeps multiplayer space, sieges, player
+cities, runtime LLM work, and broad planet rollout out of the pre-beta lane.
+
 ## 1. The Beta Target
 
 The alpha roadmap defined a compact, system-complete prototype. If Antigravity
@@ -2062,4 +2068,3 @@ ship flown by a pilot, a city maintained by builders, a market run by merchants,
 and a faction war that gives the whole mess a reason to matter.
 
 Build that web.
-

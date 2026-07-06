@@ -774,7 +774,7 @@ func _resolve_gunnery_drill() -> void:
 		
 	if "asteroid" in target_id or String(target.get("subtype", "")) == "asteroid":
 		if Net != null and Net.connected:
-			Net.send_space_mine(target_id)
+			Net.send_space_harvest("asteroid_field")
 		else:
 			# local simulated mining success
 			_shield_label.text = "MINING (Offline): Extracted 5 copper ore from asteroid!"
@@ -1161,7 +1161,6 @@ func _on_server_hyperjump(result: Dictionary) -> void:
 	else:
 		_shield_label.text = "HYPERJUMP REJECTED: " + String(result.get("reason", "failed"))
 		_record_space_action("Astro", _shield_label.text)
-
 
 
 

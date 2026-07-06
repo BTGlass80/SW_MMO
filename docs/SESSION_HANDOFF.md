@@ -12,6 +12,13 @@ PRINTS the wired smoke + RPC counts — trust the gate output and the git log ov
 or status literal below.** If git HEAD has moved past what this file describes, trust the
 code + `docs/WAVE_G_BACKLOG.md` + `docs/OVERNIGHT_QUEUE.md` Log over this file.
 
+**UPDATE 2026-07-06: Codex accepted the roadmap-extension threshold after fixing the
+last stale space-mining overlay call and refreshing visual captures. The active beta
+roadmap is now `docs/antigravity/BETA_ROADMAP_EXTENSION_2026_07_06.md`; the immediate
+direction note is `docs/antigravity/POST_ACCEPTANCE_DIRECTION_2026_07_06.md`. Treat
+older broad beta docs as historical context unless this new roadmap explicitly points
+back to them.**
+
 ---
 
 ## 0. TL;DR — what this is and where it stands
