@@ -5,8 +5,8 @@ var _failures: Array[String] = []
 func _init() -> void:
 	print("Starting economy RPC multi-process test...")
 	var t_dir = DirAccess.open("user://telemetry")
-	if t_dir != null and t_dir.file_exists("events.jsonl"):
-		t_dir.remove("events.jsonl")
+	if t_dir != null and t_dir.file_exists("economy_events.jsonl"):
+		t_dir.remove("economy_events.jsonl")
 
 	var exe = OS.get_executable_path()
 	if exe == "":
@@ -19,10 +19,10 @@ func _init() -> void:
 		if dir.file_exists("record_cache.json"): dir.remove("record_cache.json")
 		if dir.dir_exists("telemetry"):
 			var t_dir2 = DirAccess.open("user://telemetry")
-			if t_dir2 != null and t_dir2.file_exists("events.jsonl"):
-				t_dir2.remove("events.jsonl")
+			if t_dir2 != null and t_dir2.file_exists("economy_events.jsonl"):
+				t_dir2.remove("economy_events.jsonl")
 
-	var server_args = ["--headless", "--path", ".", "res://scenes/net_world.tscn", "--", "--server", "--economy-test-server", "--port", "24556"]
+	var server_args = ["--headless", "--path", ".", "res://scenes/net_world.tscn", "--", "--server", "--economy-test-server", "--port", "24556", "--telemetry-file", "user://telemetry/economy_events.jsonl"]
 	var pid_server = OS.create_process(exe, server_args)
 	if pid_server == -1:
 		_fail("Could not start server process")
@@ -90,8 +90,8 @@ func _init() -> void:
 
 	# Verify telemetry
 	var events = []
-	if t_dir != null and t_dir.file_exists("events.jsonl"):
-		var f = FileAccess.open("user://telemetry/events.jsonl", FileAccess.READ)
+	if t_dir != null and t_dir.file_exists("economy_events.jsonl"):
+		var f = FileAccess.open("user://telemetry/economy_events.jsonl", FileAccess.READ)
 		while not f.eof_reached():
 			var line = f.get_line()
 			if line != "":

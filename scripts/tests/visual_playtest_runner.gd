@@ -51,12 +51,22 @@ func _run() -> void:
 	world_scene.set_process(false)
 	world_scene.set_physics_process(false)
 	
-	# Hide gameplay UI
-	for node in get_nodes_in_group("ground_gameplay_layer"):
-		if node.has_method("set_visible"):
-			node.set_visible(false)
-		elif "visible" in node:
-			node.visible = false
+	# Hide gameplay UI completely
+	var _remove_canvas_layers = func(node: Node, _func) -> void:
+		if node is CanvasLayer:
+			node.queue_free()
+			return
+		if node is Control:
+			node.queue_free()
+			return
+		if node.has_method("_update_range_state_badges"):
+			node.set_process(false)
+		if node is Label3D and node.name == "RangeStateBadge":
+			node.queue_free()
+			return
+		for child in node.get_children():
+			_func.call(child, _func)
+	_remove_canvas_layers.call(world_scene, _remove_canvas_layers)
 	
 	# Helper to position camera via CapturePoints
 	var _snap_camera = func(title: String) -> Node3D:

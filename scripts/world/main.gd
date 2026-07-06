@@ -148,9 +148,18 @@ func _build_blaster_range() -> void:
 	_add_range_target(Vector3(-20, 1.1, -24), "B1 behind cargo - medium", 2, "b1_training_silhouette", {}, {"fire_cadence_ticks": 2, "fire_phase_ticks": 0, "suppression_ticks": 1, "pinning_ticks": 1, "pinning_miss_margin": 3, "peek_exposed_ticks": 1, "peek_covered_ticks": 1, "peek_phase_ticks": 0, "fallback_ticks": 2, "fallback_on_wound_severity": 2, "coordination_group": "bay_cover_pair", "coordination_priority": 1, "morale_hold_ticks": 1, "morale_cadence_ticks": 4, "morale_phase_ticks": 3, "morale_min_wound_severity": 1, "covering_fire_ticks": 1, "covering_fire_cadence_ticks": 4, "covering_fire_phase_ticks": 1})
 	_add_range_target(Vector3(-20, 1.1, -40), "B1 behind bay wall - long", 3, "b1_training_silhouette", {}, {"fire_cadence_ticks": 3, "fire_phase_ticks": 2, "suppression_ticks": 1, "pinning_ticks": 1, "pinning_miss_margin": 3, "peek_exposed_ticks": 1, "peek_covered_ticks": 2, "peek_phase_ticks": 2, "fallback_ticks": 2, "fallback_on_wound_severity": 2, "coordination_group": "bay_cover_pair", "coordination_priority": 0, "flank_move_ticks": 1, "flank_cadence_ticks": 5, "flank_phase_ticks": 1, "reload_ticks": 1, "reload_cadence_ticks": 6, "reload_phase_ticks": 5, "covering_fire_ticks": 1, "covering_fire_cadence_ticks": 5, "covering_fire_phase_ticks": 4})
 	_add_walker_armor_target(Vector3(-14, 1.55, -34), "Walker-scale moving armor plate", 0, {"axis": "x", "distance": 2.5, "speed": 0.75, "pattern": "patrol"})
-	_builder.add_box_to_world(self, Vector3(-20.7, 0.65, -24), Vector3(1.2, 1.3, 1.2), Color(0.36, 0.25, 0.16))
-	_builder.add_box_to_world(self, Vector3(-20.8, 0.95, -40), Vector3(1.3, 1.9, 0.8), Color(0.48, 0.43, 0.38))
-	_builder.add_box_to_world(self, Vector3(-20, 0.7, -6), Vector3(4.5, 1.4, 0.6), Color(0.32, 0.29, 0.24))
+	# Training barricades instead of random crate clutter
+	_builder.add_box_to_world(self, Vector3(-20.7, 0.6, -24), Vector3(2.4, 1.2, 0.4), Color(0.4, 0.45, 0.5)) # Short barricade
+	_builder.add_box_to_world(self, Vector3(-20.8, 0.9, -40), Vector3(2.4, 1.8, 0.4), Color(0.35, 0.4, 0.45)) # Tall barricade
+	
+	# Firing line stations
+	_builder.add_box_to_world(self, Vector3(-18.5, 0.5, -7), Vector3(1.2, 1.0, 0.4), Color(0.32, 0.29, 0.24))
+	_builder.add_box_to_world(self, Vector3(-21.5, 0.5, -7), Vector3(1.2, 1.0, 0.4), Color(0.32, 0.29, 0.24))
+
+	# Exit/arrival landmark pointing toward the settlement
+	_builder.add_box_to_world(self, Vector3(-20, 4.0, -2), Vector3(7.0, 0.6, 0.6), Color(0.7, 0.3, 0.2)) # Arch overhead
+	_builder.add_box_to_world(self, Vector3(-23.2, 2.0, -2), Vector3(0.6, 4.0, 0.6), Color(0.3, 0.3, 0.3)) # Pillar L
+	_builder.add_box_to_world(self, Vector3(-16.8, 2.0, -2), Vector3(0.6, 4.0, 0.6), Color(0.3, 0.3, 0.3)) # Pillar R
 
 func _build_moving_target_controller() -> void:
 	var controller := Node.new()
@@ -207,7 +216,6 @@ func _add_walker_armor_target(pos: Vector3, target_name: String, cover_level: in
 	_builder.add_box(body, Vector3(0, 0.9, -0.28), Vector3(2.2, 0.22, 0.18), Color(0.72, 0.54, 0.18), "head")
 	_builder.add_box(body, Vector3(-1.08, -0.45, -0.3), Vector3(0.22, 1.6, 0.18), Color(0.24, 0.28, 0.28), "left_arm")
 	_builder.add_box(body, Vector3(1.08, -0.45, -0.3), Vector3(0.22, 1.6, 0.18), Color(0.24, 0.28, 0.28), "right_arm")
-	_builder.add_label(self, pos + Vector3(0, 2.4, 0), "Moving walker scale")
 
 func _apply_motion_metadata(body: Node3D, pos: Vector3, motion: Dictionary) -> void:
 	if motion.is_empty():

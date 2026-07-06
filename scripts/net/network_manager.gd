@@ -260,7 +260,13 @@ func start_server(port: int = DEFAULT_PORT) -> int:
 	_species_data = _load_species()
 	_skill_attr = _load_skill_attributes()
 	_server_rng.randomize()
-	_telemetry = TelemetryLog.new()  # Wave G/Seam 5: one server-owned JSONL writer under user://telemetry/events.jsonl
+	var t_path := "user://telemetry/events.jsonl"
+	var args := OS.get_cmdline_user_args()
+	for i in range(args.size()):
+		if args[i] == "--telemetry-file" and i + 1 < args.size():
+			t_path = args[i + 1]
+			break
+	_telemetry = TelemetryLog.new(t_path)  # Wave G/Seam 5: one server-owned JSONL writer
 	_envelope_log = TelemetryLog.new("user://telemetry/envelopes.jsonl")  # PT1 replay: server-only enriched-envelope log
 	print("[net] server listening on port %d (combat window %.1fs)" % [port, combat_window_seconds])
 	print("[net] DEV TRANSPORT: unencrypted ENet — LAN/playtest only, do not expose to the internet")

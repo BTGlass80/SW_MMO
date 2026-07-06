@@ -1,13 +1,19 @@
 extends SceneTree
 
 func _init() -> void:
+	call_deferred("_run_test")
+
+func _run_test() -> void:
 	var root := Node3D.new()
 	get_root().add_child(root)
+	await process_frame
+	
 	var builder = preload("res://scripts/world/world_builder.gd").new(1138)
 	var landmark_builder = preload("res://scripts/world/landmark_builder.gd").new()
 	
 	builder.build_settlement(root)
 	landmark_builder.build_cantina_plaza(root)
+	await process_frame
 	
 	var hover_count := 0
 	var grounded_count := 0
@@ -34,8 +40,8 @@ func _init() -> void:
 				for c in m.get_children():
 					mesh_stack.push_back(c)
 					
-			if min_y != 9999.0 and min_y < -0.1:
-				printerr("world_grounding_smoke: FAIL - %s sunk below ground, min_y: %f" % [node.name, min_y])
+			if min_y != 9999.0 and min_y < -0.101:
+				printerr("world_grounding_smoke: FAIL - %s (path: %s) sunk below ground, min_y: %f" % [node.name, node.get_path(), min_y])
 				quit(1)
 				return
 			

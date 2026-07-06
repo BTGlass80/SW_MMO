@@ -491,32 +491,34 @@ func _add_back_hallway(parent: Node3D, local_pos: Vector3, rot_deg: float) -> vo
 	hall.rotation_degrees.y = rot_deg
 	parent.add_child(hall)
 
-	# Floor strip, wider
-	_add_box(hall, Vector3(0, 0.05, -3.5), Vector3(5.0, 0.1, 10.0), COL_PLAZA_FLOOR.darkened(0.1))
+	# Floor strip, wider and extending to dome connection
+	_add_box(hall, Vector3(0, 0.05, -3.0), Vector3(5.0, 0.1, 11.0), COL_PLAZA_FLOOR.darkened(0.1))
 	
-	# Side walls, pushed out
-	_add_box(hall, Vector3(-2.6, 2.0, -3.5), Vector3(0.4, 4.0, 10.0), COL_ADOBE_DARK)
-	_add_box(hall, Vector3(2.6, 2.0, -3.5), Vector3(0.4, 4.0, 10.0), COL_ADOBE_DARK)
+	# Side walls, pushed out, extending to dome connection (Z = 2.5 local)
+	_add_box(hall, Vector3(-2.6, 2.0, -3.0), Vector3(0.4, 4.0, 11.0), COL_ADOBE_DARK)
+	_add_box(hall, Vector3(2.6, 2.0, -3.0), Vector3(0.4, 4.0, 11.0), COL_ADOBE_DARK)
 	
-	# Ceiling
-	_add_box(hall, Vector3(0, 4.2, -3.5), Vector3(5.6, 0.4, 10.0), COL_ADOBE_DARK)
+	# Ceiling, extending fully to the dome wall
+	_add_box(hall, Vector3(0, 4.2, -3.0), Vector3(5.6, 0.4, 11.0), COL_ADOBE_DARK)
 	
 	# End destination: an offset booth and open door frame
-	_add_box(hall, Vector3(1.0, 2.0, -9.5), Vector3(3.6, 4.0, 0.4), COL_ADOBE_DARK) # Back wall right
-	_add_box(hall, Vector3(-2.0, 2.0, -9.5), Vector3(1.6, 4.0, 0.4), COL_ADOBE_DARK) # Back wall left
-	_add_archway_open(hall, Vector3(-0.5, 0, -9.5), 1.4, 2.4, 0.2, COL_DOORWAY) # Doorway leading deeper
+	_add_box(hall, Vector3(1.0, 2.0, -8.5), Vector3(3.6, 4.0, 0.4), COL_ADOBE_DARK) # Back wall right
+	_add_box(hall, Vector3(-2.0, 2.0, -8.5), Vector3(1.6, 4.0, 0.4), COL_ADOBE_DARK) # Back wall left
+	_add_archway_open(hall, Vector3(-0.5, 0, -8.5), 1.4, 2.4, 0.2, COL_DOORWAY) # Doorway leading deeper
 	
-	# VIP Seating
-	_add_booth(hall, Vector3(1.0, 0, -8.0), -15.0, "Private")
-	_add_booth(hall, Vector3(-1.0, 0, -7.0), 15.0, "Private2")
-	_add_table_and_chairs(hall, Vector3(0, 0, -5.0), 0.0, "HallTable")
+	# VIP Seating and High-stakes Sabacc table to fix emptiness
+	_add_booth(hall, Vector3(1.0, 0, -7.0), -15.0, "Private")
+	_add_booth(hall, Vector3(-1.0, 0, -6.0), 15.0, "Private2")
+	_add_table_and_chairs(hall, Vector3(0, 0, -4.0), 0.0, "HallTable")
+	_add_table_and_chairs(hall, Vector3(0, 0, -1.0), 45.0, "SabaccTable")
 	
 	# Clutter
-	_add_box(hall, Vector3(2.0, 0.4, -6.0), Vector3(0.6, 0.8, 0.6), COL_METAL.darkened(0.2)) # Barrel
-	_add_box(hall, Vector3(-2.0, 0.3, -8.5), Vector3(0.8, 0.6, 0.8), COL_WOOD) # Crate
+	_add_box(hall, Vector3(2.0, 0.4, -5.0), Vector3(0.6, 0.8, 0.6), COL_METAL.darkened(0.2)) # Barrel
+	_add_box(hall, Vector3(-2.0, 0.3, -7.5), Vector3(0.8, 0.6, 0.8), COL_WOOD) # Crate
+	_add_box(hall, Vector3(-1.8, 0.4, -2.5), Vector3(0.4, 0.8, 0.4), COL_METAL) # Stand
 	
-	# Archway at entrance, wider
-	_add_archway_open(hall, Vector3(0, 0, 1.5), 4.8, 3.8, 0.4, COL_TRIM)
+	# Archway at entrance, wider, positioned exactly at the dome wall connection (local Z = 0.5)
+	_add_archway_open(hall, Vector3(0, 0, 0.5), 4.8, 3.8, 0.4, COL_TRIM)
 	
 	# Dim lighting
 	var light := OmniLight3D.new()

@@ -84,13 +84,13 @@ func build_ground(host: Node3D) -> void:
 func build_settlement(host: Node3D) -> void:
 	# Main street path - narrower dirt road
 	add_box_to_world(host, Vector3(0, 0.02, 0), Vector3(70, 0.05, 12), Color(0.60, 0.50, 0.38))
-	add_box_to_world(host, Vector3(0, 0.08, -6), Vector3(70, 0.1, 0.4), Color(0.82, 0.63, 0.20))
-	add_box_to_world(host, Vector3(0, 0.08, 6), Vector3(70, 0.1, 0.4), Color(0.82, 0.63, 0.20))
+	add_box_to_world(host, Vector3(0, 0.08, -6), Vector3(70, 0.1, 0.4), Color(0.5, 0.4, 0.2))
+	add_box_to_world(host, Vector3(0, 0.08, 6), Vector3(70, 0.1, 0.4), Color(0.5, 0.4, 0.2))
 	add_label(host, Vector3(3, 2.4, 0), "Spaceport Row")
 	
 	# Orienting structures for spawn view (west end)
-	_add_hab_block(host, Vector3(-32, 0, -8), Vector3(8, 5, 12), Color(0.53, 0.47, 0.39).darkened(0.1))
-	_add_hab_block(host, Vector3(-22, 0, 3), Vector3(6, 3, 6), Color(0.53, 0.47, 0.39))
+	_add_hab_block(host, Vector3(-38, 0, -12), Vector3(8, 5, 12), Color(0.53, 0.47, 0.39).darkened(0.1))
+	_add_hab_block(host, Vector3(-28, 0, 8), Vector3(6, 3, 6), Color(0.53, 0.47, 0.39))
 	add_box_to_world(host, Vector3(-25, 2.5, -2.5), Vector3(2, 5, 2), Color(0.3, 0.3, 0.3)) # Sensor pylon
 
 	_build_from_rooms(host)
@@ -100,16 +100,28 @@ func build_settlement(host: Node3D) -> void:
 	add_inspectable_marker(host, Vector3(-7, 4.5, -20.8), Vector3(4, 9, 1.2), _room_title("mos_eisley_control_tower", "Control Tower"), _room_inspection("mos_eisley_control_tower", "A tall observation module coordinates landings while trying to stay above the dust and noise."))
 
 	# Parked low-poly craft
-	place_model(host, SHIP_CARGO, Vector3(14, 0.45, -12), 40.0, 2.4)
-	place_model(host, SHIP_SPEEDER, Vector3(-16, 0.55, 14), -25.0, 2.2)
-	place_model(host, SHIP_MINER, Vector3(4, 0.4, -19), 90.0, 1.8)
+	_add_procedural_cargo_ship(host, Vector3(14, 0.45, -12), 40.0)
+	_add_procedural_speeder(host, Vector3(6, 0.55, -8.5), -25.0)
+	_add_procedural_miner(host, Vector3(4, 0.4, -19), 90.0)
 
 	# A little life: barrels by Customs and the Transport Depot.
 	for spot in [Vector3(-6.5, 0, 9.6), Vector3(-5.6, 0, 9.9), Vector3(12.5, 0, 8.4), Vector3(13.2, 0, 8.0)]:
-		place_model(host, BARREL_MODEL, spot, 0.0, BARREL_SCALE)
-
-	for x in [-9, -3, 3, 15, 20]:
-		_add_crate_stack(host, Vector3(x, 0, 6.8), _rng.randi_range(1, 3))
+		add_box_to_world(host, spot + Vector3(0, 0.5, 0), Vector3(0.6, 1.0, 0.6), Color(0.4, 0.45, 0.5))
+		
+	# Spaceport Row clutter: street-level utility and props
+	add_box_to_world(host, Vector3(-18, 0.4, -5.5), Vector3(1.2, 0.8, 1.2), Color(0.4, 0.45, 0.5)) # Power box
+	add_box_to_world(host, Vector3(-5, 0.6, 5.5), Vector3(0.6, 1.2, 0.6), Color(0.6, 0.3, 0.2)) # Comms relay
+	add_box_to_world(host, Vector3(12, 0.3, -5.5), Vector3(2.0, 0.6, 1.0), Color(0.3, 0.3, 0.3)) # Cargo loader base
+	add_box_to_world(host, Vector3(12, 1.0, -5.5), Vector3(1.0, 0.8, 1.0), Color(0.7, 0.6, 0.2)) # Cargo loader top
+	
+	# Add a couple of tall sensor/vaporator pylons along the street
+	add_box_to_world(host, Vector3(-12, 1.5, -5.5), Vector3(0.5, 3.0, 0.5), Color(0.6, 0.6, 0.6)) # Scanner pylon
+	add_box_to_world(host, Vector3(5, 1.8, 5.5), Vector3(0.3, 3.6, 0.3), Color(0.4, 0.4, 0.4)) # Vaporator core
+	add_box_to_world(host, Vector3(5, 1.0, 5.5), Vector3(0.8, 0.2, 0.8), Color(0.5, 0.5, 0.5)) # Vaporator ring
+	
+	# Market/stall post near Customs
+	add_box_to_world(host, Vector3(-8, 1.2, 6.5), Vector3(0.2, 2.4, 0.2), Color(0.3, 0.2, 0.1))
+	add_box_to_world(host, Vector3(-8, 2.4, 7.5), Vector3(2.0, 0.1, 2.0), Color(0.6, 0.5, 0.4)) # Canvas shade
 
 	_place_data_props(host)
 	
@@ -117,7 +129,7 @@ func build_settlement(host: Node3D) -> void:
 	add_route_probe(host, Vector3(-20, 1.2, -4.0), "Spawn")
 	add_route_probe(host, Vector3(-25.5, 1.4, -8.0), "Bay94Entrance")
 	add_route_probe(host, Vector3(-20.0, 0.2, -13.0), "Bay94Pit")
-	add_route_probe(host, Vector3(-3.0, 1.2, 5.0), "CustomsFront")
+	add_route_probe(host, Vector3(-4.0, 1.2, 6.0), "CustomsFront")
 	add_route_probe(host, Vector3(9.0, 1.2, -11.0), "SpeedersFront")
 	add_route_probe(host, Vector3(9.0, 1.2, 3.0), "TransportDepotFront")
 	add_route_probe(host, Vector3(-7.0, 1.2, -15.0), "ControlTowerFront")
@@ -125,15 +137,15 @@ func build_settlement(host: Node3D) -> void:
 	add_route_probe(host, Vector3(-20.0, 1.2, -22.0), "DockingBay87Front")
 
 	# Full-Area Capture Points
-	add_capture_point(host, Vector3(-16, 1.8, -4), Vector3(-25, 1.8, -6), "Spawn Range")
-	add_capture_point(host, Vector3(0, 1.8, 0), Vector3(20, 1.8, 0), "Spaceport Row East")
-	add_capture_point(host, Vector3(0, 1.8, 0), Vector3(-20, 1.8, 0), "Spaceport Row West")
+	add_capture_point(host, Vector3(-16, 1.5, -8), Vector3(-20, 1.0, -25), "Spawn Range")
+	add_capture_point(host, Vector3(-5, 1.8, 2), Vector3(15, 1.8, -2), "Spaceport Row East")
+	add_capture_point(host, Vector3(5, 1.8, -2), Vector3(-20, 1.8, 2), "Spaceport Row West")
 	add_capture_point(host, Vector3(-22, 1.8, -6), Vector3(-25, 1.8, -10), "Bay94 Entrance")
 	add_capture_point(host, Vector3(-20, 1.8, -6), Vector3(-20, 0.5, -13), "Bay94 Pit")
-	add_capture_point(host, Vector3(-3, 1.8, 0), Vector3(-3, 1.8, 8), "Customs Front")
-	add_capture_point(host, Vector3(9, 1.8, -4), Vector3(9, 1.8, -16), "Speeders Front")
-	add_capture_point(host, Vector3(9, 1.8, 0), Vector3(9, 1.8, 8), "Transport Depot Front")
-	add_capture_point(host, Vector3(-7, 1.8, -4), Vector3(-7, 8.0, -20), "Control Tower")
+	add_capture_point(host, Vector3(-3, 1.8, 2), Vector3(-3, 1.8, 8), "Customs Front")
+	add_capture_point(host, Vector3(9, 1.8, -8), Vector3(9, 1.5, -16), "Speeders Front")
+	add_capture_point(host, Vector3(9, 1.8, 2), Vector3(9, 1.8, 8), "Transport Depot Front")
+	add_capture_point(host, Vector3(-7, 1.8, -8), Vector3(-7, 6.0, -24), "Control Tower")
 
 func _add_bay_94_details(host: Node3D, center: Vector3) -> void:
 	# Add entrance threshold and service flow area near the path
@@ -142,15 +154,80 @@ func _add_bay_94_details(host: Node3D, center: Vector3) -> void:
 	add_box_to_world(host, center + Vector3(-5.5, 2.0, 7.0), Vector3(1.2, 4.0, 1.2), Color(0.35, 0.32, 0.25))
 	add_box_to_world(host, center + Vector3(-5.5, 0.05, 5.0), Vector3(4.0, 0.1, 6.0), Color(0.25, 0.25, 0.25)) # Service pad
 	
-	# Pit details
-	add_box_to_world(host, center + Vector3(0, 0.42, 5.0), Vector3(4.5, 0.8, 0.45), Color(0.31, 0.28, 0.22))
-	add_box_to_world(host, center + Vector3(-4.4, 0.6, -2.5), Vector3(1.2, 1.2, 1.2), Color(0.20, 0.21, 0.22))
-	add_box_to_world(host, center + Vector3(4.2, 0.6, -2.9), Vector3(1.1, 1.2, 1.1), Color(0.20, 0.21, 0.22))
-	add_box_to_world(host, center + Vector3(-2.8, 0.6, -4.2), Vector3(1.5, 1.2, 1.0), Color(0.35, 0.25, 0.16))
-	add_box_to_world(host, center + Vector3(2.7, 0.6, -4.0), Vector3(1.5, 1.2, 1.0), Color(0.35, 0.25, 0.16))
+	# Blast-door frame and bay sign
+	add_box_to_world(host, center + Vector3(-7.5, 2.5, 5.0), Vector3(1.0, 5.0, 6.0), Color(0.15, 0.15, 0.15)) # Insert ramp threshold
+	
+	# Bay 94 Signage
+	add_box_to_world(host, center + Vector3(-6.9, 4.8, 5.0), Vector3(0.3, 1.4, 2.2), Color(0.7, 0.2, 0.1)) # Bay sign background
+	add_label(host, center + Vector3(-6.7, 4.8, 5.0), "BAY 94")
+	
+	# Side equipment and wall detail (reduce blank door face)
+	add_box_to_world(host, center + Vector3(-7.0, 1.5, 2.5), Vector3(0.5, 3.0, 1.0), Color(0.3, 0.3, 0.3)) # Door mechanism L
+	add_box_to_world(host, center + Vector3(-7.0, 1.5, 7.5), Vector3(0.5, 3.0, 1.0), Color(0.3, 0.3, 0.3)) # Door mechanism R
+	
+	# Replace primitive block clusters with service equipment
+	if ResourceLoader.exists(CRATE_MODEL):
+		place_model(host, CRATE_MODEL, center + Vector3(-6.0, 0.5, 3.2), 15.0)
+		place_model(host, CRATE_MODEL, center + Vector3(-6.0, 1.5, 3.2), -5.0)
+	else:
+		add_box_to_world(host, center + Vector3(-6.0, 0.5, 3.5), Vector3(1.0, 1.0, 1.5), Color(0.4, 0.45, 0.5)) # Equipment crate
+		
+	add_box_to_world(host, center + Vector3(-6.5, 1.2, 6.5), Vector3(0.4, 2.4, 0.4), Color(0.2, 0.2, 0.2)) # Pipe/conduit
+	
+	if ResourceLoader.exists(BARREL_MODEL):
+		place_model(host, BARREL_MODEL, center + Vector3(-6.2, 0.4, 6.5), 0.0)
+		place_model(host, BARREL_MODEL, center + Vector3(-5.8, 0.4, 6.9), 45.0)
+	else:
+		add_box_to_world(host, center + Vector3(-6.2, 0.3, 6.5), Vector3(0.8, 0.6, 0.8), Color(0.8, 0.7, 0.2)) # Generator unit
+	
+	# Pit details - Cover blocks dressed as docking-bay infrastructure
+	add_box_to_world(host, center + Vector3(0, 0.8, 5.0), Vector3(3.0, 0.1, 0.4), Color(0.7, 0.6, 0.2)) # Warning strip
+	
+	# Fuel Cell cluster (Right)
+	add_box_to_world(host, center + Vector3(4.2, 0.2, -2.9), Vector3(1.4, 0.4, 1.4), Color(0.2, 0.2, 0.2)) # Pallet
+	if ResourceLoader.exists(BARREL_MODEL):
+		place_model(host, BARREL_MODEL, center + Vector3(3.8, 0.4, -2.5), 15.0)
+		place_model(host, BARREL_MODEL, center + Vector3(4.6, 0.4, -3.1), -10.0)
+		place_model(host, BARREL_MODEL, center + Vector3(4.2, 0.4, -2.1), 45.0)
+	else:
+		add_box_to_world(host, center + Vector3(4.2, 0.6, -2.9), Vector3(1.1, 1.2, 1.1), Color(0.20, 0.21, 0.22))
+	
+	# Service Terminal / Gantry (Left)
+	add_box_to_world(host, center + Vector3(-4.4, 0.2, -2.5), Vector3(1.2, 1.4, 1.0), Color(0.25, 0.28, 0.32)) # Terminal base
+	add_box_to_world(host, center + Vector3(-4.4, 0.6, -1.9), Vector3(0.6, 0.4, 0.2), Color(0.1, 0.1, 0.1)) # Screen
+	add_box_to_world(host, center + Vector3(-4.0, 1.0, -2.5), Vector3(0.2, 1.8, 0.2), Color(0.4, 0.4, 0.4)) # Antenna/Pipe
 
-## Load extra set-dressing props from PROPS_DATA_PATH and place them via place_model.
-## Deterministic: iterates array in order, no RNG. Graceful no-op on missing/malformed file.
+	# Cargo Stacks (Back Left and Back Right)
+	if ResourceLoader.exists(CRATE_MODEL):
+		place_model(host, CRATE_MODEL, center + Vector3(-2.8, 0.5, -4.2), 5.0)
+		place_model(host, CRATE_MODEL, center + Vector3(-2.8, 1.5, -4.2), -3.0)
+		place_model(host, CRATE_MODEL, center + Vector3(-1.6, 0.5, -4.4), 12.0)
+		
+		place_model(host, CRATE_MODEL, center + Vector3(2.7, 0.5, -4.0), -8.0)
+		place_model(host, CRATE_MODEL, center + Vector3(2.7, 1.5, -4.0), 2.0)
+	else:
+		add_box_to_world(host, center + Vector3(-2.8, 0.6, -4.2), Vector3(1.5, 1.2, 1.0), Color(0.35, 0.25, 0.16))
+		add_box_to_world(host, center + Vector3(2.7, 0.6, -4.0), Vector3(1.5, 1.2, 1.0), Color(0.35, 0.25, 0.16))
+	
+	# Floor markings (painted lines)
+	add_box_to_world(host, center + Vector3(0, 0.05, 0), Vector3(12.0, 0.1, 0.4), Color(0.8, 0.7, 0.2)) # Outer ring limit
+	add_box_to_world(host, center + Vector3(0, 0.05, -2.0), Vector3(0.4, 0.1, 4.0), Color(0.8, 0.7, 0.2)) # Center guide line
+	
+	# Number "94" painted on floor
+	var paint_color = Color(0.8, 0.2, 0.1)
+	add_box_to_world(host, center + Vector3(-1.0, 0.05, 1.0), Vector3(0.8, 0.1, 0.2), paint_color) # 9 top
+	add_box_to_world(host, center + Vector3(-1.0, 0.05, 1.8), Vector3(0.8, 0.1, 0.2), paint_color) # 9 mid
+	add_box_to_world(host, center + Vector3(-1.3, 0.05, 1.4), Vector3(0.2, 0.1, 0.8), paint_color) # 9 left
+	add_box_to_world(host, center + Vector3(-0.7, 0.05, 1.8), Vector3(0.2, 0.1, 1.8), paint_color) # 9 right
+	
+	add_box_to_world(host, center + Vector3(0.5, 0.05, 1.3), Vector3(0.2, 0.1, 0.8), paint_color) # 4 left
+	add_box_to_world(host, center + Vector3(1.0, 0.05, 1.6), Vector3(1.2, 0.1, 0.2), paint_color) # 4 mid
+	add_box_to_world(host, center + Vector3(1.3, 0.05, 1.8), Vector3(0.2, 0.1, 1.8), paint_color) # 4 right
+	
+	# Extra bay dressing: Cargo sleds and fuel pipes
+	add_box_to_world(host, center + Vector3(0, 0.2, -6.0), Vector3(3.0, 0.4, 1.5), Color(0.4, 0.4, 0.4)) # Cargo sled
+	add_box_to_world(host, center + Vector3(2.0, 1.5, 6.0), Vector3(0.2, 3.0, 0.2), Color(0.8, 0.4, 0.2)) # Fuel pipe 1
+	add_box_to_world(host, center + Vector3(2.5, 1.5, 6.0), Vector3(0.2, 3.0, 0.2), Color(0.2, 0.4, 0.8)) # Fuel pipe 2
 func _place_data_props(host: Node3D) -> void:
 	if not FileAccess.file_exists(PROPS_DATA_PATH):
 		return
@@ -197,6 +274,25 @@ func _add_hab_block(host: Node3D, pos: Vector3, size: Vector3, color: Color) -> 
 	var z_offset = (size.z - secondary_size.z) * 0.5 * (1.0 if _rng.randf() > 0.5 else -1.0)
 	add_box(body, Vector3(x_offset, size.y + secondary_size.y * 0.5, z_offset), secondary_size, color)
 	
+	# Wall recesses/variations to break up flat slabs
+	add_box(body, Vector3(size.x * 0.3, size.y * 0.4, size.z * 0.5 + 0.1), Vector3(size.x * 0.15, size.y * 0.6, 0.3), color.darkened(0.2))
+	add_box(body, Vector3(-size.x * 0.3, size.y * 0.4, size.z * 0.5 + 0.1), Vector3(size.x * 0.15, size.y * 0.6, 0.3), color.darkened(0.2))
+	add_box(body, Vector3(size.x * 0.25, size.y * 0.4, -size.z * 0.5 - 0.1), Vector3(size.x * 0.2, size.y * 0.6, 0.3), color.darkened(0.2))
+	add_box(body, Vector3(-size.x * 0.25, size.y * 0.4, -size.z * 0.5 - 0.1), Vector3(size.x * 0.2, size.y * 0.6, 0.3), color.darkened(0.2))
+	
+	# Add an entrance door recess in the middle front
+	add_box(body, Vector3(0, 1.25, size.z * 0.5 + 0.1), Vector3(1.8, 2.5, 0.4), color.darkened(0.4))
+	
+	# Add a shade cloth / awning over the front entrance
+	var awning_color := Color(0.65, 0.55, 0.45)
+	if _rng.randf() > 0.5: awning_color = Color(0.7, 0.6, 0.4)
+	add_box(body, Vector3(0, 2.8, size.z * 0.5 + 1.2), Vector3(4.0, 0.1, 2.4), awning_color)
+	
+	# Add some simple support beams for the awning
+	add_box(body, Vector3(-1.8, 1.4, size.z * 0.5 + 2.3), Vector3(0.15, 2.8, 0.15), color.darkened(0.3))
+	add_box(body, Vector3(1.8, 1.4, size.z * 0.5 + 2.3), Vector3(0.15, 2.8, 0.15), color.darkened(0.3))
+
+	
 	# Roof caps (correctly grounded to their blocks)
 	add_box(body, Vector3(0, size.y + 0.1, 0), Vector3(size.x + 0.4, 0.2, size.z + 0.4), color.darkened(0.16))
 	add_box(body, Vector3(x_offset, size.y + secondary_size.y + 0.1, z_offset), Vector3(secondary_size.x + 0.4, 0.2, secondary_size.z + 0.4), color.darkened(0.16))
@@ -228,6 +324,27 @@ func _add_tower(host: Node3D, pos: Vector3, height: int) -> void:
 		add_box_to_world(host, pos + Vector3(0, y + 0.5, 0), Vector3(3.2, 1, 3.2), Color(0.46, 0.45, 0.40).lightened(y * 0.015))
 	add_box_to_world(host, pos + Vector3(0, height + 0.45, 0), Vector3(5.2, 0.9, 5.2), Color(0.30, 0.32, 0.32))
 	add_box_to_world(host, pos + Vector3(0, height + 1.6, 0), Vector3(1.2, 1.8, 1.2), Color(0.18, 0.28, 0.32))
+
+	# Base infrastructure and perimeter
+	add_box_to_world(host, pos + Vector3(-2, 1, 0), Vector3(1.5, 2, 2.5), Color(0.2, 0.2, 0.2)) # Main Generator
+	add_box_to_world(host, pos + Vector3(-3.5, 0.5, 0), Vector3(3, 0.3, 3), Color(0.3, 0.3, 0.3)) # Base platform
+	add_box_to_world(host, pos + Vector3(0, height + 3.0, 0), Vector3(0.2, 2.0, 0.2), Color(0.6, 0.6, 0.6)) # Antenna 1
+	add_box_to_world(host, pos + Vector3(0.5, height + 2.5, 0.5), Vector3(0.1, 1.5, 0.1), Color(0.6, 0.6, 0.6)) # Antenna 2
+	add_box_to_world(host, pos + Vector3(-0.5, height + 2.8, -0.5), Vector3(0.1, 1.8, 0.1), Color(0.5, 0.5, 0.5)) # Antenna 3
+	
+	# Cable runs from generator to tower
+	add_box_to_world(host, pos + Vector3(-1.0, 0.2, 0), Vector3(2.0, 0.1, 0.2), Color(0.1, 0.1, 0.1))
+	add_box_to_world(host, pos + Vector3(-1.0, 0.2, 0.4), Vector3(2.0, 0.1, 0.1), Color(0.1, 0.1, 0.1))
+	
+	# Perimeter bollards/equipment
+	for x in [-4.5, 4.5]:
+		for z in [-4.5, 4.5]:
+			add_box_to_world(host, pos + Vector3(x, 0.5, z), Vector3(0.4, 1.0, 0.4), Color(0.4, 0.4, 0.4))
+	
+	# Ladders on the side of the tower
+	for y in range(0, height, 2):
+		add_box_to_world(host, pos + Vector3(1.7, y + 1.0, 0), Vector3(0.1, 2.0, 0.8), Color(0.3, 0.3, 0.3))
+
 
 	# Add a moisture vaporator next to the tower
 	var vaporator_path := "res://assets/3d/generated/google/buildings/moisture_vaporator.tscn"
@@ -273,14 +390,67 @@ func _build_from_rooms(host: Node3D) -> void:
 			if slug == "mos_eisley_customs":
 				b_size = Vector3(12, 4.5, 9)
 				b_color = Color(0.6, 0.5, 0.4)
+				_add_hab_block(host, building_pos, b_size, b_color)
+				add_label(host, building_pos + Vector3(0, b_size.y + 0.7, 0), name)
+				add_inspectable_marker(host, pos, Vector3(6, 3.2, 1.2), _room_title(slug, name), _room_inspection(slug, name))
+				# Customs identity
+				# Customs identity
+				add_box_to_world(host, building_pos + Vector3(0, 1.0, 5), Vector3(3.0, 2.0, 1.5), Color(0.2, 0.25, 0.3)) # Checkpoint booth base
+				add_box_to_world(host, building_pos + Vector3(0, 1.2, 5.8), Vector3(2.0, 1.0, 0.8), Color(0.1, 0.1, 0.1)) # Desk
+				
+				# Scanner gate
+				add_box_to_world(host, building_pos + Vector3(-2.5, 1.5, 7), Vector3(0.4, 3.0, 0.4), Color(0.4, 0.4, 0.4)) # Scanner pillar L
+				add_box_to_world(host, building_pos + Vector3(2.5, 1.5, 7), Vector3(0.4, 3.0, 0.4), Color(0.4, 0.4, 0.4)) # Scanner pillar R
+				add_box_to_world(host, building_pos + Vector3(0, 3.0, 7), Vector3(5.4, 0.6, 0.6), Color(0.5, 0.5, 0.5)) # Scanner arch
+				add_box_to_world(host, building_pos + Vector3(0, 1.5, 7), Vector3(4.6, 2.8, 0.1), Color(1.0, 0.2, 0.2, 0.3)) # Laser field
+				
+				# Queue rails
+				add_box_to_world(host, building_pos + Vector3(-1, 0.5, 9.5), Vector3(0.1, 1.0, 4.0), Color(0.6, 0.6, 0.6)) 
+				add_box_to_world(host, building_pos + Vector3(1, 0.5, 9.5), Vector3(0.1, 1.0, 4.0), Color(0.6, 0.6, 0.6))
+				
+				# Contraband / Inspection area
+				add_box_to_world(host, building_pos + Vector3(3.5, 0.5, 6), Vector3(1.5, 1.0, 1.5), Color(0.8, 0.2, 0.2)) # Inspection crate
+				add_box_to_world(host, building_pos + Vector3(-3.5, 0.5, 6), Vector3(1.0, 1.5, 1.0), Color(0.3, 0.3, 0.3)) # Guard stand
+				
+				# Posted Notices
+				add_box_to_world(host, building_pos + Vector3(-1.5, 2.0, 4.6), Vector3(1.0, 1.2, 0.1), Color(0.9, 0.9, 0.8)) # Poster
+				add_box_to_world(host, building_pos + Vector3(1.5, 1.8, 4.6), Vector3(0.8, 1.0, 0.1), Color(0.8, 0.3, 0.2)) # Warning poster
+				continue
 			elif slug == "mos_eisley_transport_depot":
 				b_size = Vector3(10, 3.5, 12)
 				b_color = Color(0.4, 0.35, 0.3)
+				_add_hab_block(host, building_pos, b_size, b_color)
+				add_label(host, building_pos + Vector3(0, b_size.y + 0.7, 0), name)
+				add_inspectable_marker(host, pos, Vector3(6, 3.2, 1.2), _room_title(slug, name), _room_inspection(slug, name))
+				# Depot identity - Ticket Window & Awning
+				add_box_to_world(host, building_pos + Vector3(-2, 1.25, 6.1), Vector3(2.5, 1.5, 0.5), Color(0.2, 0.2, 0.2)) # Window
+				add_box_to_world(host, building_pos + Vector3(-2, 2.5, 7.5), Vector3(4.0, 0.1, 3.0), Color(0.7, 0.3, 0.2)) # Awning
+				add_box_to_world(host, building_pos + Vector3(-3.8, 1.25, 8.8), Vector3(0.1, 2.5, 0.1), Color(0.3, 0.3, 0.3)) # Pole
+				add_box_to_world(host, building_pos + Vector3(-0.2, 1.25, 8.8), Vector3(0.1, 2.5, 0.1), Color(0.3, 0.3, 0.3)) # Pole
+				
+				# Asymmetric props
+				add_box_to_world(host, building_pos + Vector3(3, 1.5, 6.2), Vector3(3.0, 2.0, 0.2), Color(0.1, 0.1, 0.1)) # Schedule board (right)
+				add_box_to_world(host, building_pos + Vector3(3, 0.5, 8), Vector3(2.0, 0.5, 1.0), Color(0.3, 0.3, 0.3)) # Bench (right)
+				add_box_to_world(host, building_pos + Vector3(2, 0.5, 9.5), Vector3(2.0, 0.5, 1.0), Color(0.3, 0.3, 0.3)) # Bench (angled)
+				add_box_to_world(host, building_pos + Vector3(-4.5, 0.5, 9.5), Vector3(2.5, 1.0, 2.0), Color(0.4, 0.4, 0.4)) # Cargo pickup area
+				add_box_to_world(host, building_pos + Vector3(-2, 1.0, 10), Vector3(1.0, 2.0, 1.0), Color(0.5, 0.6, 0.8)) # Droid kiosk
+				add_box_to_world(host, building_pos + Vector3(4, 0.5, 9), Vector3(3.0, 1.0, 3.0), Color(0.4, 0.4, 0.4)) # Cargo pickup area
+				continue
 			elif "spaceport_row" in slug:
 				b_size = Vector3(14, 2.5, 7)
 				b_color = Color(0.5, 0.45, 0.38)
 			elif slug == "mos_eisley_speeders":
 				b_size = Vector3(9, 2.8, 8)
+				_add_hab_block(host, building_pos, b_size, b_color)
+				add_label(host, building_pos + Vector3(0, b_size.y + 0.7, 0), name)
+				add_inspectable_marker(host, pos, Vector3(6, 3.2, 1.2), _room_title(slug, name), _room_inspection(slug, name))
+				# Speeders identity
+				add_box_to_world(host, building_pos + Vector3(-2, 0.2, 5), Vector3(3.0, 0.4, 4.0), Color(0.2, 0.2, 0.2)) # Lift pad
+				add_box_to_world(host, building_pos + Vector3(3, 1.0, 4), Vector3(2.0, 2.0, 0.5), Color(0.7, 0.3, 0.1)) # Tool rack
+				add_box_to_world(host, building_pos + Vector3(0, 0.8, 4), Vector3(3.0, 1.0, 1.0), Color(0.4, 0.4, 0.4)) # Service counter
+				# Add Shop Signage
+				add_box_to_world(host, building_pos + Vector3(0, 2.5, 4.2), Vector3(4.0, 0.8, 0.2), Color(0.8, 0.6, 0.1))
+				continue
 				
 			_add_hab_block(host, building_pos, b_size, b_color)
 			add_label(host, building_pos + Vector3(0, b_size.y + 0.7, 0), name)
@@ -310,6 +480,13 @@ func _add_landing_pad_walled(host: Node3D, pos: Vector3, label_text: String, bay
 	add_box_to_world(host, pos + Vector3(5.5, 1.5, 8), Vector3(6, 3.0, 1), wall_color)
 	add_box_to_world(host, pos + Vector3(0, 3.5, 8), Vector3(6, 1.0, 1), wall_color) # Lintel
 	
+	# Wall support struts to break up flat surfaces
+	for x in [-7.5, 7.5]:
+		for z in [-7.5, 0.0, 7.5]:
+			add_box_to_world(host, pos + Vector3(x, 1.5, z), Vector3(0.5, 3.2, 0.5), wall_color.darkened(0.1))
+	for x in [-2.5, 2.5]:
+		add_box_to_world(host, pos + Vector3(x, 1.5, -7.5), Vector3(0.5, 3.2, 0.5), wall_color.darkened(0.1))
+	
 	# A slightly recessed dark floor for the pad
 	add_box_to_world(host, pos + Vector3(0, 0.05, 0), Vector3(15, 0.1, 15), Color(0.24, 0.25, 0.25))
 	
@@ -323,11 +500,41 @@ func _add_landing_pad_walled(host: Node3D, pos: Vector3, label_text: String, bay
 	var ramp_offset = Vector3(0, 0.0, 7) if not is_south else Vector3(0, 0.0, -7)
 	add_box_to_world(host, pos + ramp_offset, Vector3(4, 0.5, 2), Color(0.3, 0.3, 0.3))
 	
+	# Add equipment clusters in the corners of the pit
+	# Service terminal / fuel hookup
+	add_box_to_world(host, pos + Vector3(-5.0, 0.8, -5.0), Vector3(1.2, 2.0, 1.0), Color(0.4, 0.45, 0.5))
+	add_box_to_world(host, pos + Vector3(-5.0, 0.4, -4.0), Vector3(2.0, 0.2, 0.4), Color(0.2, 0.2, 0.2)) # Cables/pipes
+	
+	# Cargo sled
+	add_box_to_world(host, pos + Vector3(5.0, -0.1, 4.0), Vector3(3.0, 0.2, 2.0), Color(0.5, 0.5, 0.5)) # Sled base
+	add_box_to_world(host, pos + Vector3(5.0, 0.5, 4.0), Vector3(2.6, 1.0, 1.6), Color(0.35, 0.3, 0.25)) # Cargo block
+	
+	# Small power generator
+	add_box_to_world(host, pos + Vector3(-4.0, 0.2, 5.0), Vector3(1.5, 0.8, 1.5), Color(0.6, 0.6, 0.2))
+	add_box_to_world(host, pos + Vector3(-4.0, 0.8, 5.0), Vector3(0.5, 0.4, 0.5), Color(0.8, 0.2, 0.1)) # Warning light
+
 	# Door frame
 	var door_offset = Vector3(0, 1.5, 8) if not is_south else Vector3(0, 1.5, -8)
 	add_box_to_world(host, pos + door_offset + Vector3(-2.5, 0, 0), Vector3(1, 3.0, 1), wall_color)
 	add_box_to_world(host, pos + door_offset + Vector3(2.5, 0, 0), Vector3(1, 3.0, 1), wall_color)
 	add_box_to_world(host, pos + door_offset + Vector3(0, 1.25, 0), Vector3(4, 0.5, 1), wall_color)
+
+	# Wall breaks to break up the long plain front wall (Spaceport Row East left wall)
+	var front_z = door_offset.z
+	var front_z_dir = 1.0 if not is_south else -1.0
+	
+	# Supported red awning/sign panel (replaces the floating stripe)
+	add_box_to_world(host, pos + Vector3(-4.0, 2.2, front_z + 0.6 * front_z_dir), Vector3(3.5, 0.2, 1.5), Color(0.7, 0.2, 0.2)) # Red awning
+	add_box_to_world(host, pos + Vector3(-5.5, 1.1, front_z + 1.2 * front_z_dir), Vector3(0.1, 2.2, 0.1), Color(0.3, 0.3, 0.3)) # Support pole
+	add_box_to_world(host, pos + Vector3(-2.5, 1.1, front_z + 1.2 * front_z_dir), Vector3(0.1, 2.2, 0.1), Color(0.3, 0.3, 0.3)) # Support pole
+	
+	# Recessed vendor hatch / alcove
+	add_box_to_world(host, pos + Vector3(4.5, 0.5, front_z + 0.2 * front_z_dir), Vector3(1.5, 1.2, 0.8), Color(0.15, 0.15, 0.15)) # Alcove interior
+	add_box_to_world(host, pos + Vector3(4.5, 0.3, front_z + 0.5 * front_z_dir), Vector3(1.5, 0.6, 0.4), Color(0.4, 0.4, 0.4)) # Vendor counter
+	
+	# Pipes and vents
+	add_box_to_world(host, pos + Vector3(-6.5, 1.5, front_z + 0.3 * front_z_dir), Vector3(0.2, 3.0, 0.2), Color(0.3, 0.3, 0.3)) # Vertical pipe
+	add_box_to_world(host, pos + Vector3(6.5, 2.5, front_z + 0.2 * front_z_dir), Vector3(1.2, 0.6, 0.4), Color(0.2, 0.25, 0.25)) # Wall vent
 
 	var light_path := "res://assets/3d/generated/google/buildings/landing_pad_light.tscn"
 	for offset in [Vector3(-4.8, -0.1, -4.8), Vector3(4.8, -0.1, -4.8), Vector3(-4.8, -0.1, 4.8), Vector3(4.8, -0.1, 4.8)]:
@@ -348,13 +555,8 @@ func _add_crate_stack(host: Node3D, pos: Vector3, count: int) -> void:
 		shape.size = Vector3(1.0, 1.0, 1.0)
 		collision.shape = shape
 		body.add_child(collision)
-		var model := instance_model(CRATE_MODEL)
-		if model != null:
-			model.position.y = -0.5  # base-origin model sits on the collision box floor
-			model.scale = Vector3.ONE * CRATE_SCALE
-			body.add_child(model)
-		else:
-			add_box(body, Vector3.ZERO, Vector3(1.0, 1.0, 1.0), Color(0.36, 0.25, 0.16))
+		var colors := [Color(0.36, 0.25, 0.16), Color(0.42, 0.46, 0.5), Color(0.24, 0.28, 0.31)]
+		add_box(body, Vector3.ZERO, Vector3(1.0, 1.0, 1.0), colors[i % colors.size()])
 
 # --- primitives (also reused by main.gd's range geometry) ---
 func add_box_to_world(host: Node3D, pos: Vector3, size: Vector3, color: Color) -> StaticBody3D:
@@ -385,6 +587,35 @@ func add_box(parent: Node3D, local_pos: Vector3, size: Vector3, color: Color, pa
 		mesh_instance.name = "DamagePart_%s" % part_name
 		mesh_instance.set_meta("damage_part", part_name)
 	parent.add_child(mesh_instance)
+
+func _add_procedural_cargo_ship(host: Node3D, pos: Vector3, rot_deg: float) -> void:
+	var ship := Node3D.new()
+	ship.position = pos
+	ship.rotation_degrees.y = rot_deg
+	host.add_child(ship)
+	add_box(ship, Vector3(0, 1.2, 0), Vector3(3.0, 1.2, 6.0), Color(0.4, 0.45, 0.5)) # Hull
+	add_box(ship, Vector3(0, 2.0, 1.5), Vector3(2.0, 0.8, 1.5), Color(0.2, 0.25, 0.3)) # Cockpit
+	add_box(ship, Vector3(-1.8, 1.0, -1.0), Vector3(0.8, 0.8, 4.0), Color(0.3, 0.35, 0.4)) # Engine L
+	add_box(ship, Vector3(1.8, 1.0, -1.0), Vector3(0.8, 0.8, 4.0), Color(0.3, 0.35, 0.4)) # Engine R
+
+func _add_procedural_speeder(host: Node3D, pos: Vector3, rot_deg: float) -> void:
+	var ship := Node3D.new()
+	ship.position = pos
+	ship.rotation_degrees.y = rot_deg
+	host.add_child(ship)
+	add_box(ship, Vector3(0, 0.6, 0), Vector3(1.5, 0.4, 4.0), Color(0.6, 0.2, 0.2)) # Body
+	add_box(ship, Vector3(0, 1.0, 0.5), Vector3(1.0, 0.4, 1.0), Color(0.1, 0.1, 0.1)) # Cockpit
+	add_box(ship, Vector3(0, 0.6, 2.0), Vector3(0.5, 0.2, 1.5), Color(0.5, 0.5, 0.5)) # Nose
+
+func _add_procedural_miner(host: Node3D, pos: Vector3, rot_deg: float) -> void:
+	var ship := Node3D.new()
+	ship.position = pos
+	ship.rotation_degrees.y = rot_deg
+	host.add_child(ship)
+	add_box(ship, Vector3(0, 1.0, 0), Vector3(2.5, 1.5, 3.5), Color(0.7, 0.5, 0.2)) # Hull
+	add_box(ship, Vector3(0, 1.5, -2.0), Vector3(1.5, 1.0, 1.5), Color(0.3, 0.3, 0.3)) # Cargo pod
+	add_box(ship, Vector3(-1.5, 0.5, 1.0), Vector3(0.6, 0.6, 2.0), Color(0.2, 0.2, 0.2)) # Sponson L
+	add_box(ship, Vector3(1.5, 0.5, 1.0), Vector3(0.6, 0.6, 2.0), Color(0.2, 0.2, 0.2)) # Sponson R
 
 func make_material(color: Color, roughness: float) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
@@ -434,20 +665,24 @@ func place_model(host: Node3D, model_path: String, pos: Vector3, rot_deg: float 
 	
 	var min_y := 9999.0
 	var found_mesh := false
-	var stack: Array[Node] = [inst]
+	var stack: Array[Dictionary] = [{"node": inst, "trans": Transform3D()}]
 	while stack.size() > 0:
-		var node = stack.pop_back()
+		var item = stack.pop_back()
+		var node = item["node"]
+		var current_trans = item["trans"]
 		if node is MeshInstance3D and node.mesh != null:
 			var aabb = node.mesh.get_aabb()
-			var local_trans = node.transform
 			for i in range(8):
 				var vertex = aabb.get_endpoint(i)
-				var local_vertex = local_trans * vertex
+				var local_vertex = current_trans * vertex
 				if local_vertex.y < min_y:
 					min_y = local_vertex.y
 			found_mesh = true
 		for child in node.get_children():
-			stack.push_back(child)
+			var next_trans = current_trans
+			if child is Node3D:
+				next_trans = current_trans * child.transform
+			stack.push_back({"node": child, "trans": next_trans})
 	
 	if is_hover:
 		inst.set_meta("hover", true)
@@ -635,21 +870,21 @@ func build_asset_library(host: Node3D) -> void:
 		"Kenney Speeder Craft", 
 		"Curated space Speeder-A glider. Flat-shaded Kenney space-kit GLB model. Press 'E' to trigger hover-boost spin!", 
 		"speeder", 
-		SHIP_SPEEDER
+		""
 	)
 	_add_library_display(
 		host, Vector3(42.0, 0.0, 15.0), 
 		"Kenney Cargo Ship", 
-		"Curated Cargo-A shuttle ship. Flat-shaded Kenney space-kit GLB model. Press 'E' to trigger hover-boost spin!", 
+		"Curated Cargo-A shuttle ship. Replaced with procedural blockout. Press 'E' to trigger hover-boost spin!", 
 		"cargo", 
-		SHIP_CARGO
+		""
 	)
 	_add_library_display(
 		host, Vector3(42.0, 0.0, 22.0), 
 		"Kenney Miner Craft", 
-		"Curated Miner transport shuttle. Flat-shaded Kenney space-kit GLB model. Press 'E' to trigger hover-boost spin!", 
+		"Curated Miner transport shuttle. Replaced with procedural blockout. Press 'E' to trigger hover-boost spin!", 
 		"miner", 
-		SHIP_MINER
+		""
 	)
 	
 	# --- Wing C (Back wall): modular Buildings & Props (z = 3.0) ---
@@ -744,7 +979,6 @@ func build_asset_library(host: Node3D) -> void:
 
 
 
-
 func _add_library_display(host: Node3D, pos: Vector3, title: String, desc: String, type: String, model_path: String) -> void:
 	# 1. Spawn Pedestal Box
 	var pedestal_color := Color(0.24, 0.28, 0.31)
@@ -814,6 +1048,22 @@ func _add_library_display(host: Node3D, pos: Vector3, title: String, desc: Strin
 		add_box(table_holder, Vector3(0.2, 0.48, 0.1), Vector3(0.08, 0.08, 0.08), Color(0.15, 0.84, 1.0))
 		body.target_node = table_holder
 		
+	elif type == "cargo":
+		var ship_holder := Node3D.new()
+		ship_holder.position = Vector3(0, 0.4, 0)
+		body.add_child(ship_holder)
+		_add_procedural_cargo_ship(ship_holder, Vector3.ZERO, 0)
+	elif type == "speeder":
+		var ship_holder := Node3D.new()
+		ship_holder.position = Vector3(0, 0.4, 0)
+		body.add_child(ship_holder)
+		_add_procedural_speeder(ship_holder, Vector3.ZERO, 0)
+	elif type == "miner":
+		var ship_holder := Node3D.new()
+		ship_holder.position = Vector3(0, 0.4, 0)
+		body.add_child(ship_holder)
+		_add_procedural_miner(ship_holder, Vector3.ZERO, 0)
+		
 	elif type == "bar":
 		var bar_holder := Node3D.new()
 		bar_holder.position = Vector3(0, 0.4, 0)
@@ -829,8 +1079,4 @@ func _add_library_display(host: Node3D, pos: Vector3, title: String, desc: Strin
 		
 	elif type == "crate":
 		# Add a barrel beside the crate
-		if ResourceLoader.exists(BARREL_MODEL):
-			var barrel: Node3D = load(BARREL_MODEL).instantiate()
-			barrel.name = "barrel"
-			barrel.position = Vector3(0.42, 0.5, 0.0)
-			body.add_child(barrel)
+		add_box(body, Vector3(0.42, 0.5, 0.0), Vector3(0.6, 1.0, 0.6), Color(0.4, 0.45, 0.5))

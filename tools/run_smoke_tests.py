@@ -70,6 +70,10 @@ def run_test(test_path, project_root, godot_cmd):
             "ok": ok
         }
     except subprocess.TimeoutExpired:
+        try:
+            proc.kill()
+        except:
+            pass
         return {
             "test": base_name,
             "label": label,
@@ -100,10 +104,8 @@ def main():
     
     godot_cmd = os.environ.get("GODOT_CONSOLE", "godot-console")
     
-    print(f"Running {len(test_files)} smoke tests sequentially (concurrency limit: 1)...", flush=True)
-    
-    # Limit max workers to 1 to avoid disk/CPU cache locking thrash on Godot startup
-    max_workers = 1
+    max_workers = min(16, (os.cpu_count() or 1) + 4)
+    print(f"Running {len(test_files)} smoke tests (concurrency limit: {max_workers})...", flush=True)
     
     failures = []
     

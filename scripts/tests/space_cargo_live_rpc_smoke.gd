@@ -16,14 +16,14 @@ func _finish() -> void:
 func _init() -> void:
 	print("Starting Space Cargo RPC multi-process test...")
 	var t_dir = DirAccess.open("user://telemetry")
-	if t_dir != null and t_dir.file_exists("events.jsonl"):
-		t_dir.remove("events.jsonl")
+	if t_dir != null and t_dir.file_exists("space_cargo_events.jsonl"):
+		t_dir.remove("space_cargo_events.jsonl")
 
 	var exe = OS.get_executable_path()
 	if exe == "":
 		exe = "godot"
 
-	var server_args = ["--headless", "--path", ".", "res://scenes/net_world.tscn", "--", "--server", "--space-cargo-test-server", "--port", "24557"]
+	var server_args = ["--headless", "--path", ".", "res://scenes/net_world.tscn", "--", "--server", "--space-cargo-test-server", "--port", "24557", "--telemetry-file", "user://telemetry/space_cargo_events.jsonl"]
 	var pid_server = OS.create_process(exe, server_args)
 	if pid_server == -1:
 		_fail("Could not start server process")
@@ -65,8 +65,8 @@ func _init() -> void:
 
 	var events = []
 	print("--- TELEMETRY LOGS ---")
-	if t_dir != null and t_dir.file_exists("events.jsonl"):
-		var f = FileAccess.open("user://telemetry/events.jsonl", FileAccess.READ)
+	if t_dir != null and t_dir.file_exists("space_cargo_events.jsonl"):
+		var f = FileAccess.open("user://telemetry/space_cargo_events.jsonl", FileAccess.READ)
 		while not f.eof_reached():
 			var line = f.get_line().strip_edges()
 			if line != "":
