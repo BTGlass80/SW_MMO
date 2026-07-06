@@ -99,15 +99,25 @@ static func sell_price(list_cost: int) -> int:
 		return 0
 	return maxi(int(round(float(list_cost) * SELL_RATE)), 1)
 
+const ItemInstance := preload("res://scripts/rules/item_instance.gd")
+
 # --- the owned-item set (inventory when present, else the currently-equipped items) ---
 static func _owned_list(sheet: Dictionary) -> Array:
-	var inv: Variant = sheet.get("inventory", null)
-	if inv is Array:
-		return (inv as Array).duplicate()
 	var out: Array = []
-	for v in (sheet.get("equipment", {}) as Dictionary).values():
-		if String(v) != "":
-			out.append(String(v))
+	var inv: Variant = sheet.get("inventory", null)
+	var raw_list: Array = []
+	if inv is Array:
+		raw_list = inv as Array
+	else:
+		for v in (sheet.get("equipment", {}) as Dictionary).values():
+			if String(v) != "":
+				raw_list.append(v)
+				
+	for item in raw_list:
+		if typeof(item) == TYPE_STRING:
+			out.append(ItemInstance.create(item, item.capitalize(), "item", 50.0, 100, "world"))
+		elif typeof(item) == TYPE_DICTIONARY:
+			out.append(item.duplicate(true))
 	return out
 
 static func _is_equipped(sheet: Dictionary, item_key: String) -> bool:
@@ -135,31 +145,53 @@ static func buy(sheet: Dictionary, item_key: String, price: int, catalog: Dictio
 	var next := sheet.duplicate(true)
 	next["credits"] = int(next.get("credits", 0)) - price
 	var inv := _owned_list(next)  # materializes from equipped if there was no inventory (keeps ownership)
-	inv.append(item_key)
+	
+	var catalog_entry: Dictionary = catalog.get(item_key, {})
+	var name: String = catalog_entry.get("name", item_key.capitalize())
+	var kind: String = catalog_entry.get("kind", "item")
+	var condition: int = catalog_entry.get("max_condition", 100)
+	var inst := ItemInstance.create(item_key, name, kind, 50.0, condition, "vendor")
+	inv.append(inst)
+	
 	next["inventory"] = inv
 	return {"ok": true, "reason": "", "sheet": next}
 
 # {ok, reason} — reasons: not_owned / equipped (cannot sell a currently-equipped item)
-static func can_sell(sheet: Dictionary, item_key: String) -> Dictionary:
-	if not _owned_list(sheet).has(item_key):
+static func can_sell(sheet: Dictionary, instance_id: String) -> Dictionary:
+	var owned := _owned_list(sheet)
+	var found := false
+	var template_id := ""
+	for item in owned:
+		if typeof(item) == TYPE_DICTIONARY and item.get("instance_id", "") == instance_id:
+			found = true
+			template_id = item.get("template_id", "")
+			break
+	if not found:
 		return {"ok": false, "reason": "not_owned"}
-	if _is_equipped(sheet, item_key):
+	if _is_equipped(sheet, template_id): # legacy equipment still uses template_id, need to check this!
 		return {"ok": false, "reason": "equipped"}
 	return {"ok": true, "reason": ""}
 
-# {ok, reason, sheet} — NON-mutating; on ok credits+=price and the FIRST matching inventory entry removed.
-static func sell(sheet: Dictionary, item_key: String, price: int) -> Dictionary:
-	var check := can_sell(sheet, item_key)
+# {ok, reason, sheet, item_key} — NON-mutating; on ok credits+=price and the FIRST matching inventory entry removed.
+static func sell(sheet: Dictionary, instance_id: String, price: int) -> Dictionary:
+	var check := can_sell(sheet, instance_id)
 	if not bool(check["ok"]):
-		return {"ok": false, "reason": String(check["reason"]), "sheet": sheet}
+		return {"ok": false, "reason": String(check["reason"]), "sheet": sheet, "item_key": ""}
 	var next := sheet.duplicate(true)
 	next["credits"] = int(next.get("credits", 0)) + price
 	var inv := _owned_list(next)
-	var idx := inv.find(item_key)
+	var idx := -1
+	var item_key := ""
+	for i in range(inv.size()):
+		var item = inv[i]
+		if typeof(item) == TYPE_DICTIONARY and item.get("instance_id", "") == instance_id:
+			idx = i
+			item_key = item.get("template_id", "")
+			break
 	if idx >= 0:
 		inv.remove_at(idx)
 	next["inventory"] = inv
-	return {"ok": true, "reason": "", "sheet": next}
+	return {"ok": true, "reason": "", "sheet": next, "item_key": item_key}
 
 # Grant owned items into the sheet's inventory (materializing from equipped if there was none), dupes
 # allowed = stackable ownership — the same append shape as buy(). NON-mutating: returns a new sheet.
@@ -171,7 +203,10 @@ static func grant_items(sheet: Dictionary, items: Array) -> Dictionary:
 	var next := sheet.duplicate(true)
 	var inv := _owned_list(next)
 	for it in items:
-		inv.append(String(it))
+		if typeof(it) == TYPE_STRING:
+			inv.append(ItemInstance.create(it, it.capitalize(), "item", 50.0, 100, "world"))
+		elif typeof(it) == TYPE_DICTIONARY:
+			inv.append(it.duplicate(true))
 	next["inventory"] = inv
 	return next
 

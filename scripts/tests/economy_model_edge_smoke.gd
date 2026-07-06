@@ -45,25 +45,51 @@ func _init() -> void:
 	var mat_bought := EconomyModel.buy(equipped_only, "vibroblade", 100, mat_catalog)
 	_assert_true(bool(mat_bought["ok"]), "buy succeeds on a sheet with no prior inventory key")
 	var mat_inv: Array = (mat_bought["sheet"] as Dictionary)["inventory"]
-	_assert_true(mat_inv.has("blaster_pistol"), "the previously-equipped-only item is materialized into inventory")
-	_assert_true(mat_inv.has("vibroblade"), "the newly bought item is present too")
+	
+	var has_blaster = false
+	var has_vibro = false
+	for item in mat_inv:
+		if typeof(item) == TYPE_DICTIONARY:
+			var tid = item.get("template_id", "")
+			if tid == "blaster_pistol": has_blaster = true
+			if tid == "vibroblade": has_vibro = true
+			
+	_assert_true(has_blaster, "the previously-equipped-only item is materialized into inventory")
+	_assert_true(has_vibro, "the newly bought item is present too")
 	_assert_equal(mat_inv.size(), 2, "exactly the equipped item + the new purchase, nothing extra")
 
 	# --- (locked-in, intentional) can_sell blocks ALL copies of an equipped item type, even a spare ---
 	var spare_sheet := {"credits": 0, "equipment": {"weapon": "blaster_pistol"},
 		"inventory": ["blaster_pistol", "blaster_pistol"]}  # one worn + one spare
-	_assert_equal(String(EconomyModel.can_sell(spare_sheet, "blaster_pistol")["reason"]), "equipped",
+	spare_sheet["inventory"] = EconomyModel._owned_list(spare_sheet)
+	var spare_instance_id = ""
+	for item in (spare_sheet["inventory"] as Array):
+		if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == "blaster_pistol":
+			spare_instance_id = item.get("instance_id", "")
+			break
+	_assert_equal(String(EconomyModel.can_sell(spare_sheet, spare_instance_id)["reason"]), "equipped",
 		"can_sell blocks the whole item TYPE while equipped, even though a spare copy is owned (economy_model is not per-instance; death_penalty_model IS -- this is a documented divergence between the two models, not a bug in either)")
 
 	# --- stacked sell-down-to-zero: selling twice removes the item entirely, third sell fails not_owned ---
 	var stack_sheet := {"credits": 0, "equipment": {}, "inventory": ["knife", "knife"]}
-	var s1 := EconomyModel.sell(stack_sheet, "knife", 5)
+	stack_sheet["inventory"] = EconomyModel._owned_list(stack_sheet)
+	
+	var get_knife_id = func(sh: Dictionary) -> String:
+		for item in (sh["inventory"] as Array):
+			if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == "knife":
+				return item.get("instance_id", "")
+		return "ghost_knife"
+		
+	var knife1 = get_knife_id.call(stack_sheet)
+	var s1 := EconomyModel.sell(stack_sheet, knife1, 5)
 	_assert_true(bool(s1["ok"]), "first sell of a stacked item succeeds")
 	_assert_equal(((s1["sheet"] as Dictionary)["inventory"] as Array).size(), 1, "one instance remains after the first sell")
-	var s2 := EconomyModel.sell(s1["sheet"], "knife", 5)
+	
+	var knife2 = get_knife_id.call(s1["sheet"])
+	var s2 := EconomyModel.sell(s1["sheet"], knife2, 5)
 	_assert_true(bool(s2["ok"]), "second sell succeeds")
 	_assert_equal(((s2["sheet"] as Dictionary)["inventory"] as Array).size(), 0, "no instances remain after selling both")
-	_assert_equal(String(EconomyModel.can_sell(s2["sheet"], "knife")["reason"]), "not_owned", "a third sell attempt correctly reports not_owned")
+	_assert_equal(String(EconomyModel.can_sell(s2["sheet"], knife2)["reason"]), "not_owned", "a third sell attempt correctly reports not_owned")
 
 	# --- roll_loot: scale no longer feeds credits (G15) + a distinct seed changes the roll ---
 	# G15 (DIV-0028): the character-scale band is GONE — every hostile uses the single base band [15,45].

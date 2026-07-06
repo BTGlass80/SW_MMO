@@ -32,7 +32,7 @@ func _init() -> void:
 	_assert_true(not fresh.has("blaster_pistol"), "initial_ammo carries no per-weapon entry (lazy on first fire)")
 
 	# --- consume from a full magazine decrements by one (no reload) ---
-	var a := {"ammo": {"blaster_pistol": 100, "migrated_packs": true}, "inventory": [{"template_key": "blaster_power_pack", "quantity": 2}]}
+	var a := {"ammo": {"blaster_pistol": 100, "migrated_packs": true}, "inventory": [{"template_key": "blaster_power_pack", "stack_count": 2}]}
 	var r := AmmoModel.consume(a, "blaster_pistol", pistol)
 	_assert_true(bool(r["ok"]), "a shot with ammo succeeds")
 	_assert_equal(int(r["shots_left"]), 99, "a fired shot decrements the magazine by 1")
@@ -40,7 +40,7 @@ func _init() -> void:
 	_assert_equal(AmmoModel.packs(a), 2, "a normal shot does not touch the pack count")
 
 	# --- empty magazine + a carried pack AUTO-RELOADS (spends a pack, refills to full, fires the shot) ---
-	var b := {"ammo": {"blaster_pistol": 0, "migrated_packs": true}, "inventory": [{"template_key": "blaster_power_pack", "quantity": 1}]}
+	var b := {"ammo": {"blaster_pistol": 0, "migrated_packs": true}, "inventory": [{"template_key": "blaster_power_pack", "stack_count": 1}]}
 	_assert_true(AmmoModel.can_fire(b, "blaster_pistol", pistol), "empty magazine + a pack CAN fire (will reload)")
 	var rb := AmmoModel.consume(b, "blaster_pistol", pistol)
 	_assert_true(bool(rb["ok"]), "empty+pack consume succeeds")
@@ -73,7 +73,7 @@ func _init() -> void:
 	_assert_true(not bool(rl["reloaded"]), "the migrated first fire is from the fresh full magazine, not a reload")
 
 	# --- heavy magazine drains to empty then reloads: consume 25 shots, the 26th reloads ---
-	var h := {"ammo": {"heavy_blaster_pistol": 25, "migrated_packs": true}, "inventory": [{"template_key": "blaster_power_pack", "quantity": 1}]}
+	var h := {"ammo": {"heavy_blaster_pistol": 25, "migrated_packs": true}, "inventory": [{"template_key": "blaster_power_pack", "stack_count": 1}]}
 	for i in range(25):
 		AmmoModel.consume(h, "heavy_blaster_pistol", heavy)
 	_assert_equal(int(h.get("ammo", {})["heavy_blaster_pistol"]), 0, "25 shots empties a 25-round heavy magazine")

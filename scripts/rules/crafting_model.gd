@@ -284,11 +284,7 @@ static func craft_item(sheet: Dictionary, schematic_key: String, rules: Object, 
 	inventory.append(item_inst)
 	next_sheet["inventory"] = inventory
 	
-	# If power_pack, also add standard ammo packs count for compatibility
-	if schematic_key == "power_pack_standard" or schematic_key == "blaster_power_pack":
-		var ammo: Dictionary = next_sheet.get("ammo", {"packs": 0, "shots": 0})
-		ammo["packs"] = int(ammo.get("packs", 0)) + 1
-		next_sheet["ammo"] = ammo
+	# Legacy ammo mutation removed (power packs are now fully item instance driven)
 		
 	return {
 		"ok": true,

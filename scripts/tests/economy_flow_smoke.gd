@@ -50,11 +50,19 @@ func _buy(record: Dictionary, catalog: Dictionary, key: String, event_type: Stri
 		record["sheet"] = result["sheet"]
 	return {"ok": bool(result["ok"]), "reason": String(result["reason"]), "price": price}
 
-func _sell(record: Dictionary, catalog: Dictionary, key: String) -> Dictionary:
+func _sell(record: Dictionary, catalog: Dictionary, instance_id: String) -> Dictionary:
+	var sheet: Dictionary = record.get("sheet", {})
+	var key := ""
+	for item in EconomyModel._owned_list(sheet):
+		if typeof(item) == TYPE_DICTIONARY and item.get("instance_id", "") == instance_id:
+			key = item.get("template_id", "")
+			break
+	if key == "":
+		return {"ok": false, "reason": "not_owned", "price": 0}
 	if not catalog.has(key):
 		return {"ok": false, "reason": "unknown_item", "price": 0}
 	var price := EconomyModel.sell_price(int((catalog[key] as Dictionary)["cost"]))
-	var result: Dictionary = EconomyModel.sell(record.get("sheet", {}), key, price)
+	var result: Dictionary = EconomyModel.sell(sheet, instance_id, price)
 	if bool(result["ok"]):
 		record["sheet"] = result["sheet"]
 	return {"ok": bool(result["ok"]), "reason": String(result["reason"]), "price": price}
@@ -84,7 +92,12 @@ func _init() -> void:
 	var b1 := _buy(rec, catalog, "blaster_pistol", "")
 	_assert_true(bool(b1["ok"]) and int(b1["price"]) == 500, "buy blaster_pistol at list 500 (markup 1.0)")
 	_assert_equal(int((rec["sheet"] as Dictionary)["credits"]), 500, "credits debited to 500")
-	_assert_true((((rec["sheet"] as Dictionary)["inventory"]) as Array).has("blaster_pistol"), "bought item enters inventory")
+	var rec_has_blaster = false
+	for item in (rec["sheet"]["inventory"] as Array):
+		if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == "blaster_pistol":
+			rec_has_blaster = true
+			break
+	_assert_true(rec_has_blaster, "bought item enters inventory")
 	_buy(rec, catalog, "blaster_pistol", "")  # -> 0
 	_assert_equal(int((rec["sheet"] as Dictionary)["credits"]), 0, "second buy zeroes the wallet")
 	_assert_equal(String(_buy(rec, catalog, "blaster_pistol", "")["reason"]), "cannot_afford", "broke -> cannot_afford")
@@ -93,13 +106,25 @@ func _init() -> void:
 
 	# --- SELL: 40% buy-back; rejects not-owned + equipped ---
 	var rec2 := {"sheet": {"credits": 1000, "skills": {}, "equipment": {}, "inventory": ["hold_out_blaster"]}}
-	var s1 := _sell(rec2, catalog, "hold_out_blaster")
+	rec2["sheet"]["inventory"] = EconomyModel._owned_list(rec2["sheet"])
+	var holdout_id = ""
+	for item in (rec2["sheet"]["inventory"] as Array):
+		if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == "hold_out_blaster":
+			holdout_id = item.get("instance_id", "")
+			break
+	var s1 := _sell(rec2, catalog, holdout_id)
 	_assert_true(bool(s1["ok"]) and int(s1["price"]) == 110, "sell hold_out (275) pays 40% = 110")
 	_assert_equal(int((rec2["sheet"] as Dictionary)["credits"]), 1110, "sell credits the wallet")
-	_assert_equal(String(_sell(rec2, catalog, "hold_out_blaster")["reason"]), "not_owned", "cannot sell what you no longer own")
+	_assert_equal(String(_sell(rec2, catalog, holdout_id)["reason"]), "not_owned", "cannot sell what you no longer own")
 	var rec3 := {"sheet": {"credits": 0, "skills": {}, "equipment": {"weapon": "blaster_pistol"}, "inventory": ["blaster_pistol"]}}
-	_assert_equal(String(_sell(rec3, catalog, "blaster_pistol")["reason"]), "equipped", "cannot sell a currently-equipped item")
-	_assert_equal(String(_sell(rec3, catalog, "nope")["reason"]), "unknown_item", "sell unknown item rejected")
+	rec3["sheet"]["inventory"] = EconomyModel._owned_list(rec3["sheet"])
+	var blaster_id = ""
+	for item in (rec3["sheet"]["inventory"] as Array):
+		if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == "blaster_pistol":
+			blaster_id = item.get("instance_id", "")
+			break
+	_assert_equal(String(_sell(rec3, catalog, blaster_id)["reason"]), "equipped", "cannot sell a currently-equipped item")
+	_assert_equal(String(_sell(rec3, catalog, "ghost_item")["reason"]), "not_owned", "sell unknown item rejected")
 
 	# --- PRICE STACK: Director multiplier x Bargain x rep discount, all through the server helper ---
 	var plain := {"sheet": {"credits": 9999, "skills": {}}}

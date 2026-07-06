@@ -51,8 +51,17 @@ func _init() -> void:
 	_assert_equal(String(out["reason"]), "looted", "a fresh lawless corpse is third-party lootable")
 	_assert_equal((out["items"] as Array), ["blast_helmet", "knife"], "the looter receives the exact dropped set")
 	var l_inv: Array = ((out["looter"] as Dictionary)["sheet"] as Dictionary)["inventory"]
-	_assert_true(l_inv.has("blast_helmet") and l_inv.has("knife"), "the dropped items landed in the looter's inventory")
-	_assert_true(l_inv.has("blaster_pistol"), "the looter's pre-existing inventory is preserved")
+	var has_helmet = false
+	var has_knife = false
+	var has_blaster = false
+	for item in l_inv:
+		if typeof(item) == TYPE_DICTIONARY:
+			var tid = item.get("template_id", "")
+			if tid == "blast_helmet": has_helmet = true
+			if tid == "knife": has_knife = true
+			if tid == "blaster_pistol": has_blaster = true
+	_assert_true(has_helmet and has_knife, "the dropped items landed in the looter's inventory")
+	_assert_true(has_blaster, "the looter's pre-existing inventory is preserved")
 	_assert_equal(int(((out["looter"] as Dictionary)["sheet"] as Dictionary)["credits"]), 500, "credits are NEVER on the corpse (DIV-0006) — looter credits unchanged")
 	_assert_equal(((out["victim"] as Dictionary)["world_hooks"] as Dictionary)["corpse"], null, "the victim manifest is nulled after a successful loot")
 
@@ -67,7 +76,12 @@ func _init() -> void:
 	var c_out := _loot(c_victim, c_looter, _tier_from_manifest(c_victim["world_hooks"]["corpse"]), 60)
 	_assert_equal(String(c_out["reason"]), "protected", "a contested corpse is owner-protected from a third party")
 	_assert_equal((((c_out["victim"] as Dictionary)["world_hooks"] as Dictionary)["corpse"] as Dictionary)["items"], ["stimpack"], "a protected corpse is left intact (not nulled)")
-	_assert_true(not (((c_out["looter"] as Dictionary)["sheet"] as Dictionary)["inventory"] as Array).has("stimpack"), "a third party gains nothing from a contested corpse")
+	var c_inv: Array = ((c_out["looter"] as Dictionary)["sheet"] as Dictionary)["inventory"]
+	var c_has_stim = false
+	for item in c_inv:
+		if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == "stimpack":
+			c_has_stim = true
+	_assert_true(not c_has_stim, "a third party gains nothing from a contested corpse")
 
 	# --- secured death writes corpse=null: no body to loot ---
 	var s_victim := {"world_hooks": {"corpse": null}}

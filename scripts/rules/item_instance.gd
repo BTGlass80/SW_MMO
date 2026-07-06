@@ -29,14 +29,14 @@ static func create(template_id: String, display_name: String, kind: String, qual
 	}
 
 static func create_from_output(output_def: Dictionary, quality: float, crafter_id: String, source_resources: Dictionary = {}) -> Dictionary:
-	var template_key := String(output_def.get("template_key", "item"))
+	var template_id := String(output_def.get("template_id", output_def.get("template_key", "item")))
 	var base_name := String(output_def.get("name", "Crafted Item"))
 	var name := "%s (Q: %d%%)" % [base_name, int(quality)]
 	var kind := String(output_def.get("kind", "utility"))
 	var max_condition := int(output_def.get("max_condition", 1))
 	var modifiers: Dictionary = output_def.get("modifiers", {})
 	
-	var item = create(template_key, name, kind, quality, max_condition, crafter_id, source_resources, modifiers)
+	var item = create(template_id, name, kind, quality, max_condition, crafter_id, source_resources, modifiers)
 	
 	# Try to map some fields from the template definition if present
 	if output_def.has("quantity"):

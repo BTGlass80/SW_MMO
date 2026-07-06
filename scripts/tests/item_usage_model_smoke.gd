@@ -45,7 +45,7 @@ func _init() -> void:
 	
 	var power_pack_result = usage_model.use_item(sheet, rules, target, power_pack, seed_val)
 	_assert_equal(bool(power_pack_result.get("ok", false)), true, "Power pack adds ammo")
-	_assert_equal(int(power_pack_result.get("target_state", {}).get("ammo", {}).get("packs", 0)), 11, "Target ammo packs increased from 10 to 11")
+	_assert_equal(int(power_pack_result.get("ammo_added", 0)), 30, "Power pack returns added shots (20 * 1.5)")
 	_assert_equal(bool(power_pack_result.get("consumed", false)), true, "Power pack consumed")
 	
 	# Test 3: Ship repair patch repairs hull

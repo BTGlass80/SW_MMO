@@ -37,6 +37,8 @@ func _init() -> void:
 		"cis_field_armor": {"vendor_stocked": false, "cost": 0},  # faction-issued, not sold
 	}
 	var sheet := {"credits": 1000, "inventory": ["blaster_pistol"], "equipment": {"weapon": "blaster_pistol"}}
+	# Normalize sheet to use proper item instances so instance IDs are stable
+	sheet["inventory"] = EconomyModel._owned_list(sheet)
 
 	# --- can_buy reason ladder ---
 	_assert_equal(String(EconomyModel.can_buy(sheet, "nope", 100, catalog)["reason"]), "unknown_item", "unknown item rejected")
@@ -48,19 +50,45 @@ func _init() -> void:
 	var bought: Dictionary = EconomyModel.buy(sheet, "vibroblade", 250, catalog)
 	_assert_true(bool(bought["ok"]), "buy ok")
 	_assert_equal(int((bought["sheet"] as Dictionary)["credits"]), 750, "buy deducts the price")
-	_assert_true(((bought["sheet"] as Dictionary)["inventory"] as Array).has("vibroblade"), "bought item appended to inventory")
+	var has_bought_vibro = false
+	for item in ((bought["sheet"] as Dictionary)["inventory"] as Array):
+		if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == "vibroblade":
+			has_bought_vibro = true
+			break
+	_assert_true(has_bought_vibro, "bought item appended to inventory")
 	_assert_equal(int(sheet["credits"]), 1000, "original sheet is NOT mutated by buy")
 	_assert_equal((sheet["inventory"] as Array).size(), 1, "original inventory is NOT mutated by buy")
 
 	# --- sell: blocks a currently-equipped item; pays out an unequipped one; non-mutating ---
-	_assert_equal(String(EconomyModel.can_sell(sheet, "blaster_pistol")["reason"]), "equipped", "cannot sell the equipped weapon")
+	# We need to find the instance ID of the equipped blaster pistol to test can_sell(equipped)
+	var blaster_instance_id = ""
+	for item in EconomyModel._owned_list(sheet):
+		if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == "blaster_pistol":
+			blaster_instance_id = item.get("instance_id", "")
+			break
+			
+	_assert_equal(String(EconomyModel.can_sell(sheet, blaster_instance_id)["reason"]), "equipped", "cannot sell the equipped weapon")
 	_assert_equal(String(EconomyModel.can_sell(sheet, "ghost_item")["reason"]), "not_owned", "cannot sell an unowned item")
 	var newsheet: Dictionary = bought["sheet"]  # has an unequipped vibroblade
-	_assert_true(bool(EconomyModel.can_sell(newsheet, "vibroblade")["ok"]), "an unequipped owned item is sellable")
-	var sold: Dictionary = EconomyModel.sell(newsheet, "vibroblade", EconomyModel.sell_price(250))
+	
+	# Find the bought vibroblade's instance_id
+	var vibroblade_id = ""
+	for item in (newsheet["inventory"] as Array):
+		if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == "vibroblade":
+			vibroblade_id = item.get("instance_id", "")
+			break
+			
+	_assert_true(bool(EconomyModel.can_sell(newsheet, vibroblade_id)["ok"]), "an unequipped owned item is sellable")
+	var sold: Dictionary = EconomyModel.sell(newsheet, vibroblade_id, EconomyModel.sell_price(250))
 	_assert_true(bool(sold["ok"]), "sell ok")
 	_assert_equal(int((sold["sheet"] as Dictionary)["credits"]), 850, "sell adds the buy-back (750 + 100)")
-	_assert_true(not ((sold["sheet"] as Dictionary)["inventory"] as Array).has("vibroblade"), "sold item removed from inventory")
+	
+	var still_has_vibroblade = false
+	for item in ((sold["sheet"] as Dictionary)["inventory"] as Array):
+		if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == "vibroblade":
+			still_has_vibroblade = true
+			break
+	_assert_true(not still_has_vibroblade, "sold item removed from inventory")
 	_assert_equal(int((newsheet as Dictionary)["credits"]), 750, "original sheet is NOT mutated by sell")
 
 	# --- roll_loot: hostile-only, deterministic, ONE scale-independent base band x pack, zero for dummy ---

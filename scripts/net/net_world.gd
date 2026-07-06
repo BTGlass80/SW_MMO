@@ -274,12 +274,16 @@ func _ready() -> void:
 		
 		if _space_cargo_test_server:
 			await get_tree().create_timer(1.0).timeout
-			var s_p1_record = Net._cached_load("pilot_1")
+			var target_account = _account if _account != "" else "pilot_1"
+			var s_p1_record = Net._cached_load(target_account)
 			if s_p1_record.is_empty():
-				s_p1_record = {"id": "pilot_1", "sheet": {}}
+				s_p1_record = {"id": target_account, "sheet": {}}
 			s_p1_record["sheet"]["credits"] = 5000
 			s_p1_record["sheet"]["ships"] = ["ship_1"]
-			Net._cached_save("pilot_1", s_p1_record)
+			Net._cached_save(target_account, s_p1_record)
+			var p1_peer = Net.admin_get_peer_by_character(target_account)
+			if p1_peer > 0:
+				Net.admin_push_sheet(p1_peer, s_p1_record)
 			
 		if _econ_test_server:
 			await get_tree().create_timer(1.0).timeout
@@ -364,11 +368,11 @@ func _run_econ_c2() -> void:
 
 func _run_space_cargo_c1() -> void:
 	print("[space] Starting _run_space_cargo_c1...")
-	if _my_sheet.is_empty():
-		print("[space] Waiting for sheet_updated...")
+	while not _my_sheet.get("ships", []).has("ship_1"):
+		print("[space] Waiting for sheet_updated with ship_1...")
 		await Net.sheet_updated
-	print("[space] Sheet received! Launching ship...")
-	Net.send_launch_ship()
+	print("[space] Sheet received with ship_1! Launching ship...")
+	Net.send_launch_ship("ship_1")
 	var launch_result = await Net.launch_ship_replied
 	var launch_outcome = launch_result[0] if launch_result is Array else launch_result
 	print("[space] Launch outcome: ", launch_outcome)
@@ -388,9 +392,25 @@ func _run_space_cargo_c1() -> void:
 		# Wait for the sheet update from the landing sequence
 		await get_tree().create_timer(0.5).timeout
 		
+		var sheet = _my_sheet
+		var inventory: Array = sheet.get("inventory", [])
+		var item_instance_id = ""
+		for item in inventory:
+			if typeof(item) == TYPE_DICTIONARY and item.get("template_id") == "asteroid_field":
+				item_instance_id = item.get("instance_id", "asteroid_field")
+				break
+		if item_instance_id != "":
+			print("[space] Selling cargo...")
+			Net.send_sell(item_instance_id)
+			var sell_result = await Net.sell_replied
+			print("[space] Sell outcome: ", sell_result)
+		else:
+			print("[space] Cargo not found in inventory!")
+		
 		# Assert the cargo transfer
+		print("[space] End of space cargo test.")
 		var found_cargo = false
-		var inventory: Array = _my_sheet.get("inventory", [])
+		inventory = _my_sheet.get("inventory", [])
 		print("[space] Inventory after landing: ", inventory)
 		for item in inventory:
 			if item is Dictionary and item.get("template_id", "") == "asteroid_field":
@@ -470,11 +490,11 @@ func _parse_args() -> void:
 		_quit_after = float(qa)
 	_space_cargo_test_c1 = args.has("--space-cargo-test-c1")
 
-	if _econ_test_c1:
+	if _econ_test_c1 and _account == "guest":
 		_account = "crafter_1"
-	if _econ_test_c2:
+	if _econ_test_c2 and _account == "guest":
 		_account = "buyer_1"
-	if _space_cargo_test_c1:
+	if _space_cargo_test_c1 and _account == "guest":
 		_account = "pilot_1"
 
 func _resolve_host() -> String:

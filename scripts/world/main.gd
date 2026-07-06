@@ -153,8 +153,9 @@ func _build_blaster_range() -> void:
 	
 	# Training barricades instead of random crate clutter
 	var barricade_scene = null
-	if ResourceLoader.exists("res://assets/3d/generated/google/buildings/combat_barricade.tscn"):
-		barricade_scene = CombatBarricade
+	# Disabled to prevent white/red/yellow test geometry in Bay 94 captures
+	# if ResourceLoader.exists("res://assets/3d/generated/google/buildings/combat_barricade.tscn"):
+	# 	barricade_scene = CombatBarricade
 	
 	if barricade_scene:
 		var b1 = barricade_scene.instantiate()

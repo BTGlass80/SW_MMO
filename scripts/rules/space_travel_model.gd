@@ -56,7 +56,7 @@ static func harvest_cargo(sheet: Dictionary, target_key: String, rng_seed: int) 
 	rng.seed = rng_seed
 	var instance_id = str(rng.randi()) # Use RNG to generate stable ID based on seed
 	
-	var item_instance := ItemInstance.create(harvest_key, harvest_key.capitalize(), "resource", 50.0, 100, "world")
+	var item_instance := ItemInstance.create(harvest_key, "Asteroid", "resource", 50.0, 100, "world")
 	item_instance["instance_id"] = instance_id
 	cargo.append(item_instance)
 	

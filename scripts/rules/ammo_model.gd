@@ -2,6 +2,8 @@ extends RefCounted
 ## Pure WEG ammo / power-pack recurring-sink model (DIV-0029). 
 ## Upgraded to use actual item instances in the inventory.
 
+const ItemInstance := preload("res://scripts/rules/item_instance.gd")
+
 const PACK_COST := 25
 const STARTING_PACKS := 2
 const PACK_ITEM_KEY := "blaster_power_pack"
@@ -18,14 +20,7 @@ static func uses_ammo(weapon_dict: Dictionary) -> bool:
 static func initial_packs() -> Array:
 	var arr = []
 	for i in range(STARTING_PACKS):
-		arr.append({
-			"id": "starter_pack_" + str(i),
-			"template_key": PACK_ITEM_KEY,
-			"kind": "ammo",
-			"name": "Blaster Power Pack",
-			"quantity": 1,
-			"quality": 50.0
-		})
+		arr.append(ItemInstance.create(PACK_ITEM_KEY, "Blaster Power Pack", "ammo", 50.0, 100, "chargen"))
 	return arr
 
 static func packs(sheet: Dictionary) -> int:
@@ -33,9 +28,9 @@ static func packs(sheet: Dictionary) -> int:
 	var count = 0
 	for item in inventory:
 		if typeof(item) == TYPE_DICTIONARY:
-			var tkey = item.get("template_key", item.get("template_id", ""))
-			if tkey == PACK_ITEM_KEY or tkey == "power_pack":
-				count += int(item.get("quantity", 1))
+			var tid = item.get("template_id", item.get("template_key", ""))
+			if tid == PACK_ITEM_KEY or tid == "power_pack" or tid == "power_pack_standard":
+				count += int(item.get("stack_count", 1))
 	return count
 
 static func shots_left(sheet: Dictionary, weapon_key: String, weapon_dict: Dictionary) -> int:
@@ -70,8 +65,8 @@ static func auto_reload(sheet: Dictionary, weapon_key: String, weapon_dict: Dict
 	for i in range(inventory.size()):
 		var item = inventory[i]
 		if typeof(item) == TYPE_DICTIONARY:
-			var tkey = item.get("template_key", item.get("template_id", ""))
-			if tkey == PACK_ITEM_KEY or tkey == "power_pack":
+			var tid = item.get("template_id", item.get("template_key", ""))
+			if tid == PACK_ITEM_KEY or tid == "power_pack" or tid == "power_pack_standard":
 				found_idx = i
 				break
 			
@@ -79,11 +74,11 @@ static func auto_reload(sheet: Dictionary, weapon_key: String, weapon_dict: Dict
 		return {"ok": false, "packs_left": 0}
 		
 	var item = inventory[found_idx]
-	var qty = int(item.get("quantity", 1))
+	var qty = int(item.get("stack_count", 1))
 	if qty <= 1:
 		inventory.remove_at(found_idx)
 	else:
-		item["quantity"] = qty - 1
+		item["stack_count"] = qty - 1
 		inventory[found_idx] = item
 		
 	sheet["inventory"] = inventory
@@ -116,22 +111,19 @@ static func add_packs(sheet: Dictionary, n: int) -> Dictionary:
 	var inventory: Array = sheet.get("inventory", [])
 	# Since it's stackable, try to find existing to stack
 	var found = false
-	for item in inventory:
+	for i in range(inventory.size()):
+		var item = inventory[i]
 		if typeof(item) == TYPE_DICTIONARY:
-			var tkey = item.get("template_key", item.get("template_id", ""))
-			if tkey == PACK_ITEM_KEY or tkey == "power_pack":
-				item["quantity"] = int(item.get("quantity", 1)) + n
+			var tid = item.get("template_id", item.get("template_key", ""))
+			if tid == PACK_ITEM_KEY or tid == "power_pack" or tid == "power_pack_standard":
+				item["stack_count"] = int(item.get("stack_count", 1)) + n
+				inventory[i] = item
 				found = true
 				break
 	if not found:
-		inventory.append({
-			"id": "pack_" + str(Time.get_unix_time_from_system()),
-			"template_key": PACK_ITEM_KEY,
-			"kind": "ammo",
-			"name": "Blaster Power Pack",
-			"quantity": n,
-			"quality": 50.0
-		})
+		var inst = ItemInstance.create(PACK_ITEM_KEY, "Blaster Power Pack", "ammo", 50.0, 100, "world")
+		inst["stack_count"] = n
+		inventory.append(inst)
 	sheet["inventory"] = inventory
 	return sheet
 
@@ -141,19 +133,19 @@ static func remove_pack(sheet: Dictionary) -> Dictionary:
 	for i in range(inventory.size()):
 		var item = inventory[i]
 		if typeof(item) == TYPE_DICTIONARY:
-			var tkey = item.get("template_key", item.get("template_id", ""))
-			if tkey == PACK_ITEM_KEY or tkey == "power_pack":
+			var tid = item.get("template_id", item.get("template_key", ""))
+			if tid == PACK_ITEM_KEY or tid == "power_pack" or tid == "power_pack_standard":
 				found_idx = i
 				break
 	if found_idx == -1:
 		return {"ok": false, "packs_left": 0}
 		
 	var item = inventory[found_idx]
-	var qty = int(item.get("quantity", 1))
+	var qty = int(item.get("stack_count", 1))
 	if qty <= 1:
 		inventory.remove_at(found_idx)
 	else:
-		item["quantity"] = qty - 1
+		item["stack_count"] = qty - 1
 		inventory[found_idx] = item
 	
 	sheet["inventory"] = inventory

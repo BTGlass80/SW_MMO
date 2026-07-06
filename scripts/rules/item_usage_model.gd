@@ -28,16 +28,25 @@ static func _use_medpac(sheet: Dictionary, rules: Object, target_state: Dictiona
 	# Quality affects the effective roll
 	var effective_roll = int(roll_total * (0.5 + quality))
 	
+	var new_item = item.duplicate(true)
+	
 	if effective_roll >= difficulty:
 		var next_target = target_state.duplicate(true)
 		var current_wounds = int(next_target.get("wounds", 1))
 		next_target["wounds"] = maxi(0, current_wounds - 1)
 		
-		# Condition decreases
-		var new_item = item.duplicate(true)
+		# Condition decreases for medpacs
 		var condition = int(new_item.get("condition", new_item.get("max_condition", 5))) - 1
 		new_item["condition"] = condition
-		var consumed = condition <= 0
+		
+		var consumed = false
+		if condition <= 0:
+			var stack = int(new_item.get("stack_count", 1))
+			if stack > 1:
+				new_item["stack_count"] = stack - 1
+				new_item["condition"] = int(new_item.get("max_condition", 5))
+			else:
+				consumed = true
 		
 		return {
 			"ok": true,
@@ -49,10 +58,17 @@ static func _use_medpac(sheet: Dictionary, rules: Object, target_state: Dictiona
 		}
 	else:
 		# Condition still decreases on failure
-		var new_item = item.duplicate(true)
 		var condition = int(new_item.get("condition", new_item.get("max_condition", 5))) - 1
 		new_item["condition"] = condition
-		var consumed = condition <= 0
+		
+		var consumed = false
+		if condition <= 0:
+			var stack = int(new_item.get("stack_count", 1))
+			if stack > 1:
+				new_item["stack_count"] = stack - 1
+				new_item["condition"] = int(new_item.get("max_condition", 5))
+			else:
+				consumed = true
 		
 		return {
 			"ok": false,
@@ -74,16 +90,23 @@ static func _use_power_pack(sheet: Dictionary, target_state: Dictionary, item: D
 	if typeof(ammo_dict) != TYPE_DICTIONARY:
 		ammo_dict = {}
 	
-	# Legacy ammo count compatibility: Using a crafted power pack item increments the generic "packs" counter.
-	ammo_dict["packs"] = int(ammo_dict.get("packs", 0)) + 1
-	next_target["ammo"] = ammo_dict
+	# Ammo is now completely item-instance based and automatically counted from inventory
+	# by ammo_model.gd. Manual usage of a pack could restore a specific weapon's shots,
+	# but we do not mutate the legacy packs counter.
 	
-	# Consumed entirely
+	var new_item = item.duplicate(true)
+	var stack = int(new_item.get("stack_count", 1))
+	var consumed = false
+	if stack > 1:
+		new_item["stack_count"] = stack - 1
+	else:
+		consumed = true
+	
 	return {
 		"ok": true,
 		"target_state": next_target,
-		"item": item,
-		"consumed": true,
+		"item": new_item,
+		"consumed": consumed,
 		"ammo_added": effective_shots
 	}
 	
@@ -100,6 +123,14 @@ static func _use_ship_repair_patch(sheet: Dictionary, rules: Object, target_stat
 	var quality = float(item.get("quality", 50.0)) / 100.0
 	var effective_roll = int(roll_total * (0.5 + quality))
 	
+	var new_item = item.duplicate(true)
+	var stack = int(new_item.get("stack_count", 1))
+	var consumed = false
+	if stack > 1:
+		new_item["stack_count"] = stack - 1
+	else:
+		consumed = true
+		
 	if effective_roll >= difficulty:
 		var next_target = target_state.duplicate(true)
 		var repairs = int(item.get("stats", {}).get("repairs_hull", 15))
@@ -110,8 +141,8 @@ static func _use_ship_repair_patch(sheet: Dictionary, rules: Object, target_stat
 		return {
 			"ok": true,
 			"target_state": next_target,
-			"item": item,
-			"consumed": true,
+			"item": new_item,
+			"consumed": consumed,
 			"roll": effective_roll,
 			"repairs": effective_repairs
 		}
@@ -120,7 +151,7 @@ static func _use_ship_repair_patch(sheet: Dictionary, rules: Object, target_stat
 			"ok": false,
 			"reason": "repair_failed",
 			"target_state": target_state,
-			"item": item,
-			"consumed": true,
+			"item": new_item,
+			"consumed": consumed,
 			"roll": effective_roll
 		}

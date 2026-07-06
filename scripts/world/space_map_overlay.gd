@@ -95,8 +95,6 @@ func _ready() -> void:
 			global_net.land_ship_replied.connect(_on_server_land)
 		if not global_net.hyperjump_replied.is_connected(_on_server_hyperjump):
 			global_net.hyperjump_replied.connect(_on_server_hyperjump)
-		if not global_net.space_mine_replied.is_connected(_on_server_mine):
-			global_net.space_mine_replied.connect(_on_server_mine)
 
 func _process(delta: float) -> void:
 	if visible and Input.mouse_mode != Input.MOUSE_MODE_VISIBLE:
@@ -1164,13 +1162,6 @@ func _on_server_hyperjump(result: Dictionary) -> void:
 		_shield_label.text = "HYPERJUMP REJECTED: " + String(result.get("reason", "failed"))
 		_record_space_action("Astro", _shield_label.text)
 
-func _on_server_mine(result: Dictionary) -> void:
-	if bool(result.get("ok", false)):
-		var res: String = result["resource"]
-		var count := int(result["count"])
-		_shield_label.text = "MINING SUCCESS: Extracted %d units of %s to cargo!" % [count, res.capitalize()]
-		_record_space_action("Mine", _shield_label.text)
-	else:
-		_shield_label.text = "MINING REJECTED: " + String(result.get("reason", "failed"))
+
 
 

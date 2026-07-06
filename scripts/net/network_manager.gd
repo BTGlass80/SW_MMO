@@ -129,8 +129,6 @@ signal bazaar_listings_updated(listings: Dictionary)
 signal launch_ship_replied(result: Dictionary)
 signal land_ship_replied(result: Dictionary)
 signal hyperjump_replied(result: Dictionary)
-signal space_mine_replied(result: Dictionary)
-signal space_sell_cargo_replied(result: Dictionary)
 signal use_item_replied(result: Dictionary)
 
 
@@ -1932,35 +1930,18 @@ func submit_launch_ship(ship_id: String = "") -> void:
 		return
 	var sheet: Dictionary = record.get("sheet", {})
 	
-	var owned_ships: Array = sheet.get("ships", [])
-	if owned_ships.is_empty():
-		launch_ship_result.rpc_id(sender, {"ok": false, "reason": "no_ships_owned"})
+	var SpaceTravelModel = load("res://scripts/rules/space_travel_model.gd")
+	var result = SpaceTravelModel.launch_ship(sheet, ship_id)
+	
+	if not result.get("ok", false):
+		launch_ship_result.rpc_id(sender, {"ok": false, "reason": result.get("reason", "unknown")})
 		return
 		
-	var selected_ship_id := ship_id
-	if selected_ship_id == "" or not owned_ships.has(selected_ship_id):
-		selected_ship_id = String(owned_ships[0])
-		
-	var default_cargo: Array = []
-	var space_state: Dictionary = sheet.get("space_state", {})
-	if space_state.is_empty():
-		space_state = {
-			"current_system": "Tatooine",
-			"in_space": false,
-			"ship_id": selected_ship_id,
-			"ship_name": selected_ship_id.capitalize(),
-			"ship_cargo": default_cargo
-		}
-	else:
-		space_state["ship_id"] = selected_ship_id
-		
-	space_state["in_space"] = true
-	sheet["space_state"] = space_state
-	record["sheet"] = sheet
+	record["sheet"] = result["sheet"]
 	_cached_save(character_id, record)
 	
 	_push_sheet(sender, record)
-	launch_ship_result.rpc_id(sender, {"ok": true, "space_state": space_state})
+	launch_ship_result.rpc_id(sender, {"ok": true, "space_state": result["space_state"]})
 
 func send_launch_ship(ship_id: String = "") -> void:
 	if mode == Mode.CLIENT and connected:
@@ -1985,39 +1966,25 @@ func submit_land_ship() -> void:
 		return
 	var sheet: Dictionary = record.get("sheet", {})
 	
-	var docking_fee := 50
-	var credits := int(sheet.get("credits", 0))
-	if credits < docking_fee:
-		land_ship_result.rpc_id(sender, {"ok": false, "reason": "insufficient_credits"})
+	var SpaceTravelModel = load("res://scripts/rules/space_travel_model.gd")
+	var result = SpaceTravelModel.land_ship(sheet)
+	
+	if not result.get("ok", false):
+		land_ship_result.rpc_id(sender, {"ok": false, "reason": result.get("reason", "unknown")})
 		return
 		
-	var space_state: Dictionary = sheet.get("space_state", {})
-	if not space_state.is_empty():
-		space_state["in_space"] = false
-		
-		# Transfer cargo to inventory
-		var inventory: Array = sheet.get("inventory", [])
-		var cargo: Array = space_state.get("ship_cargo", [])
-		for item in cargo:
-			inventory.append(item)
-		space_state["ship_cargo"] = []
-		sheet["inventory"] = inventory
-		
-		# Pay docking fee
-		sheet["credits"] = credits - docking_fee
-		sheet["space_state"] = space_state
-		record["sheet"] = sheet
-		_cached_save(character_id, record)
-		_push_sheet(sender, record)
-		
-		if _telemetry != null:
-			_telemetry.log_event("sink_fee", {
-				"ts": Time.get_unix_time_from_system(),
-				"character_id": character_id,
-				"fee_type": "docking",
-				"amount": docking_fee,
-				"remaining_credits": sheet["credits"]
-			})
+	record["sheet"] = result["sheet"]
+	_cached_save(character_id, record)
+	_push_sheet(sender, record)
+	
+	if _telemetry != null:
+		_telemetry.log_event("sink_fee", {
+			"ts": Time.get_unix_time_from_system(),
+			"character_id": character_id,
+			"fee_type": "docking",
+			"amount": result["fee_amount"],
+			"remaining_credits": record["sheet"]["credits"]
+		})
 		
 	land_ship_result.rpc_id(sender, {"ok": true})
 
@@ -2039,26 +2006,14 @@ func submit_space_harvest(target_key: String) -> void:
 	if record.is_empty():
 		return
 	var sheet: Dictionary = record.get("sheet", {})
-	var space_state: Dictionary = sheet.get("space_state", {})
-	if space_state.is_empty() or not bool(space_state.get("in_space", false)):
+	
+	var SpaceTravelModel = load("res://scripts/rules/space_travel_model.gd")
+	var result = SpaceTravelModel.harvest_cargo(sheet, target_key, randi())
+	
+	if not result.get("ok", false):
 		return
 		
-	var cargo: Array = space_state.get("ship_cargo", [])
-	
-	# Generate a space resource item instance
-	var harvest_key := target_key
-	if harvest_key == "":
-		harvest_key = "starship_salvage"
-		
-	var item_instance := {
-		"instance_id": str(randi()),
-		"template_id": harvest_key,
-		"quantity": 1
-	}
-	cargo.append(item_instance)
-	space_state["ship_cargo"] = cargo
-	sheet["space_state"] = space_state
-	record["sheet"] = sheet
+	record["sheet"] = result["sheet"]
 	
 	_cached_save(character_id, record)
 	_push_sheet(sender, record)
@@ -2067,7 +2022,7 @@ func submit_space_harvest(target_key: String) -> void:
 		_telemetry.log_event("faucet_harvest", {
 			"ts": Time.get_unix_time_from_system(),
 			"character_id": character_id,
-			"item_template": harvest_key,
+			"item_template": result["harvested"]["template_id"],
 			"context": "space_harvest"
 		})
 
@@ -2123,106 +2078,6 @@ func send_space_hyperjump(destination: String) -> void:
 @rpc("authority", "call_remote", "reliable")
 func hyperjump_result(result: Dictionary) -> void:
 	hyperjump_replied.emit(result)
-
-@rpc("any_peer", "call_remote", "reliable")
-func submit_space_mine(asteroid_id: String) -> void:
-	if mode != Mode.SERVER or store == null:
-		return
-	var sender := multiplayer.get_remote_sender_id()
-	if not _rate_ok(sender):
-		return
-	var character_id := String(_peer_characters.get(sender, ""))
-	if character_id == "":
-		return
-	var record := _cached_load(character_id)
-	if record.is_empty():
-		return
-	var sheet: Dictionary = record.get("sheet", {})
-	var space_state: Dictionary = sheet.get("space_state", {})
-	if space_state.is_empty() or not bool(space_state.get("in_space", false)):
-		space_mine_result.rpc_id(sender, {"ok": false, "reason": "not_in_space"})
-		return
-		
-	var cargo: Array = space_state.get("ship_cargo", [])
-	
-	var item_instance := {
-		"instance_id": str(randi()),
-		"template_id": "copper_ore",
-		"quantity": 5
-	}
-	cargo.append(item_instance)
-	
-	space_state["ship_cargo"] = cargo
-	sheet["space_state"] = space_state
-	record["sheet"] = sheet
-	_cached_save(character_id, record)
-	
-	_push_sheet(sender, record)
-	if _telemetry != null:
-		_telemetry.log_event("space_mine", {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "resource": "copper_ore", "count": 5})
-	space_mine_result.rpc_id(sender, {"ok": true, "resource": "copper_ore", "count": 5})
-
-func send_space_mine(asteroid_id: String) -> void:
-	if mode == Mode.CLIENT and connected:
-		submit_space_mine.rpc_id(1, asteroid_id)
-
-@rpc("authority", "call_remote", "reliable")
-func space_mine_result(result: Dictionary) -> void:
-	space_mine_replied.emit(result)
-
-@rpc("any_peer", "call_remote", "reliable")
-func submit_space_sell_cargo() -> void:
-	if mode != Mode.SERVER or store == null:
-		return
-	var sender := multiplayer.get_remote_sender_id()
-	if not _rate_ok(sender):
-		return
-	var character_id := String(_peer_characters.get(sender, ""))
-	if character_id == "":
-		return
-	var record := _cached_load(character_id)
-	if record.is_empty():
-		return
-	var sheet: Dictionary = record.get("sheet", {})
-	var space_state: Dictionary = sheet.get("space_state", {})
-	if space_state.is_empty():
-		space_sell_cargo_result.rpc_id(sender, {"ok": false, "reason": "no_space_state"})
-		return
-		
-	var cargo: Array = space_state.get("ship_cargo", [])
-	var copper_count := 0
-	var new_cargo: Array = []
-	for item in cargo:
-		if String(item.get("template_id", "")) == "copper_ore":
-			copper_count += int(item.get("quantity", 1))
-		else:
-			new_cargo.append(item)
-			
-	if copper_count <= 0:
-		space_sell_cargo_result.rpc_id(sender, {"ok": false, "reason": "no_cargo_to_sell"})
-		return
-		
-	var earnings := copper_count * 10
-	sheet["credits"] = int(sheet.get("credits", 0)) + earnings
-	space_state["ship_cargo"] = new_cargo
-	sheet["space_state"] = space_state
-	record["sheet"] = sheet
-	_cached_save(character_id, record)
-	
-	_push_sheet(sender, record)
-	if _telemetry != null:
-		_telemetry.log_event("space_sell_cargo", {"ts": Time.get_unix_time_from_system(), "character_id": character_id, "credits_earned": earnings})
-	space_sell_cargo_result.rpc_id(sender, {"ok": true, "credits_earned": earnings})
-
-func send_space_sell_cargo() -> void:
-	if mode == Mode.CLIENT and connected:
-		submit_space_sell_cargo.rpc_id(1)
-
-@rpc("authority", "call_remote", "reliable")
-func space_sell_cargo_result(result: Dictionary) -> void:
-	space_sell_cargo_replied.emit(result)
-
-
 
 # --- DIV-0014: inter-zone travel (command fast-travel between the loaded zones) ---
 
@@ -2527,6 +2382,8 @@ func _sheet_summary(record: Dictionary) -> Dictionary:
 		"cp_wallet": sheet.get("cp_wallet", {}),
 		"credits": int(sheet.get("credits", 0)),  # Wave F economy: show the wallet balance on the sheet
 		"inventory": sheet.get("inventory", []),
+		"ships": sheet.get("ships", []),
+		"space_state": sheet.get("space_state", {}),
 		"force_sensitive": bool(sheet.get("force_sensitive", false)),
 	}
 
@@ -2554,6 +2411,9 @@ func _build_buy_catalog() -> void:
 	# (buying it stacks onto sheet.ammo.packs, not inventory; submit_buy/submit_sell special-case it).
 	# Injected here so buy/sell recognize the key and the DIV-0018 economy pricing applies to it.
 	_buy_catalog[AmmoModel.PACK_ITEM_KEY] = {"cost": AmmoModel.PACK_COST, "vendor_stocked": true, "name": "Power Pack", "kind": "consumable"}
+	
+	# DIV-TEST: allow selling asteroid_field cargo from space harvest
+	_buy_catalog["asteroid_field"] = {"cost": 500, "vendor_stocked": false, "name": "Asteroid Field", "kind": "item"}
 
 # The Director price multiplier for a zone (trade_boom/merchant_arrival cheapen goods; via vendor_model).
 func _zone_price_multiplier(zone_id: String) -> float:
@@ -2806,7 +2666,7 @@ func submit_buy(item_key: String) -> void:
 
 # client -> server: sell an OWNED, unequipped item back to a vendor at 40% of list (the churn spread).
 @rpc("any_peer", "call_remote", "reliable")
-func submit_sell(item_key: String) -> void:
+func submit_sell(instance_id: String) -> void:
 	if mode != Mode.SERVER or store == null:
 		return
 	var sender := multiplayer.get_remote_sender_id()
@@ -2818,21 +2678,47 @@ func submit_sell(item_key: String) -> void:
 	var record := _cached_load(character_id)
 	if record.is_empty():
 		return
-	var key := item_key.strip_edges()
-	if not _buy_catalog.has(key):
-		sell_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "unknown_item"})
-		return
+	var id := instance_id.strip_edges()
 	var sheet: Dictionary = record.get("sheet", {})
-	# DIV-0029: selling a power pack draws from sheet.ammo.packs at the normal SELL_RATE (40% of 25 = 10cr).
-	if key == AmmoModel.PACK_ITEM_KEY:
-		var pack_ammo: Dictionary = sheet.get("ammo", {})
-		var removed: Dictionary = AmmoModel.remove_pack(pack_ammo)
-		if not bool(removed.get("ok", false)):
-			sell_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": "not_owned"})
-			return
+	
+	var key := ""
+	var matched_instance_id := id
+	var owned_list := EconomyModel._owned_list(sheet)
+	
+	for item in owned_list:
+		if typeof(item) == TYPE_DICTIONARY and item.get("instance_id", "") == id:
+			key = item.get("template_id", "")
+			break
+			
+	if key == "":
+		for item in owned_list:
+			if typeof(item) == TYPE_DICTIONARY and item.get("template_id", "") == id:
+				key = item.get("template_id", "")
+				matched_instance_id = item.get("instance_id", "")
+				break
+			
+	if key == "":
+		sell_result.rpc_id(sender, {"ok": false, "item_key": id, "reason": "not_owned"})
+		return
+		
+	if not _buy_catalog.has(key):
+		sell_result.rpc_id(sender, {"ok": false, "item_key": id, "reason": "not_buyable"})
+		return
+		
+	var check: Dictionary = EconomyModel.can_sell(sheet, matched_instance_id)
+	if not bool(check.get("ok", false)):
+		sell_result.rpc_id(sender, {"ok": false, "item_key": id, "reason": String(check.get("reason", ""))})
+		return
+		
+	# DIV-0029: selling a power pack draws from the item stack at normal SELL_RATE (40% of 25 = 10cr).
+	if key == AmmoModel.PACK_ITEM_KEY or key == "power_pack":
 		var pack_price := EconomyModel.sell_price(AmmoModel.PACK_COST)
-		sheet["ammo"] = pack_ammo
-		sheet["credits"] = int(sheet.get("credits", 0)) + pack_price
+		var result: Dictionary = EconomyModel.sell(sheet, matched_instance_id, pack_price)
+		if not bool(result.get("ok", false)):
+			sell_result.rpc_id(sender, {"ok": false, "item_key": key, "reason": String(result.get("reason", "not_owned"))})
+			return
+		sheet = result["sheet"]
+		sheet["credits"] = int(sheet.get("credits", 0))
 		record["sheet"] = sheet
 		_cached_save(character_id, record)
 		apply_credits.rpc_id(sender, int(sheet.get("credits", 0)))
@@ -2846,7 +2732,7 @@ func submit_sell(item_key: String) -> void:
 		sell_result.rpc_id(sender, {"ok": true, "item_key": key, "price": pack_price, "credits": int(sheet.get("credits", 0)), "packs": AmmoModel.packs(sheet)})
 		return
 	var price := EconomyModel.sell_price(int((_buy_catalog[key] as Dictionary).get("cost", 0)))
-	var result: Dictionary = EconomyModel.sell(sheet, key, price)
+	var result: Dictionary = EconomyModel.sell(sheet, matched_instance_id, price)
 	if bool(result.get("ok", false)):
 		var new_sheet: Dictionary = result["sheet"]
 		record["sheet"] = new_sheet
@@ -2881,9 +2767,9 @@ func send_buy(item_key: String) -> void:
 	if mode == Mode.CLIENT and connected:
 		submit_buy.rpc_id(1, item_key)
 
-func send_sell(item_key: String) -> void:
+func send_sell(instance_id: String) -> void:
 	if mode == Mode.CLIENT and connected:
-		submit_sell.rpc_id(1, item_key)
+		submit_sell.rpc_id(1, instance_id)
 
 func send_repair_armor(item_key: String) -> void:
 	if mode == Mode.CLIENT and connected:

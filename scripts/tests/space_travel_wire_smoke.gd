@@ -4,66 +4,53 @@ var _failures = []
 
 func _init() -> void:
 
+	var SpaceTravelModel = load("res://scripts/rules/space_travel_model.gd")
 	var character_id := "char_pilot_1"
 	var record := {
 		"sheet": {
 			"name": "Wedge",
 			"credits": 2000,
 			"astrogation": "3D",
-			"inventory": []
+			"inventory": [],
+			"ships": ["yt1300"],
+			"space_state": {
+				"current_system": "Tatooine",
+				"in_space": false,
+				"ship_id": "yt1300",
+				"ship_name": "YT-1300 Corellian Freighter",
+				"ship_cargo": []
+			}
 		}
 	}
 	
 	# Simulate client launch_ship RPC state transition
-	var sheet: Dictionary = record.get("sheet", {})
-	var space_state: Dictionary = sheet.get("space_state", {
-		"current_system": "Tatooine",
-		"in_space": false,
-		"ship_id": "yt1300",
-		"ship_name": "YT-1300 Corellian Freighter",
-		"ship_cargo": {}
-	})
-	
-	# Check space launch sets in_space to true
-	space_state["in_space"] = true
-	sheet["space_state"] = space_state
-	record["sheet"] = sheet
+	var launch_res = SpaceTravelModel.launch_ship(record["sheet"], "yt1300")
+	record["sheet"] = launch_res["sheet"]
 	
 	var check_state: Dictionary = record.get("sheet", {}).get("space_state", {})
 	_assert_equal(bool(check_state.get("in_space", false)), true, "Ship launch sets in_space to true")
 	_assert_equal(check_state.get("current_system", ""), "Tatooine", "Ship launch system defaults to Tatooine")
 
 	# Check space mining adds resource to cargo
-	var cargo: Dictionary = space_state.get("ship_cargo", {})
-	var current := int(cargo.get("copper_ore", 0))
-	cargo["copper_ore"] = current + 5
-	space_state["ship_cargo"] = cargo
-	sheet["space_state"] = space_state
-	record["sheet"] = sheet
+	var harvest_res = SpaceTravelModel.harvest_cargo(record["sheet"], "copper_ore", 123)
+	record["sheet"] = harvest_res["sheet"]
 	
-	var updated_cargo: Dictionary = record.get("sheet", {}).get("space_state", {}).get("ship_cargo", {})
-	_assert_equal(int(updated_cargo.get("copper_ore", 0)), 5, "Mining adds 5 copper ore to cargo")
+	var updated_cargo: Array = record.get("sheet", {}).get("space_state", {}).get("ship_cargo", [])
+	_assert_equal(updated_cargo.size(), 1, "Mining adds 1 copper ore to cargo")
+	_assert_equal(String(updated_cargo[0]["template_id"]), "copper_ore", "Mining adds copper_ore")
 
-	# Check landing ship sets in_space to false
-	space_state["in_space"] = false
-	sheet["space_state"] = space_state
-	record["sheet"] = sheet
+	# Check landing ship sets in_space to false and moves cargo to inventory
+	var land_res = SpaceTravelModel.land_ship(record["sheet"])
+	record["sheet"] = land_res["sheet"]
 	
 	var land_state: Dictionary = record.get("sheet", {}).get("space_state", {})
 	_assert_equal(bool(land_state.get("in_space", false)), false, "Landing sets in_space to false")
 
-	# Check selling cargo awards credits and clears cargo
-	var final_credits := int(sheet.get("credits", 0))
-	var copper_count := int(cargo.get("copper_ore", 0))
-	var earnings := copper_count * 10
-	sheet["credits"] = final_credits + earnings
-	cargo.erase("copper_ore")
-	space_state["ship_cargo"] = cargo
-	sheet["space_state"] = space_state
-	record["sheet"] = sheet
-	
-	_assert_equal(int(record.get("sheet", {}).get("credits", 0)), 2050, "Selling 5 copper ore awards 50 credits (2000 + 50)")
-	_assert_equal(record.get("sheet", {}).get("space_state", {}).get("ship_cargo", {}).has("copper_ore"), false, "Selling cargo clears cargo slots")
+	# Check selling cargo - Note this just checks that they have it in inventory to sell.
+	# The actual economy sell is handled by EconomyModel, so we just verify the cargo got into the inventory.
+	var final_inventory = record.get("sheet", {}).get("inventory", [])
+	_assert_equal(final_inventory.size(), 1, "Landing moved cargo to inventory")
+	_assert_equal(record.get("sheet", {}).get("space_state", {}).get("ship_cargo", []).size(), 0, "Landing cleared ship cargo")
 
 
 	if _failures.is_empty():
@@ -75,5 +62,5 @@ func _init() -> void:
 		quit(1)
 
 func _assert_equal(actual, expected, label: String) -> void:
-	if actual != expected:
+	if str(actual) != str(expected):
 		_failures.append("%s: expected %s, got %s" % [label, str(expected), str(actual)])
