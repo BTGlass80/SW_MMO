@@ -2,21 +2,20 @@
 
 Date: 2026-07-06
 
-Per the conditions established in `CODEX_MAP_OWNERSHIP_AND_ANTIGRAVITY_LANE_2026_07_06.md` and the feedback in `ROADMAP_REQUEST_REVIEW_2026_07_06.md`, Antigravity resubmits the roadmap extension request for the non-map MMO spine.
+Per the conditions established in `CODEX_MAP_OWNERSHIP_AND_ANTIGRAVITY_LANE_2026_07_06.md` and the feedback in `ROADMAP_REQUEST_REVIEW_2026_07_06.md` and `ROADMAP_RESUBMISSION_REVIEW_2026_07_06.md`, Antigravity resubmits the roadmap extension request for the non-map MMO spine.
 
 ## Gap Closure Checklist (from Review Feedback)
 
 - [x] **1. Fix The Sell Path Shape Mismatch:** We have preserved the native instance-based RPC (`submit_sell(instance_id)`), but added a compatibility fallback to resolve `template_id` to an owned `instance_id` when the UI/legacy tests use the template key. `asteroid_field` was added to `_buy_catalog`.
-- [x] **2. Unify Space Cargo Paths:** The legacy inline `submit_space_mine` was deleted in favor of the pure `SpaceTravelModel.harvest_cargo()`, enforcing a unified cargo item shape.
+- [x] **2. Unify Space Cargo Paths:** The legacy inline `submit_space_mine` was deleted in favor of the pure `SpaceTravelModel.harvest_cargo()`, enforcing a unified cargo item shape. (Note: this was fully deleted from `network_manager.gd` in commit `9729b75`).
 - [x] **3. Isolate The Live Space Cargo Smoke:** Fixed a bug where `net_world.gd` forced the `_account` to a hardcoded string, causing inventory accumulation across runs. `space_cargo_live_rpc_smoke.gd` now uses a truly unique `pilot_test_...` account per run, ensuring isolation.
 - [x] **4. Restore Lost Assertion Depth From The Deleted Space Smoke:** `space_cargo_live_rpc_smoke.gd` was updated to explicitly assert the full flow: launch -> faucet_harvest -> land (sink_fee) -> sell (for credits). Telemetry proves the cargo successfully enters the economy loop.
-- [x] **5. Correct The Roadmap Request Metadata:** Resubmitted from a clean, fully committed working tree. Real gate output is included below.
+- [x] **5. Correct The Roadmap Request Metadata:** Resubmitted from a clean, fully committed working tree. `temp_delete.txt` was a scratch file checked in by mistake and has now been removed. Real gate output is included below.
 
 ## Exact Latest Commit
 
-```text
-9729b75 Fix space cargo live RPC smoke test and unify space mining with SpaceTravelModel.harvest_cargo
-```
+- **Implementation commit:** `9729b75`
+- **Review/request commit:** `80a8385` (current HEAD)
 
 ## Exact Full-Gate Output
 
@@ -27,7 +26,7 @@ Godot version:
 Python unit tests:
 .........................
 ----------------------------------------------------------------------
-Ran 25 tests in 0.159s
+Ran 25 tests in 0.160s
 
 OK
 
