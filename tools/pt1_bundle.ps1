@@ -106,7 +106,8 @@ elseif ($Action -eq "Audit") {
 elseif ($Action -eq "Restore") {
     $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
     # Find a temp directory base for the test
-    $tempBase = Split-Path $SessionRoot -Parent
+    $tempBase = Split-Path (Resolve-Path $SessionRoot).Path -Parent
+    if (-not $tempBase) { $tempBase = "." }
     $backupDir = Join-Path $tempBase "save.restore_hold_$stamp"
     
     if (-not (Test-Path $backupDir)) {

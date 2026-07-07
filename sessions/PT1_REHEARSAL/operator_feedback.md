@@ -1,1 +1,0 @@
-﻿Operator feedback looks good

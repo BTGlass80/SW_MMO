@@ -1,4 +1,4 @@
-﻿# SW_MMO_Prototype Known Issues
+# SW_MMO_Prototype Known Issues
 
 This document tracks known issues for the beta release candidate. Issues are split into two categories: those acceptable for live beta (with known workarounds), and those that block the beta release.
 
@@ -11,8 +11,8 @@ This document tracks known issues for the beta release candidate. Issues are spl
 - **Stuck in Space:** Rarely, a network failure during hyperjump might leave a player "in space" without a valid scene. Workaround: An operator can run `/admin clear_space <character_id>` to return them to Mos Eisley.
 - **Test Affordances:** Headless test arguments (e.g., `--economy-test-c1`, `--autofire`) are strictly for testing and gate proofs. They bypass normal gameplay flows and should not be used in normal play.
 
+- **Human PT1 Pipeline Complete:** The machine soak and B9 operator drill have been completed, proving the recovery and telemetry pipeline. A real human session (PT1) is still needed before a full public launch, but the beta candidate is mechanically ready.
+
 ## Blocks Beta
 
-- **Human PT1 Not Yet Run:** The machine soak and gate are green, but the project has
-  not yet completed a human PT1 / strangers-night rehearsal. This blocks claiming a
-  live beta candidate, but does not block continued unattended B8-B10 preparation.
+- None at this time.
