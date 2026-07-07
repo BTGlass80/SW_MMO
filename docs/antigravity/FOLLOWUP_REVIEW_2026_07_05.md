@@ -1,4 +1,4 @@
-# Follow-up Review - Map and Beta Readiness
+﻿# Follow-up Review - Map and Beta Readiness
 
 Date: 2026-07-05
 Reviewer: Codex

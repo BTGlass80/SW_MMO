@@ -1,4 +1,4 @@
-# Blockbench Ship Microfighter v1 Review Board
+﻿# Blockbench Ship Microfighter v1 Review Board
 
 Generated: 2026-07-04T05:31:22.962Z
 Generator: `docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs`

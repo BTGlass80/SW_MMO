@@ -1,4 +1,4 @@
-# Godot Pixel Cantina Runtime Proof v1
+﻿# Godot Pixel Cantina Runtime Proof v1
 
 Generated: 2026-07-04 15:52:32
 Generator: `docs/gpt/asset_factory/scripts/godot_pixel_cantina_runtime_proof.gd`

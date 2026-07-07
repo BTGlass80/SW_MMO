@@ -1,4 +1,4 @@
-# Reference Base Comparison
+﻿# Reference Base Comparison
 
 Date: 2026-07-04  
 Scope: docs-only decision memo for choosing game descriptions, fan art/reference images, SVG contracts, and model lanes

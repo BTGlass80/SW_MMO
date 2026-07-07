@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const CAPTURE_SIZE := Vector2i(1280, 720)
 const OUT_ROOT := "res://docs/gpt/asset_factory/generated/vengi_pixel_card_eval_v0"

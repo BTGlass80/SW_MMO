@@ -1,4 +1,4 @@
-"""Batch-convert Codex Blockbench .bbmodel cubes into GLB candidates.
+﻿"""Batch-convert Codex Blockbench .bbmodel cubes into GLB candidates.
 
 Run with Blender in background mode:
   blender --background --python docs/gpt/asset_factory/adapters/blender_bbmodel_to_glb.py -- <bbmodel_dir> <out_dir>

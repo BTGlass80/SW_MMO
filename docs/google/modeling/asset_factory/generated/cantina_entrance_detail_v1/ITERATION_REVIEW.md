@@ -1,4 +1,4 @@
-# Cantina Entrance Detail V1 Iteration Review
+﻿# Cantina Entrance Detail V1 Iteration Review
 
 Date: 2026-07-04  
 Baseline: `generated/cantina_terrain_kit_v0/captures/assets/cantina_entrance_threshold_01.png`  

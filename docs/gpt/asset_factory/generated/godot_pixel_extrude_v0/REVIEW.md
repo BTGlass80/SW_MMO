@@ -1,4 +1,4 @@
-# Godot Pixel Extrude Proof v0
+﻿# Godot Pixel Extrude Proof v0
 
 Generated: 2026-07-04 14:26:47
 Generator: `docs/gpt/asset_factory/scripts/godot_pixel_extrude_proof.gd`

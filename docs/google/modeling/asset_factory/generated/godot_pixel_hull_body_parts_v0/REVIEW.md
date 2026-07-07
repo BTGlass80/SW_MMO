@@ -1,4 +1,4 @@
-# Godot Body-Part Pixel Hull Proof v0
+﻿# Godot Body-Part Pixel Hull Proof v0
 
 Generated: 2026-07-04 15:12:00
 Generator: `docs/gpt/asset_factory/scripts/godot_pixel_hull_body_parts_proof.gd`

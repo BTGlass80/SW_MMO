@@ -1,4 +1,4 @@
-# Cantina Mood A/B v1
+﻿# Cantina Mood A/B v1
 
 Generated: 2026-07-04 07:14:34
 Generator: `docs/gpt/asset_factory/scripts/godot_cantina_mood_ab_proof.gd`

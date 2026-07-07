@@ -1,4 +1,4 @@
-# Private Spacecraft Pass
+﻿# Private Spacecraft Pass
 
 Date: 2026-07-04  
 Scope: docs/gpt asset-pipeline prototype only  

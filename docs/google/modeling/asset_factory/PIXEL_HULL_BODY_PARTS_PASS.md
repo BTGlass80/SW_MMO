@@ -1,4 +1,4 @@
-# Pixel Hull Body-Parts Pass
+﻿# Pixel Hull Body-Parts Pass
 
 Date: 2026-07-04  
 Scope: docs-only deterministic voxel actor proof for rigid-part animation

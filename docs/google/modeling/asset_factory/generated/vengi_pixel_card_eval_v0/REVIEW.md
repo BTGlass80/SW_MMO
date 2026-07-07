@@ -1,4 +1,4 @@
-# Vengi Pixel-Card Evaluation v0
+﻿# Vengi Pixel-Card Evaluation v0
 
 Generated: 2026-07-04 14:50:57
 Generator: `docs/gpt/asset_factory/scripts/godot_vengi_pixel_card_eval_proof.gd`

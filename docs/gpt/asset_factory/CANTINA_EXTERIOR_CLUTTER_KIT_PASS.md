@@ -1,4 +1,4 @@
-# Cantina Exterior Clutter Kit Pass
+﻿# Cantina Exterior Clutter Kit Pass
 
 Date: 2026-07-04  
 Scope: docs-only Blockbench/GLB/Godot iteration for reusable Cantina exterior clutter

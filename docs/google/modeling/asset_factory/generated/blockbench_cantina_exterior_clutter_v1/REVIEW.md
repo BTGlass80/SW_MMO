@@ -1,4 +1,4 @@
-# Blockbench Cantina Exterior Clutter v1 Review Board
+﻿# Blockbench Cantina Exterior Clutter v1 Review Board
 
 Generated: 2026-07-04T12:16:13.829Z
 Generator: `docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs`

@@ -1,4 +1,4 @@
-# Mos Eisley Hard Playspace Review - 2026-07-05
+﻿# Mos Eisley Hard Playspace Review - 2026-07-05
 
 Verdict: mild geometry improvement, still not release-worthy. The scene now has more authored pieces, but the playspace is still failing at the fundamentals: grounding, scale, occlusion, camera proof, and readable composition. Do not broaden features and do not expand the roadmap from this state.
 

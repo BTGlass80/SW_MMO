@@ -1,4 +1,4 @@
-# Godot Pixel Hull Character Proof v0
+﻿# Godot Pixel Hull Character Proof v0
 
 Generated: 2026-07-04 14:37:33
 Generator: `docs/gpt/asset_factory/scripts/godot_pixel_hull_character_proof.gd`

@@ -1,4 +1,4 @@
----
+﻿---
 name: sw-mmo-asset-factory
 description: Use when Codex needs to handle SW_MMO_Prototype docs/gpt asset-factory requests from Claude or the owner, choose a blockcraft asset creation lane for characters, droids, ships, weapons, terrain, buildings, Cantina rooms, or tactical space UI, generate docs-only SVG/Blockbench/Blender/Godot review artifacts, validate GLBs, and write keep/reject handoffs without modifying runtime game files.
 ---

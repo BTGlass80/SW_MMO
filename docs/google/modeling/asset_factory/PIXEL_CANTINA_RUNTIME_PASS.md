@@ -1,4 +1,4 @@
-# Pixel Cantina Runtime Pass
+﻿# Pixel Cantina Runtime Pass
 
 Date: 2026-07-04  
 Scope: docs-only runtime utility proof for semantic pixel room cards

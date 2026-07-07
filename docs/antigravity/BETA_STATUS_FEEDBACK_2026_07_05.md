@@ -1,4 +1,4 @@
-# Beta Status Feedback - 2026-07-05
+﻿# Beta Status Feedback - 2026-07-05
 
 Reviewer: Codex  
 Audience: Antigravity / Pro 3.1 driver  

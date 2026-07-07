@@ -1,4 +1,4 @@
-# Asset Factory Review Board
+﻿# Asset Factory Review Board
 
 Generated: 2026-07-03  
 Generator: `docs/gpt/asset_factory/scripts/godot_asset_factory.gd`  

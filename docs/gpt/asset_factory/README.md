@@ -1,4 +1,4 @@
-# GPT Asset Factory Prototype
+﻿# GPT Asset Factory Prototype
 
 Date: 2026-07-03  
 Scope: docs-only prototype under `docs/gpt`; does not change live game scenes

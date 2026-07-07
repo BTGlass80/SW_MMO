@@ -1,4 +1,4 @@
-# Meshy Credit and Tier Strategy
+﻿# Meshy Credit and Tier Strategy
 
 Date: 2026-07-04  
 Scope: docs-only operating strategy for using Meshy Premium without losing blockcraft cohesion

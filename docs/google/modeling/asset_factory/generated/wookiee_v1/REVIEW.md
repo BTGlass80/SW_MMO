@@ -1,4 +1,4 @@
-# Wookiee (High Fidelity) - Voxel Character Review
+﻿# Wookiee (High Fidelity) - Voxel Character Review
 
 Generated: 2026-07-04 18:40:50
 Generator: `docs/google/modeling/asset_factory/scripts/godot_pixel_actor_generator.gd`

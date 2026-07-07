@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Draft Blender adapter for the GPT Asset Factory.
 
 Run with Blender, not normal Python:

@@ -1,4 +1,4 @@
-# Reference Image Workflow
+﻿# Reference Image Workflow
 
 Date: 2026-07-04  
 Scope: docs-only workflow for using online, LEGO-like, fan-art, and concept references without copying assets

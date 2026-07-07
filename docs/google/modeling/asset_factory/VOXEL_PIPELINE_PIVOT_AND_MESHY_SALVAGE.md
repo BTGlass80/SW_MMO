@@ -1,4 +1,4 @@
-# Voxel Pipeline Pivot and Meshy Salvage
+﻿# Voxel Pipeline Pivot and Meshy Salvage
 
 Date: 2026-07-04  
 Scope: current recommendation after Meshy, pixel-extrude, and pixel-hull tests

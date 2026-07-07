@@ -1,4 +1,4 @@
-# Clone Commander (High Fidelity) - Voxel Character Review
+﻿# Clone Commander (High Fidelity) - Voxel Character Review
 
 Generated: 2026-07-04 17:35:40
 Generator: `docs/google/modeling/asset_factory/scripts/godot_pixel_actor_generator.gd`

@@ -1,4 +1,4 @@
-# Mos Eisley Visual Rebuild Guidance - 2026-07-05
+﻿# Mos Eisley Visual Rebuild Guidance - 2026-07-05
 
 ## Verdict
 

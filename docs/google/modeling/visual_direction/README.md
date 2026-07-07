@@ -1,4 +1,4 @@
-# GPT Visual Direction Packet
+﻿# GPT Visual Direction Packet
 
 Date: 2026-07-03  
 Scope: visual direction only; no runtime game files changed

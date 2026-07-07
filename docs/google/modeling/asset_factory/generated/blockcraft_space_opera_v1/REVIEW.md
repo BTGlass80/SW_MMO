@@ -1,4 +1,4 @@
-# Blockcraft Space Opera Prototype Pack v1 Review Board
+﻿# Blockcraft Space Opera Prototype Pack v1 Review Board
 
 Generated: 2026-07-03 23:42:37
 Generator: `docs/gpt/asset_factory/scripts/godot_asset_factory.gd`

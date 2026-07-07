@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const CAPTURE_SIZE := Vector2i(1280, 720)
 const OUT_ROOT := "res://docs/gpt/asset_factory/generated/cantina_mood_ab_v1"

@@ -1,4 +1,4 @@
-# Ship Microfighter Pass
+﻿# Ship Microfighter Pass
 
 Date: 2026-07-04  
 Status: kept after generation, Blender conversion, image inspection, and representative glTF validation

@@ -1,4 +1,4 @@
-# Map And Beta Done Review - 2026-07-05
+﻿# Map And Beta Done Review - 2026-07-05
 
 Verdict: no. Antigravity is not done with either the map or the road to beta.
 
@@ -101,7 +101,7 @@ The backtrace points into `scripts/world/world_builder.gd` `place_model()`, espe
 
 Not done, and do not expand the beta roadmap yet.
 
-The repo’s own current docs still say this is pre-beta/private alpha:
+The repoâ€™s own current docs still say this is pre-beta/private alpha:
 
 - `docs/KNOWN_ISSUES.md` calls the build a `pre-beta/private alpha release candidate`.
 - `docs/RELEASE_PLAYTEST_SCRIPT.md` is a script to validate three core stories, not proof they passed.

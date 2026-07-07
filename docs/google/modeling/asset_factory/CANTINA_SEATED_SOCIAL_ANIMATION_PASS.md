@@ -1,4 +1,4 @@
-# Cantina Seated Social Animation Pass
+﻿# Cantina Seated Social Animation Pass
 
 Date: 2026-07-04  
 Scope: docs-only animation protocol proof for the kept Cantina bar/booth module

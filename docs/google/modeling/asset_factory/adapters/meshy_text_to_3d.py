@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Meshy text-to-3D adapter for docs-only asset-factory experiments.
 
 The script intentionally reads MESHY_API_KEY from the environment and never

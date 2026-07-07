@@ -1,4 +1,4 @@
-# SW_MUSH System Map For Visual Translation
+﻿# SW_MUSH System Map For Visual Translation
 
 Initial Clone Wars-only map from `C:\SW_MUSH` inspection.
 

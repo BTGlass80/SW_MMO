@@ -1,4 +1,4 @@
-# Almost Space Opera Guide
+﻿# Almost Space Opera Guide
 
 Date: 2026-07-03  
 Purpose: make the "Palworld approach" concrete without turning the project into copied Star Wars assets.

@@ -1,4 +1,4 @@
-# Pixel Cantina Kit Pass
+﻿# Pixel Cantina Kit Pass
 
 Date: 2026-07-04  
 Scope: docs-only deterministic pixel/GDScript room-kit proof for Cantina-style interiors

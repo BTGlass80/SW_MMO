@@ -1,4 +1,4 @@
-# Pixel Room Runtime Adapter v0
+﻿# Pixel Room Runtime Adapter v0
 
 Generated: 2026-07-04 20:08:45
 Spec: `res://docs/gpt/asset_factory/specs/pixel_room_cantina_runtime_adapter_v0.json`

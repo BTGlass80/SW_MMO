@@ -1,4 +1,4 @@
-# Meshy Evaluation v0
+﻿# Meshy Evaluation v0
 
 Generated: 2026-07-04  
 Scope: first Meshy Premium preview test for SW_MMO_Prototype asset factory

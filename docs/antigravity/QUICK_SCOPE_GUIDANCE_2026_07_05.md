@@ -1,4 +1,4 @@
-# Antigravity Quick Scope Guidance - 2026-07-05
+﻿# Antigravity Quick Scope Guidance - 2026-07-05
 
 ## Read
 

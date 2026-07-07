@@ -1,4 +1,4 @@
-# Blockbench Cantina Bar Booth Bay v1 Review Board
+﻿# Blockbench Cantina Bar Booth Bay v1 Review Board
 
 Generated: 2026-07-04T12:33:25.085Z
 Generator: `docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs`

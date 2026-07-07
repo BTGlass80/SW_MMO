@@ -1,4 +1,4 @@
-# Hostile Droid Ship v2 GLB Review
+﻿# Hostile Droid Ship v2 GLB Review
 
 Generated: 2026-07-04  
 Adapter: `docs/gpt/asset_factory/adapters/blender_bbmodel_to_glb.py`

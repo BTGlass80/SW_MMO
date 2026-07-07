@@ -1,4 +1,4 @@
-# Blockbench Hostile Droid Ship v2 Review Board
+﻿# Blockbench Hostile Droid Ship v2 Review Board
 
 Generated: 2026-07-04T05:35:06.067Z
 Generator: `docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs`

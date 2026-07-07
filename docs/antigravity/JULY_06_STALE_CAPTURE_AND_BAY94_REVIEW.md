@@ -1,4 +1,4 @@
-# July 6 Stale Capture and Bay 94 Review
+﻿# July 6 Stale Capture and Bay 94 Review
 
 Date: 2026-07-06 07:01 EDT
 Reviewer: Codex

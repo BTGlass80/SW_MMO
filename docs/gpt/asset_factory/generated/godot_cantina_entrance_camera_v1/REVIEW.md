@@ -1,4 +1,4 @@
-# Godot Cantina Entrance GLB Camera Proof
+﻿# Godot Cantina Entrance GLB Camera Proof
 
 Generated: 2026-07-04 02:26:08
 Generator: `docs/gpt/asset_factory/scripts/godot_cantina_glb_camera_proof.gd`

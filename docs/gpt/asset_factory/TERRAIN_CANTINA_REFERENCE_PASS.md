@@ -1,4 +1,4 @@
-# Cantina Terrain Reference Pass
+﻿# Cantina Terrain Reference Pass
 
 Date: 2026-07-04  
 Scope: docs-only terrain/worldbuilding workflow for Chalmun's Cantina and cantina-district assets
@@ -158,9 +158,9 @@ This is for internal use. It should be a readable diagram, not a final art asset
 
 Recommended SVG set:
 
-- `cantina_source_comparison.svg` — compares fan-art lessons vs MUSH room data vs blockcraft output.
-- `cantina_room_graph.svg` — pure room graph: entrance -> main bar -> back hallway, plus implied cellar/restroom/office affordances.
-- `cantina_exterior_contract.svg` — exterior facade/plaza/approach derived from descriptions, not fan art.
+- `cantina_source_comparison.svg` â€” compares fan-art lessons vs MUSH room data vs blockcraft output.
+- `cantina_room_graph.svg` â€” pure room graph: entrance -> main bar -> back hallway, plus implied cellar/restroom/office affordances.
+- `cantina_exterior_contract.svg` â€” exterior facade/plaza/approach derived from descriptions, not fan art.
 
 ### Step 3: Blockbench Terrain Kit
 

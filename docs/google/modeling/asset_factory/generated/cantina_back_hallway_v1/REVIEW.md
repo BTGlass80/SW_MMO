@@ -1,4 +1,4 @@
-# Chalmun's Cantina - Back Hallway & Sabacc Room - Voxel Generation Review
+﻿# Chalmun's Cantina - Back Hallway & Sabacc Room - Voxel Generation Review
 
 Generated: 2026-07-04 17:24:18
 Generator: `docs/google/modeling/asset_factory/scripts/godot_pixel_cantina_generator.gd`

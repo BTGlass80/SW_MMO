@@ -1,4 +1,4 @@
-# Meshy Texture Refine Pass
+﻿# Meshy Texture Refine Pass
 
 Date: 2026-07-04  
 Scope: first Meshy preview-to-refine texture test for the asset factory

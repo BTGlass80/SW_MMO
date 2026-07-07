@@ -1,4 +1,4 @@
-# Fable & Antigravity - Coordination Guide
+﻿# Fable & Antigravity - Coordination Guide
 
 Welcome! This workspace is configured for dual-agent collaborative pair programming between:
 - **Fable (Claude Code)**: Steers the big-picture vision, WEG Star Wars D6 game systems architecture, quest writing, and gameplay balancing.

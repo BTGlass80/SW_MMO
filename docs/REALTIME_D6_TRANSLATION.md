@@ -1,4 +1,4 @@
-# Real-Time D6 Translation
+﻿# Real-Time D6 Translation
 
 The MMO should not freeze the shared world into literal tabletop turns. The working direction is:
 

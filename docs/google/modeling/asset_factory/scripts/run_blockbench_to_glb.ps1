@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$BlenderExe = "$env:LOCALAPPDATA\CodexTools\blender-5.1.2\blender-5.1.2-windows-x64\blender.exe",
   [string]$BbmodelDir = "docs\gpt\asset_factory\generated\blockbench_cubecraft_v0\blockbench",
   [string]$OutDir = "docs\gpt\asset_factory\generated\blockbench_cubecraft_v0\glb"

@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const DEFAULT_SPEC := "res://docs/gpt/asset_factory/specs/mos_eisley_chunky_v0.json"
 const DEFAULT_OUT_ROOT := "res://docs/gpt/asset_factory/generated"

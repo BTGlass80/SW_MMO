@@ -1,4 +1,4 @@
-# Cantina Terrain Reference V0
+﻿# Cantina Terrain Reference V0
 
 Generated: 2026-07-04  
 Scope: docs-only visual contract for a future Cantina terrain/blockcraft pass

@@ -1,4 +1,4 @@
-# GPT Project Audit and Backend Feedback
+﻿# GPT Project Audit and Backend Feedback
 
 Date: 2026-07-03  
 Author: GPT/Codex read-only audit  

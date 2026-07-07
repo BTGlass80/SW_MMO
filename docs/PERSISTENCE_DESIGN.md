@@ -1,13 +1,13 @@
-# Persistence Model — What Survives a Restart, and Where It Lives
+﻿# Persistence Model â€” What Survives a Restart, and Where It Lives
 
-Status: DESIGN (docs + data schemas only — no gameplay code). Author:
+Status: DESIGN (docs + data schemas only â€” no gameplay code). Author:
 world-sim-designer. Companion to `docs/WORLD_SIM_DESIGN.md` and
 `docs/FACTION_TERRITORY_DESIGN.md`. This is the **M1.4 persistence backbone**
 design (`docs/MULTIPLAYER_FOUNDATION.md` roadmap: accounts/characters,
 save/load position + sheet; JSON first, then SQLite per the architecture).
 
 The owner direction is **player-driven & persistent world**: a server restart must
-resume the *same galaxy* — same character positions and sheets, same faction
+resume the *same galaxy* â€” same character positions and sheets, same faction
 influence, same territory claims, same in-flight sieges, same city footprints. This
 document enumerates **exactly what server state must persist** and the **storage
 path: SQLite first, PostgreSQL later** (per `docs/PHASED_PLAN.md` Phase 4), with
@@ -24,7 +24,7 @@ table/collection sketches keyed to the data schemas.
    `data/schemas/*.json` are the **on-the-wire/at-rest contract**; SQL columns
    below map onto them.
 3. **Restart-survival is the acceptance test.** For every system: kill the server
-   mid-activity, restart, and the world resumes — character where they stood, a
+   mid-activity, restart, and the world resumes â€” character where they stood, a
    siege in `active` still counting down, influence intact.
 4. **Transient state is deliberately NOT persisted.** PvP challenge/consent flags,
    the per-session lawless-entry acknowledgement, and the LLM dynamic ambient pool
@@ -32,9 +32,9 @@ table/collection sketches keyed to the data schemas.
    Everything else persists.
 5. **Forward-compat via JSON `extra`.** Every schema carries an `extra` JSON blank;
    every table below carries an `extra TEXT` (SQLite) / `extra JSONB` (Postgres)
-   column. New fields go into `extra` with **zero migration** — the project's
+   column. New fields go into `extra` with **zero migration** â€” the project's
    idiomatic "blank space" (matches the MUSH's `attributes`/`ai_config_json`
-   convention noted in `ambient_npc_life_design_v1` §5.3).
+   convention noted in `ambient_npc_life_design_v1` Â§5.3).
 6. **Additive, versioned migrations.** A `schema_version` (PRAGMA user_version in
    SQLite) gates additive `CREATE TABLE IF NOT EXISTS` / `ADD COLUMN` migrations.
    Land empty tables early so a later feature never migrates a hot, populated DB.
@@ -49,11 +49,11 @@ Grouped by owner and keyed to the schema that defines its shape.
 | State | Persist? | Schema / table |
 |---|---|---|
 | Account (login identity, owned-character list) | **Yes** | `accounts` table |
-| Character identity, species, name | **Yes** | `player_persistence` → `characters` |
+| Character identity, species, name | **Yes** | `player_persistence` â†’ `characters` |
 | Last authoritative position (zone, pos, yaw) | **Yes** | `player_persistence.position` |
 | WEG D6 sheet (attributes, skills, CP, FP, Force flag, wound state, credits) | **Yes** | `player_persistence.sheet` |
 | Org membership (faction, rank, rep, guilds, switch cooldown) | **Yes** | `player_persistence.org` |
-| City role (founder/mayor/citizen/…, home cooldown, banishment expiry) | **Yes** | `player_persistence.city_role` |
+| City role (founder/mayor/citizen/â€¦, home cooldown, banishment expiry) | **Yes** | `player_persistence.city_role` |
 | Pending zone-influence credit (uncommitted deltas) | **Yes** | `player_persistence.world_hooks.pending_zone_influence` |
 | Active-bounty flag | **Yes** | `player_persistence.world_hooks.active_bounty` |
 | Per-session lawless-warning ack | **No** (session) | reset on login |
@@ -62,7 +62,7 @@ Grouped by owner and keyed to the schema that defines its shape.
 ### B. Director world sim
 | State | Persist? | Schema / table |
 |---|---|---|
-| Per-zone faction influence (republic/cis/hutt/independent) | **Yes** | `faction_zone_state` → `faction_zone_state` |
+| Per-zone faction influence (republic/cis/hutt/independent) | **Yes** | `faction_zone_state` â†’ `faction_zone_state` |
 | Derived alert level + security overlay | **Yes** (cache; re-derivable) | same row |
 | Active world-event instances (type, zones, expiry) | **Yes** | `world_event_instances` |
 | Era-progression milestones already fired | **Yes** | `world_milestones` |
@@ -73,7 +73,7 @@ Grouped by owner and keyed to the schema that defines its shape.
 ### C. Security zones
 | State | Persist? | Schema / table |
 |---|---|---|
-| Zone security base tier, faction overrides, overlay rules, incentives | **Yes** | `security_zone` → `security_zones` |
+| Zone security base tier, faction overrides, overlay rules, incentives | **Yes** | `security_zone` â†’ `security_zones` |
 | Transient effective-security overlay | **No** (re-derived each tick) | computed from B + claims + cities |
 | PvP challenge/consent flags | **No** (transient) | in-memory |
 
@@ -81,9 +81,9 @@ Grouped by owner and keyed to the schema that defines its shape.
 | State | Persist? | Schema / table |
 |---|---|---|
 | Per-(org,zone) territory influence + decay timer | **Yes** | `territory_influence` |
-| Territory claims (node, org, security, guard, maintenance, income) | **Yes** | `territory_claim` → `territory_claims` |
+| Territory claims (node, org, security, guard, maintenance, income) | **Yes** | `territory_claim` â†’ `territory_claims` |
 | Guard NPC state | **Yes** (on claim row) | `territory_claims.guard_*` |
-| **In-flight sieges (state machine, timers, score, consent scope)** | **Yes** | `siege_state` → `sieges` |
+| **In-flight sieges (state machine, timers, score, consent scope)** | **Yes** | `siege_state` â†’ `sieges` |
 | Resolved-siege history (audit, news) | **Yes** | `sieges` (terminal rows) + `director_log` |
 | Player cities (name, founder, mayor, tier, zone, tax, MOTD, rate cap) | **Yes** | `cities` |
 | City rooms (HQ/expansion, citizen-only flag) | **Yes** | `city_rooms` |
@@ -100,15 +100,15 @@ Grouped by owner and keyed to the schema that defines its shape.
 | State | Persist? | Schema / table |
 |---|---|---|
 | Per-NPC ambient goal/room/move state | **Yes** | `npc_ambient_state` |
-| NPC↔NPC relationship affinity | **Yes** | `npc_ambient_relationship` |
+| NPCâ†”NPC relationship affinity | **Yes** | `npc_ambient_relationship` |
 
-> Per `ambient_npc_life_design_v1` §5/§6: land these two **empty** tables
+> Per `ambient_npc_life_design_v1` Â§5/Â§6: land these two **empty** tables
 > pre-launch (lowest-risk `CREATE TABLE IF NOT EXISTS`), build the sim against the
-> already-present schema post-launch — never migrate a live, populated DB.
+> already-present schema post-launch â€” never migrate a live, populated DB.
 
 ---
 
-## 2. Storage path — SQLite first, Postgres later
+## 2. Storage path â€” SQLite first, Postgres later
 
 Per `docs/PHASED_PLAN.md` Phase 4 ("PostgreSQL for durable state when SQLite stops
 being enough") and `docs/MULTIPLAYER_FOUNDATION.md` M1.4 ("JSON first, then SQLite
@@ -127,13 +127,13 @@ per the architecture doc").
    The MUSH itself runs on SQLite at MUSH scale, so the model is proven.
 3. **PostgreSQL (multi-shard / scale).** When one server/shard is no longer enough
    (Phase 4 boundary): the **same logical schema** moves to Postgres with minimal
-   change — `TEXT`→`TEXT`, `INTEGER`→`INTEGER`/`BIGINT`, `REAL`→`DOUBLE PRECISION`,
+   change â€” `TEXT`â†’`TEXT`, `INTEGER`â†’`INTEGER`/`BIGINT`, `REAL`â†’`DOUBLE PRECISION`,
    and the JSON `extra` columns become `JSONB` (gaining indexable JSON queries).
    Designed so the migration is mechanical: no schema redesign, just a dialect port
    + a data copy. Cross-shard concerns (a character moving between shard-owned
    zones, global org/city/siege records) are resolved by making org/city/siege/
    world-sim tables **globally owned** (one authoritative writer) while character
-   and per-zone rows can be shard-local — but that boundary is a Phase-4 detail,
+   and per-zone rows can be shard-local â€” but that boundary is a Phase-4 detail,
    flagged in Open Questions, not decided here.
 
 **Why this order:** start with the lowest-ops thing that survives a restart (JSON),
@@ -147,7 +147,7 @@ SQLite onward (Phase 4 "observability from day one").
 ## 3. Table / collection sketches (SQLite dialect; Postgres notes inline)
 
 Types: SQLite `TEXT`/`INTEGER`/`REAL`. Postgres: `TEXT`/`INTEGER`(or `BIGINT`)/
-`DOUBLE PRECISION`, and every `extra TEXT` → `extra JSONB`. `*_unix` are epoch
+`DOUBLE PRECISION`, and every `extra TEXT` â†’ `extra JSONB`. `*_unix` are epoch
 seconds (`REAL`). Composite/JSON sub-objects from the schemas are stored as JSON in
 a single column unless called out as their own table.
 
@@ -353,7 +353,7 @@ CREATE TABLE IF NOT EXISTS org_storage (
 );
 
 -- F. AMBIENT NPC LIFE (land empty pre-launch; build sim post-launch) -------
--- shape: ambient_npc_life_design_v1 §5.2
+-- shape: ambient_npc_life_design_v1 Â§5.2
 CREATE TABLE IF NOT EXISTS npc_ambient_state (
     npc_id         TEXT PRIMARY KEY,
     current_goal   TEXT DEFAULT '',
@@ -376,7 +376,7 @@ CREATE TABLE IF NOT EXISTS npc_ambient_relationship (
 
 ## 4. Save/load lifecycle
 
-- **On login:** load `accounts` → owned `characters`; hydrate the character into
+- **On login:** load `accounts` â†’ owned `characters`; hydrate the character into
   the in-memory authoritative player dict (`world_state.gd` shape) + D6 sheet;
   spawn at `position` (fallback to a safe node if the zone is unavailable); reset
   session-scoped fields (lawless-warning ack).
@@ -386,31 +386,31 @@ CREATE TABLE IF NOT EXISTS npc_ambient_relationship (
   then clear it.
 - **World-sim save:** the slow tick writes `faction_zone_state`, event instances,
   milestones, territory influence/claims, sieges, and city state transactionally as
-  it mutates them — so a crash mid-tick leaves a consistent prior state, never a
+  it mutates them â€” so a crash mid-tick leaves a consistent prior state, never a
   half-applied one.
-- **Restart resume:** load all of B–F; **re-derive** transient caches (alert level,
+- **Restart resume:** load all of Bâ€“F; **re-derive** transient caches (alert level,
   security overlay, siege `pvp_consent` flag) from persisted truth on the first
   slow tick; do **not** restore transient PvP/consent/ambient-dynamic state.
 - **Siege resume specifically:** a siege in `active` with a future
   `phase_deadline_unix` keeps counting from where it was; one whose deadline passed
-  during downtime advances to `resolving` on the first tick after restart — the
+  during downtime advances to `resolving` on the first tick after restart â€” the
   contest is honored, not silently dropped.
 
 ---
 
-## 5. OPEN OWNER DECISIONS (flagged — NOT decided here)
+## 5. OPEN OWNER DECISIONS (flagged â€” NOT decided here)
 
 The persistence layer **stores** these but does not set their rules; the rule
-decisions belong to the owner (see `docs/WORLD_SIM_DESIGN.md` §7 and
-`docs/FACTION_TERRITORY_DESIGN.md` §9):
+decisions belong to the owner (see `docs/WORLD_SIM_DESIGN.md` Â§7 and
+`docs/FACTION_TERRITORY_DESIGN.md` Â§9):
 
-1. **Force / Jedi scarcity & access** — persisted as `sheet.force_sensitive`
+1. **Force / Jedi scarcity & access** â€” persisted as `sheet.force_sensitive`
    (boolean hook). What grants it, and how rare, is undecided.
-2. **Death / loot penalty model** — persisted as `sheet.wound_state`. What happens
+2. **Death / loot penalty model** â€” persisted as `sheet.wound_state`. What happens
    to position/inventory/credits at `incapacitated`/`dead` (and whether it varies
    by security tier) is undecided; the inventory table that a loot-drop model would
    touch is deferred (lives in `extra` until then).
-3. **CP progression pace** — persisted as `sheet.character_points`. No earn rate or
+3. **CP progression pace** â€” persisted as `sheet.character_points`. No earn rate or
    weekly cap is encoded; the optional RP-evaluator CP trickle and lawless CP bonus
    are on/off hooks only.
 
@@ -434,7 +434,7 @@ policy creates gets a `docs/DIVERGENCE_LEDGER.md` row first.
    global for anything cross-org/cross-zone; defer the detailed cut to Phase 4.
 4. **Backup / retention.** SQLite WAL checkpoint cadence and off-box backup
    frequency for a persistent world? Recommend periodic snapshot + WAL archive.
-5. **Soft-delete vs. hard-delete.** Characters/cities/orgs on disband — purge or
+5. **Soft-delete vs. hard-delete.** Characters/cities/orgs on disband â€” purge or
    tombstone (for audit/restore)? Recommend tombstone via a `deleted_unix` in
    `extra` initially.
 6. **Inventory/equipment table timing.** Currently deferred to `extra`. When the

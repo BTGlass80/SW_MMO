@@ -1,4 +1,4 @@
-# Fresh Pass Review - Mos Eisley and Beta Readiness
+﻿# Fresh Pass Review - Mos Eisley and Beta Readiness
 
 Date: 2026-07-05
 Reviewer: Codex

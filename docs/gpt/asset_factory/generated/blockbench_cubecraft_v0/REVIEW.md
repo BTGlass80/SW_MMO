@@ -1,4 +1,4 @@
-# Blockbench Cubecraft Excursion v0 Review Board
+﻿# Blockbench Cubecraft Excursion v0 Review Board
 
 Generated: 2026-07-04T04:54:22.447Z
 Generator: `docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs`

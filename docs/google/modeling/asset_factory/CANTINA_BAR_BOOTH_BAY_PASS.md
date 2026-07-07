@@ -1,4 +1,4 @@
-# Cantina Bar Booth Bay Pass
+﻿# Cantina Bar Booth Bay Pass
 
 Date: 2026-07-04  
 Scope: docs-only Blockbench/GLB/Godot iteration for Chalmun's Cantina main bar and booth bay

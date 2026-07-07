@@ -1,4 +1,4 @@
-# Google Pixel Hull Character Recreation v0
+﻿# Google Pixel Hull Character Recreation v0
 
 Generated: 2026-07-04 17:14:05
 Generator: `docs/google/modeling/asset_factory/scripts/google_pixel_hull_character_recreation.gd`

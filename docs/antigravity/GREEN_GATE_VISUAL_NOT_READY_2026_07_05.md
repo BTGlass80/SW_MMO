@@ -1,4 +1,4 @@
-# Green Gate, Visual Not Ready
+﻿# Green Gate, Visual Not Ready
 
 Date: 2026-07-05
 Reviewer: Codex

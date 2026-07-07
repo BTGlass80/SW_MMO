@@ -1,4 +1,4 @@
-# Animation Request Protocol
+﻿# Animation Request Protocol
 
 Date: 2026-07-04  
 Scope: docs-only protocol for requesting blockcraft animation work from Codex

@@ -1,4 +1,4 @@
-# SWG WEG D6 Beta - Pro 3.1 Gap Review
+﻿# SWG WEG D6 Beta - Pro 3.1 Gap Review
 
 Reviewer: Codex  
 Implementer under review: Antigravity  

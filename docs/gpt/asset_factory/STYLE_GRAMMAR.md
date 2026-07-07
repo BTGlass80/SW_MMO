@@ -1,4 +1,4 @@
-# Style Grammar: Chunky Space-Opera Frontier
+﻿# Style Grammar: Chunky Space-Opera Frontier
 
 ## Core Bet
 

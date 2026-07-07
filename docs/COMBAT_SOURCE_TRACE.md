@@ -1,4 +1,4 @@
-# Combat Source Trace
+﻿# Combat Source Trace
 
 SW_MUSH code and live data are authoritative for implemented behavior. Guides are secondary orientation.
 

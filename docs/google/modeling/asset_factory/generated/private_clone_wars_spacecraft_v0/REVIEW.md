@@ -1,4 +1,4 @@
-# Private Clone Wars Spacecraft Fan Pack v0 Review Board
+﻿# Private Clone Wars Spacecraft Fan Pack v0 Review Board
 
 Generated: 2026-07-03 23:58:47
 Generator: `docs/gpt/asset_factory/scripts/godot_asset_factory.gd`

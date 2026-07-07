@@ -1,4 +1,4 @@
-# Meshy Image Droid Source Proof v0
+﻿# Meshy Image Droid Source Proof v0
 
 Generated: 2026-07-04 15:19:46
 Generator: `docs/gpt/asset_factory/scripts/godot_meshy_image_droid_source_proof.gd`

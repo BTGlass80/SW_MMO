@@ -1,4 +1,4 @@
-# Space Slice
+﻿# Space Slice
 
 The first space slice is a 2.5D tactical overlay for the Mos Eisley approach, toggled with `M`.
 

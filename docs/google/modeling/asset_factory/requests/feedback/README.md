@@ -1,4 +1,4 @@
-# Asset Factory Feedback Queue
+﻿# Asset Factory Feedback Queue
 
 This folder is for feedback on generated asset-factory artifacts after Claude, Codex, or a human designer tries them in context.
 

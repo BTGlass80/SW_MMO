@@ -1,4 +1,4 @@
-# Weequay (High Fidelity) - Voxel Character Review
+﻿# Weequay (High Fidelity) - Voxel Character Review
 
 Generated: 2026-07-04 18:41:21
 Generator: `docs/google/modeling/asset_factory/scripts/godot_pixel_actor_generator.gd`

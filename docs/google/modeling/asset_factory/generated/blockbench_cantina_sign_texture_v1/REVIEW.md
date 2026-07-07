@@ -1,4 +1,4 @@
-# Blockbench Cantina Sign Texture v1 Source Review
+﻿# Blockbench Cantina Sign Texture v1 Source Review
 
 Generated: 2026-07-04T11:45:07.724Z
 Generator: `docs/gpt/asset_factory/scripts/cantina_sign_texture_pass.mjs`

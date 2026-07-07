@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const CAPTURE_SIZE := Vector2i(1280, 720)
 const JOBS := [

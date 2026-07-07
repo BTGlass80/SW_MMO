@@ -1,4 +1,4 @@
-# WEG Fidelity Policy
+﻿# WEG Fidelity Policy
 
 This project is not merely Star Wars-flavored. It is Clone Wars-era and grounded in West End Games Star Wars D6, especially Revised & Expanded.
 

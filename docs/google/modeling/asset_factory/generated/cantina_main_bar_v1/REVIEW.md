@@ -1,4 +1,4 @@
-# Chalmun's Cantina - Main Bar - Voxel Generation Review
+﻿# Chalmun's Cantina - Main Bar - Voxel Generation Review
 
 Generated: 2026-07-04 17:24:14
 Generator: `docs/google/modeling/asset_factory/scripts/godot_pixel_cantina_generator.gd`

@@ -1,4 +1,4 @@
-# API Adapter Contract
+﻿# API Adapter Contract
 
 This document defines how paid/free AI 3D services should plug into the asset factory.
 

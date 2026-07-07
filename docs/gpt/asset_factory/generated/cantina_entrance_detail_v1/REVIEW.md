@@ -1,4 +1,4 @@
-# Cantina Entrance Detail V1 Review Board
+﻿# Cantina Entrance Detail V1 Review Board
 
 Generated: 2026-07-04 02:16:39
 Generator: `docs/gpt/asset_factory/scripts/godot_asset_factory.gd`

@@ -1,4 +1,4 @@
-# Meshy Premium Evaluation
+﻿# Meshy Premium Evaluation
 
 Date: 2026-07-04  
 Scope: docs-only evaluation lane for Meshy API output

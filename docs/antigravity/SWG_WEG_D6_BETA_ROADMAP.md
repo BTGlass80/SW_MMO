@@ -1,4 +1,4 @@
-# Star Wars Galaxies WEG D6 Beta Roadmap
+﻿# Star Wars Galaxies WEG D6 Beta Roadmap
 
 Designer: Codex  
 Implementer: Antigravity  

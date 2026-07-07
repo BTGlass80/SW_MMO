@@ -1,4 +1,4 @@
-# Beta Roadmap Extension - Thin Live MMO Track
+﻿# Beta Roadmap Extension - Thin Live MMO Track
 
 Date: 2026-07-06
 Author: Codex
@@ -207,6 +207,172 @@ Exit criteria:
 - A non-author developer can run the beta from docs and recover from common failures.
 - The owner can decide whether to reset, migrate, or patch based on evidence.
 - The next roadmap expansion is driven by player data, not speculative breadth.
+
+## 2026-07-06 Roadmap Extension - From Machine Soak To Human PT1
+
+The project has now crossed an important threshold: the full gate includes a serial
+PT1 20-client soak smoke, lifecycle live smoke, item identity smoke, space cargo live
+RPC smoke, world capture/collision/grounding smokes, and the standard pure model suite.
+That is enough to continue unattended development, but it is not enough to declare
+human beta complete.
+
+The next roadmap is an execution queue, not a scope expansion. Continue proving the
+thin live MMO under increasingly realistic operation.
+
+## Phase B8 - Gate And Harness Hardening
+
+Goal: make the validation system trustworthy under unattended development.
+
+Build or verify:
+
+- Keep heavyweight live smokes, including `pt1_soak_live_smoke.gd`, isolated from the
+  normal concurrent smoke pool.
+- Add a no-leftover-process check around every multi-process smoke that starts servers
+  or clients.
+- Make all live smokes account-isolated, port-isolated, and deterministic enough that
+  random item quality or spawn timing cannot decide pass/fail.
+- Remove scratch scripts, throwaway `test_*.gd` files, and generated logs before every
+  handoff.
+- Keep visual captures fresh when running the full gate; stale captures are a real
+  gate failure, not a warning to ignore.
+
+Exit criteria:
+
+- Three consecutive full gates pass from a clean process table.
+- No smoke leaves Godot server/client children running after failure or success.
+- The gate output remains the sole trusted source for smoke and RPC counts.
+
+## Phase B9 - Operator Readiness Drill
+
+Goal: prove that the beta can be operated by someone other than the implementer.
+
+Current closure note:
+
+- The beta runbook now uses explicit session bundles, manual persistence backups,
+  a deliberate PT1 port convention, telemetry tally steps, and stop-the-test
+  thresholds.
+- `tools/pt1_bundle.ps1` opens/closes PT1 evidence bundles, captures
+  before/after persistence backups, copies watchdog logs and telemetry, and runs the
+  telemetry tally; `tools/check_project.ps1` parses PowerShell tools so syntax drift
+  fails the gate. `tests/test_pt1_session_bundle.py` exercises the Start/Close bundle
+  path against disposable save/log/telemetry data, including `gate.txt` capture and
+  a per-session `triage.md` copy from `docs/PT1_TRIAGE_TEMPLATE.md`; it also covers
+  the tool-assisted `Restore` action against a temp save directory and bundle
+  `Audit` pass/fail behavior, including red-gate and unknown-credit-telemetry
+  rejection.
+- The admin command surface now covers `list`, `inspect` with inventory details,
+  `teleport`, `unstuck`, `grant`, `force_save`, `clear_space`, `kick`,
+  `clear_listing`, and `export_telemetry`; `admin_commands_smoke.gd` covers the
+  recovery-critical paths.
+- Remaining B9 proof is operational: run the documented launch/backup/restore flow
+  with a real server session and preserve the bundle.
+
+Build or verify:
+
+- Run the server through the documented beta runbook: launch, observe, stop, backup,
+  restore, restart, and inspect logs.
+- Add or verify operator commands for teleport, unstuck, inspect sheet, grant/remove
+  credits, force-save, clear space state, and kick/disconnect.
+- Confirm telemetry files are named, rotated or archived, and readable by
+  `tools/telemetry_tally.py`.
+- Produce a single session bundle format: gate output, telemetry JSONL, server log,
+  known issues, and PT1 feedback notes.
+
+Exit criteria:
+
+- A fresh operator can run a 30-minute private session from docs without editing save
+  files by hand.
+- Backups can be restored and the restored world passes a reconnect/persistence smoke.
+- Telemetry tally runs on the session log without unknown credit-bearing events.
+
+## Phase B10 - Human PT1 Preparation
+
+Goal: make the first strangers night schedulable.
+
+Current closure note:
+
+- `docs/PT1_SESSION_PLAN.md` now defines a 30 to 45 minute route through login,
+  vendor/economy, mission/job, combat/recovery, item mutation, telemetry export, and
+  shutdown proof.
+- `docs/PT1_FEEDBACK_TEMPLATE.md` now maps player feedback to that route.
+- `docs/PT1_INVITE_PACKET.md` gives the owner/operator a fill-in scheduling packet
+  and player-facing message for the first trusted rehearsal.
+- `docs/PT1_TRIAGE_TEMPLATE.md` gives B11 a concrete P0/P1/P2/content/parked queue
+  format to fill immediately after the rehearsal.
+- Remaining B10 proof is a host rehearsal from the runbook, followed by an actual
+  human PT1 or explicitly labeled rehearsal.
+
+Build or verify:
+
+- A 30 to 45 minute scripted PT1 route: create character, learn controls, use vendor,
+  complete a mission, travel, fight, recover, trade or list an item, and submit feedback.
+- A pre-session checklist for host and players: build/version, port, accounts, reset
+  policy, known issues, emergency commands, and where feedback goes.
+- A post-session checklist: archive logs, run telemetry tally, preserve saves, record
+  blockers, and sort feedback into bugs/tuning/content/docs.
+- A clear "stop the test" threshold for crashes, save corruption, stuck players,
+  economy exploit, or consent/PvP violation.
+
+Exit criteria:
+
+- The owner can schedule PT1 without needing a live developer to explain every step.
+- The session route exercises the beta spine rather than wandering into parked scope.
+- Known issues explicitly separate acceptable roughness from PT1 blockers.
+
+## Phase B11 - Post-PT1 Triage And Tuning
+
+Goal: let human evidence decide the next work.
+
+Build or verify:
+
+- Convert PT1 results into a ranked queue: P0 blockers, P1 release risks, P2 polish,
+  and parked/post-live ideas.
+- Tune economy only from telemetry: credit faucets, sinks, vendor prices, repair costs,
+  insurance, travel fees, loot, mission rewards, and bazaar fees.
+- Tune combat/recovery only from combat envelopes, death/downed logs, and player
+  feedback.
+- Add focused smokes for every PT1 blocker before fixing it when practical.
+
+Exit criteria:
+
+- No beta claim is based only on subjective impressions; every change cites telemetry,
+  feedback, a reproduced bug, or a deliberate owner ruling.
+- The follow-up queue is smaller and sharper after each triage pass.
+
+## Phase B12 - Live Beta Candidate
+
+Goal: decide whether the project is ready for a small live beta window.
+
+Build or verify:
+
+- 3 consecutive full gates green after PT1 fixes.
+- A 60-minute 20-client soak green after PT1 fixes.
+- A successful human PT1 or PT1 rehearsal with no save corruption, no unrecoverable
+  stuck states, and no economy exploit that requires a wipe.
+- Known issues updated with owner-approved acceptable beta roughness.
+- Runbook, feedback template, reset policy, and telemetry workflow all current.
+
+Exit criteria:
+
+- The owner can open a small, trusted beta window knowing how to start, stop, restore,
+  observe, triage, and patch the game.
+- The next roadmap expansion is a post-beta live-ops queue, not more pre-beta scope.
+
+## Unattended Development Goal
+
+If this roadmap is handed to Codex as an unattended goal, use this objective:
+
+```text
+Drive SW_MMO_Prototype from the current gate-green machine-soak state to a human PT1
+ready beta candidate. Work only inside the thin-live beta track. Keep multiplayer
+space, sieges, player cities, runtime LLM, broad planet rollout, and map broadening
+parked. Execute B8 through B12 in order: harden the gate/harness, prove operator
+readiness, prepare the human PT1 route and checklists, triage any PT1 evidence into
+tests and fixes, and stop only when the full gate is green, telemetry is clean, known
+issues are current, and the owner can schedule or run a small trusted beta session from
+the docs. Preserve user changes, avoid scratch files, run the full gate after code or
+harness changes, and report blockers precisely.
+```
 
 ## Explicitly Parked Until After Beta
 

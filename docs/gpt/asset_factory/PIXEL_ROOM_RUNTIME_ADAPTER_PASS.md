@@ -1,4 +1,4 @@
-# Pixel Room Runtime Adapter Pass
+﻿# Pixel Room Runtime Adapter Pass
 
 Date: 2026-07-04  
 Scope: docs-only reusable adapter proof for semantic pixel room cards

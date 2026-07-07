@@ -1,4 +1,4 @@
-# Asset Request Playbook
+﻿# Asset Request Playbook
 
 Date: 2026-07-04  
 Scope: docs-only operating manual for Claude, Codex, and a future asset-pipeline skill

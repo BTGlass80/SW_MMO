@@ -1,4 +1,4 @@
-# Visual Evaluation Contact Sheet
+﻿# Visual Evaluation Contact Sheet
 
 Date: 2026-07-03
 

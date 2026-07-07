@@ -1,4 +1,4 @@
-# Blockbench Cubecraft Pipeline Excursion
+﻿# Blockbench Cubecraft Pipeline Excursion
 
 Date: 2026-07-04  
 Status: tested locally with Blockbench source generation, Blender 5.1.2 GLB export, Blender review previews, and glTF Transform validation

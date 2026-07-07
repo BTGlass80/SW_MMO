@@ -1,4 +1,4 @@
-# Jawa (High Fidelity) - Voxel Character Review
+﻿# Jawa (High Fidelity) - Voxel Character Review
 
 Generated: 2026-07-04 18:41:14
 Generator: `docs/google/modeling/asset_factory/scripts/godot_pixel_actor_generator.gd`

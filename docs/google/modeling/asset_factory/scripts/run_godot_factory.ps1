@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$GodotConsole = "C:\Godot 4\Godot_v4.6.3-stable_win64_console.exe",
     [string]$Spec = "res://docs/gpt/asset_factory/specs/mos_eisley_chunky_v0.json"
 )

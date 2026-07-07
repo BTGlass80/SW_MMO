@@ -1,4 +1,4 @@
-# Cantina Blockbench Entrance Pass
+﻿# Cantina Blockbench Entrance Pass
 
 Date: 2026-07-04  
 Scope: docs-only conversion of kept Cantina entrance proof into editable model source

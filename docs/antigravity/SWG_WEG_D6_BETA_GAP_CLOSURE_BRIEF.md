@@ -1,4 +1,4 @@
-# SWG WEG D6 Beta Gap Closure Brief
+﻿# SWG WEG D6 Beta Gap Closure Brief
 
 Designer: Codex  
 Implementer: Antigravity  

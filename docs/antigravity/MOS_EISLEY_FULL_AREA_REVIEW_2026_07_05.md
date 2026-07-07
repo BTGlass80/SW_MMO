@@ -1,4 +1,4 @@
-# Mos Eisley Full-Area Review - 2026-07-05
+﻿# Mos Eisley Full-Area Review - 2026-07-05
 
 Verdict: not fixed. The latest pass is a partial improvement around the cantina, but it does not prove the whole Mos Eisley playspace is release-worthy. The current evidence is still mostly four cantina captures, and the broader Spaceport Row/Bay 94/customs/speeders/depot area remains under-reviewed and under-tested. Collision also still looks suspect.
 

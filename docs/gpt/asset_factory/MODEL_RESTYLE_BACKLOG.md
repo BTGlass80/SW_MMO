@@ -1,4 +1,4 @@
-# Model Restyle Backlog
+﻿# Model Restyle Backlog
 
 Date: 2026-07-04  
 Scope: docs-only planning for the blockcraft / "Star Wars Minecraft" art direction

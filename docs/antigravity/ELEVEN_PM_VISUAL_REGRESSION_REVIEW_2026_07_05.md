@@ -1,4 +1,4 @@
-# 10:54 PM Visual Regression Review
+﻿# 10:54 PM Visual Regression Review
 
 Date: 2026-07-05
 Reviewer: Codex

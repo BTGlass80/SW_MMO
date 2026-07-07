@@ -1,4 +1,4 @@
-# Antigravity MMO - Release Playtest Script
+﻿# Antigravity MMO - Release Playtest Script
 
 This document provides a step-by-step guide for non-developers to install, run, and validate the three core player stories of the SW_MMO prototype release candidate. 
 

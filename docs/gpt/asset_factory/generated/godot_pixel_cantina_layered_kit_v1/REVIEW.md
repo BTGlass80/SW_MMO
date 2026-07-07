@@ -1,4 +1,4 @@
-# Godot Layered Pixel Cantina Kit Proof v1
+﻿# Godot Layered Pixel Cantina Kit Proof v1
 
 Generated: 2026-07-04 15:39:41
 Generator: `docs/gpt/asset_factory/scripts/godot_pixel_cantina_layered_kit_proof.gd`

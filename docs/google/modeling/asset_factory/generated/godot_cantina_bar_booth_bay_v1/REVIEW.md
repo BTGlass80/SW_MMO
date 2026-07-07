@@ -1,4 +1,4 @@
-# Godot Cantina Bar Booth Bay v1
+﻿# Godot Cantina Bar Booth Bay v1
 
 Generated: 2026-07-04 08:36:16
 Generator: `docs/gpt/asset_factory/scripts/godot_cantina_bar_booth_bay_proof.gd`

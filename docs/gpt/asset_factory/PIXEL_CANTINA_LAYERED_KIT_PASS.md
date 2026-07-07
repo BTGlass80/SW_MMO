@@ -1,4 +1,4 @@
-# Pixel Cantina Layered Kit Pass
+﻿# Pixel Cantina Layered Kit Pass
 
 Date: 2026-07-04  
 Scope: docs-only layered semantic pixel/GDScript room-kit proof

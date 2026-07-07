@@ -1,4 +1,4 @@
-# 10:06 PM Visual Pass Review
+﻿# 10:06 PM Visual Pass Review
 
 Date: 2026-07-05
 Reviewer: Codex

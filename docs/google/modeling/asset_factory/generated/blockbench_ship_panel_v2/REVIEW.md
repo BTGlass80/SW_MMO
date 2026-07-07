@@ -1,4 +1,4 @@
-# Blockbench Ship Panel Detail v2 Review Board
+﻿# Blockbench Ship Panel Detail v2 Review Board
 
 Generated: 2026-07-04T05:39:20.612Z
 Generator: `docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs`

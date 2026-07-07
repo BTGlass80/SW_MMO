@@ -1,4 +1,4 @@
-# Meshy Ship Evaluation v0
+﻿# Meshy Ship Evaluation v0
 
 Generated: 2026-07-04 12:47:40
 Generator: `docs/gpt/asset_factory/scripts/godot_meshy_ship_eval_proof.gd`

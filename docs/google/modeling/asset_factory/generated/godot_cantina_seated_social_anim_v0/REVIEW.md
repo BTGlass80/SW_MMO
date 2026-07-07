@@ -1,4 +1,4 @@
-# Godot Cantina Seated Social Animation v0
+﻿# Godot Cantina Seated Social Animation v0
 
 Generated: 2026-07-04 08:48:16
 Generator: `docs/gpt/asset_factory/scripts/godot_cantina_seated_social_animation_proof.gd`

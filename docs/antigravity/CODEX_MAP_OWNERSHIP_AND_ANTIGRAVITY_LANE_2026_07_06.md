@@ -1,4 +1,4 @@
-# Codex Map Ownership and Antigravity Lane
+﻿# Codex Map Ownership and Antigravity Lane
 
 Date: 2026-07-06
 Owner direction: Codex handles the authored Mos Eisley map/playspace directly; Antigravity handles everything else unless explicitly asked to pair on a map task.

@@ -1,4 +1,4 @@
-# Godot Meshy Evaluation v0
+﻿# Godot Meshy Evaluation v0
 
 Generated: 2026-07-04 12:38:42
 Generator: `docs/gpt/asset_factory/scripts/godot_meshy_eval_proof.gd`

@@ -1,4 +1,4 @@
-# Release-Worthy Direction For Antigravity
+﻿# Release-Worthy Direction For Antigravity
 
 Reviewer: Codex  
 Date: 2026-07-05  

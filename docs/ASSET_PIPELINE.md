@@ -1,4 +1,4 @@
-# Asset Pipeline
+﻿# Asset Pipeline
 
 > Reference for whichever session is driving development (per the project's
 > single-driver coordination model, memory mmo-direction #5). Explains how 3D art
@@ -15,18 +15,18 @@ setting, rules, and names are used freely per the project's private/fan directio
 
 ## The one tool
 
-`tools/fetch_assets.py` — stdlib-only (urllib/zipfile/json, no pip), config-driven
+`tools/fetch_assets.py` â€” stdlib-only (urllib/zipfile/json, no pip), config-driven
 from `tools/asset_sources.json`, same argparse-subcommand style as `durable_loop.py`.
 
 ```
-fetch ─► MMO_Assets/ (raw .zip archive, left zipped) ─► catalog ─► curate ─► assets/3d/
+fetch â”€â–º MMO_Assets/ (raw .zip archive, left zipped) â”€â–º catalog â”€â–º curate â”€â–º assets/3d/
 ```
 
 | Command | Does | Needs |
 |---|---|---|
 | `python tools/fetch_assets.py kenney` | download CC0 Kenney pack zips into `MMO_Assets/` | nothing |
 | `python tools/fetch_assets.py poly` | search + download CC0 models from poly.pizza | `POLY_PIZZA_TOKEN` (free) |
-| `python tools/fetch_assets.py tripo` | text-to-3D generation | `TRIPO_API_KEY` (~$0.10–0.20/model) |
+| `python tools/fetch_assets.py tripo` | text-to-3D generation | `TRIPO_API_KEY` (~$0.10â€“0.20/model) |
 | `python tools/fetch_assets.py catalog` | inventory the archive, extract previews, classify style/theme | nothing |
 | `python tools/fetch_assets.py curate` | extract the chosen GLB/glTF subset into `assets/3d/` | nothing |
 | `python tools/fetch_assets.py all` | every available fetch source, then catalog | optional keys |
@@ -50,18 +50,18 @@ docs/
 `MMO_Assets/` is the single source of truth for raw assets; manual downloads and
 `fetch` output both land there. Only `curate` writes into `assets/3d/`.
 
-## House style (consistency rule — important)
+## House style (consistency rule â€” important)
 
 The archive has two vendors with **different looks**:
 
-- **Kenney** — flat ultra-low-poly, one shared palette, GLB-native. Maximally consistent. Strong on environment/buildings/props; weak on animated characters.
-- **Quaternius** — smoother low-poly, baked AO, a notch more detail; ships glTF/FBX/.blend. Has rigged/animated characters, creatures, mechs, ships that Kenney lacks.
+- **Kenney** â€” flat ultra-low-poly, one shared palette, GLB-native. Maximally consistent. Strong on environment/buildings/props; weak on animated characters.
+- **Quaternius** â€” smoother low-poly, baked AO, a notch more detail; ships glTF/FBX/.blend. Has rigged/animated characters, creatures, mechs, ships that Kenney lacks.
 
 **Current `house_style` = `Kenney`** (set in `asset_sources.json`). The curated
 `assets/3d/kenney/` set is the environment palette for the Mos Eisley spaceport
 slice. Rule of thumb: **build from the house-style vendor first; only mix the other
 vendor where it reads as the same family.** Mixing flat Kenney buildings with
-smooth Quaternius props in the same shot will look off — keep them in separate
+smooth Quaternius props in the same shot will look off â€” keep them in separate
 visual zones or restyle. If the owner switches `house_style`, update the `curate`
 list and re-run `curate`.
 
@@ -72,7 +72,7 @@ list and re-run `curate`.
 - Instance a model: `preload("res://assets/3d/kenney/space-kit/Models/GLB format/barrel.glb").instantiate()`,
   or drag the `.glb` into a scene. They come in as `Node3D` with `MeshInstance3D` children.
 - Kenney GLBs embed their texture; no extra material setup needed for greyboxing.
-- For server-authoritative logic, remember these are **presentation only** — keep
+- For server-authoritative logic, remember these are **presentation only** â€” keep
   meshes on the client; the server owns position/interaction truth (per ARCHITECTURE.md).
 
 ## Extending it (edit `tools/asset_sources.json`, then run a command)
@@ -87,13 +87,13 @@ list and re-run `curate`.
 - Every downloaded/generated ASSET is **CC0** (Kenney, Quaternius), filtered to CC0
   (poly.pizza), or owned paid-API output (Tripo). Provenance is logged to
   `ASSET_MANIFEST.json` so the asset layer's licensing stays auditable.
-- **Asset SOURCES stay generic sci-fi** — not because the game avoids Star Wars (it's
+- **Asset SOURCES stay generic sci-fi** â€” not because the game avoids Star Wars (it's
   a private/fan project that uses the SW setting, WEG D6 rules, and names freely per
   memory mmo-direction #4), but because CC0 libraries and AI generators can't supply
   trademarked SW models anyway, and a generic downloaded layer keeps licensing clean.
   So build SW-flavored scenes by ARRANGING generic parts (domes, dishes, droids,
   hovercraft); don't depend on a pack literally labeled "X-Wing".
-- poly.pizza is user-uploaded — vet titles before use (mislabeled fan models happen).
+- poly.pizza is user-uploaded â€” vet titles before use (mislabeled fan models happen).
 
 ## Known rough edges (low priority)
 
@@ -103,4 +103,4 @@ list and re-run `curate`.
 - Several Quaternius packs are **FBX-only** (no glTF): `Ultimate Modular Sci-Fi`,
   `Spaceships by @Quaternius`, `Alien Animated`, `Animated FPS Guns`. `curate` skips
   FBX, so those need Godot's FBX import (FBX2glTF) or manual conversion first.
-- `MMO_Assets/` has a **duplicate** `Ultimate Modular Men- Feb 2022` zip — delete one.
+- `MMO_Assets/` has a **duplicate** `Ultimate Modular Men- Feb 2022` zip â€” delete one.

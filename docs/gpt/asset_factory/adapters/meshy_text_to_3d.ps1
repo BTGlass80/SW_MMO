@@ -1,4 +1,4 @@
-param(
+﻿param(
   [ValidateSet("dry-run", "run-preview", "run-refine", "get")]
   [string]$Command = "dry-run",
   [string]$Spec,

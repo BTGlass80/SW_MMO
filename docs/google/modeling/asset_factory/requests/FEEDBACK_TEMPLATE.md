@@ -1,4 +1,4 @@
-# Asset Factory Feedback Template
+﻿# Asset Factory Feedback Template
 
 Copy this file into `feedback/inbox/FB-YYYYMMDD-short-kebab-name.md` when Claude, Codex, or a human designer needs to report whether an asset-factory result worked in practice.
 

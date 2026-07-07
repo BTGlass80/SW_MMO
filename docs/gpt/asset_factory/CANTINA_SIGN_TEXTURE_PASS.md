@@ -1,4 +1,4 @@
-# Cantina Sign Texture Pass
+﻿# Cantina Sign Texture Pass
 
 Date: 2026-07-04  
 Scope: docs-only sign workflow test for the kept Cantina entrance model

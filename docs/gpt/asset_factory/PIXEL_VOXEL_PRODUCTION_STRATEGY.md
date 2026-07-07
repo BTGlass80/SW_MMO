@@ -1,4 +1,4 @@
-# Deterministic Pixel Voxel Production Strategy
+﻿# Deterministic Pixel Voxel Production Strategy
 
 Date: 2026-07-04  
 Scope: docs-only default strategy for the voxel/blockcraft asset factory

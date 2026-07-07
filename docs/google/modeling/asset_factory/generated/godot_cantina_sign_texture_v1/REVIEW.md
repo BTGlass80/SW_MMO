@@ -1,4 +1,4 @@
-# Godot Cantina Sign Texture Proof
+﻿# Godot Cantina Sign Texture Proof
 
 Generated: 2026-07-04 07:47:01
 Generator: `docs/gpt/asset_factory/scripts/godot_cantina_sign_texture_proof.gd`

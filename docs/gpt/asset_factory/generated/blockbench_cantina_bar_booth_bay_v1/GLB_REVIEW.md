@@ -1,4 +1,4 @@
-# Blockbench Cantina Bar Booth Bay v1 GLB Review
+﻿# Blockbench Cantina Bar Booth Bay v1 GLB Review
 
 Generated: 2026-07-04  
 Adapter: `docs/gpt/asset_factory/adapters/blender_bbmodel_to_glb.py`

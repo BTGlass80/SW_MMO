@@ -1,4 +1,4 @@
-# Godot Cantina Exterior Clutter Kit v1
+﻿# Godot Cantina Exterior Clutter Kit v1
 
 Generated: 2026-07-04 08:16:35
 Generator: `docs/gpt/asset_factory/scripts/godot_cantina_exterior_clutter_kit_proof.gd`

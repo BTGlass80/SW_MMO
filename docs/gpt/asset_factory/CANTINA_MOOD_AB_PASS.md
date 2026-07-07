@@ -1,4 +1,4 @@
-# Cantina Mood A/B Pass
+﻿# Cantina Mood A/B Pass
 
 Date: 2026-07-04  
 Scope: docs-only lighting/material/clutter iteration for the kept Cantina entrance model

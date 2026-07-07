@@ -1,4 +1,4 @@
-# Animation Request Template
+﻿# Animation Request Template
 
 Copy this file into `inbox/REQ-YYYYMMDD-short-kebab-animation.md` and fill it out.
 

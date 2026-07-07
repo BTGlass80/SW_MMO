@@ -1,4 +1,4 @@
-# Asset Request Queue
+﻿# Asset Request Queue
 
 Purpose: a simple shared filesystem protocol for Claude, Codex, or a human designer to request asset-factory work without touching runtime game files.
 

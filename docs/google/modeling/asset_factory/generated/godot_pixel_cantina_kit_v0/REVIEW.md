@@ -1,4 +1,4 @@
-# Godot Pixel Cantina Kit Proof v0
+﻿# Godot Pixel Cantina Kit Proof v0
 
 Generated: 2026-07-04 15:33:25
 Generator: `docs/gpt/asset_factory/scripts/godot_pixel_cantina_kit_proof.gd`

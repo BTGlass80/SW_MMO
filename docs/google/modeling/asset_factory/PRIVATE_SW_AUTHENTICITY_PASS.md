@@ -1,4 +1,4 @@
-# Private SW Authenticity Pass
+﻿# Private SW Authenticity Pass
 
 Date: 2026-07-03  
 Scope: docs/gpt asset-pipeline prototype only  

@@ -1,4 +1,4 @@
-# Claude Handoff: Asset Factory
+﻿# Claude Handoff: Asset Factory
 
 ## What To Review First
 

@@ -1,5 +1,5 @@
-extends SceneTree
-## balance_probe.gd — Monte Carlo the LIVE combat path (arena → ground_combat → d6_rules)
+﻿extends SceneTree
+## balance_probe.gd â€” Monte Carlo the LIVE combat path (arena â†’ ground_combat â†’ d6_rules)
 ## for a quickstart human vs real hostile creatures. Reports per-exchange incoming-wound
 ## distributions, campaign time-to-death under (a) the LIVE maxi() accumulation and
 ## (b) the unwired WoundLadder.escalate() model, player kill rates, and loot economics.
@@ -180,7 +180,7 @@ func _sev_for_key(k: String) -> int:
 
 func _sev_for_level(level: String) -> int:
 	# Project a ladder level onto the arena severity int. wounded_twice has no int of its
-	# own (the -2D penalty is INEXPRESSIBLE through the current severity plumbing — see the
+	# own (the -2D penalty is INEXPRESSIBLE through the current severity plumbing â€” see the
 	# P0-2 seam note); approximate with 2 (-1D), which slightly FLATTERS survival.
 	match level:
 		"healthy": return 0

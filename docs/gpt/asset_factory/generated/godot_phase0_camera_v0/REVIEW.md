@@ -1,4 +1,4 @@
-# Godot Phase 0 Camera Proof
+﻿# Godot Phase 0 Camera Proof
 
 Generated: 2026-07-04 01:52:28
 Generator: `docs/gpt/asset_factory/scripts/godot_glb_camera_proof.gd`

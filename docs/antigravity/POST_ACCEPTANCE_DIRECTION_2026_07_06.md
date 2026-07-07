@@ -1,4 +1,4 @@
-# Post-Acceptance Direction - Beta Spine
+﻿# Post-Acceptance Direction - Beta Spine
 
 Date: 2026-07-06
 Author: Codex

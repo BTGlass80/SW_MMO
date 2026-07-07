@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import json
 import os
 from datetime import datetime
@@ -68,7 +68,7 @@ def render_markdown(db):
     lines.append("| Task ID | Title | Status | Assigned To | Last Updated |")
     lines.append("| --- | --- | --- | --- | --- |")
     for t in db.get("tasks", []):
-        status_emoji = "✅" if t["status"] == "completed" else "🚧" if t["status"] == "in_progress" else "❌" if t["status"] == "blocked" else "📝"
+        status_emoji = "âœ…" if t["status"] == "completed" else "ðŸš§" if t["status"] == "in_progress" else "âŒ" if t["status"] == "blocked" else "ðŸ“"
         lines.append(f"| `{t['id']}` | **{t['title']}**<br>*{t['description']}* | {status_emoji} `{t['status'].upper()}` | `{t['assigned_to']}` | {t['updated_at']} |")
     lines.append("")
     

@@ -1,4 +1,4 @@
-# Unattended Durable Loop
+﻿# Unattended Durable Loop
 
 `tools/durable_loop.py` is a standalone Windows Task Scheduler wrapper adapted from the durable loop in `C:\SW_MUSH_night`.
 
@@ -60,21 +60,21 @@ next. It keeps developing without the owner prompting.
 Mechanism and guardrails:
 - **Queue:** `docs/UNATTENDED_BACKLOG.md`, worked strictly top-down, one slice per
   iteration.
-- **Safety net (SCOPED — a parallel Codex session shares this repo):** this project
+- **Safety net (SCOPED â€” a parallel Codex session shares this repo):** this project
   is now a git repo (baseline `54fa6b8` on `master`). Commit ONLY the files this loop
   changed (`git add <paths>`, NEVER `git add -A`). A RED slice reverts ONLY its own
-  files (`git checkout -- <your paths>`) — NEVER a blanket `git checkout -- .`,
+  files (`git checkout -- <your paths>`) â€” NEVER a blanket `git checkout -- .`,
   `git reset --hard`, or `git clean`, which would destroy Codex's in-flight asset work.
   Codex owns `tools/fetch_assets.py`, `tools/asset_sources.json`, `MMO_Assets/`,
-  `assets/`, `docs/ASSET_CATALOG.md`, `docs/asset_previews/` — never stage or revert those.
+  `assets/`, `docs/ASSET_CATALOG.md`, `docs/asset_previews/` â€” never stage or revert those.
 - **Green bar:** the **full** `check_project.ps1` (import + runtime launch + GDScript
   smokes + python tests). The A0 colormap fix made `--import` green; the old
-  "`--import` can fail on half-curated assets" caveat is **stale** — the full gate is
+  "`--import` can fail on half-curated assets" caveat is **stale** â€” the full gate is
   the bar now.
 - **Per-iteration contract:** pick the top unblocked, non-owner-decision backlog item
-  → implement → run the green-bar checks → GREEN: `git add <your paths> && git commit`,
+  â†’ implement â†’ run the green-bar checks â†’ GREEN: `git add <your paths> && git commit`,
   mark the item DONE + hash, append a one-line note to `docs/NIGHTLY_HANDOFF.md` and
-  the backlog Log → RED: fix, or revert your own files and mark BLOCKED.
+  the backlog Log â†’ RED: fix, or revert your own files and mark BLOCKED.
 - **Hard stops (leave a status in the backlog, then end the loop):** backlog is dry;
   the top unblocked item needs an owner decision (see the backlog Guardrails list);
   or three consecutive iterations make no progress.

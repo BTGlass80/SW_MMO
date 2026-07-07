@@ -1,4 +1,4 @@
-# Pixel Hull Character Pass
+﻿# Pixel Hull Character Pass
 
 Date: 2026-07-04  
 Scope: docs-only extension of the deterministic pixel-card lane toward more-3D humanoids

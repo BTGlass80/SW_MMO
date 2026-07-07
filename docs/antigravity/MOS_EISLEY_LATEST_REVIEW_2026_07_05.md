@@ -1,4 +1,4 @@
-# Mos Eisley Latest Review - 2026-07-05
+﻿# Mos Eisley Latest Review - 2026-07-05
 
 Verdict: do not expand the roadmap yet. This pass shows useful cleanup and some encouraging discipline, but the authored Mos Eisley still is not close to release-worthy. The biggest concern is not just that the scene remains visually weak; it is that the current visual validation can report success while failing to produce new screenshots.
 

@@ -1,4 +1,4 @@
-# Pixel Extrude Godot Pass
+﻿# Pixel Extrude Godot Pass
 
 Date: 2026-07-04  
 Scope: docs-only test of 2D pixel image -> Godot cube model generation

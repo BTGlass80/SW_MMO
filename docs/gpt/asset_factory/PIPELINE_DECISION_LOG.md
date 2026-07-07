@@ -1,4 +1,4 @@
-# Pipeline Decision Log
+﻿# Pipeline Decision Log
 
 Date: 2026-07-04  
 Scope: docs-only lock/candidate/rejected decisions for the asset factory

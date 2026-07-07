@@ -1,4 +1,4 @@
-# Blockbench Cantina Entrance v1 Review Board
+﻿# Blockbench Cantina Entrance v1 Review Board
 
 Generated: 2026-07-04T06:23:05.291Z
 Generator: `docs/gpt/asset_factory/scripts/blockbench_cubecraft_factory.mjs`

@@ -1,4 +1,4 @@
-# Vengi Pixel-Card Evaluation Pass
+﻿# Vengi Pixel-Card Evaluation Pass
 
 Date: 2026-07-04  
 Scope: docs-only evaluation of the locally installed Vengi tools

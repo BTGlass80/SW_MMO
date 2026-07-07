@@ -1,4 +1,4 @@
-# Blockcraft Space-Opera Direction
+﻿# Blockcraft Space-Opera Direction
 
 Date: 2026-07-03  
 Status: tested in Godot through `specs/blockcraft_space_opera_v0.json` and the private-fan `specs/private_clone_wars_blockcraft_v0.json`

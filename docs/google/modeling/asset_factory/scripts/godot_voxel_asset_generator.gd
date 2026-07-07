@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const WEAPONS_SPEC_PATH := "res://docs/google/modeling/asset_factory/specs/weapons_catalog.json"
 const BUILDINGS_SPEC_PATH := "res://docs/google/modeling/asset_factory/specs/buildings_catalog.json"

@@ -1,4 +1,4 @@
-# Meshy Salvage Lanes
+﻿# Meshy Salvage Lanes
 
 Date: 2026-07-04  
 Scope: what Meshy is still useful for after foreground voxel tests failed the cohesion check
