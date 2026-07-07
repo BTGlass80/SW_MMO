@@ -7,28 +7,27 @@ func _init() -> void:
 	var exe = OS.get_executable_path()
 	if exe == "":
 		exe = "godot"
+	var test_account := "lifecycle_test"
 		
 	# 1. Clean up old state
 	var dir = DirAccess.open("user://persistence")
 	if dir != null:
-		if dir.file_exists("guest.json"):
-			dir.remove("guest.json")
+		if dir.file_exists("%s.json" % test_account):
+			dir.remove("%s.json" % test_account)
 			
 	# 2. Start server
 	var server_args = ["--headless", "--path", ".", "res://scenes/net_world.tscn", "--", "--server", "--port", "24560"]
-	var server_out = []
-	var pid_server = OS.create_process(exe, server_args) # Wait, create_process doesn't capture output. I should use execute with a thread.
-	# Actually, OS.create_process runs it detached. Let's redirect output to a file.
-	var f_out = FileAccess.open("user://server.log", FileAccess.WRITE)
-	f_out.close()
-	var server_args_full = ["/c", exe] + server_args + [">", OS.get_user_data_dir() + "/server.log", "2>&1"]
-	pid_server = OS.create_process("cmd.exe", server_args_full)
+	var pid_server = OS.create_process(exe, server_args)
+	if pid_server == -1:
+		_fail("Could not start server process")
+		_finish()
+		return
 		
 	OS.delay_msec(1000)
 	
 	# 3. Connect client 1 (creates new char)
 	print("Running Client (First Login)...")
-	var client_args = ["--headless", "--path", ".", "res://scenes/net_world.tscn", "--", "--connect", "127.0.0.1", "--port", "24560", "--quit-after", "4"]
+	var client_args = ["--headless", "--path", ".", "res://scenes/net_world.tscn", "--", "--connect", "127.0.0.1", "--port", "24560", "--account", test_account, "--quit-after", "4"]
 	var c_out = []
 	var c_exit = 0
 	var t1 = Thread.new()
@@ -49,22 +48,26 @@ func _init() -> void:
 	var out_str = "\n".join(c_out)
 	print("Client 1 Output:\n" + out_str)
 	if c_exit != 0:
-		print("Client 1 exited with code: ", c_exit)
+		_fail("Client 1 exited with code %d" % c_exit)
+		_kill(pid_server)
+		_finish()
+		return
 	
 	# Wait a tiny bit for the server to flush the save
 	OS.delay_msec(1000)
 	
 	# 4. Verify save file
-	if not FileAccess.file_exists("user://persistence/guest.json"):
-		_fail("Server did not create user://persistence/guest.json on disconnect")
+	var save_path := "user://persistence/%s.json" % test_account
+	if not FileAccess.file_exists(save_path):
+		_fail("Server did not create %s on disconnect" % save_path)
 		_kill(pid_server)
 		_finish()
 		return
 		
-	var f = FileAccess.open("user://persistence/guest.json", FileAccess.READ)
+	var f = FileAccess.open(save_path, FileAccess.READ)
 	var j = JSON.new()
 	if j.parse(f.get_as_text()) != OK:
-		_fail("guest.json is invalid JSON")
+		_fail("%s is invalid JSON" % save_path)
 	else:
 		var data = j.data
 		var sheet = data.get("sheet", {})
@@ -108,9 +111,11 @@ func _init() -> void:
 		
 	t2.wait_to_finish()
 	var out_str2 = "\n".join(c2_out)
-	
-	# If we see "[save] guest saved" on the server it proves the server loaded and saved it.
-	# The client output will show the sheet was received from the server.
+	print("Client 2 Output:\n" + out_str2)
+	if c2_exit != 0:
+		_fail("Client 2 exited with code %d" % c2_exit)
+	if not out_str2.contains("[credits] balance="):
+		_fail("Reconnect client did not receive a credited character sheet")
 	
 	_kill(pid_server2)
 	_finish()
