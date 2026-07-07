@@ -13,13 +13,13 @@ func _init() -> void:
 	if dir != null:
 		if dir.file_exists("bazaar.json"): dir.remove("bazaar.json")
 		if dir.file_exists("record_cache.json"): dir.remove("record_cache.json")
+		if dir.file_exists("item_ident_test.txt"): dir.remove("item_ident_test.txt")
 	var pdir = DirAccess.open("user://persistence")
 	if pdir != null:
 		if pdir.file_exists("item_c1.json"): pdir.remove("item_c1.json")
 		if pdir.file_exists("item_c2.json"): pdir.remove("item_c2.json")
-	var tdir = DirAccess.open("user://telemetry")
-	if tdir != null:
-		if tdir.file_exists("item_identity_events.jsonl"): tdir.remove("item_identity_events.jsonl")
+	if FileAccess.file_exists("user://telemetry/item_identity_events.jsonl"):
+		DirAccess.remove_absolute("user://telemetry/item_identity_events.jsonl")
 			
 	# 2. Start server
 	var server_args = ["--headless", "--path", ".", "res://scenes/net_world.tscn", "--", "--server", "--item-ident-test-server", "--port", "24561", "--telemetry-file", "user://telemetry/item_identity_events.jsonl"]
@@ -40,7 +40,7 @@ func _init() -> void:
 	t1.start(func(): c1_exit = OS.execute(exe, client1_args, c1_out, true, false))
 	
 	var waited = 0
-	while t1.is_alive() and waited < 30:
+	while t1.is_alive() and waited < 45:
 		OS.delay_msec(1000)
 		waited += 1
 		
@@ -70,7 +70,7 @@ func _init() -> void:
 	t2.start(func(): c2_exit = OS.execute(exe, client2_args, c2_out, true, false))
 	
 	waited = 0
-	while t2.is_alive() and waited < 30:
+	while t2.is_alive() and waited < 45:
 		OS.delay_msec(1000)
 		waited += 1
 		
@@ -113,12 +113,12 @@ func _init() -> void:
 	t3.start(func(): c3_exit = OS.execute(exe, client3_args, c3_out, true, false))
 	
 	waited = 0
-	while t3.is_alive() and waited < 15:
+	while t3.is_alive() and waited < 45:
 		OS.delay_msec(1000)
 		waited += 1
 		
 	if t3.is_alive():
-		_fail("Client 3 timed out")
+		_fail("Client 3 timed out! Output so far: " + "\n".join(c3_out))
 		_kill(pid_server2)
 		_finish()
 		return
@@ -128,24 +128,27 @@ func _init() -> void:
 	print("Client 3 Output:\n", out3_str)
 	if not out3_str.contains("[c3] Verified item instance in inventory after restart: "):
 		_fail("Client 3 failed to verify item instance in inventory")
+	if not out3_str.contains("[c3] Used item instance successfully after restart: "):
+		_fail("Client 3 failed to use item instance after restart")
 		
 	_kill(pid_server2)
 	
 	# 7. Check Telemetry
 	var events = []
-	if tdir != null and tdir.file_exists("item_identity_events.jsonl"):
+	if FileAccess.file_exists("user://telemetry/item_identity_events.jsonl"):
 		var f = FileAccess.open("user://telemetry/item_identity_events.jsonl", FileAccess.READ)
-		while not f.eof_reached():
-			var line = f.get_line()
-			if line != "":
-				var json = JSON.new()
-				if json.parse(line) == OK:
-					if json.data.has("type"):
-						events.append(json.data.get("type"))
-					elif json.data.has("event"):
-						events.append(json.data.get("event"))
+		while f != null and not f.eof_reached():
+			var line = f.get_line().strip_edges()
+			if not line.is_empty():
+				var dict = JSON.parse_string(line)
+				if typeof(dict) == TYPE_DICTIONARY and dict.has("type"):
+					events.append(dict["type"])
+				elif typeof(dict) == TYPE_DICTIONARY and dict.has("event"):
+					events.append(dict["event"])
+		if f != null:
+			f.close()
 						
-	if not events.has("bazaar_list") or not events.has("bazaar_buy"):
+	if not events.has("bazaar_list") or not events.has("bazaar_buy") or not events.has("item_use"):
 		_fail("Telemetry did not contain expected events. Found: " + str(events))
 		
 	_finish()

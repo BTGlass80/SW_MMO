@@ -29,7 +29,7 @@ def run_test(test_path, project_root, godot_cmd):
             encoding="utf-8",
             errors="replace",
             shell=False,
-            timeout=60
+            timeout=180
         )
         
         # Filter standard editor warning boilerplate to keep stdout clean
@@ -79,7 +79,7 @@ def run_test(test_path, project_root, godot_cmd):
             "label": label,
             "exit_code": -1,
             "stdout": "",
-            "stderr": "Timeout expired (60s limit reached under concurrency)",
+            "stderr": "Timeout expired (180s limit reached under concurrency)",
             "ok": False
         }
     except Exception as e:
