@@ -1465,6 +1465,11 @@ func submit_use_item(instance_id: String, target_id: int = -1) -> void:
 	var result = ItemUsageModel.use_item(sheet, D6Rules, target_sheet, item, _server_rng.randi())
 	
 	if bool(result.get("ok", false)):
+		if target_peer == peer and result.has("target_state"):
+			var self_target_state = result.get("target_state", sheet)
+			if typeof(self_target_state) == TYPE_DICTIONARY:
+				sheet = self_target_state
+				inventory = sheet.get("inventory", inventory)
 		var consumed = bool(result.get("consumed", false))
 		var new_item = result.get("item", item)
 		
@@ -2382,6 +2387,7 @@ func _sheet_summary(record: Dictionary) -> Dictionary:
 		"cp_wallet": sheet.get("cp_wallet", {}),
 		"credits": int(sheet.get("credits", 0)),  # Wave F economy: show the wallet balance on the sheet
 		"inventory": sheet.get("inventory", []),
+		"wound_state": String(sheet.get("wound_state", "healthy")),
 		"ships": sheet.get("ships", []),
 		"space_state": sheet.get("space_state", {}),
 		"force_sensitive": bool(sheet.get("force_sensitive", false)),

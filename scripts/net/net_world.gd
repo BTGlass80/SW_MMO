@@ -301,6 +301,9 @@ func _ready() -> void:
 			if s_c2_record.is_empty():
 				s_c2_record = {"id": "item_c2", "sheet": {}}
 			s_c2_record["sheet"]["credits"] = 5000
+			s_c2_record["sheet"]["first_aid"] = "10D"
+			s_c2_record["sheet"]["wounds"] = 1
+			s_c2_record["sheet"]["wound_state"] = "wounded"
 			Net._cached_save("item_c2", s_c2_record)
 			var c2_peer = Net.admin_get_peer_by_character("item_c2")
 			if c2_peer > 0:
@@ -467,7 +470,16 @@ func _run_item_ident_c3() -> void:
 			
 	if found:
 		print("[c3] Verified item instance in inventory after restart: ", target_instance)
-		Net.send_sell(target_instance)
+		Net.send_use_item(target_instance)
+		var result = await Net.use_item_replied
+		if bool(result.get("ok", false)):
+			await get_tree().process_frame
+			if String(_my_sheet.get("wound_state", "wounded")) == "healthy":
+				print("[c3] Used item instance successfully after restart: ", target_instance)
+			else:
+				print("[c3] ERROR: Use succeeded but wound_state did not clear. Sheet: ", _my_sheet)
+		else:
+			print("[c3] ERROR: Item use failed: ", result)
 	else:
 		print("[c3] ERROR: Item instance NOT found in inventory!")
 		
@@ -3399,4 +3411,3 @@ func _spawn_laser_tracer(from: Vector3, to: Vector3) -> void:
 	var tw := create_tween()
 	tw.tween_property(tracer.material_override, "albedo_color:a", 0.0, 0.12)
 	tw.tween_callback(tracer.queue_free)
-

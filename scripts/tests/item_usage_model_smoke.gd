@@ -23,6 +23,7 @@ func _init() -> void:
 	
 	var target = {
 		"wounds": 2,
+		"wound_state": "wounded_twice",
 		"ammo": {"packs": 10},
 		"hull": 50
 	}
@@ -33,6 +34,7 @@ func _init() -> void:
 	
 	_assert_equal(bool(medpac_result.get("ok", false)), true, "Medpac heals target on success")
 	_assert_equal(int(medpac_result.get("target_state", {}).get("wounds", 2)), 1, "Target wounds reduced from 2 to 1")
+	_assert_equal(String(medpac_result.get("target_state", {}).get("wound_state", "")), "wounded", "Target wound_state reduced from wounded_twice to wounded")
 	_assert_equal(int(medpac_result.get("item", {}).get("condition", 0)), 1, "Medpac condition reduced from 2 to 1")
 	_assert_equal(bool(medpac_result.get("consumed", true)), false, "Medpac not consumed because condition > 0")
 	

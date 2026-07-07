@@ -32,8 +32,9 @@ static func _use_medpac(sheet: Dictionary, rules: Object, target_state: Dictiona
 	
 	if effective_roll >= difficulty:
 		var next_target = target_state.duplicate(true)
-		var current_wounds = int(next_target.get("wounds", 1))
+		var current_wounds = _numeric_wounds(next_target)
 		next_target["wounds"] = maxi(0, current_wounds - 1)
+		next_target["wound_state"] = _lower_wound_state_one_step(String(next_target.get("wound_state", "")), current_wounds)
 		
 		# Condition decreases for medpacs
 		var condition = int(new_item.get("condition", new_item.get("max_condition", 5))) - 1
@@ -79,6 +80,52 @@ static func _use_medpac(sheet: Dictionary, rules: Object, target_state: Dictiona
 			"roll": effective_roll,
 			"difficulty": difficulty
 		}
+
+static func _numeric_wounds(target_state: Dictionary) -> int:
+	if target_state.has("wounds"):
+		return int(target_state.get("wounds", 1))
+	match String(target_state.get("wound_state", "wounded")):
+		"healthy":
+			return 0
+		"wounded":
+			return 1
+		"wounded_twice":
+			return 2
+		"incapacitated":
+			return 3
+		"mortally_wounded":
+			return 4
+		"dead":
+			return 5
+	return 1
+
+static func _lower_wound_state_one_step(state: String, fallback_wounds: int) -> String:
+	if state == "":
+		match maxi(0, fallback_wounds - 1):
+			0:
+				return "healthy"
+			1:
+				return "wounded"
+			2:
+				return "wounded_twice"
+			3:
+				return "incapacitated"
+			4:
+				return "mortally_wounded"
+			_:
+				return "dead"
+	match state:
+		"dead":
+			return "mortally_wounded"
+		"mortally_wounded":
+			return "incapacitated"
+		"incapacitated":
+			return "wounded_twice"
+		"wounded_twice":
+			return "wounded"
+		"wounded":
+			return "healthy"
+	return "healthy"
 
 static func _use_power_pack(sheet: Dictionary, target_state: Dictionary, item: Dictionary) -> Dictionary:
 	var next_target = target_state.duplicate(true)
