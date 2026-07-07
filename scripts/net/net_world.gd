@@ -172,6 +172,7 @@ var _item_ident_c3 := false
 var _item_ident_c1_started := false
 var _item_ident_c2_started := false
 var _item_ident_c3_started := false
+var _is_soak_client := false
 
 var _space_cargo_test_c1 := false
 var _space_cargo_c1_started := false
@@ -211,6 +212,8 @@ var _leave_after_sent := false
 var _consent_accum := 0.0
 var _toast_label: Label           # transient HUD feedback (credits/loot/buy/sell/force-awaken)
 var _toast_tween: Tween
+var _onboarding_panel: Panel
+var _onboarding_shown := false
 
 func _ready() -> void:
 	_parse_args()
@@ -301,7 +304,7 @@ func _ready() -> void:
 			if s_c2_record.is_empty():
 				s_c2_record = {"id": "item_c2", "sheet": {}}
 			s_c2_record["sheet"]["credits"] = 5000
-			s_c2_record["sheet"]["first_aid"] = "10D"
+			s_c2_record["sheet"]["first_aid"] = "30D"
 			s_c2_record["sheet"]["wounds"] = 1
 			s_c2_record["sheet"]["wound_state"] = "wounded"
 			Net._cached_save("item_c2", s_c2_record)
@@ -612,6 +615,7 @@ func _parse_args() -> void:
 	_item_ident_c1 = args.has("--item-ident-c1")
 	_item_ident_c2 = args.has("--item-ident-c2")
 	_item_ident_c3 = args.has("--item-ident-c3")
+	_is_soak_client = args.has("--soak-client")
 
 	if _econ_test_c1 and _account == "guest":
 		_account = "crafter_1"
@@ -672,6 +676,11 @@ func _process(delta: float) -> void:
 	if _item_ident_c3 and Net.connected and not _item_ident_c3_started:
 		_item_ident_c3_started = true
 		_run_item_ident_c3()
+
+	if _is_soak_client and Net.connected and not has_node("SoakBot"):
+		var soak_bot = preload("res://scripts/net/soak_bot.gd").new()
+		soak_bot.name = "SoakBot"
+		add_child(soak_bot)
 
 	if _yield_on_down and _is_downed and Net.connected:
 		Net.send_yield()  # headless DIV-0027: auto-yield when downed (two-process test hook; server is idempotent + rate-limited)
@@ -828,6 +837,11 @@ func _input(event: InputEvent) -> void:
 		return
 	# While a panel overlay is open it owns the cursor: only its key/Esc (close) act; everything
 	# else is swallowed here so it never fires/recaptures the mouse.
+	if _onboarding_panel != null and _onboarding_panel.visible:
+		if event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_ESCAPE or event.keycode == KEY_ENTER):
+			_onboarding_panel.visible = false
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		return
 	if _quest_open:
 		if event is InputEventKey and event.pressed and (event.keycode == KEY_J or event.keycode == KEY_ESCAPE):
 			_close_quest_panel()
@@ -1415,8 +1429,42 @@ func _build_hud() -> void:
 	_build_toast(_hud)
 	_build_death_overlay(_hud)
 	_build_downed_panel(_hud)
+	_build_onboarding_panel(_hud)
 
 
+
+func _build_onboarding_panel(layer: CanvasLayer) -> void:
+	_onboarding_panel = Panel.new()
+	_onboarding_panel.name = "OnboardingPanel"
+	_onboarding_panel.custom_minimum_size = Vector2(460, 360)
+	_onboarding_panel.set_anchors_preset(Control.PRESET_CENTER)
+	_onboarding_panel.visible = false
+	layer.add_child(_onboarding_panel)
+
+	var style_box := StyleBoxFlat.new()
+	style_box.bg_color = Color(0.08, 0.09, 0.11, 0.95)
+	style_box.border_width_left = 2
+	style_box.border_width_right = 2
+	style_box.border_width_top = 2
+	style_box.border_width_bottom = 2
+	style_box.border_color = Color(0.18, 0.90, 0.96, 0.8) # neon cyan
+	_onboarding_panel.add_theme_stylebox_override("panel", style_box)
+
+	var r_label := RichTextLabel.new()
+	r_label.bbcode_enabled = true
+	r_label.text = "[center][b]Welcome to Mos Eisley![/b][/center]\n\n[b]CONTROLS:[/b]\n• [color=#2ee6f5]WASD[/color] to move, [color=#2ee6f5]Mouse[/color] to look.\n• [color=#2ee6f5]Right Click[/color] to aim (+1D), [color=#2ee6f5]Left Click[/color] to fire.\n• [color=#2ee6f5]F[/color]: Toggle Auto-fire (combat windows).\n• [color=#2ee6f5]X[/color]: Take Cover (+Def, -Atk).\n• [color=#2ee6f5]TAB[/color]: Target. [color=#2ee6f5]E[/color]: Interact.\n• [color=#2ee6f5]ENTER[/color]: Chat. [color=#2ee6f5]V[/color]: Character Sheet.\n• [color=#2ee6f5]B[/color]: Shop. [color=#2ee6f5]J[/color]: Quests. [color=#2ee6f5]M[/color]: Travel.\n\n[b]THE LOOP:[/b]\n1. Spar the dummy (red sphere) to earn CP.\n2. Spend CP ([color=#2ee6f5]C[/color]) to raise Blaster/Dodge.\n3. Buy gear ([color=#2ee6f5]B[/color]) at vendors.\n4. Travel ([color=#2ee6f5]T[/color]) to Contested/Lawless zones.\n5. Danger: PvP + lethal death (durability loss).\n\n[center][color=#888888]Press [Esc] or click here to dismiss.[/color][/center]"
+	r_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 16)
+	r_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_onboarding_panel.add_child(r_label)
+
+	var btn := Button.new()
+	btn.set_anchors_preset(Control.PRESET_FULL_RECT)
+	btn.flat = true
+	btn.pressed.connect(func():
+		_onboarding_panel.visible = false
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	)
+	_onboarding_panel.add_child(btn)
 
 # Wave F economy: a real, clickable shop overlay (hidden until B). Populated from the
 # server-priced vendor_listed payload; Buy/Sell buttons call Net.send_buy/Net.send_sell.
@@ -2862,6 +2910,13 @@ func _on_heal_replied(result: Dictionary) -> void:
 
 func _on_sheet_updated(sheet: Dictionary) -> void:
 	_my_sheet = sheet
+	
+	if not _onboarding_shown and int(sheet.get("character_points", 0)) == 0 and int(sheet.get("credits", 0)) == 1000:
+		_onboarding_shown = true
+		if _onboarding_panel != null:
+			_onboarding_panel.visible = true
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
 	var summary: Dictionary = sheet.get("summary", {})
 	var attrs: Dictionary = summary.get("attributes", {})
 	var skills: Dictionary = summary.get("skills", {})

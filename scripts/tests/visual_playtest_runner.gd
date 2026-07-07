@@ -120,6 +120,7 @@ func _run() -> void:
 		if not point_node: quit(1)
 		for i in range(15):
 			await process_frame
+			await RenderingServer.frame_post_draw
 		if not _save_capture(cap["file"], camera, point_node.get_parent()): quit(1)
 
 	print("Automated visual playtest completed successfully.")
