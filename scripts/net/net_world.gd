@@ -165,6 +165,14 @@ var _econ_test_c1 := false
 var _econ_test_c2 := false
 var _econ_c1_started := false
 var _econ_c2_started := false
+
+var _item_ident_c1 := false
+var _item_ident_c2 := false
+var _item_ident_c3 := false
+var _item_ident_c1_started := false
+var _item_ident_c2_started := false
+var _item_ident_c3_started := false
+
 var _space_cargo_test_c1 := false
 var _space_cargo_c1_started := false
 var _shop_list: VBoxContainer
@@ -265,12 +273,38 @@ func _ready() -> void:
 		if OS.get_cmdline_user_args().has("--dev-admin-allowlist"):
 			Net.admin_allowlist = ["admin", "operator"]
 		
-		if _econ_test_server or _space_cargo_test_server:
+		if _econ_test_server or _space_cargo_test_server or OS.get_cmdline_user_args().has("--item-ident-test-server"):
 			Net.allow_test_org = true
 			
 		var port_arg := _arg_value("--port")
 		var port := int(port_arg) if port_arg != "" else 24555
 		Net.start_server(port)
+		
+		if OS.get_cmdline_user_args().has("--item-ident-test-server"):
+			print("[server] Starting item_ident test data injection in 1s...")
+			await get_tree().create_timer(1.0).timeout
+			print("[server] Injecting item_c1 and item_c2 records!")
+			var s_c1_record = Net._cached_load("item_c1")
+			if s_c1_record.is_empty():
+				s_c1_record = {"id": "item_c1", "sheet": {}}
+			s_c1_record["sheet"]["credits"] = 1000
+			s_c1_record["sheet"]["first_aid"] = "6D"
+			s_c1_record["sheet"]["inventory"] = [
+				{"instance_id": "res1", "template_id": "resource_stack", "stack_count": 5, "stats": {"resource_type": "organic_tissue"}},
+				{"instance_id": "res2", "template_id": "resource_stack", "stack_count": 5, "stats": {"resource_type": "medical_biogel"}}
+			]
+			Net._cached_save("item_c1", s_c1_record)
+			var c1_peer = Net.admin_get_peer_by_character("item_c1")
+			if c1_peer > 0:
+				Net.admin_push_sheet(c1_peer, s_c1_record)
+			var s_c2_record = Net._cached_load("item_c2")
+			if s_c2_record.is_empty():
+				s_c2_record = {"id": "item_c2", "sheet": {}}
+			s_c2_record["sheet"]["credits"] = 5000
+			Net._cached_save("item_c2", s_c2_record)
+			var c2_peer = Net.admin_get_peer_by_character("item_c2")
+			if c2_peer > 0:
+				Net.admin_push_sheet(c2_peer, s_c2_record)
 		
 		if _space_cargo_test_server:
 			await get_tree().create_timer(1.0).timeout
@@ -363,6 +397,80 @@ func _run_econ_c2() -> void:
 			found_listing = l_id
 	if found_listing != "":
 		Net.send_bazaar_buy(found_listing)
+	await get_tree().create_timer(1.0).timeout
+	get_tree().quit(0)
+
+func _run_item_ident_c1() -> void:
+	print("[c1] Waiting for initial snapshot...")
+	while _my_sheet.is_empty():
+		await get_tree().process_frame
+	print("[c1] Snapshot received!")
+	var item_instance = ""
+	var outcome = {}
+	print("[c1] Sheet before crafting: ", _my_sheet)
+	for i in range(5):
+		Net.send_craft("basic_medpac")
+		var result = await Net.craft_replied
+		outcome = result[0] if result is Array else result
+		item_instance = outcome.get("item", {}).get("instance_id", "")
+		if item_instance != "": break
+		await get_tree().create_timer(0.5).timeout
+	if item_instance != "":
+		print("[c1] Crafted: ", item_instance)
+		var f = FileAccess.open("user://item_ident_test.txt", FileAccess.WRITE)
+		f.store_string(item_instance)
+		f.close()
+		Net.send_bazaar_list(item_instance, 100)
+	else:
+		print("[c1] ERROR: No item crafted! Outcome: ", outcome)
+	await get_tree().create_timer(2.0).timeout
+	get_tree().quit(0)
+
+func _run_item_ident_c2() -> void:
+	print("[c2] Waiting for initial snapshot...")
+	while _my_sheet.is_empty():
+		await get_tree().process_frame
+	print("[c2] Snapshot received!")
+	Net.send_request_bazaar_listings()
+	await get_tree().create_timer(1.0).timeout
+	var f = FileAccess.open("user://item_ident_test.txt", FileAccess.READ)
+	var target_instance = f.get_as_text().strip_edges()
+	f.close()
+	
+	var found_listing = ""
+	for l_id in _bazaar_listings.keys():
+		var l = _bazaar_listings[l_id]
+		if l.get("item", {}).get("instance_id") == target_instance:
+			found_listing = l_id
+	if found_listing != "":
+		Net.send_bazaar_buy(found_listing)
+		print("[c2] Bought listing for instance: ", target_instance)
+	else:
+		print("[c2] ERROR: Listing not found for: ", target_instance)
+	await get_tree().create_timer(1.0).timeout
+	get_tree().quit(0)
+
+func _run_item_ident_c3() -> void:
+	print("[c3] Waiting for initial snapshot...")
+	while _my_sheet.is_empty():
+		await get_tree().process_frame
+	print("[c3] Snapshot received!")
+	var f = FileAccess.open("user://item_ident_test.txt", FileAccess.READ)
+	var target_instance = f.get_as_text().strip_edges()
+	f.close()
+	
+	var found = false
+	for item in _my_sheet.get("inventory", []):
+		if typeof(item) == TYPE_DICTIONARY and item.get("instance_id") == target_instance:
+			found = true
+			break
+			
+	if found:
+		print("[c3] Verified item instance in inventory after restart: ", target_instance)
+		Net.send_sell(target_instance)
+	else:
+		print("[c3] ERROR: Item instance NOT found in inventory!")
+		
 	await get_tree().create_timer(1.0).timeout
 	get_tree().quit(0)
 
@@ -489,6 +597,9 @@ func _parse_args() -> void:
 	if qa != "":
 		_quit_after = float(qa)
 	_space_cargo_test_c1 = args.has("--space-cargo-test-c1")
+	_item_ident_c1 = args.has("--item-ident-c1")
+	_item_ident_c2 = args.has("--item-ident-c2")
+	_item_ident_c3 = args.has("--item-ident-c3")
 
 	if _econ_test_c1 and _account == "guest":
 		_account = "crafter_1"
@@ -537,6 +648,18 @@ func _process(delta: float) -> void:
 	if _space_cargo_test_c1 and Net.connected and not _space_cargo_c1_started:
 		_space_cargo_c1_started = true
 		_run_space_cargo_c1()
+
+	if _item_ident_c1 and Net.connected and not _item_ident_c1_started:
+		_item_ident_c1_started = true
+		_run_item_ident_c1()
+		
+	if _item_ident_c2 and Net.connected and not _item_ident_c2_started:
+		_item_ident_c2_started = true
+		_run_item_ident_c2()
+		
+	if _item_ident_c3 and Net.connected and not _item_ident_c3_started:
+		_item_ident_c3_started = true
+		_run_item_ident_c3()
 
 	if _yield_on_down and _is_downed and Net.connected:
 		Net.send_yield()  # headless DIV-0027: auto-yield when downed (two-process test hook; server is idempotent + rate-limited)

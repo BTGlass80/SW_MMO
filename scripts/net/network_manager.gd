@@ -3683,6 +3683,12 @@ func submit_buy_insurance() -> void:
 	apply_credits.rpc_id(sender, int(new_sheet.get("credits", 0)))
 	_push_sheet(sender, record)
 	print("[insurance] peer %d bought a policy for %d (charges now %d, credits %d)" % [sender, DeathPenalty.INSURANCE_PREMIUM, charges, int(new_sheet.get("credits", 0))])
+	if _telemetry != null:
+		_telemetry.log_event("buy_insurance", {
+			"ts": Time.get_unix_time_from_system(), "character_id": character_id,
+			"premium": DeathPenalty.INSURANCE_PREMIUM, "charges": charges,
+			"credits": int(new_sheet.get("credits", 0))
+		})
 	insurance_result.rpc_id(sender, {"ok": true, "charges": charges, "premium": DeathPenalty.INSURANCE_PREMIUM, "credits": int(new_sheet.get("credits", 0))})
 
 # server -> client: buy-insurance outcome
